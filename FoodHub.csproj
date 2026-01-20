@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Application\DTOs\" />
+    <Folder Include="Application\Interfaces\" />
+    <Folder Include="Application\Validators\" />
+    <Folder Include="Application\Services\" />
+    <Folder Include="Infrastructure\Persistence\" />
+    <Folder Include="Infrastructure\Security\" />
+    <Folder Include="Domain\Entities\" />
+    <Folder Include="Presentation\Controllers\Configurations\" />
+  </ItemGroup>
+
+</Project>
