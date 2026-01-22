@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "H:\\quan_li_nha_hang\\FoodHub\\FoodHub.csproj",
+      "projectUniqueName": "H:\\quan_li_nha_hang\\FoodHub_BE\\FoodHub.csproj",
       "projectName": "FoodHub",
-      "projectPath": "H:\\quan_li_nha_hang\\FoodHub\\FoodHub.csproj",
+      "projectPath": "H:\\quan_li_nha_hang\\FoodHub_BE\\FoodHub.csproj",
       "packagesPath": "C:\\Users\\KHAI TOAN\\.nuget\\packages\\",
-      "outputPath": "H:\\quan_li_nha_hang\\FoodHub\\obj\\",
+      "outputPath": "H:\\quan_li_nha_hang\\FoodHub_BE\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
