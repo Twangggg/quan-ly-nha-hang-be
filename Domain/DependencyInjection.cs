@@ -1,4 +1,4 @@
-﻿namespace FoodHub.Infrastructure
+﻿namespace FoodHub.Domain
 {
     public class DependencyInjection
     {
