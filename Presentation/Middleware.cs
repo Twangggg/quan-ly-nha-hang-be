@@ -1,47 +1,61 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Net;
-using System.Text.Json;
+﻿using System.Net;
+using FluentValidation;
+using FoodHub.Application.Common.Exceptions;
+using FoodHub.Application.Common.Models;
 
-namespace FoodHub.Presentation
+namespace FoodHub.Presentation.Middleware;
+
+public class ExceptionMiddleware
 {
-    public class ExceptionMiddleware
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
+
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionMiddleware> _logger;
+        _next = next;
+        _logger = logger;
+    }
 
-        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public async Task Invoke(HttpContext context)
+    {
+        try
         {
-            _next = next;
-            _logger = logger;
+            await _next(context);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
+            await HandleExceptionAsync(context, ex);
+        }
+    }
+
+    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    {
+        var statusCode = (int)HttpStatusCode.InternalServerError;
+        var message = "Internal server error";
+        List<string>? errors = null;
+
+        switch (exception)
+        {
+            case ValidationException validationException:
+                statusCode = (int)HttpStatusCode.BadRequest;
+                message = "Validation failed";
+                errors = validationException.Errors.Select(x => x.ErrorMessage).ToList();
+                break;
+            case BusinessException businessException:
+                statusCode = (int)HttpStatusCode.BadRequest;
+                message = businessException.Message;
+                break;
+            case NotFoundException notFoundException:
+                statusCode = (int)HttpStatusCode.NotFound;
+                message = notFoundException.Message;
+                break;
         }
 
-        public async Task InvokeAsync(HttpContext context)
-        {
-            try
-            {
-                await _next(context);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                await HandleExceptionAsync(context, ex);
-            }
-        }
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = statusCode;
 
-        private static Task HandleExceptionAsync(HttpContext context, Exception exception)
-        {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-            var response = new
-            {
-                StatusCode = context.Response.StatusCode,
-                Message = "An internal server error occurred.",
-                //Detail = exception.Message 
-            };
-
-            return context.Response.WriteAsync(JsonSerializer.Serialize(response));
-        }
+        var response = new ErrorResponse(statusCode, message, errors);
+        await context.Response.WriteAsJsonAsync(response);
     }
 }

@@ -10,7 +10,12 @@ namespace FoodHub.Application
             // Tự động quét và đăng ký tất cả các Profile của AutoMapper trong Assembly này
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-            // Register Application Services here (e.g. MediatR, AutoMapper, Validators)
+            // Đăng ký MediatR
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+
+            // Đăng ký FluentValidation
+            // Lưu ý: Cần cài đặt FluentValidation.DependencyInjectionExtensions nếu chưa có
+            // Ở đây đã cài FluentValidation.AspNetCore nên có thể dùng trực tiếp hoặc qua Scan
             
             return services;
         }

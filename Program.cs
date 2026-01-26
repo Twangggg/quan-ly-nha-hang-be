@@ -1,5 +1,6 @@
 using FoodHub.Application;
 using FoodHub.Infrastructure;
+using FoodHub.Presentation.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -45,10 +46,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseMiddleware<FoodHub.Presentation.ExceptionMiddleware>();
+app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
