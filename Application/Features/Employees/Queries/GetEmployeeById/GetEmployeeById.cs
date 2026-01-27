@@ -1,20 +1,16 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Extensions.Mappings;
-using FoodHub.Application.Extensions.Pagination;
-using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
-namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
+namespace FoodHub.Application.Features.Employees.Queries.GetEmployeeById
 {
-    public class GetEmployees
+    public class GetEmployeeById
     {
-        public record Query(PaginationParams Pagination) : IRequest<PagedResult<Response>>;
+        public record Query(Guid Id) : IRequest<Response>;
+
         public class Response : IMapFrom<Employee>
         {
             public Guid EmployeeId { get; set; }
@@ -27,6 +23,9 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
             public DateOnly? DateOfBirth { get; set; }
             public string Role { get; set; } = null!;
             public string Status { get; set; } = null!;
+            public DateTime CreatedAt { get; set; }
+            public DateTime? UpdatedAt { get; set; }
+            public DateTime? DeleteAt { get; set; }
             public void Mapping(Profile profile)
             {
                 profile.CreateMap<Employee, Response>()
@@ -37,7 +36,7 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
             }
         }
 
-        public class Handler : IRequestHandler<Query, PagedResult<Response>>
+        public class Handler : IRequestHandler<Query, Response>
         {
             private readonly IUnitOfWork _unitOfWork;
             private readonly IMapper _mapper;
@@ -48,26 +47,12 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
                 _mapper = mapper;
             }
 
-            public async Task<PagedResult<Response>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Response> Handle(Query request, CancellationToken cancellationToken)
             {
                 var query = _unitOfWork.Repository<Employee>().Query();
-                var sortMapping = new Dictionary<string, Expression<Func<Employee, object>>>
-                {
-                    {"username" , u => u.Username},
-                    {"phone", u=> u.Phone },
-                    {"email", u => u.Email},
-                    {"employeeCode", u => u.EmployeeCode }
-                };
+                var employee = await query.FirstOrDefaultAsync(e => e.EmployeeId == request.Id);
 
-                query = query.ApplySorting(
-                    request.Pagination.SortBy,
-                    request.Pagination.IsDescending,
-                    sortMapping,
-                    u => u.EmployeeId);
-
-                return await query
-                    .ProjectTo<Response>(_mapper.ConfigurationProvider)
-                    .ToPagedResultAsync(request.Pagination);
+                return _mapper.Map<Response>(employee);
             }
         }
     }

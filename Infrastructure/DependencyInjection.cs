@@ -26,6 +26,8 @@ namespace FoodHub.Infrastructure
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            
+            services.AddScoped<DbInitializer>();
 
             return services;
         }
