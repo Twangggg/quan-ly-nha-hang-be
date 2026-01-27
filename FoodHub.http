@@ -1,0 +1,5 @@
+@FoodHub_HostAddress = https://localhost:7265
+
+GET {{FoodHub_HostAddress}}/api/employees
+
+###
