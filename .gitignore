@@ -1,2 +1,14 @@
 /.vs/
 /appsettings.json/
+
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Others
+*.cache
