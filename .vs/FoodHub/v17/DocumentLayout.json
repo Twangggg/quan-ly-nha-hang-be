@@ -67,8 +67,7 @@
               "RelativeToolTip": "appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-01-27T04:03:05.296Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-27T04:03:05.296Z"
             },
             {
               "$type": "Document",
@@ -80,8 +79,7 @@
               "RelativeToolTip": "Infrastructure\\Persistence\\AppDbContext.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-27T03:53:08.255Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-27T03:53:08.255Z"
             },
             {
               "$type": "Document",
@@ -93,8 +91,7 @@
               "RelativeToolTip": "Domain\\Entities\\PasswordResetLog.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-27T03:48:26.303Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-27T03:48:26.303Z"
             },
             {
               "$type": "Document",
@@ -106,8 +103,7 @@
               "RelativeToolTip": "Domain\\Entities\\Employee.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-26T10:03:09.162Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-26T10:03:09.162Z"
             },
             {
               "$type": "Document",
@@ -119,8 +115,7 @@
               "RelativeToolTip": "Infrastructure\\Persistence\\Configurations\\PasswordResetLogConfiguration.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-26T10:01:58.01Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-26T10:01:58.01Z"
             },
             {
               "$type": "Document",
@@ -132,8 +127,7 @@
               "RelativeToolTip": "Infrastructure\\Persistence\\Configurations\\EmployeeConfiguration.cs",
               "ViewState": "AgIAAAoAAAAAAAAAAAAQwAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-26T10:01:31.007Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-26T10:01:31.007Z"
             }
           ]
         }
