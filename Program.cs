@@ -1,7 +1,9 @@
 using FoodHub.Application;
 using FoodHub.Infrastructure;
+using FoodHub.Infrastructure.Persistence;
 using FoodHub.Presentation.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 

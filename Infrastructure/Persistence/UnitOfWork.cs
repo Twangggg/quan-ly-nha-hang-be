@@ -14,7 +14,7 @@ namespace FoodHub.Infrastructure.Persistence
             _repositories = new Dictionary<string, object>();
         }
 
-        public void Dispose()
+        public void Dispose() 
         {
             _context.Dispose();
         }

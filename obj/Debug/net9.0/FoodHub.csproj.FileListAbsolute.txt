@@ -198,3 +198,4 @@ H:\quan_li_nha_hang\FoodHub_BE\bin\Debug\net9.0\runtimes\win-arm\native\e_sqlite
 H:\quan_li_nha_hang\FoodHub_BE\bin\Debug\net9.0\runtimes\win-arm64\native\e_sqlite3.dll
 H:\quan_li_nha_hang\FoodHub_BE\bin\Debug\net9.0\runtimes\win-x64\native\e_sqlite3.dll
 H:\quan_li_nha_hang\FoodHub_BE\bin\Debug\net9.0\runtimes\win-x86\native\e_sqlite3.dll
+H:\quan_li_nha_hang\FoodHub_BE\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
