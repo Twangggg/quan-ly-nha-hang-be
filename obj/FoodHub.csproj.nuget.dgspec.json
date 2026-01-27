@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "H:\\quan_li_nha_hang\\FoodHub_BE\\FoodHub.csproj": {}
+    "D:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj": {}
   },
   "projects": {
-    "H:\\quan_li_nha_hang\\FoodHub_BE\\FoodHub.csproj": {
+    "D:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "H:\\quan_li_nha_hang\\FoodHub_BE\\FoodHub.csproj",
+        "projectUniqueName": "D:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
         "projectName": "FoodHub",
-        "projectPath": "H:\\quan_li_nha_hang\\FoodHub_BE\\FoodHub.csproj",
-        "packagesPath": "C:\\Users\\KHAI TOAN\\.nuget\\packages\\",
-        "outputPath": "H:\\quan_li_nha_hang\\FoodHub_BE\\obj\\",
+        "projectPath": "D:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
+        "packagesPath": "C:\\Users\\HLong\\.nuget\\packages\\",
+        "outputPath": "D:\\C#\\OJT\\quan-ly-nha-hang-be\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "E:\\VSC\\tools\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\KHAI TOAN\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\HLong\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,6 +26,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -58,6 +59,10 @@
               "target": "Package",
               "version": "[12.0.0, )"
             },
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
             "FluentValidation.AspNetCore": {
               "target": "Package",
               "version": "[11.3.1, )"
@@ -89,6 +94,10 @@
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[9.0.4, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.9.0, )"
             }
           },
           "imports": [
@@ -110,7 +119,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
