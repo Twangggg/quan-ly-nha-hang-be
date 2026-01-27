@@ -1,4 +1,5 @@
 ﻿using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,34 +11,39 @@ namespace FoodHub.Infrastructure.Security
     public class JwtTokenService : ITokenService
     {
         private readonly JwtSettings _jwtSettings;
+        
         public JwtTokenService(IOptions<JwtSettings> options)
         {
             _jwtSettings = options.Value;
         }
-        //public string GenerationAccessToken(User user)
-        //{
-        //    var claims = new List<Claim>
-        //    {
-        //        new Claim (JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-        //        new Claim (JwtRegisteredClaimNames.UniqueName, user.Name),
-        //        new Claim (JwtRegisteredClaimNames.Email, user.Email),
-        //        new Claim (ClaimTypes.Role, user.Role)
-        //    }
 
-        //    var key = new SymmetricSecurityKey(
-        //        Encoding.UTF8.GetBytes(_jwtSettings["SecretKey"]));
+        public string GenerateAccessToken(Employee employee)
+        {
+            var claims = new List<Claim>
+            {
+                new(JwtRegisteredClaimNames.Sub, employee.EmployeeId.ToString()),
+                new(JwtRegisteredClaimNames.UniqueName, employee.Username),
+                new(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString()),
+                new(ClaimTypes.Name, employee.FullName),
+                new(ClaimTypes.Email, employee.Email),
+                new(ClaimTypes.Role, employee.Role.ToString()),
+                new("EmployeeCode", employee.EmployeeCode)
+            };
 
-        //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
 
-        //    var token = new JwtSecurityToken(
-        //        issuer: _jwtSettings["Issuer"],
-        //        audience: _jwtSettings["Audience"],
-        //        claims: claims,
-        //        expires: DateTime.UtcNow.AddMinutes(_jwtSettings["ExpiresInMinute"]),
-        //        signingCredentials: creds
-        //        );
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        //    return new JwtSecurityTokenHandler().WriteToken(token);
-        //}
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiresInMinute),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
     }
 }

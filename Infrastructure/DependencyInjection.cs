@@ -27,6 +27,10 @@ namespace FoodHub.Infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+            // Security Services
+            services.AddScoped<IPasswordHasher, PasswordHasher>();
+            services.AddScoped<ITokenService, JwtTokenService>();
+
             return services;
         }
     }
