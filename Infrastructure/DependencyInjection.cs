@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
@@ -12,6 +12,7 @@ namespace FoodHub.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
             services.AddDbContext<AppDbContext>(options =>
             {
@@ -26,6 +27,11 @@ namespace FoodHub.Infrastructure
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IPasswordService, PasswordService>();
+
+
+            // Email Service (Brevo SDK)
+            services.AddScoped<IEmailService, EmailService>();
 
             return services;
         }

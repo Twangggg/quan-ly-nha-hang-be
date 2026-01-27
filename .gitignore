@@ -1,2 +1,29 @@
-/.vs/
-/appsettings.json/
+# Visual Studio
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Secrets
+appsettings.json
+appsettings.Development.json
+secrets.json
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
