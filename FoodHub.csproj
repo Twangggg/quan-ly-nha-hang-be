@@ -7,13 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Presentation\Controllers\Configurations\**" />
+    <Content Remove="Presentation\Controllers\Configurations\**" />
+    <EmbeddedResource Remove="Presentation\Controllers\Configurations\**" />
+    <None Remove="Presentation\Controllers\Configurations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Application\DTOs\" />
     <Folder Include="Application\Features\Auth\Commands\" />
     <Folder Include="Application\Features\Auth\Queries\" />
     <Folder Include="Application\Services\" />
-    <Folder Include="Application\Validators\" />
     <Folder Include="Infrastructure\Persistence\Migrations\" />
-    <Folder Include="Presentation\Controllers\Configurations\" />
   </ItemGroup>
 
   <ItemGroup>
