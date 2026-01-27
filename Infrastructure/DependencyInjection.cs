@@ -30,6 +30,9 @@ namespace FoodHub.Infrastructure
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IEmailService, EmailService>();
 
+            
+            services.AddScoped<DbInitializer>();
+
             return services;
         }
     }
