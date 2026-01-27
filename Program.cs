@@ -1,4 +1,5 @@
 using FoodHub.Application;
+using FoodHub.Application.Interfaces;
 using FoodHub.Infrastructure;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Presentation.Middleware;
@@ -15,7 +16,10 @@ builder.Services.AddControllers(opt =>
     opt.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
 });
 
-builder.Services.AddOpenApi();
+
+// Swagger Configuration
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // Register Layers
 builder.Services.AddApplication();
@@ -54,36 +58,34 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Auto-apply migrations
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+    
+    db.Database.Migrate();
+    await DbSeeder.SeedAsync(db, hasher);
+}
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    
-    // Auto Migrate & Seed Data
-    using (var scope = app.Services.CreateScope())
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
     {
-        var services = scope.ServiceProvider;
-        try
-        {
-            var context = services.GetRequiredService<AppDbContext>();
-            var initializer = services.GetRequiredService<DbInitializer>();
-            
-            context.Database.Migrate();
-            initializer.Initialize();
-        }
-        catch (Exception ex)
-        {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while migrating or seeding the database.");
-        }
-    }
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "FoodHub API v1");
+        c.RoutePrefix = "swagger"; // Access at /swagger
+    });
 }
 
 app.UseCors("AllowReact");
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,4 +1,7 @@
 /.vs/
 /appsettings.json/
-/bin/
-/obj/
+/env./
+bin/
+obj/
+*.cache
+docker-compose.yml
