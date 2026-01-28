@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "ContainingType": "FoodHub.Presentation.Controllers.Auth.AuthController",
+    "Method": "ChangePassword",
+    "RelativePath": "api/Auth/change-password",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "command",
+        "Type": "FoodHub.Application.Features.Auth.Commands.ChangePassword.ChangePasswordCommand",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

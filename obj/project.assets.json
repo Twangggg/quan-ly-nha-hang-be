@@ -256,6 +256,19 @@
           "lib/netstandard2.1/AutoMapper.Extensions.Microsoft.DependencyInjection.dll": {}
         }
       },
+      "BCrypt.Net-Next/4.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/BCrypt.Net-Next.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/BCrypt.Net-Next.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "EFCore.NamingConventions/9.0.0": {
         "type": "package",
         "dependencies": {
@@ -2165,6 +2178,37 @@
         "automapper.extensions.microsoft.dependencyinjection.nuspec",
         "icon.png",
         "lib/netstandard2.1/AutoMapper.Extensions.Microsoft.DependencyInjection.dll"
+      ]
+    },
+    "BCrypt.Net-Next/4.0.3": {
+      "sha512": "W+U9WvmZQgi5cX6FS5GDtDoPzUCV4LkBLkywq/kRZhuDwcbavOzcDAr3LXJFqHUi952Yj3LEYoWW0jbEUQChsA==",
+      "type": "package",
+      "path": "bcrypt.net-next/4.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "bcrypt.net-next.4.0.3.nupkg.sha512",
+        "bcrypt.net-next.nuspec",
+        "ico.png",
+        "lib/net20/BCrypt.Net-Next.dll",
+        "lib/net20/BCrypt.Net-Next.xml",
+        "lib/net35/BCrypt.Net-Next.dll",
+        "lib/net35/BCrypt.Net-Next.xml",
+        "lib/net462/BCrypt.Net-Next.dll",
+        "lib/net462/BCrypt.Net-Next.xml",
+        "lib/net472/BCrypt.Net-Next.dll",
+        "lib/net472/BCrypt.Net-Next.xml",
+        "lib/net48/BCrypt.Net-Next.dll",
+        "lib/net48/BCrypt.Net-Next.xml",
+        "lib/net5.0/BCrypt.Net-Next.dll",
+        "lib/net5.0/BCrypt.Net-Next.xml",
+        "lib/net6.0/BCrypt.Net-Next.dll",
+        "lib/net6.0/BCrypt.Net-Next.xml",
+        "lib/netstandard2.0/BCrypt.Net-Next.dll",
+        "lib/netstandard2.0/BCrypt.Net-Next.xml",
+        "lib/netstandard2.1/BCrypt.Net-Next.dll",
+        "lib/netstandard2.1/BCrypt.Net-Next.xml",
+        "readme.md"
       ]
     },
     "EFCore.NamingConventions/9.0.0": {
@@ -5069,6 +5113,7 @@
     "net9.0": [
       "AuroraScienceHub.Framework.EntityFramework.NpgSql >= 9.0.7",
       "AutoMapper.Extensions.Microsoft.DependencyInjection >= 12.0.0",
+      "BCrypt.Net-Next >= 4.0.3",
       "FluentValidation.AspNetCore >= 11.3.1",
       "MediatR >= 14.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 9.0.12",
@@ -5079,23 +5124,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\KHAI TOAN\\.nuget\\packages\\": {},
+    "C:\\Users\\ADMIN\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "H:\\quan_li_nha_hang\\FoodHub_BE\\FoodHub.csproj",
+      "projectUniqueName": "D:\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
       "projectName": "FoodHub",
-      "projectPath": "H:\\quan_li_nha_hang\\FoodHub_BE\\FoodHub.csproj",
-      "packagesPath": "C:\\Users\\KHAI TOAN\\.nuget\\packages\\",
-      "outputPath": "H:\\quan_li_nha_hang\\FoodHub_BE\\obj\\",
+      "projectPath": "D:\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
+      "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
+      "outputPath": "D:\\OJT\\quan-ly-nha-hang-be\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\KHAI TOAN\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\ADMIN\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -5104,6 +5149,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -5135,6 +5181,10 @@
           "AutoMapper.Extensions.Microsoft.DependencyInjection": {
             "target": "Package",
             "version": "[12.0.0, )"
+          },
+          "BCrypt.Net-Next": {
+            "target": "Package",
+            "version": "[4.0.3, )"
           },
           "FluentValidation.AspNetCore": {
             "target": "Package",

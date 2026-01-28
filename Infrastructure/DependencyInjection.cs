@@ -2,6 +2,7 @@
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
+using FoodHub.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -24,8 +25,18 @@ namespace FoodHub.Infrastructure
                 .UseSnakeCaseNamingConvention();
             });
 
+            // Register HttpContextAccessor
+            services.AddHttpContextAccessor();
+
+            // Register Services
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            
+            services.AddScoped<IPasswordHasher, PasswordHasher>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+            // Register TokenService - Assuming this was missing or needed explicitly
+            services.AddScoped<ITokenService, JwtTokenService>();
 
             return services;
         }

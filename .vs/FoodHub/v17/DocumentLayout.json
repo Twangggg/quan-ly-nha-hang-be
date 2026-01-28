@@ -1,34 +1,70 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "H:\\quan_li_nha_hang\\FoodHub_BE\\",
+  "WorkspaceRootPath": "D:\\OJT\\quan-ly-nha-hang-be\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\presentation\\controllers\\auth\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:presentation\\controllers\\auth\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\infrastructure\\persistence\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\persistence\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\foodhub.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:foodhub.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\common\\models\\errorresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\common\\models\\errorresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\domain\\entities\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\features\\auth\\commands\\changepassword\\changepasswordcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\auth\\commands\\changepassword\\changepasswordcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\features\\auth\\commands\\changepassword\\changepasswordcommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\auth\\commands\\changepassword\\changepasswordcommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\interfaces\\ipasswordhasher.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\interfaces\\ipasswordhasher.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\interfaces\\icurrentuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\interfaces\\icurrentuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\domain\\entities\\passwordresetlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:domain\\entities\\passwordresetlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\domain\\entities\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:domain\\entities\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\infrastructure\\persistence\\configurations\\employeeconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\persistence\\configurations\\employeeconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\infrastructure\\persistence\\configurations\\passwordresetlogconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\persistence\\configurations\\passwordresetlogconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\domain\\entities\\passwordresetlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:domain\\entities\\passwordresetlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\foodhub.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:foodhub.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\domain\\enums\\employeestatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:domain\\enums\\employeestatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\domain\\enums\\employeerole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:domain\\enums\\employeerole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\infrastructure\\dependencyinjection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\dependencyinjection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\presentation\\middleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:presentation\\middleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,96 +74,203 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 7,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{66f449b5-c823-40bc-9016-02b4d06a1a8e}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAADgAAAAAAAAAAAAAAD8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-27T04:11:53.897Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\appsettings.json",
-              "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-01-27T04:03:05.296Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "AppDbContext.cs",
-              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Persistence\\AppDbContext.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistence\\AppDbContext.cs",
-              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Persistence\\AppDbContext.cs",
-              "RelativeToolTip": "Infrastructure\\Persistence\\AppDbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABGAAAAAAAAAA==",
+              "Title": "ErrorResponse.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Common\\Models\\ErrorResponse.cs",
+              "RelativeDocumentMoniker": "Application\\Common\\Models\\ErrorResponse.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Common\\Models\\ErrorResponse.cs",
+              "RelativeToolTip": "Application\\Common\\Models\\ErrorResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-27T03:53:08.255Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "PasswordResetLog.cs",
-              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Domain\\Entities\\PasswordResetLog.cs",
-              "RelativeDocumentMoniker": "Domain\\Entities\\PasswordResetLog.cs",
-              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Domain\\Entities\\PasswordResetLog.cs",
-              "RelativeToolTip": "Domain\\Entities\\PasswordResetLog.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAArAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-27T03:48:26.303Z"
+              "WhenOpened": "2026-01-27T16:24:54.745Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "Employee.cs",
-              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Domain\\Entities\\Employee.cs",
-              "RelativeDocumentMoniker": "Domain\\Entities\\Employee.cs",
-              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Domain\\Entities\\Employee.cs",
-              "RelativeToolTip": "Domain\\Entities\\Employee.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAqAAAAAAAAAA==",
+              "Title": "ChangePasswordCommandHandler.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Auth\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "RelativeDocumentMoniker": "Application\\Features\\Auth\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Auth\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "RelativeToolTip": "Application\\Features\\Auth\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAA4AAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-26T10:03:09.162Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "PasswordResetLogConfiguration.cs",
-              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Persistence\\Configurations\\PasswordResetLogConfiguration.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistence\\Configurations\\PasswordResetLogConfiguration.cs",
-              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Persistence\\Configurations\\PasswordResetLogConfiguration.cs",
-              "RelativeToolTip": "Infrastructure\\Persistence\\Configurations\\PasswordResetLogConfiguration.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAAtAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-26T10:01:58.01Z"
+              "WhenOpened": "2026-01-27T16:16:07.03Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "EmployeeConfiguration.cs",
-              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Persistence\\Configurations\\EmployeeConfiguration.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Persistence\\Configurations\\EmployeeConfiguration.cs",
-              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Persistence\\Configurations\\EmployeeConfiguration.cs",
-              "RelativeToolTip": "Infrastructure\\Persistence\\Configurations\\EmployeeConfiguration.cs",
-              "ViewState": "AgIAAAoAAAAAAAAAAAAQwAwAAAAAAAAAAAAAAA==",
+              "Title": "ChangePasswordCommand.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Auth\\Commands\\ChangePassword\\ChangePasswordCommand.cs",
+              "RelativeDocumentMoniker": "Application\\Features\\Auth\\Commands\\ChangePassword\\ChangePasswordCommand.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Auth\\Commands\\ChangePassword\\ChangePasswordCommand.cs",
+              "RelativeToolTip": "Application\\Features\\Auth\\Commands\\ChangePassword\\ChangePasswordCommand.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-26T10:01:31.007Z"
+              "WhenOpened": "2026-01-27T16:15:59.083Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "IPasswordHasher.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Interfaces\\IPasswordHasher.cs",
+              "RelativeDocumentMoniker": "Application\\Interfaces\\IPasswordHasher.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Interfaces\\IPasswordHasher.cs",
+              "RelativeToolTip": "Application\\Interfaces\\IPasswordHasher.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T15:55:13.27Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ICurrentUserService.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Interfaces\\ICurrentUserService.cs",
+              "RelativeDocumentMoniker": "Application\\Interfaces\\ICurrentUserService.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Interfaces\\ICurrentUserService.cs",
+              "RelativeToolTip": "Application\\Interfaces\\ICurrentUserService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T15:55:09.617Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "PasswordResetLog.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\PasswordResetLog.cs",
+              "RelativeDocumentMoniker": "Domain\\Entities\\PasswordResetLog.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\PasswordResetLog.cs",
+              "RelativeToolTip": "Domain\\Entities\\PasswordResetLog.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T10:26:46.034Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "FoodHub.http",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\FoodHub.http",
+              "RelativeDocumentMoniker": "FoodHub.http",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\FoodHub.http",
+              "RelativeToolTip": "FoodHub.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2026-01-27T09:48:58.962Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Presentation\\Controllers\\Auth\\AuthController.cs",
+              "RelativeDocumentMoniker": "Presentation\\Controllers\\Auth\\AuthController.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Presentation\\Controllers\\Auth\\AuthController.cs",
+              "RelativeToolTip": "Presentation\\Controllers\\Auth\\AuthController.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAQwBsAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T09:19:43.29Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAUAAAAAAAAAAABRwBIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-01-27T09:54:49.447Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAACcAAAAAAAAAAIBJwDQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-26T03:51:26.201Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Employee.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\Employee.cs",
+              "RelativeDocumentMoniker": "Domain\\Entities\\Employee.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\Employee.cs",
+              "RelativeToolTip": "Domain\\Entities\\Employee.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAywBgAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T09:11:37.841Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "EmployeeStatus.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Enums\\EmployeeStatus.cs",
+              "RelativeDocumentMoniker": "Domain\\Enums\\EmployeeStatus.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Enums\\EmployeeStatus.cs",
+              "RelativeToolTip": "Domain\\Enums\\EmployeeStatus.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T09:12:48.501Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "FoodHub",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
+              "RelativeDocumentMoniker": "FoodHub.csproj",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
+              "RelativeToolTip": "FoodHub.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-01-27T09:19:36.142Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "EmployeeRole.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Enums\\EmployeeRole.cs",
+              "RelativeDocumentMoniker": "Domain\\Enums\\EmployeeRole.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Enums\\EmployeeRole.cs",
+              "RelativeToolTip": "Domain\\Enums\\EmployeeRole.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T09:12:44.328Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "DependencyInjection.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\DependencyInjection.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\DependencyInjection.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\DependencyInjection.cs",
+              "RelativeToolTip": "Infrastructure\\DependencyInjection.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwBgAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-26T03:50:47.795Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Middleware.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Presentation\\Middleware.cs",
+              "RelativeDocumentMoniker": "Presentation\\Middleware.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Presentation\\Middleware.cs",
+              "RelativeToolTip": "Presentation\\Middleware.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAiwDAAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-26T03:50:27.486Z"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{66f449b5-c823-40bc-9016-02b4d06a1a8e}"
             }
           ]
         }
