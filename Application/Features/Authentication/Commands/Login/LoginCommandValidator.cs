@@ -7,11 +7,11 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
         public LoginCommandValidator()
         {
             RuleFor(x => x.EmployeeCode)
-                .NotEmpty().WithMessage("Mã nhân viên không được để trống");
+                .NotEmpty();
 
             RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Mật khẩu không được để trống")
-                .MinimumLength(3).WithMessage("Mật khẩu quá ngắn");
+                .NotEmpty()
+                .MinimumLength(3);
         }
     }
 }
