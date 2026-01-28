@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj": {}
+    "d:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj": {}
   },
   "projects": {
-    "D:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj": {
+    "d:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
+        "projectUniqueName": "d:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
         "projectName": "FoodHub",
-        "projectPath": "D:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
+        "projectPath": "d:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
         "packagesPath": "C:\\Users\\HLong\\.nuget\\packages\\",
-        "outputPath": "D:\\C#\\OJT\\quan-ly-nha-hang-be\\obj\\",
+        "outputPath": "d:\\C#\\OJT\\quan-ly-nha-hang-be\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "E:\\VSC\\tools\\NuGetPackages"

@@ -1,5 +1,4 @@
 using FluentValidation;
-using FoodHub.Domain.Constants;
 
 namespace FoodHub.Application.Features.Authentication.Commands.Login
 {
@@ -7,13 +6,12 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
     {
         public LoginCommandValidator()
         {
-            RuleFor(x => x.Username)
-                .NotEmpty().WithMessage(Messages.UsernameRequired)
-                .MinimumLength(3).WithMessage(Messages.UsernameMinLength);
+            RuleFor(x => x.EmployeeCode)
+                .NotEmpty().WithMessage("Mã nhân viên không được để trống");
 
             RuleFor(x => x.Password)
-                .NotEmpty().WithMessage(Messages.PasswordRequired)
-                .MinimumLength(6).WithMessage(Messages.PasswordMinLength);
+                .NotEmpty().WithMessage("Mật khẩu không được để trống")
+                .MinimumLength(3).WithMessage("Mật khẩu quá ngắn");
         }
     }
 }

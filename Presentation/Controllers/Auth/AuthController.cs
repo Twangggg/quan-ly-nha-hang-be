@@ -21,7 +21,7 @@ namespace FoodHub.Presentation.Controllers.Auth
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto request)
         {
-            var command = new LoginCommand(request.Username, request.Password);
+            var command = new LoginCommand(request.EmployeeCode, request.Password);
             var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)

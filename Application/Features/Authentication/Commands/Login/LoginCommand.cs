@@ -4,5 +4,5 @@ using MediatR;
 
 namespace FoodHub.Application.Features.Authentication.Commands.Login
 {
-    public record LoginCommand(string Username, string Password) : IRequest<Result<LoginResponseDto>>;
+    public record LoginCommand(string EmployeeCode, string Password) : IRequest<Result<LoginResponseDto>>;
 }

@@ -45,5 +45,10 @@ namespace FoodHub.Infrastructure.Security
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public int GetTokenExpirationSeconds()
+        {
+            return _jwtSettings.ExpiresInMinute * 60;
+        }
     }
 }
