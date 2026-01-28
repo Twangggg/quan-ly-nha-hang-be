@@ -10,6 +10,7 @@
     <Folder Include="Application\Features\Auth\Commands\" />
     <Folder Include="Application\Features\Auth\Queries\" />
     <Folder Include="Application\Services\" />
+    <Folder Include="Application\Validators\" />
     <Folder Include="Infrastructure\Persistence\Migrations\" />
     <Folder Include="Presentation\Controllers\Configurations\" />
   </ItemGroup>
