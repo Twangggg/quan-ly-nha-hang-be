@@ -1,8 +1,8 @@
-﻿using FluentValidation.AspNetCore;
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
 using FoodHub.Application.Common.Behaviors;
 using FoodHub.Application.Extensions.Mappings;
 using MediatR;
-using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace FoodHub.Application
