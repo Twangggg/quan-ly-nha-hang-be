@@ -38,6 +38,10 @@ namespace FoodHub.Infrastructure
             // Register TokenService - Assuming this was missing or needed explicitly
             services.AddScoped<ITokenService, JwtTokenService>();
 
+            // Security Services
+            services.AddScoped<IPasswordHasher, PasswordHasher>();
+            services.AddScoped<ITokenService, JwtTokenService>();
+
             return services;
         }
     }

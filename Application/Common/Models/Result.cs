@@ -1,45 +1,19 @@
 namespace FoodHub.Application.Common.Models
 {
-    public class Result
+    public class Result<T>
     {
-        public bool Succeeded { get; init; }
-        public string[] Errors { get; init; }
+        public bool IsSuccess { get; private set; }
+        public T? Data { get; private set; }
+        public string? Error { get; private set; }
 
-        protected Result(bool succeeded, IEnumerable<string> errors)
+        private Result(bool isSuccess, T? data, string? error)
         {
-            Succeeded = succeeded;
-            Errors = errors.ToArray();
-        }
-
-        public static Result Success()
-        {
-            return new Result(true, Array.Empty<string>());
-        }
-
-        public static Result Failure(IEnumerable<string> errors)
-        {
-            return new Result(false, errors);
-        }
-    }
-
-    public class Result<T> : Result
-    {
-        public T Data { get; init; }
-
-        private Result(bool succeeded, T data, IEnumerable<string> errors)
-            : base(succeeded, errors)
-        {
+            IsSuccess = isSuccess;
             Data = data;
+            Error = error;
         }
 
-        public static Result<T> Success(T data)
-        {
-            return new Result<T>(true, data, Array.Empty<string>());
-        }
-
-        public static new Result<T> Failure(IEnumerable<string> errors)
-        {
-            return new Result<T>(false, default!, errors);
-        }
+        public static Result<T> Success(T data) => new(true, data, null);
+        public static Result<T> Failure(string error) => new(false, default, error);
     }
 }
