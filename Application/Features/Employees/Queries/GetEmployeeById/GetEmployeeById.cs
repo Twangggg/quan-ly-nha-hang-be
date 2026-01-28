@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -51,6 +52,11 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployeeById
             {
                 var query = _unitOfWork.Repository<Employee>().Query();
                 var employee = await query.FirstOrDefaultAsync(e => e.EmployeeId == request.Id);
+
+                if (employee == null)
+                {
+                    throw new NotFoundException($"Employee with ID {request.Id} was not found.");
+                }
 
                 return _mapper.Map<Response>(employee);
             }

@@ -1,4 +1,5 @@
-﻿using FoodHub.Application.Common.Behaviors;
+﻿using FluentValidation.AspNetCore;
+using FoodHub.Application.Common.Behaviors;
 using FoodHub.Application.Extensions.Mappings;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,8 +25,8 @@ namespace FoodHub.Application
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
             // Đăng ký FluentValidation
-            // Lưu ý: Cần cài đặt FluentValidation.DependencyInjectionExtensions nếu chưa có
-            // Ở đây đã cài FluentValidation.AspNetCore nên có thể dùng trực tiếp hoặc qua Scan
+            services.AddFluentValidationAutoValidation();
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
             return services;
         }
