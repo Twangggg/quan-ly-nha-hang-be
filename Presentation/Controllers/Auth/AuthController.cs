@@ -1,14 +1,12 @@
-﻿using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.Authentication;
+﻿using FoodHub.Application.DTOs.Authentication;
 using FoodHub.Application.Features.Authentication.Commands.Login;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using FoodHub.Application.Features.Auth.Commands.ChangePassword;
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
+using FoodHub.Application.Features.Authentication.Commands.ChangePassword;
+
 using Microsoft.AspNetCore.Mvc;
 
-namespace FoodHub.Presentation.Controllers.Auth
+namespace FoodHub.Presentation.Controllers.Authentication
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -43,12 +41,6 @@ namespace FoodHub.Presentation.Controllers.Auth
             // Server có thể implement token blacklist nếu cần
             return NoContent();
         }
-        private readonly ISender _mediator;
-
-        public AuthController(ISender mediator)
-        {
-            _mediator = mediator;
-        }
 
         [HttpPost("change-password")]
         [Authorize]
@@ -56,12 +48,12 @@ namespace FoodHub.Presentation.Controllers.Auth
         {
             var result = await _mediator.Send(command);
             
-            if (result.Succeeded)
+            if (!result.IsSuccess)
             {
-                return Ok(result); // Or just Ok(new { message = result.Data }) depending on frontend expectation
+                return BadRequest(new { message = result.Error });
             }
 
-            return BadRequest(result);
+            return Ok(new { message = result.Data });
         }
     }
 }

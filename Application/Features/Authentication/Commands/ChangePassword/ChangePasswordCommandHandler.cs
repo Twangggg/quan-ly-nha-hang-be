@@ -4,7 +4,7 @@ using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace FoodHub.Application.Features.Auth.Commands.ChangePassword
+namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
 {
     public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, Result<string>>
     {
@@ -24,7 +24,7 @@ namespace FoodHub.Application.Features.Auth.Commands.ChangePassword
             var userId = _currentUserService.UserId;
             if (string.IsNullOrEmpty(userId))
             {
-                return Result<string>.Failure(new List<string> { "Người dùng chưa đăng nhập, không tìm thấy ID." });
+                return Result<string>.Failure("The user is not logged in; ID not found.");
             }
 
             var employee = await _unitOfWork.Repository<Employee>()
@@ -33,12 +33,12 @@ namespace FoodHub.Application.Features.Auth.Commands.ChangePassword
 
             if (employee == null)
             {
-                return Result<string>.Failure(new List<string> { "Không tìm thấy thông tin người dùng." });
+                return Result<string>.Failure("User information not found.");
             }
 
             if (!_passwordHasher.VerifyPassword(request.CurrentPassword, employee.PasswordHash))
             {
-                return Result<string>.Failure(new List<string> { "Mật khẩu hiện tại không đúng." });
+                return Result<string>.Failure("The current password is incorrect.");
             }
 
             employee.PasswordHash = _passwordHasher.HashPassword(request.NewPassword);
@@ -48,7 +48,7 @@ namespace FoodHub.Application.Features.Auth.Commands.ChangePassword
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            return Result<string>.Success("Đổi mật khẩu thành công. Vui lòng đăng nhập lại.");
+            return Result<string>.Success("Password changed successfully. Please log in again.");
         }
     }
 }
