@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Employees.Query
 {
-    public class MyProfileResponse
+    public class MyProfileResponse : IMapFrom<Employee>
     {
         public Guid EmployeeId { get; set; }
         public string EmployeeCode { get; set; } = null!;

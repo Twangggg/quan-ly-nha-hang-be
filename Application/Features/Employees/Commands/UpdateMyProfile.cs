@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -16,7 +17,7 @@ namespace FoodHub.Application.Features.Employees.Commands
         public string? Address { get; set; }
         public DateOnly? DateOfBirth { get; set; }
     }
-    
+
     public class UpdateProfileRequest
     {
         public string FullName { get; set; } = null!;
@@ -24,6 +25,13 @@ namespace FoodHub.Application.Features.Employees.Commands
         public string Phone { get; set; } = null!;
         public string? Address { get; set; }
         public DateOnly? DateOfBirth { get; set; }
+    }
+    public class UpdateProfileMapping : Profile
+    {
+        public UpdateProfileMapping()
+        {
+            CreateMap<UpdateProfileRequest, Employee>();
+        }
     }
     public record UpdateMyProfileCommand(Guid EmployeeId, UpdateProfileRequest UpdateProfileRequest) : IRequest<UpdateProfileResponse>;
     public class UpdateMyProfileCommandHandler : IRequestHandler<UpdateMyProfileCommand, UpdateProfileResponse>
@@ -40,15 +48,21 @@ namespace FoodHub.Application.Features.Employees.Commands
             var repo = _unitOfWork.Repository<Employee>();
 
             var employee = await repo.Query()
-                .FirstOrDefaultAsync(emp => emp.EmployeeId == request.EmployeeId, cancellationToken);
-
-            if (employee == null) throw new Exception("User not found");
+                .FirstOrDefaultAsync(emp => emp.EmployeeId == request.EmployeeId, cancellationToken)
+                ?? throw new NotFoundException("User not found");
 
             var phoneExists = await repo.Query()
             .AnyAsync(e => e.Phone == request.UpdateProfileRequest.Phone && e.EmployeeId != employee.EmployeeId, cancellationToken);
 
+            var emailExists = await repo.Query()
+                .AnyAsync(e => e.Email == request.UpdateProfileRequest.Email && e.EmployeeId != employee.EmployeeId, cancellationToken);
+
             if (phoneExists)
-                throw new Exception("Số điện thoại đã tồn tại");
+                throw new BusinessException("Số điện thoại đã tồn tại");
+            if (emailExists)
+                throw new BusinessException("Email da ton tai");
+
+            employee.UpdatedAt = DateTime.UtcNow;
 
             _mapper.Map(request.UpdateProfileRequest, employee);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -70,7 +84,8 @@ namespace FoodHub.Application.Features.Employees.Commands
 
             RuleFor(x => x.UpdateProfileRequest.Phone)
                 .NotEmpty().WithMessage("Số điện thoại không được để trống")
-                .Matches(@"^\d{10}$").WithMessage("Số điện thoại phải có 10 chữ số");
+                .Matches(@"^(0|\+84)[3|5|7|8|9][0-9]{8}$")
+                .WithMessage("Số điện thoại Việt Nam không hợp lệ");
         }
     }
 
