@@ -5536,23 +5536,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\HLong\\.nuget\\packages\\": {},
-    "E:\\VSC\\tools\\NuGetPackages": {}
+    "C:\\Users\\KHAI TOAN\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
+      "projectUniqueName": "H:\\quan_li_nha_hang\\FoodHub_BE\\FoodHub.csproj",
       "projectName": "FoodHub",
-      "projectPath": "D:\\C#\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
-      "packagesPath": "C:\\Users\\HLong\\.nuget\\packages\\",
-      "outputPath": "D:\\C#\\OJT\\quan-ly-nha-hang-be\\obj\\",
+      "projectPath": "H:\\quan_li_nha_hang\\FoodHub_BE\\FoodHub.csproj",
+      "packagesPath": "C:\\Users\\KHAI TOAN\\.nuget\\packages\\",
+      "outputPath": "H:\\quan_li_nha_hang\\FoodHub_BE\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "E:\\VSC\\tools\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\HLong\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\KHAI TOAN\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -5561,7 +5561,6 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -5654,7 +5653,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
