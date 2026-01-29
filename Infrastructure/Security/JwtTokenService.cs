@@ -45,7 +45,6 @@ namespace FoodHub.Infrastructure.Security
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-<<<<<<< HEAD
 
         public int GetTokenExpirationSeconds()
         {
@@ -64,7 +63,5 @@ namespace FoodHub.Infrastructure.Security
         {
             return _jwtSettings.RefreshTokenExpiresInDays;
         }
-=======
->>>>>>> origin/feature/profile-nhudm
     }
 }

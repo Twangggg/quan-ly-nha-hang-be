@@ -17,7 +17,6 @@ builder.Services.AddControllers(opt =>
     opt.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
 });
 
-<<<<<<< HEAD
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -49,12 +48,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-=======
-
-// Swagger Configuration
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
->>>>>>> origin/feature/profile-nhudm
 
 // Register Layers
 builder.Services.AddApplication();
@@ -108,7 +101,6 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-<<<<<<< HEAD
     // Use Swashbuckle Swagger
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -131,14 +123,6 @@ if (app.Environment.IsDevelopment())
             logger.LogError(ex, "An error occurred while migrating or seeding the database.");
         }
     }
-=======
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "FoodHub API v1");
-        c.RoutePrefix = "swagger"; // Access at /swagger
-    });
->>>>>>> origin/feature/profile-nhudm
 }
 
 app.UseCors("AllowReact");

@@ -30,10 +30,7 @@ namespace FoodHub.Infrastructure
             // Security Services
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<ITokenService, JwtTokenService>();
-<<<<<<< HEAD
             services.AddScoped<DbInitializer>();
-=======
->>>>>>> origin/feature/profile-nhudm
 
             return services;
         }
