@@ -20,8 +20,8 @@ namespace FoodHub.Domain.Entities
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeleteAt { get; set; }
         // Quan hệ với bảng PasswordResetLog
-        public virtual ICollection<PasswordResetLog> TargetLogs { get; set; } = new List<PasswordResetLog>();
-        public virtual ICollection<PasswordResetLog> PerformedLogs { get; set; } = new List<PasswordResetLog>();
+        public virtual ICollection<AuditLog> TargetLogs { get; set; } = new List<AuditLog>();
+        public virtual ICollection<AuditLog> PerformedLogs { get; set; } = new List<AuditLog>();
         public Employee() { }
     }
 }

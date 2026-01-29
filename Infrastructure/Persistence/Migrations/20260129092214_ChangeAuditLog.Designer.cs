@@ -3,6 +3,7 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260129092214_ChangeAuditLog")]
+    partial class ChangeAuditLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,6 +40,14 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<Guid?>("EmployeeId1")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id1");
+
                     b.Property<string>("Metadata")
                         .HasColumnType("jsonb")
                         .HasColumnName("metadata");
@@ -57,11 +68,14 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.HasKey("LogId")
                         .HasName("pk_audit_logs");
 
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_audit_logs_employee_id");
+
+                    b.HasIndex("EmployeeId1")
+                        .HasDatabaseName("ix_audit_logs_employee_id1");
+
                     b.HasIndex("PerformedByEmployeeId")
                         .HasDatabaseName("ix_audit_logs_performed_by_employee_id");
-
-                    b.HasIndex("TargetId")
-                        .HasDatabaseName("ix_audit_logs_target_id");
 
                     b.ToTable("audit_logs", (string)null);
                 });
@@ -171,23 +185,24 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.AuditLog", b =>
                 {
-                    b.HasOne("FoodHub.Domain.Entities.Employee", "PerformedBy")
+                    b.HasOne("FoodHub.Domain.Entities.Employee", null)
                         .WithMany("PerformedLogs")
+                        .HasForeignKey("EmployeeId")
+                        .HasConstraintName("fk_audit_logs_employees_employee_id");
+
+                    b.HasOne("FoodHub.Domain.Entities.Employee", null)
+                        .WithMany("TargetLogs")
+                        .HasForeignKey("EmployeeId1")
+                        .HasConstraintName("fk_audit_logs_employees_employee_id1");
+
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "PerformedBy")
+                        .WithMany()
                         .HasForeignKey("PerformedByEmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_audit_logs_employees_performed_by_employee_id");
 
-                    b.HasOne("FoodHub.Domain.Entities.Employee", "Target")
-                        .WithMany("TargetLogs")
-                        .HasForeignKey("TargetId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_audit_logs_employees_target_id");
-
                     b.Navigation("PerformedBy");
-
-                    b.Navigation("Target");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.Employee", b =>

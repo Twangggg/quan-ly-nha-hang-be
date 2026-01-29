@@ -23,7 +23,7 @@ namespace FoodHub.Presentation.Controllers.Employees
         [HttpGet]
         public async Task<IActionResult> GetEmployeesAsync([FromQuery] PaginationParams pagination)
         {
-            var query = new GetEmployees.Query(pagination);
+            var query = new GetEmployeesQuery(pagination);
             var result = await _mediator.Send(query);
             return Ok(result);
         }
@@ -31,20 +31,20 @@ namespace FoodHub.Presentation.Controllers.Employees
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEmployeeById(Guid id)
         {
-            var query = new GetEmployeeById.Query(id);
+            var query = new GetEmployeeByIdQuery(id);
             var result = await _mediator.Send(query);
             return Ok(result);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateEmployeeAsync([FromBody] CreateEmployee.Command command)
+        public async Task<IActionResult> CreateEmployeeAsync([FromBody] CreateEmployeeCommand command)
         {
             var result = await _mediator.Send(command);
             return CreatedAtAction(nameof(GetEmployeeById), new { id = result.EmployeeId }, result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEmployeeAsync(Guid id, [FromBody] UpdateEmployee.Command command)
+        public async Task<IActionResult> UpdateEmployeeAsync(Guid id, [FromBody] UpdateEmployeeCommand command)
         {
             if (id != command.EmployeeId)
             {
@@ -57,7 +57,7 @@ namespace FoodHub.Presentation.Controllers.Employees
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployeeAsync(Guid id)
         {
-            var result = await _mediator.Send(new DeleteEmployee.Command(id));
+            var result = await _mediator.Send(new DeleteEmployeeCommand(id));
             return Ok(result);
         }
     }
