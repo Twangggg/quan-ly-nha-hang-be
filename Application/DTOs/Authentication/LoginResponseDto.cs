@@ -5,6 +5,10 @@ namespace FoodHub.Application.DTOs.Authentication
         public string AccessToken { get; set; } = string.Empty;
         public string EmployeeCode { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public int ExpiresIn { get; set; } // Seconds
+        public string Role { get; set; } = string.Empty;
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string RefreshToken { get; set; } = string.Empty;
+        public double RefreshTokenExpiresIn { get; set; } // Duration in Seconds
+        public int ExpiresIn { get; set; } // Access Token Duration in Seconds
     }
 }

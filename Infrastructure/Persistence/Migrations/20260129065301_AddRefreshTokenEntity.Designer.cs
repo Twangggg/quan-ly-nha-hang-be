@@ -3,6 +3,7 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260129065301_AddRefreshTokenEntity")]
+    partial class AddRefreshTokenEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,10 +177,8 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
+                        .HasColumnName("created_at");
 
                     b.Property<Guid>("EmployeeId")
                         .HasColumnType("uuid")
@@ -188,15 +189,12 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnName("expires");
 
                     b.Property<bool>("IsRevoked")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(false)
                         .HasColumnName("is_revoked");
 
                     b.Property<string>("Token")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("text")
                         .HasColumnName("token");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -208,10 +206,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EmployeeId")
                         .HasDatabaseName("ix_refresh_tokens_employee_id");
-
-                    b.HasIndex("Token")
-                        .IsUnique()
-                        .HasDatabaseName("ix_refresh_tokens_token");
 
                     b.ToTable("refresh_tokens", (string)null);
                 });

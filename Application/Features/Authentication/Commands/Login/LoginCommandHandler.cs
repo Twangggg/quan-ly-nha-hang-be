@@ -53,15 +53,42 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 return Result<LoginResponseDto>.Failure(Messages.AccountInactive);
             }
 
-            // Tạo token
+            // Tạo access token
             var accessToken = _tokenService.GenerateAccessToken(employee);
             var expiresIn = _tokenService.GetTokenExpirationSeconds();
+
+            // Tạo refresh token
+            var refreshToken = _tokenService.GenerateRefreshToken();
+            // Config: Default 7 days from appsettings
+            var configDays = _tokenService.GetRefreshTokenExpirationDays(); 
+            
+            // Logic: If RememberMe -> 30 Days (or config * 4). If not -> Config (7 days).
+            // OR: If not RememberMe -> Session duration?
+            // Let's go with:
+            // RememberMe = True -> 30 Days.
+            // RememberMe = False -> 7 Days.
+            var expirationDays = request.RememberMe ? 30 : configDays;
+            var expirationDate = DateTime.UtcNow.AddDays(expirationDays);
+
+            var refreshTokenEntity = new FoodHub.Domain.Entities.RefreshToken
+            {
+                Token = refreshToken,
+                Expires = expirationDate,
+
+                EmployeeId = employee.EmployeeId
+            };
+
+            await _unitOfWork.Repository<FoodHub.Domain.Entities.RefreshToken>().AddAsync(refreshTokenEntity);
+            await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             var response = new LoginResponseDto
             {
                 AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                RefreshTokenExpiresIn = (expirationDate - DateTime.UtcNow).TotalSeconds,
                 EmployeeCode = employee.EmployeeCode,
                 Email = employee.Email,
+                Role = employee.Role.ToString(),
                 ExpiresIn = expiresIn
             };
 

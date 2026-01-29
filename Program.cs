@@ -25,11 +25,11 @@ builder.Services.AddSwaggerGen(c =>
     // Config JWT in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
         Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -56,7 +56,11 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("AllowReact",
-        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        policy => policy
+            .WithOrigins("http://localhost:3000") // Explicit Origin required for Credentials
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()); // Allow Cookies
 });
 
 //Setting for JWT Authentication
