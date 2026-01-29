@@ -48,6 +48,9 @@ namespace FoodHub.Infrastructure
             // Rate Limiting Service
             services.AddScoped<IRateLimiter, RedisRateLimiter>();
 
+            // Email Service
+            services.AddScoped<IEmailService, EmailService>();
+
             return services;
         }
     }

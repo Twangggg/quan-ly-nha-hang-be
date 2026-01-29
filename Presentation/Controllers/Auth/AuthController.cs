@@ -3,7 +3,8 @@ using FoodHub.Application.Features.Authentication.Commands.Login;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using FoodHub.Application.Features.Authentication.Commands.ChangePassword;
-
+using FoodHub.Application.Features.Authentication.Commands.RequestPasswordReset;
+using FoodHub.Application.Features.Authentication.Commands.ResetPassword;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers.Authentication
@@ -45,6 +46,32 @@ namespace FoodHub.Presentation.Controllers.Authentication
         [HttpPost("change-password")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
+        {
+            var result = await _mediator.Send(command);
+            
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Error });
+            }
+
+            return Ok(new { message = result.Data });
+        }
+
+        [HttpPost("request-password-reset")]
+        public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetCommand command)
+        {
+            var result = await _mediator.Send(command);
+            
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Error });
+            }
+
+            return Ok(new { message = result.Data });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command)
         {
             var result = await _mediator.Send(command);
             
