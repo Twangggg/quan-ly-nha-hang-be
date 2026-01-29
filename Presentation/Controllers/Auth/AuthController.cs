@@ -31,21 +31,18 @@ namespace FoodHub.Presentation.Controllers.Auth
                 return BadRequest(new { message = result.Error });
             }
 
-            SetRefreshTokenCookie(result.Data.RefreshToken, result.Data.RefreshTokenExpiresIn);
+            // Refresh Token chỉ trả về qua Response Body, client tự quản lý
             return Ok(result.Data);
         }
 
         [HttpPost("refresh-token")]
-        public async Task<ActionResult<LoginResponseDto>> RefreshToken()
+        public async Task<ActionResult<LoginResponseDto>> RefreshToken([FromBody] Application.Features.Authentication.Commands.RefreshToken.RefreshTokenCommand command)
         {
-            var refreshToken = Request.Cookies["refreshToken"];
-            // Fallback to body if needed, but for now strict cookie
-            if (string.IsNullOrEmpty(refreshToken))
+            if (string.IsNullOrEmpty(command.RefreshToken))
             {
                  return BadRequest(new { message = "Refresh Token is required." });
             }
 
-            var command = new Application.Features.Authentication.Commands.RefreshToken.RefreshTokenCommand { RefreshToken = refreshToken };
             var result = await _mediator.Send(command);
 
             if (!result.IsSuccess)
@@ -53,44 +50,18 @@ namespace FoodHub.Presentation.Controllers.Auth
                 return BadRequest(new { message = result.Error });
             }
 
-            if (result.Data != null)
-            {
-                SetRefreshTokenCookie(result.Data.RefreshToken, result.Data.RefreshTokenExpiresIn);
-            }
+            // Refresh Token chỉ trả về qua Response Body
             return Ok(result.Data);
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var refreshToken = Request.Cookies["refreshToken"];
-            // Optional: Call Command to Revoke token in DB here if needed.
-
-            // Clear cookie with consistent options
-            Response.Cookies.Delete("refreshToken", new CookieOptions 
-            { 
-                 HttpOnly = true, 
-                 Path = "/",
-                 Secure = false, 
-                 SameSite = SameSiteMode.Lax
-            });
-
+            // Optional: Implement Revoke token logic here if needed
+            // Client sẽ tự xóa token từ storage
             return NoContent();
         }
 
-        private void SetRefreshTokenCookie(string refreshToken, double expiresInSeconds)
-        {
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Expires = DateTime.UtcNow.AddSeconds(expiresInSeconds),
-                Path = "/",
-                // Use Lax/False for Dev (HTTP), None/True for Prod (HTTPS)
-                SameSite = SameSiteMode.Lax, 
-                Secure = false 
-            };
 
-            Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
-        }
     }
 }

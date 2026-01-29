@@ -9,8 +9,7 @@ namespace FoodHub.Domain.Entities
         public DateTime Expires { get; set; }
         public bool IsRevoked { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
-        
+        public DateTime? UpdatedAt { get; set; }        
         public Guid EmployeeId { get; set; }
         public virtual Employee Employee { get; set; } = null!;
     }
