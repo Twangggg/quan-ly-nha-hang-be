@@ -7,3 +7,15 @@ GET {{FoodHub_HostAddress}}/api/employees/2
 GET {{FoodHub_HostAddress}}/api/employees/{id}
 
 ###
+
+POST {{FoodHub_HostAddress}}/api/employees
+Content-Type: application/json
+
+{
+  "employeeCode": "M000111",
+  "fullName": "Phuc",
+  "email": "admin@example.com",
+  "role": 1
+}
+
+###

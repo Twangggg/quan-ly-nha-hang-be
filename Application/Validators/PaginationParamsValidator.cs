@@ -9,7 +9,6 @@ namespace FoodHub.Application.Validators
         {
             RuleFor(x => x.PageIndex).GreaterThan(0);
             RuleFor(x => x.PageSize).InclusiveBetween(5, 50);
-            RuleFor(x => x.IsDescending).Must(x => x == true || x == false);
         }
     }
 }

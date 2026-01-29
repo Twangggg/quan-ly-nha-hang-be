@@ -14,13 +14,12 @@ namespace FoodHub.Application.Extensions.Mappings
         {
             // Tìm tất cả các Type triển khai interface IMapFrom<>
             var types = assembly.GetExportedTypes()
-                .Where(t => t.GetInterfaces().Any(i => 
+                .Where(t => t.GetInterfaces().Any(i =>
                     i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapFrom<>)))
                 .ToList();
 
             foreach (var type in types)
             {
-                // Check if the type itself has a "Mapping" method (overridden from interface)
                 var methodInfo = type.GetMethod("Mapping", BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
 
                 if (methodInfo != null)
@@ -32,11 +31,11 @@ namespace FoodHub.Application.Extensions.Mappings
                 else
                 {
                     // If not overridden, use the default mapping logic directly
-                    var interfaceType = type.GetInterfaces().First(i => 
+                    var interfaceType = type.GetInterfaces().First(i =>
                         i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMapFrom<>));
-                    
+
                     var sourceType = interfaceType.GetGenericArguments()[0];
-                    
+
                     // This replicates the default behavior: profile.CreateMap(typeof(T), GetType()).ReverseMap();
                     CreateMap(sourceType, type).ReverseMap();
                 }

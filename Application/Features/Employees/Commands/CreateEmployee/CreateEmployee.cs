@@ -12,7 +12,6 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
     {
         public record Command(
             string EmployeeCode,
-            string Password,
             string FullName,
             string Email,
             EmployeeRole Role,
@@ -23,7 +22,6 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             public Validator()
             {
                 RuleFor(x => x.EmployeeCode).NotEmpty().MaximumLength(20);
-                RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
                 RuleFor(x => x.FullName).NotEmpty().MaximumLength(100);
                 RuleFor(x => x.Email).NotEmpty().EmailAddress();
                 RuleFor(x => x.Role).IsInEnum();
@@ -61,8 +59,8 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             public async Task<Response> Handle(Command request, CancellationToken cancellationToken)
             {
                 var employee = _mapper.Map<Employee>(request);
-
-                employee.PasswordHash = _passwordHasher.HashPassword(request.Password);
+                var testpassword = "12423424asdfasdf@@@#124";
+                employee.PasswordHash = _passwordHasher.HashPassword(testpassword);
                 employee.EmployeeId = Guid.NewGuid();
                 employee.CreatedAt = DateTime.UtcNow;
 

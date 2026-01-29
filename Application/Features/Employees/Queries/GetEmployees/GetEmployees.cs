@@ -19,7 +19,7 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
         {
             public Guid EmployeeId { get; set; }
             public string EmployeeCode { get; set; } = null!;
-            public string Username { get; set; } = null!;
+            //public string Username { get; set; } = null!;
             public string FullName { get; set; } = null!;
             public string Email { get; set; } = null!;
             public string Phone { get; set; } = null!;
@@ -51,17 +51,38 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
             public async Task<PagedResult<Response>> Handle(Query request, CancellationToken cancellationToken)
             {
                 var query = _unitOfWork.Repository<Employee>().Query();
+
+                // 1. Apply Global Search
+                var searchableFields = new List<Expression<Func<Employee, string?>>>
+                {
+                    u => u.FullName,
+                    u => u.EmployeeCode,
+                    u => u.Phone,
+                    u => u.Email
+                };
+                query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
+
+                // 2. Apply Filters
+                var filterMapping = new Dictionary<string, Expression<Func<Employee, object>>>
+                {
+                    { "status", u => u.Status },
+                    { "role", u => u.Role }
+                };
+                query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
+
+                // 3. Apply Multi-Sorting
                 var sortMapping = new Dictionary<string, Expression<Func<Employee, object>>>
                 {
                     {"username" , u => u.Username},
                     {"phone", u=> u.Phone },
                     {"email", u => u.Email},
-                    {"employeeCode", u => u.EmployeeCode }
+                    {"fullname", u => u.FullName},
+                    {"employeeCode", u => u.EmployeeCode },
+                    {"createdAt", u => u.CreatedAt }
                 };
 
                 query = query.ApplySorting(
-                    request.Pagination.SortBy,
-                    request.Pagination.IsDescending,
+                    request.Pagination.OrderBy,
                     sortMapping,
                     u => u.EmployeeId);
 
