@@ -3,33 +3,45 @@ using Microsoft.Extensions.Options;
 using sib_api_v3_sdk.Api;
 using sib_api_v3_sdk.Client;
 using sib_api_v3_sdk.Model;
-using System.Diagnostics;
 
 namespace FoodHub.Infrastructure.Security
 {
-    public class EmailService : IEmailService
+    public class EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger) : IEmailService
     {
-        private readonly ILogger<EmailService> _logger;
-        private readonly EmailSettings _emailSettings;
+        private readonly ILogger<EmailService> _logger = logger;
+        private readonly EmailSettings _emailSettings = emailSettings.Value;
 
-        public EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
-        {
-            _logger = logger;
-            _emailSettings = emailSettings.Value;
-
-            if (!Configuration.Default.ApiKey.ContainsKey("api-key"))
-            {
-                Configuration.Default.ApiKey.Add("api-key", _emailSettings.ApiKey);
-            }
-            else
-            {
-                Configuration.Default.ApiKey["api-key"] = _emailSettings.ApiKey;
-            }
-        }
 
         public async System.Threading.Tasks.Task SendEmailAsync(string to, string subject, string body, CancellationToken ct = default)
         {
-            var apiInstance = new TransactionalEmailsApi();
+
+            if (string.IsNullOrWhiteSpace(to)) throw new ArgumentNullException(nameof(to));
+            if (string.IsNullOrWhiteSpace(subject)) throw new ArgumentNullException(nameof(subject));
+            if (string.IsNullOrWhiteSpace(body)) throw new ArgumentNullException(nameof(body));
+
+            if (!IsValidEmail(to))
+            {
+                throw new ArgumentException("Invalid email format", nameof(to));
+            }
+
+            ct.ThrowIfCancellationRequested();
+            var config = new Configuration();
+            if (!string.IsNullOrEmpty(_emailSettings.ApiUrl))
+            {
+                config.BasePath = _emailSettings.ApiUrl;
+            }
+
+            if (config.ApiKey.ContainsKey("api-key"))
+            {
+                config.ApiKey["api-key"] = _emailSettings.ApiKey;
+            }
+            else
+            {
+                config.ApiKey.Add("api-key", _emailSettings.ApiKey);
+            }
+
+
+            var apiInstance = new TransactionalEmailsApi(config);
 
             var sendSmtpEmail = new SendSmtpEmail(
                 sender: new SendSmtpEmailSender(_emailSettings.SenderName, _emailSettings.SenderEmail),
@@ -40,8 +52,9 @@ namespace FoodHub.Infrastructure.Security
 
             try
             {
-                // SendTransacEmailAsync does not support CancellationToken out of the box in some versions, 
-                // but we can await the Task.
+
+                ct.ThrowIfCancellationRequested();
+
                 var result = await apiInstance.SendTransacEmailAsync(sendSmtpEmail);
                 _logger.LogInformation("Email sent successfully to {Email}. MessageId: {MessageId}", to, result.MessageId);
             }
@@ -49,6 +62,19 @@ namespace FoodHub.Infrastructure.Security
             {
                 _logger.LogError(ex, "FAILED to send email to {Email}", to);
                 throw;
+            }
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
             }
         }
     }
