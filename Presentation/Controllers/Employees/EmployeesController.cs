@@ -4,6 +4,7 @@ using FoodHub.Application.Features.Employees.Commands.DeleteEmployee;
 using FoodHub.Application.Features.Employees.Commands.UpdateEmployee;
 using FoodHub.Application.Features.Employees.Queries.GetEmployeeById;
 using FoodHub.Application.Features.Employees.Queries.GetEmployees;
+using FoodHub.Application.Features.Employees.Queries.GetAuditLogs;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -58,6 +59,14 @@ namespace FoodHub.Presentation.Controllers.Employees
         public async Task<IActionResult> DeleteEmployeeAsync(Guid id)
         {
             var result = await _mediator.Send(new DeleteEmployeeCommand(id));
+            return Ok(result);
+        }
+
+        [HttpGet("{id}/audit-logs")]
+        public async Task<IActionResult> GetAuditLogs(Guid id, [FromQuery] PaginationParams pagination)
+        {
+            var query = new GetAuditLogsQuery(id, pagination);
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
     }

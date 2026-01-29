@@ -19,7 +19,6 @@ namespace FoodHub.Domain.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeleteAt { get; set; }
-        // Quan hệ với bảng PasswordResetLog
         public virtual ICollection<AuditLog> TargetLogs { get; set; } = new List<AuditLog>();
         public virtual ICollection<AuditLog> PerformedLogs { get; set; } = new List<AuditLog>();
         public Employee() { }

@@ -1,6 +1,7 @@
 using AutoMapper;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 
 namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
@@ -10,12 +11,14 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CreateEmployeeHandler(IUnitOfWork unitOfWork, IMapper mapper, IPasswordHasher passwordHasher)
+        public CreateEmployeeHandler(IUnitOfWork unitOfWork, IMapper mapper, IPasswordHasher passwordHasher, ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
+            _currentUserService = currentUserService;
         }
 
         public async Task<CreateEmployeeResponse> Handle(CreateEmployeeCommand request, CancellationToken cancellationToken)
@@ -27,6 +30,17 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             employee.CreatedAt = DateTime.UtcNow;
 
             await _unitOfWork.Repository<Employee>().AddAsync(employee);
+
+            var auditLog = new AuditLog
+            {
+                LogId = Guid.NewGuid(),
+                Action = AuditAction.Create,
+                TargetId = employee.EmployeeId,
+                PerformedByEmployeeId = Guid.Parse(_currentUserService.UserId!), 
+                CreatedAt = DateTimeOffset.UtcNow,
+                Reason = "Create new employee"
+            };
+            await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             return _mapper.Map<CreateEmployeeResponse>(employee);

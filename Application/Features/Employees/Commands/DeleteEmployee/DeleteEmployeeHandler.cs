@@ -11,11 +11,13 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICurrentUserService _currentUserService;
 
-        public DeleteEmployeeHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public DeleteEmployeeHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _currentUserService = currentUserService;
         }
 
         public async Task<DeleteEmployeeResponse> Handle(DeleteEmployeeCommand request, CancellationToken cancellationToken)
@@ -35,6 +37,17 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
             employee.DeleteAt = DateTime.UtcNow;
 
             employeeRepository.UpdateAsync(employee);
+
+            var auditLog = new AuditLog
+            {
+                LogId = Guid.NewGuid(),
+                Action = AuditAction.Deactivate,
+                TargetId = employee.EmployeeId,
+                PerformedByEmployeeId = Guid.Parse(_currentUserService.UserId!),
+                CreatedAt = DateTimeOffset.UtcNow,
+                Reason = "Deactivate employee (Soft Delete)"
+            };
+            await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             return _mapper.Map<DeleteEmployeeResponse>(employee);

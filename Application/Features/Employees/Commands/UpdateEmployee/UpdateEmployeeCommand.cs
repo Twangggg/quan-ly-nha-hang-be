@@ -1,3 +1,5 @@
+using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 
 namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
@@ -8,6 +10,7 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
         string FullName,
         string? Phone,
         string? Address,
+        EmployeeRole Role,
         DateOnly? DateOfBirth
         ) : IRequest<UpdateEmployeeResponse>;
 }
