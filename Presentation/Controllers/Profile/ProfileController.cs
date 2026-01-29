@@ -1,4 +1,5 @@
-﻿using FoodHub.Application.Features.Employees.Commands.UpdateMyProfile;
+﻿using FoodHub.Application.Common.Exceptions;
+using FoodHub.Application.Features.Employees.Commands.UpdateMyProfile;
 using FoodHub.Application.Features.Employees.Queries.GetMyProfile;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -23,25 +24,46 @@ namespace FoodHub.Presentation.Controllers.Profile
             return Ok(result);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProfileAsync(Guid id, [FromBody] Command command)
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> UpdateProfileAsync(Guid id, [FromBody] Command command)
+        //{
+        //    //var userIdClaim = User.FindFirst("uid");
+        //    //if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+        //    //{
+        //    //    return NotFound();
+        //    //}
+        //    if (id != command.EmployeeId)
+        //    {
+        //        return BadRequest("ID mismatch");
+        //    }
+
+        //    var result = await _mediator.Send(new Command(
+        //        id, 
+        //        command.FullName, 
+        //        command.Email, 
+        //        command.Phone, 
+        //        command.Address, 
+        //        command.DateOfBirth
+        //        ));
+
+        //    return Ok(result);
+        //}
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateProfileAsync(Command command)
         {
-            //var userIdClaim = User.FindFirst("uid");
-            //if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            //{
-            //    return NotFound();
-            //}
-            if (id != command.EmployeeId)
+            var userIdClaim = User.FindFirst("uid");
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
             {
-                return BadRequest("ID mismatch");
+                throw new NotFoundException("User not found");
             }
 
             var result = await _mediator.Send(new Command(
-                id, 
-                command.FullName, 
-                command.Email, 
-                command.Phone, 
-                command.Address, 
+                userId,
+                command.FullName.Trim(),
+                command.Email.Trim(),
+                command.Phone.Trim(),
+                command.Address?.Trim(),
                 command.DateOfBirth
                 ));
 
