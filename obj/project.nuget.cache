@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ecNndJcnHzs=",
+  "dgSpecHash": "QHesRe6/CnE=",
   "success": true,
   "projectFilePath": "D:\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
   "expectedPackageFiles": [
@@ -84,10 +84,12 @@
     "C:\\Users\\ADMIN\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\9.0.4\\npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql.nettopologysuite\\9.0.1\\npgsql.entityframeworkcore.postgresql.nettopologysuite.9.0.1.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\npgsql.nettopologysuite\\9.0.1\\npgsql.nettopologysuite.9.0.1.nupkg.sha512",
+    "C:\\Users\\ADMIN\\.nuget\\packages\\pipelines.sockets.unofficial\\2.2.8\\pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.6\\sqlitepclraw.bundle_e_sqlite3.2.1.6.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\sqlitepclraw.core\\2.1.6\\sqlitepclraw.core.2.1.6.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.6\\sqlitepclraw.lib.e_sqlite3.2.1.6.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\sqlitepclraw.provider.e_sqlite3\\2.1.6\\sqlitepclraw.provider.e_sqlite3.2.1.6.nupkg.sha512",
+    "C:\\Users\\ADMIN\\.nuget\\packages\\stackexchange.redis\\2.10.1\\stackexchange.redis.2.10.1.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\swashbuckle.aspnetcore\\6.9.0\\swashbuckle.aspnetcore.6.9.0.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.9.0\\swashbuckle.aspnetcore.swagger.6.9.0.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.9.0\\swashbuckle.aspnetcore.swaggergen.6.9.0.nupkg.sha512",
@@ -102,6 +104,7 @@
     "C:\\Users\\ADMIN\\.nuget\\packages\\system.composition.typedparts\\7.0.0\\system.composition.typedparts.7.0.0.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\system.diagnostics.diagnosticsource\\10.0.0\\system.diagnostics.diagnosticsource.10.0.0.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.0.1\\system.identitymodel.tokens.jwt.8.0.1.nupkg.sha512",
+    "C:\\Users\\ADMIN\\.nuget\\packages\\system.io.hashing\\9.0.10\\system.io.hashing.9.0.10.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\system.io.pipelines\\7.0.0\\system.io.pipelines.7.0.0.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\system.memory\\4.5.3\\system.memory.4.5.3.nupkg.sha512",
     "C:\\Users\\ADMIN\\.nuget\\packages\\system.reflection.metadata\\7.0.0\\system.reflection.metadata.7.0.0.nupkg.sha512",

@@ -196,10 +196,13 @@ D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\staticwebassets.build.json
 D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\staticwebassets.build.json.cache
 D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\staticwebassets.development.json
 D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\staticwebassets.build.endpoints.json
-D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\FoodHub.csproj.Up2Date
 D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\FoodHub.dll
 D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\refint\FoodHub.dll
 D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\FoodHub.pdb
 D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\FoodHub.genruntimeconfig.cache
 D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\ref\FoodHub.dll
+D:\OJT\quan-ly-nha-hang-be\bin\Debug\net9.0\Pipelines.Sockets.Unofficial.dll
+D:\OJT\quan-ly-nha-hang-be\bin\Debug\net9.0\StackExchange.Redis.dll
+D:\OJT\quan-ly-nha-hang-be\bin\Debug\net9.0\System.IO.Hashing.dll
+D:\OJT\quan-ly-nha-hang-be\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
