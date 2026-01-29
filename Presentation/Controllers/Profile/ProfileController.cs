@@ -1,5 +1,5 @@
-﻿using FoodHub.Application.Features.Employees.Commands;
-using FoodHub.Application.Features.Employees.Query;
+﻿using FoodHub.Application.Features.Employees.Commands.UpdateMyProfile;
+using FoodHub.Application.Features.Employees.Queries.GetMyProfile;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,29 +8,42 @@ namespace FoodHub.Presentation.Controllers.Profile
 
     [Route("api/[controller]")]
     [ApiController]
-    public class ProfileController : ApiControllerBase
+    public class ProfileController : ControllerBase
     {
-
-        [HttpGet]
-        public async Task<IActionResult> GetProfile(
-            [FromHeader(Name = "x-user-id")] Guid userId)
+        private readonly IMediator _mediator;
+        public ProfileController(IMediator mediator)
         {
-            var result = await Mediator.Send(new GetMyProfileQuery(userId));
+            _mediator = mediator;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProfile(Guid id)
+        {
+            var result = await _mediator.Send(new Query(id));
             return Ok(result);
         }
 
-        [HttpPut("update-profile")]
-        public async Task<IActionResult> UpdateProfile(
-            [FromBody]UpdateProfileRequest dto,
-            [FromHeader(Name = "x-user-id")] Guid userId)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateProfileAsync(Guid id, [FromBody] Command command)
         {
-            //var userIdClaim = User.FindFirst("uid");x
+            //var userIdClaim = User.FindFirst("uid");
             //if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
             //{
             //    return NotFound();
             //}
+            if (id != command.EmployeeId)
+            {
+                return BadRequest("ID mismatch");
+            }
 
-            var result = await Mediator.Send(new UpdateMyProfileCommand(userId, dto));
+            var result = await _mediator.Send(new Command(
+                id, 
+                command.FullName, 
+                command.Email, 
+                command.Phone, 
+                command.Address, 
+                command.DateOfBirth
+                ));
 
             return Ok(result);
         }
