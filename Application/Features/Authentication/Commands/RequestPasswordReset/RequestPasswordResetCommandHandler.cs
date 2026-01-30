@@ -50,7 +50,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
                 .FirstOrDefaultAsync(e => e.EmployeeCode == request.EmployeeCode, cancellationToken);
 
             // Security: Always return the same message to avoid revealing if employee exists
-            const string genericMessage = "Nếu tài khoản hợp lệ, hệ thống đã gửi link đặt lại mật khẩu qua email.";
+            const string genericMessage = "If the account was valid, the system sent a password reset link via email.";
 
             // Register this attempt for rate limiting
             await _rateLimiter.RegisterFailAsync(

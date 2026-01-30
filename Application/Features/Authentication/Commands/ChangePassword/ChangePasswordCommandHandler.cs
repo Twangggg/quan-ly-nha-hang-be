@@ -1,129 +1,129 @@
-﻿using FoodHub.Application.Common.Models;
-using FoodHub.Application.Interfaces;
-using FoodHub.Domain.Entities;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿    using FoodHub.Application.Common.Models;
+    using FoodHub.Application.Interfaces;
+    using FoodHub.Domain.Entities;
+    using MediatR;
+    using Microsoft.EntityFrameworkCore;
 
-namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
-{
-    public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, Result<string>>
+    namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IPasswordHasher _passwordHasher;
-        private readonly ICurrentUserService _currentUserService;
-        private readonly IRateLimiter _rateLimiter;
-
-        public ChangePasswordCommandHandler(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, ICurrentUserService currentUserService, IRateLimiter rateLimiter)
+        public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, Result<string>>
         {
-            _unitOfWork = unitOfWork;
-            _passwordHasher = passwordHasher;
-            _currentUserService = currentUserService;
-            _rateLimiter = rateLimiter;
-        }
+            private readonly IUnitOfWork _unitOfWork;
+            private readonly IPasswordHasher _passwordHasher;
+            private readonly ICurrentUserService _currentUserService;
+            private readonly IRateLimiter _rateLimiter;
 
-        public async Task<Result<string>> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
-        {   
-            var userId = _currentUserService.UserId;
-            if (string.IsNullOrEmpty(userId))
+            public ChangePasswordCommandHandler(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, ICurrentUserService currentUserService, IRateLimiter rateLimiter)
             {
-                return Result<string>.Failure("The user is not logged in;");
+                _unitOfWork = unitOfWork;
+                _passwordHasher = passwordHasher;
+                _currentUserService = currentUserService;
+                _rateLimiter = rateLimiter;
             }
 
-            var employee = await _unitOfWork.Repository<Employee>()
-                .Query()
-                .FirstOrDefaultAsync(u => u.EmployeeId.ToString() == userId, cancellationToken);
+            public async Task<Result<string>> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
+            {   
+                var userId = _currentUserService.UserId;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Result<string>.Failure("The user is not logged in;");
+                }
 
-            if (employee == null)
+                var employee = await _unitOfWork.Repository<Employee>()
+                    .Query()
+                    .FirstOrDefaultAsync(u => u.EmployeeId.ToString() == userId, cancellationToken);
+
+                if (employee == null)
+                {
+                    return Result<string>.Failure("User information not found.");
+                }
+
+                var key = $"cp:{userId}";
+
+                // Check if user is blocked
+                if (await _rateLimiter.IsBlockedAsync(key, cancellationToken))
+                    return Result<string>.Failure("Too many attempts. Try again later");
+
+                // Validate new password format
+                var passwordValidationError = ValidatePasswordPolicy(request.NewPassword);
+                if (!string.IsNullOrEmpty(passwordValidationError))
+                {
+                    await RegisterFailedAttempt(key, cancellationToken);
+                    return Result<string>.Failure(passwordValidationError);
+                }
+
+                // Validate password confirmation matches
+                if (request.NewPassword != request.ConfirmPassword)
+                {
+                    await RegisterFailedAttempt(key, cancellationToken);
+                    return Result<string>.Failure("Password confirmation does not match.");
+                }
+
+                // Validate new password is different from current
+                if (request.NewPassword == request.CurrentPassword)
+                {
+                    await RegisterFailedAttempt(key, cancellationToken);
+                    return Result<string>.Failure("New password must be different from current password.");
+                }
+
+                // Verify current password
+                if (!_passwordHasher.VerifyPassword(request.CurrentPassword, employee.PasswordHash))
+                {
+                    await RegisterFailedAttempt(key, cancellationToken);
+                    return Result<string>.Failure("The current password is incorrect.");
+                }
+
+                // All validations passed - reset fail count
+                await _rateLimiter.ResetAsync(key, cancellationToken);
+
+                // Update password
+                employee.PasswordHash = _passwordHasher.HashPassword(request.NewPassword);
+                employee.UpdatedAt = DateTime.UtcNow;
+
+                //Log password reset
+                await _unitOfWork.Repository<PasswordResetLog>().AddAsync(new PasswordResetLog
+                {
+                    LogId = Guid.NewGuid(),
+                    TargetEmployeeId = employee.EmployeeId,
+                    PerformedByEmployeeId = employee.EmployeeId, // self-change
+                    Reason = "SelfChange",
+                    ResetAt = DateTimeOffset.UtcNow
+                });
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+                return Result<string>.Success("Password changed successfully. Please log in again.");
+            }
+            private async Task RegisterFailedAttempt(string key, CancellationToken cancellationToken)
             {
-                return Result<string>.Failure("User information not found.");
+                await _rateLimiter.RegisterFailAsync(
+                    key,
+                    limit: 5,
+                    window: TimeSpan.FromMinutes(15),
+                    blockFor: TimeSpan.FromMinutes(15),
+                    cancellationToken);
             }
 
-            var key = $"cp:{userId}";
-
-            // Check if user is blocked
-            if (await _rateLimiter.IsBlockedAsync(key, cancellationToken))
-                return Result<string>.Failure("Too many attempts. Try again later");
-
-            // Validate new password format
-            var passwordValidationError = ValidatePasswordPolicy(request.NewPassword);
-            if (!string.IsNullOrEmpty(passwordValidationError))
+            private string? ValidatePasswordPolicy(string password)
             {
-                await RegisterFailedAttempt(key, cancellationToken);
-                return Result<string>.Failure(passwordValidationError);
+                if (string.IsNullOrEmpty(password))
+                    return "New password must not be empty.";
+
+                if (password.Length < 8)
+                    return "Password must be at least 8 characters long.";
+
+                if (!password.Any(char.IsUpper))
+                    return "Password must contain at least one uppercase letter.";
+
+                if (!password.Any(char.IsLower))
+                    return "Password must contain at least one lowercase letter.";
+
+                if (!password.Any(char.IsDigit))
+                    return "Password must contain at least one number.";
+
+                if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
+                    return "Password must contain at least one special character.";
+
+                return null;
             }
-
-            // Validate password confirmation matches
-            if (request.NewPassword != request.ConfirmPassword)
-            {
-                await RegisterFailedAttempt(key, cancellationToken);
-                return Result<string>.Failure("Password confirmation does not match.");
-            }
-
-            // Validate new password is different from current
-            if (request.NewPassword == request.CurrentPassword)
-            {
-                await RegisterFailedAttempt(key, cancellationToken);
-                return Result<string>.Failure("New password must be different from current password.");
-            }
-
-            // Verify current password
-            if (!_passwordHasher.VerifyPassword(request.CurrentPassword, employee.PasswordHash))
-            {
-                await RegisterFailedAttempt(key, cancellationToken);
-                return Result<string>.Failure("The current password is incorrect.");
-            }
-
-            // All validations passed - reset fail count
-            await _rateLimiter.ResetAsync(key, cancellationToken);
-
-            // Update password
-            employee.PasswordHash = _passwordHasher.HashPassword(request.NewPassword);
-            employee.UpdatedAt = DateTime.UtcNow;
-
-            //Log password reset
-            await _unitOfWork.Repository<PasswordResetLog>().AddAsync(new PasswordResetLog
-            {
-                LogId = Guid.NewGuid(),
-                TargetEmployeeId = employee.EmployeeId,
-                PerformedByEmployeeId = employee.EmployeeId, // self-change
-                Reason = "SelfChange",
-                ResetAt = DateTimeOffset.UtcNow
-            });
-            await _unitOfWork.SaveChangeAsync(cancellationToken);
-
-            return Result<string>.Success("Password changed successfully. Please log in again.");
-        }
-        private async Task RegisterFailedAttempt(string key, CancellationToken cancellationToken)
-        {
-            await _rateLimiter.RegisterFailAsync(
-                key,
-                limit: 5,
-                window: TimeSpan.FromMinutes(15),
-                blockFor: TimeSpan.FromMinutes(15),
-                cancellationToken);
-        }
-
-        private string? ValidatePasswordPolicy(string password)
-        {
-            if (string.IsNullOrEmpty(password))
-                return "New password must not be empty.";
-
-            if (password.Length < 8)
-                return "Password must be at least 8 characters long.";
-
-            if (!password.Any(char.IsUpper))
-                return "Password must contain at least one uppercase letter.";
-
-            if (!password.Any(char.IsLower))
-                return "Password must contain at least one lowercase letter.";
-
-            if (!password.Any(char.IsDigit))
-                return "Password must contain at least one number.";
-
-            if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
-                return "Password must contain at least one special character.";
-
-            return null;
         }
     }
-}

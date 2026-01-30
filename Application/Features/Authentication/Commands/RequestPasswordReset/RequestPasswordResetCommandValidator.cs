@@ -7,8 +7,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
         public RequestPasswordResetCommandValidator()
         {
             RuleFor(x => x.EmployeeCode)
-                .NotEmpty().WithMessage("Employee code is required.")
-                .MaximumLength(10).WithMessage("Employee code cannot exceed 10 characters.");
+                .NotEmpty().WithMessage("Invalid Employee code.")
+                .MaximumLength(10).WithMessage("Invalid Employee code.");
         }
     }
 }

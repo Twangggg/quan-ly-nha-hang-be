@@ -7,16 +7,68 @@
       "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\changepassword\\changepasswordcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\features\\authentication\\commands\\requestpasswordreset\\requestpasswordresetcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\requestpasswordreset\\requestpasswordresetcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\infrastructure\\services\\ratelimiting\\redisratelimiter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\services\\ratelimiting\\redisratelimiter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\features\\authentication\\commands\\changepassword\\changepasswordcommandvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\changepassword\\changepasswordcommandvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\interfaces\\iratelimiter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\interfaces\\iratelimiter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\features\\authentication\\commands\\requestpasswordreset\\requestpasswordresetcommandvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\requestpasswordreset\\requestpasswordresetcommandvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\features\\authentication\\commands\\requestpasswordreset\\requestpasswordresetcommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\requestpasswordreset\\requestpasswordresetcommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\infrastructure\\persistence\\configurations\\passwordresettokenconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\persistence\\configurations\\passwordresettokenconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\infrastructure\\persistence\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\persistence\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\domain\\entities\\passwordresettoken.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:domain\\entities\\passwordresettoken.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\infrastructure\\persistence\\configurations\\passwordresetlogconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\persistence\\configurations\\passwordresetlogconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\infrastructure\\persistence\\migrations\\20260129091739_addpasswordresettokentable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\persistence\\migrations\\20260129091739_addpasswordresettokentable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\domain\\entities\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:domain\\entities\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\domain\\entities\\passwordresetlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:domain\\entities\\passwordresetlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\infrastructure\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\interfaces\\iemailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\interfaces\\iemailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\presentation\\controllers\\auth\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:presentation\\controllers\\auth\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\features\\authentication\\commands\\changepassword\\changepasswordcommandvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\changepassword\\changepasswordcommandvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\infrastructure\\services\\currentuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -27,20 +79,12 @@
       "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\security\\passwordhasher.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\domain\\entities\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:domain\\entities\\employee.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\features\\authentication\\commands\\login\\logincommandvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\login\\logincommandvalidator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\features\\authentication\\commands\\changepassword\\changepasswordcommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\changepassword\\changepasswordcommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\presentation\\controllers\\auth\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:presentation\\controllers\\auth\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|d:\\ojt\\quan-ly-nha-hang-be\\application\\dtos\\authentication\\employeeinfodto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -101,24 +145,219 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "IRateLimiter.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Interfaces\\IRateLimiter.cs",
+              "RelativeDocumentMoniker": "Application\\Interfaces\\IRateLimiter.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Interfaces\\IRateLimiter.cs",
+              "RelativeToolTip": "Application\\Interfaces\\IRateLimiter.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:50:12.432Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ChangePasswordCommandHandler.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "RelativeToolTip": "Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "ViewState": "AgIAAEQAAAAAAAAAAAAkwCcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:46:54.445Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "RequestPasswordResetCommandHandler.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommandHandler.cs",
+              "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommandHandler.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommandHandler.cs",
+              "RelativeToolTip": "Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommandHandler.cs",
+              "ViewState": "AgIAAGEAAAAAAAAAAAAuwCkAAAA+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:41:53.525Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RedisRateLimiter.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
+              "RelativeToolTip": "Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAqwAoAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T06:45:24.64Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "RequestPasswordResetCommandValidator.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommandValidator.cs",
+              "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommandValidator.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommandValidator.cs",
+              "RelativeToolTip": "Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommandValidator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:41:06.778Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "RequestPasswordResetCommand.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommand.cs",
+              "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommand.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommand.cs",
+              "RelativeToolTip": "Application\\Features\\Authentication\\Commands\\RequestPasswordReset\\RequestPasswordResetCommand.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:40:48.828Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Persistence\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistence\\AppDbContext.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Persistence\\AppDbContext.cs",
+              "RelativeToolTip": "Infrastructure\\Persistence\\AppDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:38:29.76Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "PasswordResetLogConfiguration.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Persistence\\Configurations\\PasswordResetLogConfiguration.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistence\\Configurations\\PasswordResetLogConfiguration.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Persistence\\Configurations\\PasswordResetLogConfiguration.cs",
+              "RelativeToolTip": "Infrastructure\\Persistence\\Configurations\\PasswordResetLogConfiguration.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:38:00.963Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "PasswordResetTokenConfiguration.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Persistence\\Configurations\\PasswordResetTokenConfiguration.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistence\\Configurations\\PasswordResetTokenConfiguration.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Persistence\\Configurations\\PasswordResetTokenConfiguration.cs",
+              "RelativeToolTip": "Infrastructure\\Persistence\\Configurations\\PasswordResetTokenConfiguration.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAA4AAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:37:54.692Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "PasswordResetToken.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\PasswordResetToken.cs",
+              "RelativeDocumentMoniker": "Domain\\Entities\\PasswordResetToken.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\PasswordResetToken.cs",
+              "RelativeToolTip": "Domain\\Entities\\PasswordResetToken.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T08:28:01.581Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "20260129091739_AddPasswordResetTokenTable.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Persistence\\Migrations\\20260129091739_AddPasswordResetTokenTable.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistence\\Migrations\\20260129091739_AddPasswordResetTokenTable.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Persistence\\Migrations\\20260129091739_AddPasswordResetTokenTable.cs",
+              "RelativeToolTip": "Infrastructure\\Persistence\\Migrations\\20260129091739_AddPasswordResetTokenTable.cs",
+              "ViewState": "AgIAACAAAAAAAAAAAADwvzQAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:34:35.837Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "EmailService.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Services\\EmailService.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Services\\EmailService.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Services\\EmailService.cs",
+              "RelativeToolTip": "Infrastructure\\Services\\EmailService.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAYwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:29:00.882Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "IEmailService.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Interfaces\\IEmailService.cs",
+              "RelativeDocumentMoniker": "Application\\Interfaces\\IEmailService.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Interfaces\\IEmailService.cs",
+              "RelativeToolTip": "Application\\Interfaces\\IEmailService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-29T09:28:30.222Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "PasswordResetLog.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\PasswordResetLog.cs",
               "RelativeDocumentMoniker": "Domain\\Entities\\PasswordResetLog.cs",
               "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\PasswordResetLog.cs",
               "RelativeToolTip": "Domain\\Entities\\PasswordResetLog.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAA2AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-29T07:18:24.326Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 11,
+              "Title": "Employee.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\Employee.cs",
+              "RelativeDocumentMoniker": "Domain\\Entities\\Employee.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\Employee.cs",
+              "RelativeToolTip": "Domain\\Entities\\Employee.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAzwBAAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T09:11:37.841Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Presentation\\Controllers\\Auth\\AuthController.cs",
+              "RelativeDocumentMoniker": "Presentation\\Controllers\\Auth\\AuthController.cs",
+              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Presentation\\Controllers\\Auth\\AuthController.cs",
+              "RelativeToolTip": "Presentation\\Controllers\\Auth\\AuthController.cs",
+              "ViewState": "AgIAADUAAAAAAAAAAAAkwC4AAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T09:19:43.29Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
               "Title": "ChangePasswordCommandValidator.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandValidator.cs",
               "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandValidator.cs",
@@ -131,45 +370,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "RedisRateLimiter.cs",
-              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
-              "RelativeDocumentMoniker": "Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
-              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
-              "RelativeToolTip": "Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAYwC8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-29T06:45:24.64Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "ChangePasswordCommandHandler.cs",
-              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
-              "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
-              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
-              "RelativeToolTip": "Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
-              "ViewState": "AgIAAEgAAAAAAAAAAAAYwFgAAAAmAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-28T07:27:32.355Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "Employee.cs",
-              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\Employee.cs",
-              "RelativeDocumentMoniker": "Domain\\Entities\\Employee.cs",
-              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Entities\\Employee.cs",
-              "RelativeToolTip": "Domain\\Entities\\Employee.cs",
-              "ViewState": "AgIAAAoAAAAAAAAAAAA6wBUAAAAsAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-27T09:11:37.841Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 18,
               "Title": "PasswordHasher.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Security\\PasswordHasher.cs",
               "RelativeDocumentMoniker": "Infrastructure\\Security\\PasswordHasher.cs",
@@ -181,7 +382,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 17,
               "Title": "CurrentUserService.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\Services\\CurrentUserService.cs",
               "RelativeDocumentMoniker": "Infrastructure\\Services\\CurrentUserService.cs",
@@ -193,7 +394,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 19,
               "Title": "LoginCommandValidator.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\Login\\LoginCommandValidator.cs",
               "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\Login\\LoginCommandValidator.cs",
@@ -205,7 +406,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 20,
               "Title": "ChangePasswordCommand.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommand.cs",
               "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommand.cs",
@@ -217,19 +418,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Presentation\\Controllers\\Auth\\AuthController.cs",
-              "RelativeDocumentMoniker": "Presentation\\Controllers\\Auth\\AuthController.cs",
-              "ToolTip": "D:\\OJT\\quan-ly-nha-hang-be\\Presentation\\Controllers\\Auth\\AuthController.cs",
-              "RelativeToolTip": "Presentation\\Controllers\\Auth\\AuthController.cs",
-              "ViewState": "AgIAABsAAAAAAAAAAAAowDAAAAAoAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-27T09:19:43.29Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 21,
               "Title": "EmployeeInfoDto.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\DTOs\\Authentication\\EmployeeInfoDto.cs",
               "RelativeDocumentMoniker": "Application\\DTOs\\Authentication\\EmployeeInfoDto.cs",
@@ -241,7 +430,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 22,
               "Title": "Messages.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Constants\\Messages.cs",
               "RelativeDocumentMoniker": "Domain\\Constants\\Messages.cs",
@@ -253,7 +442,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 23,
               "Title": "IGenericRepository.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Interfaces\\IGenericRepository.cs",
               "RelativeDocumentMoniker": "Application\\Interfaces\\IGenericRepository.cs",
@@ -265,7 +454,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 25,
               "Title": "EmployeeRole.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Enums\\EmployeeRole.cs",
               "RelativeDocumentMoniker": "Domain\\Enums\\EmployeeRole.cs",
@@ -277,7 +466,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 24,
               "Title": "EmployeeStatus.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Domain\\Enums\\EmployeeStatus.cs",
               "RelativeDocumentMoniker": "Domain\\Enums\\EmployeeStatus.cs",
@@ -289,7 +478,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 26,
               "Title": "DependencyInjection.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Infrastructure\\DependencyInjection.cs",
               "RelativeDocumentMoniker": "Infrastructure\\DependencyInjection.cs",
@@ -301,7 +490,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 28,
               "Title": "Result.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Common\\Models\\Result.cs",
               "RelativeDocumentMoniker": "Application\\Common\\Models\\Result.cs",
@@ -313,7 +502,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 27,
               "Title": "Microsoft.NET.Sdk.StaticWebAssets.targets",
               "DocumentMoniker": "C:\\Program Files\\dotnet\\sdk\\9.0.308\\Sdks\\Microsoft.NET.Sdk.StaticWebAssets\\targets\\Microsoft.NET.Sdk.StaticWebAssets.targets",
               "ToolTip": "C:\\Program Files\\dotnet\\sdk\\9.0.308\\Sdks\\Microsoft.NET.Sdk.StaticWebAssets\\targets\\Microsoft.NET.Sdk.StaticWebAssets.targets",
@@ -323,7 +512,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 30,
               "Title": "FoodHub.http",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\FoodHub.http",
               "RelativeDocumentMoniker": "FoodHub.http",
@@ -335,7 +524,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 29,
               "Title": "FoodHub",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\FoodHub.csproj",
               "RelativeDocumentMoniker": "FoodHub.csproj",
@@ -346,7 +535,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 31,
               "Title": "ErrorResponse.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Application\\Common\\Models\\ErrorResponse.cs",
               "RelativeDocumentMoniker": "Application\\Common\\Models\\ErrorResponse.cs",
@@ -358,7 +547,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 32,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
@@ -370,7 +559,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 33,
               "Title": "Middleware.cs",
               "DocumentMoniker": "D:\\OJT\\quan-ly-nha-hang-be\\Presentation\\Middleware.cs",
               "RelativeDocumentMoniker": "Presentation\\Middleware.cs",
