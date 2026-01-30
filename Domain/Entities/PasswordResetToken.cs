@@ -11,6 +11,7 @@ namespace FoodHub.Domain.Entities
 
         public DateTimeOffset ExpiresAt { get; set; }     // expires_at
         public DateTimeOffset? UsedAt { get; set; }       // used_at
+        public bool IsUsed => UsedAt.HasValue;
 
         public DateTime CreatedAt { get; set; }           // created_at (default now())
 

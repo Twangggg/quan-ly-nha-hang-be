@@ -6,6 +6,9 @@ namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
     {
         public ResetPasswordCommandValidator()
         {
+            RuleFor(x => x.Id)
+                .NotEmpty().WithMessage("Token ID is required.");
+
             RuleFor(x => x.Token)
                 .NotEmpty().WithMessage("Token is required.");
 

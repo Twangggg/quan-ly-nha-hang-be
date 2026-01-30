@@ -21,31 +21,39 @@ namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
 
         public async Task<Result<string>> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
         {
-            // Hash the incoming token to find it in the database
-            var tokenHash = ComputeSha256Hash(request.Token);
-
-            // Find the token in database
+            // Find the token in database by its unique ID (TokenId)
             var resetToken = await _unitOfWork.Repository<PasswordResetToken>()
                 .Query()
                 .Include(t => t.Employee)
-                .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, cancellationToken);
+                .FirstOrDefaultAsync(t => t.TokenId == request.Id, cancellationToken);
 
-            // Validate token exists
+            // Validate token exists in DB
             if (resetToken == null)
             {
-                return Result<string>.Failure("Link không hợp lệ hoặc đã hết hạn.");
+                //return Result<string>.Failure("The link is invalid or has expired.");
+                return Result<string>.Failure("Validate token exists in DB");
+            }
+
+            // Verify the plain token against the stored BCrypt hash
+            var isValidToken = _passwordHasher.VerifyPassword(request.Token, resetToken.TokenHash);
+            if (!isValidToken)
+            {
+                //return Result<string>.Failure("The link is invalid or has expired.");
+                return Result<string>.Failure("Verify the plain token against the stored BCrypt hash");
             }
 
             // Validate token not expired
             if (resetToken.ExpiresAt < DateTimeOffset.UtcNow)
             {
-                return Result<string>.Failure("Link không hợp lệ hoặc đã hết hạn.");
+                //return Result<string>.Failure("The link is invalid or has expired.");
+                return Result<string>.Failure("Validate token not expired");
             }
 
             // Validate token not already used (one-time use)
             if (resetToken.IsUsed)
             {
-                return Result<string>.Failure("Link không hợp lệ hoặc đã hết hạn.");
+                //return Result<string>.Failure("The link is invalid or has expired.");
+                return Result<string>.Failure("Validate token not already used");
             }
 
             // All validations passed - proceed with password reset
@@ -84,15 +92,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
             // Save all changes
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            return Result<string>.Success("Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.");
-        }
-
-        private static string ComputeSha256Hash(string input)
-        {
-            using var sha256 = SHA256.Create();
-            var bytes = Encoding.UTF8.GetBytes(input);
-            var hashBytes = sha256.ComputeHash(bytes);
-            return Convert.ToHexString(hashBytes).ToLower();
+            return Result<string>.Success("Password reset successful. Please log in again.");
         }
     }
 }

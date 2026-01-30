@@ -17,8 +17,8 @@ namespace FoodHub.Infrastructure.Services
         }
 
         public async Task<bool> SendPasswordResetEmailAsync(
-            string email, 
-            string resetLink, 
+            string email,
+            string resetLink,
             string employeeName,
             CancellationToken cancellationToken = default)
         {
@@ -41,7 +41,7 @@ namespace FoodHub.Infrastructure.Services
                 var mailMessage = new MailMessage
                 {
                     From = new MailAddress(fromEmail!, fromName),
-                    Subject = "Đặt lại mật khẩu - FoodHub",
+                    Subject = "Password Reset - FoodHub",
                     Body = GetEmailTemplate(employeeName, resetLink),
                     IsBodyHtml = true
                 };
@@ -79,35 +79,32 @@ namespace FoodHub.Infrastructure.Services
 <body>
     <div class=""container"">
         <div class=""header"">
-            <h1>🔐 Đặt lại mật khẩu</h1>
+            <h1>🔐 Reset Your Password</h1>
         </div>
         <div class=""content"">
-            <p>Xin chào <strong>{employeeName}</strong>,</p>
+            <p>Hello <strong>{employeeName}</strong>,</p>
             
-            <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn tại hệ thống FoodHub.</p>
+            <p>We received a request to reset the password for your FoodHub account.</p>
             
-            <p>Để đặt lại mật khẩu, vui lòng nhấn vào nút bên dưới:</p>
+            <p>To reset your password, please click the button below:</p>
             
             <div style=""text-align: center;"">
-                <a href=""{resetLink}"" class=""button"">Đặt lại mật khẩu</a>
+                <a href=""{resetLink}"" class=""button"">Reset Password</a>
             </div>
             
-            <p>Hoặc copy link sau vào trình duyệt:</p>
-            <p style=""word-break: break-all; background: white; padding: 10px; border-radius: 5px;"">{resetLink}</p>
-            
             <div class=""warning"">
-                <strong>⚠️ Lưu ý:</strong>
+                <strong>⚠️ Important:</strong>
                 <ul>
-                    <li>Link này chỉ có hiệu lực trong <strong>15 phút</strong></li>
-                    <li>Link chỉ sử dụng được <strong>một lần</strong></li>
-                    <li>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này</li>
+                    <li>This link is valid for <strong>15 minutes</strong></li>
+                    <li>The link can be used <strong>only once</strong></li>
+                    <li>If you did not request a password reset, please ignore this email</li>
                 </ul>
             </div>
             
-            <p>Trân trọng,<br><strong>FoodHub System</strong></p>
+            <p>Best regards,<br><strong>FoodHub System</strong></p>
         </div>
         <div class=""footer"">
-            <p>Email này được gửi tự động. Vui lòng không trả lời email này.</p>
+            <p>This is an automated email. Please do not reply to this message.</p>
             <p>&copy; 2026 FoodHub. All rights reserved.</p>
         </div>
     </div>

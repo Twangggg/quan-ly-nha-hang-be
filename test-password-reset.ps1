@@ -23,7 +23,8 @@ try {
     
     Write-Host "✅ Success: $($response.message)" -ForegroundColor Green
     Write-Host "   → Check email inbox for reset link" -ForegroundColor Gray
-} catch {
+}
+catch {
     Write-Host "❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
 }
 Write-Host ""
@@ -42,7 +43,8 @@ try {
     
     Write-Host "✅ Success: $($response.message)" -ForegroundColor Green
     Write-Host "   → Message should be same as Test 1 (security)" -ForegroundColor Gray
-} catch {
+}
+catch {
     Write-Host "❌ Failed: $($_.Exception.Message)" -ForegroundColor Red
 }
 Write-Host ""
@@ -69,30 +71,48 @@ Write-Host ""
 
 # Test 4: Reset Password - Valid Token
 Write-Host "Test 4: Reset Password with Valid Token" -ForegroundColor Yellow
-Write-Host "   ⚠️  You need to get token from email first!" -ForegroundColor Magenta
-$token = Read-Host "Enter token from email (or press Enter to skip)"
+Write-Host "   💡 Tip: Just paste the FULL LINK from your email here" -ForegroundColor Cyan
+$fullLink = Read-Host "Paste Reset Link (e.g. http://localhost:3000/reset-password?id=...&token=...)"
 
-if ($token) {
-    $requestBody = @{
-        token = $token
-        newPassword = "NewPass123!"
-        confirmPassword = "NewPass123!"
-    } | ConvertTo-Json
-
+if ($fullLink) {
     try {
-        $response = Invoke-RestMethod -Uri "$baseUrl/reset-password" `
-            -Method Post `
-            -ContentType "application/json" `
-            -Body $requestBody
+        # Extract id and token from URL using regex
+        $matchedId = [regex]::Match($fullLink, 'id=([^&]+)')
+        $matchedToken = [regex]::Match($fullLink, 'token=([^&]+)')
         
-        Write-Host "✅ Success: $($response.message)" -ForegroundColor Green
-        Write-Host "   → Try logging in with new password" -ForegroundColor Gray
-    } catch {
-        $errorResponse = $_.ErrorDetails.Message | ConvertFrom-Json
-        Write-Host "❌ Failed: $($errorResponse.message)" -ForegroundColor Red
+        $tokenId = if ($matchedId.Success) { $matchedId.Groups[1].Value } else { $null }
+        $token = if ($matchedToken.Success) { [Uri]::UnescapeDataString($matchedToken.Groups[1].Value) } else { $null }
+
+        if (-not $tokenId -or -not $token) {
+            Write-Host "❌ Error: Could not find 'id' or 'token' in the link provided." -ForegroundColor Red
+        }
+        else {
+            Write-Host "   → Extracted ID: $tokenId" -ForegroundColor Gray
+            Write-Host "   → Extracted Token: $token" -ForegroundColor Gray
+
+            $requestBody = @{
+                id              = $tokenId
+                token           = $token
+                newPassword     = "NewPass123!"
+                confirmPassword = "NewPass123!"
+            } | ConvertTo-Json
+
+            $response = Invoke-RestMethod -Uri "$baseUrl/reset-password" `
+                -Method Post `
+                -ContentType "application/json" `
+                -Body $requestBody
+            
+            Write-Host "✅ Success: $($response.message)" -ForegroundColor Green
+            Write-Host "   → Now try logging in with: NewPass123!" -ForegroundColor Gray
+        }
     }
-} else {
-    Write-Host "⏭️  Skipped (no token provided)" -ForegroundColor Gray
+    catch {
+        $msg = if ($_.ErrorDetails) { ($_.ErrorDetails.Message | ConvertFrom-Json).message } else { $_.Exception.Message }
+        Write-Host "❌ Failed: $msg" -ForegroundColor Red
+    }
+}
+else {
+    Write-Host "⏭️  Skipped (no link provided)" -ForegroundColor Gray
 }
 Write-Host ""
 
@@ -100,8 +120,8 @@ Write-Host ""
 Write-Host "Test 5: Reset Password with Weak Password" -ForegroundColor Yellow
 if ($token) {
     $requestBody = @{
-        token = $token
-        newPassword = "123"
+        token           = $token
+        newPassword     = "123"
         confirmPassword = "123"
     } | ConvertTo-Json
 
@@ -112,7 +132,8 @@ if ($token) {
             -Body $requestBody
         
         Write-Host "❌ Should have failed validation!" -ForegroundColor Red
-    } catch {
+    }
+    catch {
         Write-Host "✅ Validation failed as expected" -ForegroundColor Green
         $errorResponse = $_.ErrorDetails.Message | ConvertFrom-Json
         if ($errorResponse.errors) {
@@ -124,7 +145,8 @@ if ($token) {
             }
         }
     }
-} else {
+}
+else {
     Write-Host "⏭️  Skipped (no token provided)" -ForegroundColor Gray
 }
 Write-Host ""
@@ -133,8 +155,8 @@ Write-Host ""
 Write-Host "Test 6: Reset Password with Confirm Password Mismatch" -ForegroundColor Yellow
 if ($token) {
     $requestBody = @{
-        token = $token
-        newPassword = "NewPass123!"
+        token           = $token
+        newPassword     = "NewPass123!"
         confirmPassword = "DifferentPass123!"
     } | ConvertTo-Json
 
@@ -145,11 +167,13 @@ if ($token) {
             -Body $requestBody
         
         Write-Host "❌ Should have failed validation!" -ForegroundColor Red
-    } catch {
+    }
+    catch {
         Write-Host "✅ Validation failed as expected" -ForegroundColor Green
         Write-Host "   Error: Confirm password does not match" -ForegroundColor Gray
     }
-} else {
+}
+else {
     Write-Host "⏭️  Skipped (no token provided)" -ForegroundColor Gray
 }
 Write-Host ""
