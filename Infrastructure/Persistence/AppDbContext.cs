@@ -9,6 +9,7 @@ namespace FoodHub.Infrastructure.Persistence
 
         public DbSet<Employee> Employees { get; set; }
         public DbSet<PasswordResetLog> PasswordResetLogs { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

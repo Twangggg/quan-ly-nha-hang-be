@@ -45,5 +45,23 @@ namespace FoodHub.Infrastructure.Security
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public int GetTokenExpirationSeconds()
+        {
+            return _jwtSettings.ExpiresInMinute * 60;
+        }
+
+        public string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+
+        public int GetRefreshTokenExpirationDays()
+        {
+            return _jwtSettings.RefreshTokenExpiresInDays;
+        }
     }
 }

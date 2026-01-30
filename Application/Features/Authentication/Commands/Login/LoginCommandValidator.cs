@@ -1,5 +1,4 @@
 using FluentValidation;
-using FoodHub.Domain.Constants;
 
 namespace FoodHub.Application.Features.Authentication.Commands.Login
 {
@@ -7,13 +6,12 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
     {
         public LoginCommandValidator()
         {
-            RuleFor(x => x.Username)
-                .NotEmpty().WithMessage(Messages.UsernameRequired)
-                .MinimumLength(3).WithMessage(Messages.UsernameMinLength);
+            RuleFor(x => x.EmployeeCode)
+                .NotEmpty();
 
             RuleFor(x => x.Password)
-                .NotEmpty().WithMessage(Messages.PasswordRequired)
-                .MinimumLength(6).WithMessage(Messages.PasswordMinLength);
+                .NotEmpty()
+                .MinimumLength(3);
         }
     }
 }

@@ -44,6 +44,7 @@ namespace FoodHub.Infrastructure
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<ITokenService, JwtTokenService>();
+            services.AddScoped<DbInitializer>();
 
             // Rate Limiting Service
             services.AddScoped<IRateLimiter, RedisRateLimiter>();

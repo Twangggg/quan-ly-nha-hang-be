@@ -22,6 +22,7 @@ namespace FoodHub.Domain.Entities
         // Quan hệ với bảng PasswordResetLog
         public virtual ICollection<PasswordResetLog> TargetLogs { get; set; } = new List<PasswordResetLog>();
         public virtual ICollection<PasswordResetLog> PerformedLogs { get; set; } = new List<PasswordResetLog>();
+        public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
         public Employee() { }
     }
 }
