@@ -3,7 +3,9 @@ using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
 using FoodHub.Infrastructure.Services;
+using FoodHub.Infrastructure.Services.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 
 namespace FoodHub.Infrastructure
@@ -28,19 +30,24 @@ namespace FoodHub.Infrastructure
             // Register HttpContextAccessor
             services.AddHttpContextAccessor();
 
+            // Register Redis Connection
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                var redisConnection = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+                return ConnectionMultiplexer.Connect(redisConnection);
+            });
+
             // Register Services
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             
             services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
-
-            // Register TokenService - Assuming this was missing or needed explicitly
             services.AddScoped<ITokenService, JwtTokenService>();
+            services.AddScoped<DbInitializer>();
 
-            // Security Services
-            services.AddScoped<IPasswordHasher, PasswordHasher>();
-            services.AddScoped<ITokenService, JwtTokenService>();
+            // Rate Limiting Service
+            services.AddScoped<IRateLimiter, RedisRateLimiter>();
 
             return services;
         }

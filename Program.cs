@@ -1,11 +1,11 @@
 using FoodHub.Application;
-using FoodHub.Application.Interfaces;
 using FoodHub.Infrastructure;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Presentation.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,10 +16,37 @@ builder.Services.AddControllers(opt =>
     opt.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
 });
 
-
-// Swagger Configuration
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "FoodHub API", Version = "v1" });
+    
+    // Config JWT in Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 // Register Layers
 builder.Services.AddApplication();
@@ -29,7 +56,11 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("AllowReact",
-        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        policy => policy
+            .WithOrigins("http://localhost:3000") // Explicit Origin required for Credentials
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()); // Allow Cookies
 });
 
 //Setting for JWT Authentication
@@ -53,39 +84,40 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 
-
-
-
 var app = builder.Build();
 
-// Auto-apply migrations
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-    
-    db.Database.Migrate();
-    await DbSeeder.SeedAsync(db, hasher);
-}
-
+// Configure the HTTP request pipeline.
 app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
+    // Use Swashbuckle Swagger
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    app.UseSwaggerUI();
+    
+    // Auto Migrate & Seed Data
+    using (var scope = app.Services.CreateScope())
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "FoodHub API v1");
-        c.RoutePrefix = "swagger"; // Access at /swagger
-    });
+        var services = scope.ServiceProvider;
+        try
+        {
+            var context = services.GetRequiredService<AppDbContext>();
+            var initializer = services.GetRequiredService<DbInitializer>();
+            
+            context.Database.Migrate();
+            initializer.Initialize();
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        }
+    }
 }
 
 app.UseCors("AllowReact");
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
+app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

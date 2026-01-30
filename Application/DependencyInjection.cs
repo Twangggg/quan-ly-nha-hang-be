@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using FluentValidation;
+using FoodHub.Application.Common.Behaviors;
+using MediatR;
 
 namespace FoodHub.Application
 {
@@ -11,11 +14,13 @@ namespace FoodHub.Application
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             // Đăng ký MediatR
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+            services.AddMediatR(cfg => {
+                cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+                cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            });
 
             // Đăng ký FluentValidation
-            // Lưu ý: Cần cài đặt FluentValidation.DependencyInjectionExtensions nếu chưa có
-            // Ở đây đã cài FluentValidation.AspNetCore nên có thể dùng trực tiếp hoặc qua Scan
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             
             return services;
         }

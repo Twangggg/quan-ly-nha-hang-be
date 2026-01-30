@@ -5,7 +5,6 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-using FoodHub.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,18 +12,18 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
 {
     public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginResponseDto>>
     {
-        private readonly IGenericRepository<Employee> _employeeRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
 
         public LoginCommandHandler(
-            IGenericRepository<Employee> employeeRepo,
+            IUnitOfWork unitOfWork,
             IPasswordHasher passwordHasher,
             ITokenService tokenService,
             IMapper mapper)
         {
-            _employeeRepo = employeeRepo;
+            _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
             _mapper = mapper;
@@ -32,11 +31,10 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
 
         public async Task<Result<LoginResponseDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            // Tìm employee bằng Username hoặc EmployeeCode
-            var employee = await _employeeRepo
+            // Tìm employee chỉ bằng EmployeeCode
+            var employee = await _unitOfWork.Repository<Employee>()
                 .Query()
-                .FirstOrDefaultAsync(e => e.Username == request.Username ||
-                                         e.EmployeeCode == request.Username, cancellationToken);
+                .FirstOrDefaultAsync(e => e.EmployeeCode == request.EmployeeCode, cancellationToken);
 
             if (employee == null)
             {
@@ -55,17 +53,43 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 return Result<LoginResponseDto>.Failure(Messages.AccountInactive);
             }
 
-            // Tạo token
+            // Tạo access token
             var accessToken = _tokenService.GenerateAccessToken(employee);
+            var expiresIn = _tokenService.GetTokenExpirationSeconds();
 
-            // Map thông tin employee
-            var employeeInfo = _mapper.Map<EmployeeInfoDto>(employee);
+            // Tạo refresh token
+            var refreshToken = _tokenService.GenerateRefreshToken();
+            // Config: Default 7 days from appsettings
+            var configDays = _tokenService.GetRefreshTokenExpirationDays(); 
+            
+            // Logic: If RememberMe -> 30 Days (or config * 4). If not -> Config (7 days).
+            // OR: If not RememberMe -> Session duration?
+            // Let's go with:
+            // RememberMe = True -> 30 Days.
+            // RememberMe = False -> 7 Days.
+            var expirationDays = request.RememberMe ? 30 : configDays;
+            var expirationDate = DateTime.UtcNow.AddDays(expirationDays);
+
+            var refreshTokenEntity = new FoodHub.Domain.Entities.RefreshToken
+            {
+                Token = refreshToken,
+                Expires = expirationDate,
+
+                EmployeeId = employee.EmployeeId
+            };
+
+            await _unitOfWork.Repository<FoodHub.Domain.Entities.RefreshToken>().AddAsync(refreshTokenEntity);
+            await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             var response = new LoginResponseDto
             {
                 AccessToken = accessToken,
-                TokenType = "Bearer",
-                User = employeeInfo
+                RefreshToken = refreshToken,
+                RefreshTokenExpiresIn = (expirationDate - DateTime.UtcNow).TotalSeconds,
+                EmployeeCode = employee.EmployeeCode,
+                Email = employee.Email,
+                Role = employee.Role.ToString(),
+                ExpiresIn = expiresIn
             };
 
             return Result<LoginResponseDto>.Success(response);

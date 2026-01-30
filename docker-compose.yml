@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:alpine3.23
+    container_name: foodhub_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456@
+      POSTGRES_DB: foodhub
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - foodhub-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: foodhub_backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=foodhub;Username=postgres;Password=123456@
+      # Cấu hình JWT giống trong appsettings.json
+      - Jwt__SecretKey=FoodHub-SuperSecretKey-2024-MinLength-32Characters-Required-For-Security
+      - Jwt__Issuer=FoodHub_Server
+      - Jwt__Audience=FoodHub_Client
+    ports:
+      - "5000:5000"
+    networks:
+      - foodhub-network
+
+  frontend:
+    build:
+      context: ../quan-ly-nha-hang-fe
+      dockerfile: Dockerfile
+    container_name: foodhub_frontend
+    depends_on:
+      - backend
+    environment:
+      # URL Backend khi gọi từ Server Side (Next.js SSR) -> gọi nội bộ container
+      - API_URL_INTERNAL=http://backend:5000
+      # URL Backend khi gọi từ Client Side (Browser)
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+    ports:
+      - "3000:3000"
+    networks:
+      - foodhub-network
+
+volumes:
+  postgres_data:
+
+
+networks:
+  foodhub-network:
+    driver: bridge

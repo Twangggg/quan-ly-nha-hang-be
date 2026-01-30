@@ -166,6 +166,56 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.ToTable("password_reset_logs", (string)null);
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires");
+
+                    b.Property<bool>("IsRevoked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_revoked");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("token");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_refresh_tokens");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_refresh_tokens_employee_id");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("ix_refresh_tokens_token");
+
+                    b.ToTable("refresh_tokens", (string)null);
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetLog", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.Employee", "PerformedByEmployee")
@@ -187,9 +237,23 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.Navigation("TargetEmployee");
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "Employee")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_refresh_tokens_employees_employee_id");
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.Employee", b =>
                 {
                     b.Navigation("PerformedLogs");
+
+                    b.Navigation("RefreshTokens");
 
                     b.Navigation("TargetLogs");
                 });
