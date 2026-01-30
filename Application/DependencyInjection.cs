@@ -2,6 +2,7 @@
 using System.Reflection;
 using FluentValidation;
 using FoodHub.Application.Common.Behaviors;
+using MediatR;
 
 namespace FoodHub.Application
 {

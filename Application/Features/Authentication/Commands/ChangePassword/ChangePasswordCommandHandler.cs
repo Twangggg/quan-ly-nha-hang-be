@@ -1,6 +1,7 @@
 ﻿using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +23,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
         }
 
         public async Task<Result<string>> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
-        {   
+        {
             var userId = _currentUserService.UserId;
             if (string.IsNullOrEmpty(userId))
             {
@@ -33,9 +34,14 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
                 .Query()
                 .FirstOrDefaultAsync(u => u.EmployeeId.ToString() == userId, cancellationToken);
 
+            if (employee.Status != EmployeeStatus.Active)
+            {
+                return Result<string>.Failure("Invalid action");
+            }
+
             if (employee == null)
             {
-                return Result<string>.Failure("User information not found.");
+                return Result<string>.Failure("Invalid action");
             }
 
             var key = $"cp:{userId}";
@@ -80,6 +86,20 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
             employee.PasswordHash = _passwordHasher.HashPassword(request.NewPassword);
             employee.UpdatedAt = DateTime.UtcNow;
 
+            //Revoke existing refresh tokens
+            var refreshTokens = await _unitOfWork.Repository<Domain.Entities.RefreshToken>()
+                .Query()
+                .Where(rt => rt.EmployeeId == employee.EmployeeId && !rt.IsRevoked)
+                .ToListAsync(cancellationToken);
+
+            foreach (var token in refreshTokens)
+            {
+                token.IsRevoked = true;
+                token.UpdatedAt = DateTime.UtcNow;
+                _unitOfWork.Repository<Domain.Entities.RefreshToken>().UpdateAsync(token);
+            }
+
+
             //Log password reset
             await _unitOfWork.Repository<PasswordResetLog>().AddAsync(new PasswordResetLog
             {
@@ -89,6 +109,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
                 Reason = "SelfChange",
                 ResetAt = DateTimeOffset.UtcNow
             });
+
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             return Result<string>.Success("Password changed successfully. Please log in again.");
