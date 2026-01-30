@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.DTOs.Authentication;
 using MediatR;
 

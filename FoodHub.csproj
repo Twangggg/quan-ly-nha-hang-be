@@ -7,8 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Features\Auth\Commands\" />
-    <Folder Include="Application\Features\Auth\Queries\" />
+    <Compile Remove="Application\Features\Auth\**" />
+    <Content Remove="Application\Features\Auth\**" />
+    <EmbeddedResource Remove="Application\Features\Auth\**" />
+    <None Remove="Application\Features\Auth\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Application\Services\" />
     <Folder Include="Application\Validators\" />
     <Folder Include="Infrastructure\Persistence\Migrations\" />
