@@ -12,7 +12,10 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(t => t.TokenHash)
                    .IsRequired()
-                   .HasMaxLength(100); // BCrypt needs more space than SHA256
+                   .HasMaxLength(64); // SHA256 hex string is 64 chars
+
+            builder.HasIndex(t => t.TokenHash)
+                   .IsUnique();
 
             builder.Property(t => t.ExpiresAt)
                    .IsRequired();

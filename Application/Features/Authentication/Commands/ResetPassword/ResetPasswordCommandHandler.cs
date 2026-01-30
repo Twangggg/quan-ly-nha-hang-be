@@ -21,39 +21,40 @@ namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
 
         public async Task<Result<string>> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
         {
-            // Find the token in database by its unique ID (TokenId)
+            // Compute hash of the incoming plain token
+            var tokenHash = ComputeSha256Hash(request.Token);
+
+            // Find the token in database by its unique hash
             var resetToken = await _unitOfWork.Repository<PasswordResetToken>()
                 .Query()
                 .Include(t => t.Employee)
-                .FirstOrDefaultAsync(t => t.TokenId == request.Id, cancellationToken);
+                .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, cancellationToken);
 
-            // Validate token exists in DB
+            // Validate token exists and meets requirements
+            // Generic message for all failure cases to prevent information disclosure
+            const string invalidLinkMessage = "The link is invalid or has expired.";
+
             if (resetToken == null)
             {
-                //return Result<string>.Failure("The link is invalid or has expired.");
-                return Result<string>.Failure("Validate token exists in DB");
-            }
-
-            // Verify the plain token against the stored BCrypt hash
-            var isValidToken = _passwordHasher.VerifyPassword(request.Token, resetToken.TokenHash);
-            if (!isValidToken)
-            {
-                //return Result<string>.Failure("The link is invalid or has expired.");
-                return Result<string>.Failure("Verify the plain token against the stored BCrypt hash");
+                return Result<string>.Failure(invalidLinkMessage);
             }
 
             // Validate token not expired
             if (resetToken.ExpiresAt < DateTimeOffset.UtcNow)
             {
-                //return Result<string>.Failure("The link is invalid or has expired.");
-                return Result<string>.Failure("Validate token not expired");
+                return Result<string>.Failure(invalidLinkMessage);
             }
 
             // Validate token not already used (one-time use)
             if (resetToken.IsUsed)
             {
-                //return Result<string>.Failure("The link is invalid or has expired.");
-                return Result<string>.Failure("Validate token not already used");
+                return Result<string>.Failure(invalidLinkMessage);
+            }
+
+            // Verify the owner of the token is active
+            if (resetToken.Employee == null || resetToken.Employee.Status != FoodHub.Domain.Enums.EmployeeStatus.Active)
+            {
+                return Result<string>.Failure(invalidLinkMessage);
             }
 
             // All validations passed - proceed with password reset
@@ -93,6 +94,14 @@ namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             return Result<string>.Success("Password reset successful. Please log in again.");
+        }
+
+        private static string ComputeSha256Hash(string input)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(input);
+            var hashBytes = sha256.ComputeHash(bytes);
+            return Convert.ToHexString(hashBytes).ToLower();
         }
     }
 }

@@ -72,26 +72,21 @@ Write-Host ""
 # Test 4: Reset Password - Valid Token
 Write-Host "Test 4: Reset Password with Valid Token" -ForegroundColor Yellow
 Write-Host "   💡 Tip: Just paste the FULL LINK from your email here" -ForegroundColor Cyan
-$fullLink = Read-Host "Paste Reset Link (e.g. http://localhost:3000/reset-password?id=...&token=...)"
+$fullLink = Read-Host "Paste Reset Link (e.g. http://localhost:3000/reset-password?token=...)"
 
 if ($fullLink) {
     try {
-        # Extract id and token from URL using regex
-        $matchedId = [regex]::Match($fullLink, 'id=([^&]+)')
+        # Extract token from URL using regex
         $matchedToken = [regex]::Match($fullLink, 'token=([^&]+)')
-        
-        $tokenId = if ($matchedId.Success) { $matchedId.Groups[1].Value } else { $null }
         $token = if ($matchedToken.Success) { [Uri]::UnescapeDataString($matchedToken.Groups[1].Value) } else { $null }
 
-        if (-not $tokenId -or -not $token) {
-            Write-Host "❌ Error: Could not find 'id' or 'token' in the link provided." -ForegroundColor Red
+        if (-not $token) {
+            Write-Host "❌ Error: Could not find 'token' in the link provided." -ForegroundColor Red
         }
         else {
-            Write-Host "   → Extracted ID: $tokenId" -ForegroundColor Gray
             Write-Host "   → Extracted Token: $token" -ForegroundColor Gray
 
             $requestBody = @{
-                id              = $tokenId
                 token           = $token
                 newPassword     = "NewPass123!"
                 confirmPassword = "NewPass123!"

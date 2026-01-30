@@ -17,22 +17,19 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
         private readonly IRateLimiter _rateLimiter;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IPasswordHasher _passwordHasher;
 
         public RequestPasswordResetCommandHandler(
             IUnitOfWork unitOfWork,
             IEmailService emailService,
             IRateLimiter rateLimiter,
             IConfiguration configuration,
-            IHttpContextAccessor httpContextAccessor,
-            IPasswordHasher passwordHasher)
+            IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _emailService = emailService;
             _rateLimiter = rateLimiter;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
-            _passwordHasher = passwordHasher;
         }
 
         public async Task<Result<string>> Handle(RequestPasswordResetCommand request, CancellationToken cancellationToken)
@@ -77,17 +74,16 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
             }
             var plainToken = Convert.ToHexString(tokenBytes).ToLower();
 
-            // Hash the token using IPasswordHasher (BCrypt)
-            var tokenHash = _passwordHasher.HashPassword(plainToken);
+            // Hash the token before storing (SHA256)
+            var tokenHash = ComputeSha256Hash(plainToken);
 
             // Create token expiration (15 minutes from now)
             var expiresAt = DateTimeOffset.UtcNow.AddMinutes(15);
-            var tokenId = Guid.NewGuid();
 
             // Save token to database
             var resetToken = new PasswordResetToken
             {
-                TokenId = tokenId,
+                TokenId = Guid.NewGuid(),
                 EmployeeId = employee.EmployeeId,
                 TokenHash = tokenHash,
                 ExpiresAt = expiresAt,
@@ -97,9 +93,9 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
             await _unitOfWork.Repository<PasswordResetToken>().AddAsync(resetToken);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            // Generate reset link with both ID and Token for efficient BCrypt lookup
+            // Generate reset link
             var frontendUrl = _configuration["FrontendUrl"] ?? "http://localhost:3000";
-            var resetLink = $"{frontendUrl}/reset-password?id={tokenId}&token={plainToken}";
+            var resetLink = $"{frontendUrl}/reset-password?token={plainToken}";
 
             // Send email
             var emailSent = await _emailService.SendPasswordResetEmailAsync(
@@ -111,10 +107,17 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
             if (!emailSent)
             {
                 // Log this error but still return generic message for security
-                // In production, you might want to log this to monitoring system
             }
 
             return Result<string>.Success(genericMessage);
+        }
+
+        private static string ComputeSha256Hash(string input)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(input);
+            var hashBytes = sha256.ComputeHash(bytes);
+            return Convert.ToHexString(hashBytes).ToLower();
         }
     }
 }
