@@ -24,14 +24,16 @@ namespace FoodHub.Infrastructure
                     })
                 .UseSnakeCaseNamingConvention();
             });
+            services.AddHttpContextAccessor();
 
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IEmailService, EmailService>();
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();
-            
+
             services.AddScoped<DbInitializer>();
 
             return services;
