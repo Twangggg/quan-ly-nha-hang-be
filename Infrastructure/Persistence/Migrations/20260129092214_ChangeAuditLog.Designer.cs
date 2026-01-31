@@ -3,6 +3,7 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260129092214_ChangeAuditLog")]
+    partial class ChangeAuditLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,6 +40,14 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<Guid?>("EmployeeId1")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id1");
+
                     b.Property<string>("Metadata")
                         .HasColumnType("jsonb")
                         .HasColumnName("metadata");
@@ -57,11 +68,14 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.HasKey("LogId")
                         .HasName("pk_audit_logs");
 
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_audit_logs_employee_id");
+
+                    b.HasIndex("EmployeeId1")
+                        .HasDatabaseName("ix_audit_logs_employee_id1");
+
                     b.HasIndex("PerformedByEmployeeId")
                         .HasDatabaseName("ix_audit_logs_performed_by_employee_id");
-
-                    b.HasIndex("TargetId")
-                        .HasDatabaseName("ix_audit_logs_target_id");
 
                     b.ToTable("audit_logs", (string)null);
                 });
@@ -169,135 +183,31 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.ToTable("employees", (string)null);
                 });
 
-            modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetLog", b =>
+            modelBuilder.Entity("FoodHub.Domain.Entities.AuditLog", b =>
                 {
-                    b.Property<Guid>("LogId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("log_id");
-
-                    b.Property<Guid>("PerformedByEmployeeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("performed_by_employee_id");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("reason");
-
-                    b.Property<DateTimeOffset>("ResetAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("reset_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid>("TargetEmployeeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("target_employee_id");
-
-                    b.HasKey("LogId")
-                        .HasName("pk_password_reset_logs");
-
-                    b.HasIndex("PerformedByEmployeeId")
-                        .HasDatabaseName("ix_password_reset_logs_performed_by_employee_id");
-
-                    b.HasIndex("ResetAt")
-                        .HasDatabaseName("ix_password_reset_logs_reset_at");
-
-                    b.HasIndex("TargetEmployeeId")
-                        .HasDatabaseName("ix_password_reset_logs_target_employee_id");
-
-                    b.ToTable("password_reset_logs", (string)null);
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("employee_id");
-
-                    b.Property<DateTime>("Expires")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expires");
-
-                    b.Property<bool>("IsRevoked")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_revoked");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("token");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_refresh_tokens");
-
-                    b.HasIndex("EmployeeId")
-                        .HasDatabaseName("ix_refresh_tokens_employee_id");
-
-                    b.HasIndex("Token")
-                        .IsUnique()
-                        .HasDatabaseName("ix_refresh_tokens_token");
-
-                    b.ToTable("refresh_tokens", (string)null);
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetLog", b =>
-                {
-                    b.HasOne("FoodHub.Domain.Entities.Employee", "PerformedBy")
+                    b.HasOne("FoodHub.Domain.Entities.Employee", null)
                         .WithMany("PerformedLogs")
+                        .HasForeignKey("EmployeeId")
+                        .HasConstraintName("fk_audit_logs_employees_employee_id");
+
+                    b.HasOne("FoodHub.Domain.Entities.Employee", null)
+                        .WithMany("TargetLogs")
+                        .HasForeignKey("EmployeeId1")
+                        .HasConstraintName("fk_audit_logs_employees_employee_id1");
+
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "PerformedBy")
+                        .WithMany()
                         .HasForeignKey("PerformedByEmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_audit_logs_employees_performed_by_employee_id");
 
-                    b.HasOne("FoodHub.Domain.Entities.Employee", "Target")
-                        .WithMany("TargetLogs")
-                        .HasForeignKey("TargetId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_audit_logs_employees_target_id");
-
-                    b.Navigation("PerformedByEmployee");
-
-                    b.Navigation("TargetEmployee");
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
-                {
-                    b.HasOne("FoodHub.Domain.Entities.Employee", "Employee")
-                        .WithMany("RefreshTokens")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_refresh_tokens_employees_employee_id");
-
-                    b.Navigation("Employee");
+                    b.Navigation("PerformedBy");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.Employee", b =>
                 {
                     b.Navigation("PerformedLogs");
-
-                    b.Navigation("RefreshTokens");
 
                     b.Navigation("TargetLogs");
                 });

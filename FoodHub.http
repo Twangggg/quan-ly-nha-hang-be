@@ -1,9 +1,22 @@
 @FoodHub_HostAddress = https://localhost:7265
 
-GET {{FoodHub_HostAddress}}/api/employees
+GET {{FoodHub_HostAddress}}/api/employees/2
 
 ###
 
-GET {{FoodHub_HostAddress}}/api/employees/5efa819c-8597-4a82-b8a3-11e8ee5fb1e4
+GET {{FoodHub_HostAddress}}/api/employees/{id}
 
 ###
+
+POST {{FoodHub_HostAddress}}/api/employees
+Content-Type: application/json
+
+{
+  "employeeCode": "M000111",
+  "fullName": "Phuc",
+  "email": "admin@example.com",
+  "role": 1
+}
+
+###
+

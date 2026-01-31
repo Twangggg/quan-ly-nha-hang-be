@@ -1,17 +1,15 @@
-using FoodHub.Application.Interfaces;
-
 namespace FoodHub.Infrastructure.Security
 {
-    public class PasswordHasher : IPasswordHasher
+    public class PasswordHasher : FoodHub.Application.Interfaces.IPasswordHasher
     {
         public string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
-        public bool VerifyPassword(string password, string hash)
+        public bool VerifyPassword(string password, string passwordHash)
         {
-            return BCrypt.Net.BCrypt.Verify(password, hash);
+            return BCrypt.Net.BCrypt.Verify(password, passwordHash);
         }
     }
 }

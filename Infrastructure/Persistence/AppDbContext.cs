@@ -8,7 +8,7 @@ namespace FoodHub.Infrastructure.Persistence
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<PasswordResetLog> PasswordResetLogs { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

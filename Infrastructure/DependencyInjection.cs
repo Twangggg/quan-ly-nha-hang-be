@@ -12,6 +12,7 @@ namespace FoodHub.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
             services.AddDbContext<AppDbContext>(options =>
             {
@@ -23,9 +24,17 @@ namespace FoodHub.Infrastructure
                     })
                 .UseSnakeCaseNamingConvention();
             });
+            services.AddHttpContextAccessor();
 
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IPasswordService, PasswordService>();
+            services.AddScoped<IEmailService, EmailService>();
+
+            services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+            services.AddScoped<DbInitializer>();
 
             // Security Services
             services.AddScoped<IPasswordHasher, PasswordHasher>();

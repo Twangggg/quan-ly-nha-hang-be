@@ -10,7 +10,8 @@
             get => _pageSize;
             set => _pageSize = value > MaxPageSize ? MaxPageSize : value;
         }
-        public string? SortBy { get; set; }
-        public bool IsDescending = false;
+        public string? Search { get; set; }
+        public string? OrderBy { get; set; }
+        public List<string>? Filters { get; set; }
     }
 }
