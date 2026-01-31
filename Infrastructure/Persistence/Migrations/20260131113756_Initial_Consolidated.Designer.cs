@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260127035926_InitialSetup")]
-    partial class InitialSetup
+    [Migration("20260131113756_Initial_Consolidated")]
+    partial class Initial_Consolidated
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,50 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<Guid>("LogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("log_id");
+
+                    b.Property<short>("Action")
+                        .HasColumnType("smallint")
+                        .HasColumnName("action");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("metadata");
+
+                    b.Property<Guid>("PerformedByEmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("performed_by_employee_id");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.HasKey("LogId")
+                        .HasName("pk_audit_logs");
+
+                    b.HasIndex("PerformedByEmployeeId")
+                        .HasDatabaseName("ix_audit_logs_performed_by_employee_id");
+
+                    b.HasIndex("TargetId")
+                        .HasDatabaseName("ix_audit_logs_target_id");
+
+                    b.ToTable("audit_logs", (string)null);
+                });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.Employee", b =>
                 {
@@ -128,71 +172,94 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.ToTable("employees", (string)null);
                 });
 
-            modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetLog", b =>
+            modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
                 {
-                    b.Property<Guid>("LogId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("log_id");
+                        .HasColumnName("id");
 
-                    b.Property<Guid>("PerformedByEmployeeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("performed_by_employee_id");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("reason");
-
-                    b.Property<DateTimeOffset>("ResetAt")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("reset_at")
+                        .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<Guid>("TargetEmployeeId")
+                    b.Property<Guid>("EmployeeId")
                         .HasColumnType("uuid")
-                        .HasColumnName("target_employee_id");
+                        .HasColumnName("employee_id");
 
-                    b.HasKey("LogId")
-                        .HasName("pk_password_reset_logs");
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires");
 
-                    b.HasIndex("PerformedByEmployeeId")
-                        .HasDatabaseName("ix_password_reset_logs_performed_by_employee_id");
+                    b.Property<bool>("IsRevoked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_revoked");
 
-                    b.HasIndex("ResetAt")
-                        .HasDatabaseName("ix_password_reset_logs_reset_at");
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("token");
 
-                    b.HasIndex("TargetEmployeeId")
-                        .HasDatabaseName("ix_password_reset_logs_target_employee_id");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.ToTable("password_reset_logs", (string)null);
+                    b.HasKey("Id")
+                        .HasName("pk_refresh_tokens");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_refresh_tokens_employee_id");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("ix_refresh_tokens_token");
+
+                    b.ToTable("refresh_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetLog", b =>
+            modelBuilder.Entity("FoodHub.Domain.Entities.AuditLog", b =>
                 {
-                    b.HasOne("FoodHub.Domain.Entities.Employee", "PerformedByEmployee")
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "PerformedBy")
                         .WithMany("PerformedLogs")
                         .HasForeignKey("PerformedByEmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_password_reset_logs_employees_performed_by_employee_id");
+                        .HasConstraintName("fk_audit_logs_employees_performed_by_employee_id");
 
-                    b.HasOne("FoodHub.Domain.Entities.Employee", "TargetEmployee")
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "Target")
                         .WithMany("TargetLogs")
-                        .HasForeignKey("TargetEmployeeId")
+                        .HasForeignKey("TargetId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_password_reset_logs_employees_target_employee_id");
+                        .HasConstraintName("fk_audit_logs_employees_target_id");
 
-                    b.Navigation("PerformedByEmployee");
+                    b.Navigation("PerformedBy");
 
-                    b.Navigation("TargetEmployee");
+                    b.Navigation("Target");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "Employee")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_refresh_tokens_employees_employee_id");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.Employee", b =>
                 {
                     b.Navigation("PerformedLogs");
+
+                    b.Navigation("RefreshTokens");
 
                     b.Navigation("TargetLogs");
                 });

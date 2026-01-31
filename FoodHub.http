@@ -1,15 +1,40 @@
 @FoodHub_HostAddress = https://localhost:7265
 
-GET {{FoodHub_HostAddress}}/api/employees/2
+### Authentication
+
+# @name Login
+POST {{FoodHub_HostAddress}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "employeeCode": "NV001",
+  "password": "admin",
+  "rememberMe": false
+}
+
+### Capture Token (Requires REST Client extension in VS Code)
+@authToken = {{Login.response.body.accessToken}}
+
+---
+
+### Employees Management
+
+# @name GetEmployees
+GET {{FoodHub_HostAddress}}/api/employees
+Authorization: Bearer {{authToken}}
 
 ###
 
-GET {{FoodHub_HostAddress}}/api/employees/{id}
+# @name GetEmployeeById
+GET {{FoodHub_HostAddress}}/api/employees/NV001
+Authorization: Bearer {{authToken}}
 
 ###
 
+# @name CreateEmployee
 POST {{FoodHub_HostAddress}}/api/employees
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "employeeCode": "M000111",
@@ -19,4 +44,3 @@ Content-Type: application/json
 }
 
 ###
-

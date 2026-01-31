@@ -14,13 +14,13 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.EmployeeCode).IsRequired().HasMaxLength(10);
             builder.HasIndex(e => e.EmployeeCode).IsUnique();
 
-            builder.Property(e => e.Username).IsRequired().HasMaxLength(50);
+            builder.Property(e => e.Username).HasMaxLength(50).IsRequired(false);
             builder.HasIndex(e => e.Username).IsUnique();
 
             builder.Property(e => e.Email).IsRequired().HasMaxLength(150);
             builder.HasIndex(e => e.Email).IsUnique();
 
-            builder.Property(e => e.Phone).IsRequired().HasMaxLength(15);
+            builder.Property(e => e.Phone).IsRequired(false).HasMaxLength(15);
             builder.HasIndex(e => e.Phone).IsUnique();
 
             builder.Property(e => e.FullName).IsRequired().HasMaxLength(100);

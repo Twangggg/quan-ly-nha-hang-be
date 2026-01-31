@@ -7,11 +7,11 @@ namespace FoodHub.Domain.Entities
         // Khóa chính: Tên gọi rõ ràng, dễ hiểu
         public Guid EmployeeId { get; set; }
         public string EmployeeCode { get; set; } = null!;
-        public string Username { get; set; } = null!;
+        public string? Username { get; set; }
         public string PasswordHash { get; set; } = null!;
         public string FullName { get; set; } = null!;
         public string Email { get; set; } = null!;
-        public string Phone { get; set; } = null!;
+        public string? Phone { get; set; }
         public string? Address { get; set; }
         public DateOnly? DateOfBirth { get; set; }
         public EmployeeRole Role { get; set; }

@@ -116,7 +116,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnName("password_hash");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasMaxLength(15)
                         .HasColumnType("character varying(15)")
                         .HasColumnName("phone");
@@ -136,7 +135,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnName("updated_at");
 
                     b.Property<string>("Username")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("username");
@@ -167,47 +165,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_employees_username");
 
                     b.ToTable("employees", (string)null);
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetLog", b =>
-                {
-                    b.Property<Guid>("LogId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("log_id");
-
-                    b.Property<Guid>("PerformedByEmployeeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("performed_by_employee_id");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("reason");
-
-                    b.Property<DateTimeOffset>("ResetAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("reset_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid>("TargetEmployeeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("target_employee_id");
-
-                    b.HasKey("LogId")
-                        .HasName("pk_password_reset_logs");
-
-                    b.HasIndex("PerformedByEmployeeId")
-                        .HasDatabaseName("ix_password_reset_logs_performed_by_employee_id");
-
-                    b.HasIndex("ResetAt")
-                        .HasDatabaseName("ix_password_reset_logs_reset_at");
-
-                    b.HasIndex("TargetEmployeeId")
-                        .HasDatabaseName("ix_password_reset_logs_target_employee_id");
-
-                    b.ToTable("password_reset_logs", (string)null);
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
@@ -260,7 +217,7 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.ToTable("refresh_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetLog", b =>
+            modelBuilder.Entity("FoodHub.Domain.Entities.AuditLog", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.Employee", "PerformedBy")
                         .WithMany("PerformedLogs")
@@ -276,9 +233,9 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_audit_logs_employees_target_id");
 
-                    b.Navigation("PerformedByEmployee");
+                    b.Navigation("PerformedBy");
 
-                    b.Navigation("TargetEmployee");
+                    b.Navigation("Target");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
