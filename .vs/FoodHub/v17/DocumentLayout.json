@@ -1,0 +1,160 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "H:\\quan_li_nha_hang\\FoodHub_BE\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\application\\features\\authentication\\commands\\resetpassword\\resetpasswordcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\resetpassword\\resetpasswordcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\infrastructure\\persistence\\migrations\\appdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\persistence\\migrations\\appdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\infrastructure\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\infrastructure\\persistence\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\persistence\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\application\\features\\authentication\\commands\\login\\logincommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\login\\logincommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\.env||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:.env||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\application\\features\\authentication\\commands\\changepassword\\changepasswordcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:application\\features\\authentication\\commands\\changepassword\\changepasswordcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|h:\\quan_li_nha_hang\\foodhub_be\\infrastructure\\services\\ratelimiting\\redisratelimiter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6B0BE658-405E-47DB-9FC8-D9E09A40CEC9}|FoodHub.csproj|solutionrelative:infrastructure\\services\\ratelimiting\\redisratelimiter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{66f449b5-c823-40bc-9016-02b4d06a1a8e}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ResetPasswordCommandHandler.cs",
+              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Application\\Features\\Authentication\\Commands\\ResetPassword\\ResetPasswordCommandHandler.cs",
+              "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\ResetPassword\\ResetPasswordCommandHandler.cs",
+              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Application\\Features\\Authentication\\Commands\\ResetPassword\\ResetPasswordCommandHandler.cs",
+              "RelativeToolTip": "Application\\Features\\Authentication\\Commands\\ResetPassword\\ResetPasswordCommandHandler.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAYwD8AAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-01T15:44:03.03Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AppDbContextModelSnapshot.cs",
+              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Persistence\\Migrations\\AppDbContextModelSnapshot.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistence\\Migrations\\AppDbContextModelSnapshot.cs",
+              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Persistence\\Migrations\\AppDbContextModelSnapshot.cs",
+              "RelativeToolTip": "Infrastructure\\Persistence\\Migrations\\AppDbContextModelSnapshot.cs",
+              "ViewState": "AgIAAAoBAAAAAAAAAAAAwB0BAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-01T15:40:10.486Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "EmailService.cs",
+              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Services\\EmailService.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Services\\EmailService.cs",
+              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Services\\EmailService.cs",
+              "RelativeToolTip": "Infrastructure\\Services\\EmailService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-01T15:39:51.374Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DbInitializer.cs",
+              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Persistence\\DbInitializer.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Persistence\\DbInitializer.cs",
+              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Persistence\\DbInitializer.cs",
+              "RelativeToolTip": "Infrastructure\\Persistence\\DbInitializer.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAYwCcAAABHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-01T15:05:39.839Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": ".env",
+              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\.env",
+              "RelativeDocumentMoniker": ".env",
+              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\.env",
+              "RelativeToolTip": ".env",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-02-01T14:27:44.181Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "LoginCommandHandler.cs",
+              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Application\\Features\\Authentication\\Commands\\Login\\LoginCommandHandler.cs",
+              "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\Login\\LoginCommandHandler.cs",
+              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Application\\Features\\Authentication\\Commands\\Login\\LoginCommandHandler.cs",
+              "RelativeToolTip": "Application\\Features\\Authentication\\Commands\\Login\\LoginCommandHandler.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAcwB0AAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-01T14:26:35.682Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ChangePasswordCommandHandler.cs",
+              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "RelativeDocumentMoniker": "Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "RelativeToolTip": "Application\\Features\\Authentication\\Commands\\ChangePassword\\ChangePasswordCommandHandler.cs",
+              "ViewState": "AgIAAGEAAAAAAAAAAAAlwFIAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-01T13:39:49.985Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "RedisRateLimiter.cs",
+              "DocumentMoniker": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
+              "ToolTip": "H:\\quan_li_nha_hang\\FoodHub_BE\\Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
+              "RelativeToolTip": "Infrastructure\\Services\\RateLimiting\\RedisRateLimiter.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAA7wBQAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-01T13:38:51.667Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace FoodHub.Infrastructure.Persistence.Migrations
+namespace FoodHub.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateEmployee : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

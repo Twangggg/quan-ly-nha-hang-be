@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace FoodHub.Infrastructure.Persistence.Migrations
+namespace FoodHub.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial_Consolidated : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,11 +17,11 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                 {
                     employee_id = table.Column<Guid>(type: "uuid", nullable: false),
                     employee_code = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
-                    username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     password_hash = table.Column<string>(type: "text", nullable: false),
                     full_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     email = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-                    phone = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: false),
+                    phone = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
                     address = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     date_of_birth = table.Column<DateOnly>(type: "date", nullable: true),
                     role = table.Column<short>(type: "smallint", nullable: false),
@@ -62,6 +62,28 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         principalTable: "employees",
                         principalColumn: "employee_id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "password_reset_tokens",
+                columns: table => new
+                {
+                    token_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    employee_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    token_hash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    expires_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    used_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_password_reset_tokens", x => x.token_id);
+                    table.ForeignKey(
+                        name: "fk_password_reset_tokens_employees_employee_id",
+                        column: x => x.employee_id,
+                        principalTable: "employees",
+                        principalColumn: "employee_id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -132,6 +154,22 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "ix_password_reset_tokens_employee_id",
+                table: "password_reset_tokens",
+                column: "employee_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_password_reset_tokens_expires_at",
+                table: "password_reset_tokens",
+                column: "expires_at");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_password_reset_tokens_token_hash",
+                table: "password_reset_tokens",
+                column: "token_hash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "ix_refresh_tokens_employee_id",
                 table: "refresh_tokens",
                 column: "employee_id");
@@ -148,6 +186,9 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.DropTable(
                 name: "audit_logs");
+
+            migrationBuilder.DropTable(
+                name: "password_reset_tokens");
 
             migrationBuilder.DropTable(
                 name: "refresh_tokens");
