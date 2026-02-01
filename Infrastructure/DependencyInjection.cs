@@ -49,6 +49,9 @@ namespace FoodHub.Infrastructure
             // Rate Limiting Service
             services.AddScoped<IRateLimiter, RedisRateLimiter>();
 
+            // Cache Service
+            services.AddScoped<ICacheService, RedisCacheService>();
+
             return services;
         }
     }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using System.Text;
 
 System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
@@ -82,7 +83,13 @@ if (!string.IsNullOrEmpty(allowedOrigins))
 {
     builder.Configuration["AllowedOrigins"] = allowedOrigins;
 }
-// ========================================
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+    options.InstanceName =
+        builder.Configuration["Redis:InstanceName"];
+});
 
 // Add services to the container.
 builder.Services.AddControllers(opt =>
@@ -95,7 +102,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "FoodHub API", Version = "v1" });
-    
+
     // Config JWT in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -127,7 +134,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 //Setting for CORS - Load origins from configuration
-var corsOrigins = builder.Configuration["AllowedOrigins"]?.Split(',') 
+var corsOrigins = builder.Configuration["AllowedOrigins"]?.Split(',')
     ?? new[] { "http://localhost:3000" };
 
 builder.Services.AddCors(opt =>
@@ -170,21 +177,21 @@ if (app.Environment.IsDevelopment())
     // Use Swashbuckle Swagger
     app.UseSwagger();
     app.UseSwaggerUI();
-    
+
     // Auto Migrate & Seed Data
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
         var retryCount = 0;
         var maxRetries = 5;
-        
+
         while (retryCount < maxRetries)
         {
             try
             {
                 var context = services.GetRequiredService<AppDbContext>();
                 var initializer = services.GetRequiredService<DbInitializer>();
-                
+
                 context.Database.Migrate();
                 initializer.Initialize();
                 break; // Success, exit loop
@@ -193,15 +200,15 @@ if (app.Environment.IsDevelopment())
             {
                 retryCount++;
                 var logger = services.GetRequiredService<ILogger<Program>>();
-                
+
                 if (retryCount >= maxRetries)
                 {
                     logger.LogError(ex, "An error occurred while migrating or seeding the database.");
                     throw;
                 }
-                
+
                 logger.LogWarning("Database not ready. Retry {Count}/{Max}...", retryCount, maxRetries);
-                Thread.Sleep(2000); 
+                Thread.Sleep(2000);
             }
         }
     }
