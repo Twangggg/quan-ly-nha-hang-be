@@ -88,19 +88,23 @@ namespace FoodHub.Infrastructure.Persistence
 
             foreach (var e in employees)
             {
-                _context.Employees.Add(e);
-
-                // Add Audit Log for Seed Data
-                _context.AuditLogs.Add(new AuditLog
+                // Check if already exists to avoid duplicate key errors
+                if (!_context.Employees.Any(x => x.EmployeeCode == e.EmployeeCode || x.Username == e.Username || x.Email == e.Email))
                 {
-                    LogId = Guid.NewGuid(),
-                    Action = AuditAction.Create,
-                    TargetId = e.EmployeeId,
-                    PerformedByEmployeeId = e.EmployeeId, // Self-created for seed
-                    CreatedAt = DateTimeOffset.UtcNow,
-                    Reason = "Seed data initialization",
-                    Metadata = "System generated"
-                });
+                    _context.Employees.Add(e);
+
+                    // Add Audit Log for Seed Data
+                    _context.AuditLogs.Add(new AuditLog
+                    {
+                        LogId = Guid.NewGuid(),
+                        Action = AuditAction.Create,
+                        TargetId = e.EmployeeId,
+                        PerformedByEmployeeId = e.EmployeeId, // Self-created for seed
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        Reason = "Seed data initialization",
+                        Metadata = "{\"info\": \"System generated\"}" // Valid JSON for jsonb column
+                    });
+                }
             }
             _context.SaveChanges();
         }

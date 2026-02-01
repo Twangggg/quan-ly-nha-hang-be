@@ -175,18 +175,34 @@ if (app.Environment.IsDevelopment())
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
-        try
+        var retryCount = 0;
+        var maxRetries = 5;
+        
+        while (retryCount < maxRetries)
         {
-            var context = services.GetRequiredService<AppDbContext>();
-            var initializer = services.GetRequiredService<DbInitializer>();
-            
-            context.Database.Migrate();
-            initializer.Initialize();
-        }
-        catch (Exception ex)
-        {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+            try
+            {
+                var context = services.GetRequiredService<AppDbContext>();
+                var initializer = services.GetRequiredService<DbInitializer>();
+                
+                context.Database.Migrate();
+                initializer.Initialize();
+                break; // Success, exit loop
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                
+                if (retryCount >= maxRetries)
+                {
+                    logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+                    throw;
+                }
+                
+                logger.LogWarning("Database not ready. Retry {Count}/{Max}...", retryCount, maxRetries);
+                Thread.Sleep(2000); 
+            }
         }
     }
 }
