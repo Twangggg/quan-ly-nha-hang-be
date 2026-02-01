@@ -7,8 +7,8 @@ namespace FoodHub.Application.Interfaces
         Task<T?> GetByIdAsync(object id);
         IQueryable<T> Query();
         Task AddAsync(T entity);
-        void UpdateAsync(T entity);
-        void DeleteAsync(T entity);
+        void Update(T entity);
+        void Delete(T entity);
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
     }
 }

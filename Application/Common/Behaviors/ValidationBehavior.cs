@@ -2,10 +2,6 @@
 using MediatR;
 namespace FoodHub.Application.Common.Behaviors
 {
-    /// <summary>
-    /// Pipeline behavior tự động validate tất cả requests
-    /// Chạy TRƯỚC KHI Handler được gọi
-    /// </summary>
     public class ValidationBehavior<TRequest, TResponse>
         : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>

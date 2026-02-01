@@ -1,26 +1,36 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+    <UserSecretsId>77e80e2b-ec63-4e67-9f5b-b5cb68f4d8af</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Application\DTOs\" />
-    <Folder Include="Application\Features\Auth\Commands\" />
-    <Folder Include="Application\Features\Auth\Queries\" />
+    <Compile Remove="Presentation\Controllers\Configurations\**" />
+    <Content Remove="Presentation\Controllers\Configurations\**" />
+    <EmbeddedResource Remove="Presentation\Controllers\Configurations\**" />
+    <None Remove="Presentation\Controllers\Configurations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Application\Features\Auth\**" />
+    <Content Remove="Application\Features\Auth\**" />
+    <EmbeddedResource Remove="Application\Features\Auth\**" />
+    <None Remove="Application\Features\Auth\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Application\Services\" />
-    <Folder Include="Application\Validators\" />
-    <Folder Include="Infrastructure\Persistence\Configurations\" />
     <Folder Include="Infrastructure\Persistence\Migrations\" />
-    <Folder Include="Domain\Entities\" />
-    <Folder Include="Presentation\Controllers\Configurations\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AuroraScienceHub.Framework.EntityFramework.NpgSql" Version="9.0.7" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
     <PackageReference Include="MediatR" Version="14.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.12" />
@@ -33,7 +43,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="StackExchange.Redis" Version="2.10.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
   </ItemGroup>
 
 </Project>

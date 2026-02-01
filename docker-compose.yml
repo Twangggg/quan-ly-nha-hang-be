@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:alpine3.23
+    container_name: foodhub_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-foodhub}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - foodhub-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: foodhub_backend
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Override DB_HOST to use container name
+      - DB_HOST=db
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=${DB_NAME:-foodhub};Username=${DB_USER:-postgres};Password=${DB_PASSWORD}
+    ports:
+      - "5000:5000"
+    networks:
+      - foodhub-network
+
+  frontend:
+    build:
+      context: ../quan-ly-nha-hang-fe
+      dockerfile: Dockerfile
+    container_name: foodhub_frontend
+    depends_on:
+      - backend
+    environment:
+      # URL Backend khi gọi từ Server Side (Next.js SSR) -> gọi nội bộ container
+      - API_URL_INTERNAL=http://backend:5000
+      # URL Backend khi gọi từ Client Side (Browser)
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+    ports:
+      - "3000:3000"
+    networks:
+      - foodhub-network
+
+volumes:
+  postgres_data:
+
+networks:
+  foodhub-network:
+    driver: bridge
