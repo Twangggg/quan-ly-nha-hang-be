@@ -1,7 +1,9 @@
-﻿using FoodHub.Application.Common.Exceptions;
+﻿using System.Security.Claims;
+using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Features.Employees.Commands.UpdateMyProfile;
 using FoodHub.Application.Features.Employees.Queries.GetMyProfile;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers.Profile
@@ -9,6 +11,7 @@ namespace FoodHub.Presentation.Controllers.Profile
 
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProfileController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -24,35 +27,10 @@ namespace FoodHub.Presentation.Controllers.Profile
             return Ok(result);
         }
 
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateProfileAsync(Guid id, [FromBody] Command command)
-        //{
-        //    //var userIdClaim = User.FindFirst("uid");
-        //    //if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        //    //{
-        //    //    return NotFound();
-        //    //}
-        //    if (id != command.EmployeeId)
-        //    {
-        //        return BadRequest("ID mismatch");
-        //    }
-
-        //    var result = await _mediator.Send(new Command(
-        //        id, 
-        //        command.FullName, 
-        //        command.Email, 
-        //        command.Phone, 
-        //        command.Address, 
-        //        command.DateOfBirth
-        //        ));
-
-        //    return Ok(result);
-        //}
-
         [HttpPut]
         public async Task<IActionResult> UpdateProfileAsync(Command command)
         {
-            var userIdClaim = User.FindFirst("uid");
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
             {
                 throw new NotFoundException("User not found");

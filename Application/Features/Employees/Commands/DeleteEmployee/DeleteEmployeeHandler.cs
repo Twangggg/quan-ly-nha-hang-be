@@ -1,5 +1,5 @@
 using AutoMapper;
-using FoodHub.Application.Common.Exceptions;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -7,7 +7,7 @@ using MediatR;
 
 namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
 {
-    public class DeleteEmployeeHandler : IRequestHandler<DeleteEmployeeCommand, DeleteEmployeeResponse>
+    public class DeleteEmployeeHandler : IRequestHandler<DeleteEmployeeCommand, Result<DeleteEmployeeResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -20,7 +20,7 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
             _currentUserService = currentUserService;
         }
 
-        public async Task<DeleteEmployeeResponse> Handle(DeleteEmployeeCommand request, CancellationToken cancellationToken)
+        public async Task<Result<DeleteEmployeeResponse>> Handle(DeleteEmployeeCommand request, CancellationToken cancellationToken)
         {
             var employeeRepository = _unitOfWork.Repository<Employee>();
 
@@ -29,28 +29,34 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
 
             if (employee == null)
             {
-                throw new NotFoundException("This employee is not exist");
+                return Result<DeleteEmployeeResponse>.NotFound("This employee does not exist.");
             }
 
             employee.Status = EmployeeStatus.Inactive;
             employee.UpdatedAt = DateTime.UtcNow;
             employee.DeleteAt = DateTime.UtcNow;
 
-            employeeRepository.UpdateAsync(employee);
+            employeeRepository.Update(employee);
+
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            {
+                return Result<DeleteEmployeeResponse>.Failure("Current user identity is missing or invalid.", ResultErrorType.Unauthorized);
+            }
 
             var auditLog = new AuditLog
             {
                 LogId = Guid.NewGuid(),
                 Action = AuditAction.Deactivate,
                 TargetId = employee.EmployeeId,
-                PerformedByEmployeeId = Guid.Parse(_currentUserService.UserId!),
+                PerformedByEmployeeId = auditorId,
                 CreatedAt = DateTimeOffset.UtcNow,
                 Reason = "Deactivate employee (Soft Delete)"
             };
             await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            return _mapper.Map<DeleteEmployeeResponse>(employee);
+            var response = _mapper.Map<DeleteEmployeeResponse>(employee);
+            return Result<DeleteEmployeeResponse>.Success(response);
         }
     }
 }

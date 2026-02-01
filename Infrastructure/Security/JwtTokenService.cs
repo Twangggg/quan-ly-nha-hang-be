@@ -11,7 +11,7 @@ namespace FoodHub.Infrastructure.Security
     public class JwtTokenService : ITokenService
     {
         private readonly JwtSettings _jwtSettings;
-        
+
         public JwtTokenService(IOptions<JwtSettings> options)
         {
             _jwtSettings = options.Value;
@@ -54,8 +54,8 @@ namespace FoodHub.Infrastructure.Security
         public string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
-            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
+            using var randomNumberGenerator = System.Security.Cryptography.RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
 

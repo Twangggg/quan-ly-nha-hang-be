@@ -12,6 +12,78 @@ using System.Text;
 System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 var builder = WebApplication.CreateBuilder(args);
 
+// ========================================
+// Load Environment Variables from .env file
+// ========================================
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envPath))
+{
+    foreach (var line in File.ReadAllLines(envPath))
+    {
+        // Skip comments and empty lines
+        if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
+            continue;
+
+        var parts = line.Split('=', 2);
+        if (parts.Length == 2)
+        {
+            var key = parts[0].Trim();
+            var value = parts[1].Trim();
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+}
+
+// Override configuration from environment variables
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+if (!string.IsNullOrEmpty(jwtSecret))
+{
+    builder.Configuration["Jwt:SecretKey"] = jwtSecret;
+}
+
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
+var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+var dbUser = Environment.GetEnvironmentVariable("DB_USER");
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbPassword))
+{
+    var connectionString = $"Host={dbHost};Port={dbPort ?? "5432"};Database={dbName ?? "FoodHub"};Username={dbUser ?? "postgres"};Password={dbPassword}";
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
+}
+
+var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION");
+if (!string.IsNullOrEmpty(redisConnection))
+{
+    builder.Configuration["ConnectionStrings:Redis"] = redisConnection;
+}
+
+// Gmail SMTP settings from environment
+var emailSmtpHost = Environment.GetEnvironmentVariable("EMAIL_SMTP_HOST");
+var emailSmtpPort = Environment.GetEnvironmentVariable("EMAIL_SMTP_PORT");
+var emailSenderEmail = Environment.GetEnvironmentVariable("EMAIL_SENDER_EMAIL");
+var emailSenderName = Environment.GetEnvironmentVariable("EMAIL_SENDER_NAME");
+var emailAppPassword = Environment.GetEnvironmentVariable("EMAIL_APP_PASSWORD");
+
+if (!string.IsNullOrEmpty(emailSmtpHost))
+    builder.Configuration["EmailSettings:SmtpHost"] = emailSmtpHost;
+if (!string.IsNullOrEmpty(emailSmtpPort))
+    builder.Configuration["EmailSettings:SmtpPort"] = emailSmtpPort;
+if (!string.IsNullOrEmpty(emailSenderEmail))
+    builder.Configuration["EmailSettings:SenderEmail"] = emailSenderEmail;
+if (!string.IsNullOrEmpty(emailSenderName))
+    builder.Configuration["EmailSettings:SenderName"] = emailSenderName;
+if (!string.IsNullOrEmpty(emailAppPassword))
+    builder.Configuration["EmailSettings:AppPassword"] = emailAppPassword;
+
+var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
+if (!string.IsNullOrEmpty(allowedOrigins))
+{
+    builder.Configuration["AllowedOrigins"] = allowedOrigins;
+}
+// ========================================
+
 // Add services to the container.
 builder.Services.AddControllers(opt =>
 {
@@ -54,12 +126,15 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-//Setting for CORS
+//Setting for CORS - Load origins from configuration
+var corsOrigins = builder.Configuration["AllowedOrigins"]?.Split(',') 
+    ?? new[] { "http://localhost:3000" };
+
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("AllowReact",
         policy => policy
-            .WithOrigins("http://localhost:3000") // Explicit Origin required for Credentials
+            .WithOrigins(corsOrigins)
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()); // Allow Cookies
@@ -87,16 +162,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 
 var app = builder.Build();
-
-// Auto-apply migrations
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-    
-    db.Database.Migrate();
-    await DbSeeder.SeedAsync(db, hasher);
-}
 
 app.UseMiddleware<ExceptionMiddleware>();
 

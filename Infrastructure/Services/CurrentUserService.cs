@@ -1,8 +1,7 @@
-using FoodHub.Application.Interfaces;
-using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using FoodHub.Application.Interfaces;
 
-namespace FoodHub.Infrastructure.Security
+namespace FoodHub.Infrastructure.Services
 {
     public class CurrentUserService : ICurrentUserService
     {

@@ -4,8 +4,6 @@ using FoodHub.Application.Common.Behaviors;
 using FoodHub.Application.Extensions.Mappings;
 using MediatR;
 using System.Reflection;
-using FluentValidation;
-using FoodHub.Application.Common.Behaviors;
 
 namespace FoodHub.Application
 {
@@ -19,9 +17,7 @@ namespace FoodHub.Application
                 config.AddProfile<MappingProfile>();
             });
 
-            services.AddTransient(
-                typeof(IPipelineBehavior<,>),
-                typeof(ValidationBehavior<,>));
+
 
             // Đăng ký MediatR
             services.AddMediatR(cfg => {
