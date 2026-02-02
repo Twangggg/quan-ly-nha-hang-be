@@ -38,7 +38,6 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
             employee.FullName = request.FullName;
             employee.Username = request.Username;
             employee.Phone = request.Phone;
-            employee.Role = request.Role;
             employee.Address = request.Address;
             employee.DateOfBirth = request.DateOfBirth;
             employee.UpdatedAt = DateTime.UtcNow;

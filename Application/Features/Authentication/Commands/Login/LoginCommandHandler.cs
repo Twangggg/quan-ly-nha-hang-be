@@ -13,19 +13,30 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordService _passwordService;
         private readonly ITokenService _tokenService;
+        private readonly IRateLimiter _rateLimiter;
 
         public LoginCommandHandler(
             IUnitOfWork unitOfWork,
             IPasswordService passwordService,
-            ITokenService tokenService)
+            ITokenService tokenService,
+            IRateLimiter rateLimiter)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
             _tokenService = tokenService;
+            _rateLimiter = rateLimiter;
         }
 
         public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
+            var rateLimitKey = $"login_attempt:{request.EmployeeCode}";
+
+            // Check if user is currently blocked
+            if (await _rateLimiter.IsBlockedAsync(rateLimitKey, cancellationToken))
+            {
+                return Result<LoginResponse>.Failure("Too many failed attempts. Your account is temporarily blocked.");
+            }
+
             // Tìm employee chỉ bằng EmployeeCode
             var employee = await _unitOfWork.Repository<Employee>()
                 .Query()
@@ -39,8 +50,19 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
             // Kiểm tra mật khẩu
             if (!_passwordService.VerifyPassword(request.Password, employee.PasswordHash))
             {
+                // Register failed attempt (block after 5 attempts in 15 mins)
+                await _rateLimiter.RegisterFailAsync(
+                    rateLimitKey,
+                    limit: 5,
+                    window: TimeSpan.FromMinutes(15),
+                    blockFor: TimeSpan.FromMinutes(15),
+                    cancellationToken);
+
                 return Result<LoginResponse>.Failure(Messages.InvalidCredentials);
             }
+
+            // All good - reset failure count
+            await _rateLimiter.ResetAsync(rateLimitKey, cancellationToken);
 
             // Kiểm tra trạng thái account
             if (employee.Status == EmployeeStatus.Inactive)

@@ -2,6 +2,8 @@
 using FluentValidation.AspNetCore;
 using FoodHub.Application.Common.Behaviors;
 using FoodHub.Application.Extensions.Mappings;
+using FoodHub.Application.Interfaces;
+using FoodHub.Application.Services;
 using MediatR;
 using System.Reflection;
 
@@ -20,7 +22,8 @@ namespace FoodHub.Application
 
 
             // Đăng ký MediatR
-            services.AddMediatR(cfg => {
+            services.AddMediatR(cfg =>
+            {
                 cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
                 cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             });
@@ -28,7 +31,7 @@ namespace FoodHub.Application
             // Đăng ký FluentValidation
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-
+            services.AddScoped<IEmployeeServices, EmployeeServices>();
             return services;
         }
     }

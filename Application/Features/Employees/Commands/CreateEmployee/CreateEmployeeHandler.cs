@@ -14,19 +14,22 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
         private readonly ICurrentUserService _currentUserService;
         private readonly IPasswordService _passwordService;
         private readonly IEmailService _emailService;
+        private readonly IEmployeeServices _employeeServices;
 
         public CreateEmployeeHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IPasswordService passwordService,
             ICurrentUserService currentUserService,
-            IEmailService emailService)
+            IEmailService emailService,
+            IEmployeeServices employeeServices)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
             _passwordService = passwordService;
             _emailService = emailService;
+            _employeeServices = employeeServices;
         }
 
         public async Task<Result<CreateEmployeeResponse>> Handle(CreateEmployeeCommand request, CancellationToken cancellationToken)
@@ -36,6 +39,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             employee.PasswordHash = _passwordService.HashPassword(randomPassword);
             employee.EmployeeId = Guid.NewGuid();
             employee.CreatedAt = DateTime.UtcNow;
+            employee.EmployeeCode = await _employeeServices.GenerateEmployeeCodeAsync(request.Role);
 
             await _unitOfWork.Repository<Employee>().AddAsync(employee);
 
@@ -56,13 +60,12 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            await _emailService.SendEmailAsync(employee.Email,
-                "Chào mừng đến FoodHub - Thông tin tài khoản",
-                $"<h2>Xin chào {employee.FullName}</h2>" +
-                $"<p>Tài khoản của bạn đã được tạo.</p>" +
-                $"<p><strong>Employee Code:</strong> {employee.EmployeeCode}</p>" +
-                $"<p><strong>Mật khẩu tạm thời:</strong> {randomPassword}</p>" +
-                $"<p>Vui lòng đổi mật khẩu ngay khi đăng nhập lần đầu.</p>",
+            await _emailService.SendAccountCreationEmailAsync(
+                employee.Email,
+                employee.FullName,
+                employee.EmployeeCode,
+                employee.Role.ToString(),
+                randomPassword,
                 cancellationToken);
 
             var response = _mapper.Map<CreateEmployeeResponse>(employee);

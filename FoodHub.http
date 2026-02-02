@@ -1,0 +1,12 @@
+﻿@FoodHub_HostAddress = https://localhost:7265
+
+POST {{FoodHub_HostAddress}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+    "currentPassword": "admin",
+  "newPassword": "admin123",
+  "confirmPassword": "NewPassword@2025"
+}
+
+###

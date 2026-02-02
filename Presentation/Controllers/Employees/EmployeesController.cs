@@ -14,7 +14,7 @@ namespace FoodHub.Presentation.Controllers.Employees
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Manager")]
     public class EmployeesController : ControllerBase
     {
         private readonly IMediator _mediator;

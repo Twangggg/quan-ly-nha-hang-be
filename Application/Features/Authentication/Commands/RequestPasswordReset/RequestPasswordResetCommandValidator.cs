@@ -7,8 +7,9 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
         public RequestPasswordResetCommandValidator()
         {
             RuleFor(x => x.EmployeeCode)
-                .NotEmpty().WithMessage("Invalid Employee code.")
-                .MaximumLength(10).WithMessage("Invalid Employee code.");
+                .NotEmpty().WithMessage("Employee code is required.")
+                .Matches(@"^[WCBM]\d{6}$")
+                .WithMessage("Invalid Employee code format.");
         }
     }
 }

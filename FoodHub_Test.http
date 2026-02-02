@@ -1,0 +1,49 @@
+@BaseUrl = http://localhost:5133
+@AuthToken = YOUR_JWT_TOKEN_HERE
+
+### 1. Đăng nhập (Lấy Token)
+POST {{BaseUrl}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "employeeCode": "ADMIN001",
+  "password": "Password123!",
+  "rememberMe": true
+}
+
+### 2. Đổi mật khẩu (Yêu cầu Token)
+POST {{BaseUrl}}/api/Auth/change-password
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "Password123!",
+  "newPassword": "NewPassword@2025",
+  "confirmPassword": "NewPassword@2025"
+}
+
+### 3. Lấy danh sách nhân viên (Yêu cầu Token)
+# Ví dụ: PagedResult với Filter và Search
+POST {{BaseUrl}}/api/Employees/get-employees
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "pagination": {
+    "pageIndex": 1,
+    "pageSize": 10,
+    "search": "Khai Toan",
+    "orderBy": ["fullName asc"],
+    "filters": {
+      "status": "Active"
+    }
+  }
+}
+
+### 4. Logout (Thu hồi Refresh Token)
+POST {{BaseUrl}}/api/Auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "YOUR_REFRESH_TOKEN_HERE"
+}

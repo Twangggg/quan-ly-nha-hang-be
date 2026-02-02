@@ -6,7 +6,6 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
     {
         public CreateEmployeeValidator()
         {
-            RuleFor(x => x.EmployeeCode).NotEmpty().MaximumLength(20);
             RuleFor(x => x.FullName).NotEmpty().MaximumLength(100);
             RuleFor(x => x.Email).NotEmpty().EmailAddress();
             RuleFor(x => x.Role).IsInEnum();
