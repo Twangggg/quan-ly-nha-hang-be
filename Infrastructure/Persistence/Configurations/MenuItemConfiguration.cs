@@ -8,61 +8,67 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<MenuItem> builder)
         {
-            builder.HasKey(m => m.MenuItemId);
+            builder.ToTable("menu_items");
 
-            builder.Property(m => m.Code)
-                .IsRequired()
-                .HasMaxLength(20);
+            builder.HasKey(e => e.Id);
+            builder.Property(e => e.Id).HasColumnName("menu_item_id");
 
-            builder.Property(m => m.Name)
-                .IsRequired()
-                .HasMaxLength(100);
+            builder.Property(e => e.Code)
+                .HasColumnName("code")
+                .HasMaxLength(50)
+                .IsRequired();
+            
+            builder.HasIndex(e => e.Code).IsUnique();
 
-            builder.Property(m => m.Description)
+            builder.Property(e => e.Name)
+                .HasColumnName("name")
+                .HasMaxLength(150)
+                .IsRequired();
+
+            builder.Property(e => e.ImageUrl)
+                .HasColumnName("image_url")
+                .HasMaxLength(255)
+                .IsRequired();
+
+            builder.Property(e => e.Description)
+                .HasColumnName("description")
                 .HasMaxLength(500);
 
-            builder.Property(m => m.Price)
-                .IsRequired()
-                .HasPrecision(18, 2);
+            builder.Property(e => e.CategoryId).HasColumnName("category_id");
 
-            builder.Property(m => m.Cost)
-                .IsRequired()
-                .HasPrecision(18, 2);
+            builder.Property(e => e.Station).HasColumnName("station");
+            builder.Property(e => e.ExpectedTime).HasColumnName("expected_time");
 
-            builder.Property(m => m.ImageUrl)
-                .HasMaxLength(500);
+            builder.Property(e => e.PriceDineIn)
+                .HasColumnName("price_dine_in")
+                .HasPrecision(12, 2);
 
-            builder.Property(m => m.IsActive)
-                .HasDefaultValue(true);
+            builder.Property(e => e.PriceTakeAway)
+                .HasColumnName("price_take_away")
+                .HasPrecision(12, 2);
 
-            builder.Property(m => m.IsOutOfStock)
-                .HasDefaultValue(false);
+            builder.Property(e => e.Cost)
+                .HasColumnName("cost")
+                .HasPrecision(12, 2);
 
-            builder.Property(m => m.CreatedAt)
-                .HasDefaultValueSql("now()");
-
-            // Indexes
-            builder.HasIndex(m => m.Code).IsUnique();
-            builder.HasIndex(m => m.Name);
-            builder.HasIndex(m => m.CategoryId);
-            builder.HasIndex(m => m.IsActive);
-            builder.HasIndex(m => m.IsOutOfStock);
+            builder.Property(e => e.IsOutOfStock).HasColumnName("is_out_of_stock");
 
             // Relationships
-            builder.HasOne(m => m.Category)
+            builder.HasOne(e => e.Category)
                 .WithMany(c => c.MenuItems)
-                .HasForeignKey(m => m.CategoryId)
+                .HasForeignKey(e => e.CategoryId)
+                .HasConstraintName("fk_menu_items_category_id")
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(m => m.OptionGroups)
-                .WithOne(og => og.MenuItem)
-                .HasForeignKey(og => og.MenuItemId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // BaseEntity
+            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
+            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
+            builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
-            builder.HasMany(m => m.SetMenuItems)
-                .WithOne(smi => smi.MenuItem)
-                .HasForeignKey(smi => smi.MenuItemId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // Indexes
+            builder.HasIndex(e => e.CategoryId).HasDatabaseName("idx_menu_items_category_id");
         }
     }
 }

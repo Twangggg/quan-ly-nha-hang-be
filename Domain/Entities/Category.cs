@@ -1,20 +1,14 @@
+using System;
+using System.Collections.Generic;
+using FoodHub.Domain.Enums;
+
 namespace FoodHub.Domain.Entities
 {
-    public class Category
+    public class Category : BaseEntity
     {
-        public Guid CategoryId { get; set; }
-        public string Name { get; set; } = null!;
-        public string? Description { get; set; }
-        public int DisplayOrder { get; set; }
-        public bool IsActive { get; set; } = true;
-        
-        // Audit fields
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public Guid? CreatedBy { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdatedBy { get; set; }
+        public required string Name { get; set; }
+        public CategoryType Type { get; set; }
 
-        // Navigation property
         public virtual ICollection<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
     }
 }

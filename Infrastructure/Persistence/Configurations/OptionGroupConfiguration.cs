@@ -8,37 +8,37 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<OptionGroup> builder)
         {
-            builder.HasKey(og => og.OptionGroupId);
+            builder.ToTable("option_groups");
 
-            builder.Property(og => og.Name)
-                .IsRequired()
-                .HasMaxLength(100);
+            builder.HasKey(e => e.Id);
+            builder.Property(e => e.Id).HasColumnName("option_group_id");
 
-            builder.Property(og => og.MinSelect)
-                .HasDefaultValue(0);
+            builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
 
-            builder.Property(og => og.MaxSelect)
-                .HasDefaultValue(1);
+            builder.Property(e => e.Name)
+                .HasColumnName("name")
+                .HasMaxLength(100)
+                .IsRequired();
 
-            builder.Property(og => og.IsRequired)
-                .HasDefaultValue(false);
-
-            builder.Property(og => og.CreatedAt)
-                .HasDefaultValueSql("now()");
-
-            // Indexes
-            builder.HasIndex(og => og.MenuItemId);
+            builder.Property(e => e.Type).HasColumnName("type");
+            builder.Property(e => e.IsRequired).HasColumnName("is_required");
 
             // Relationships
-            builder.HasOne(og => og.MenuItem)
+            builder.HasOne(e => e.MenuItem)
                 .WithMany(m => m.OptionGroups)
-                .HasForeignKey(og => og.MenuItemId)
+                .HasForeignKey(e => e.MenuItemId)
+                .HasConstraintName("fk_option_groups_menu_item_id")
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(og => og.OptionItems)
-                .WithOne(oi => oi.OptionGroup)
-                .HasForeignKey(oi => oi.OptionGroupId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // BaseEntity
+            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
+            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
+            builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+
+            // Indexes
+            builder.HasIndex(e => e.MenuItemId).HasDatabaseName("idx_option_groups_menu_item_id");
         }
     }
 }

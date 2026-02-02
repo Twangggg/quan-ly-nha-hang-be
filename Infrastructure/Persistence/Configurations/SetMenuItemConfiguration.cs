@@ -8,27 +8,39 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<SetMenuItem> builder)
         {
-            builder.HasKey(smi => smi.SetMenuItemId);
+            builder.ToTable("set_menu_items");
 
-            builder.Property(smi => smi.Quantity)
-                .IsRequired();
+            builder.HasKey(e => e.Id);
+            builder.Property(e => e.Id).HasColumnName("set_menu_item_id");
 
-            builder.Property(smi => smi.CreatedAt)
-                .HasDefaultValueSql("now()");
+            builder.Property(e => e.SetMenuId).HasColumnName("set_menu_id");
+            builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
 
-            // Composite index for uniqueness
-            builder.HasIndex(smi => new { smi.SetMenuId, smi.MenuItemId }).IsUnique();
+            builder.Property(e => e.Quantity).HasColumnName("quantity");
 
             // Relationships
-            builder.HasOne(smi => smi.SetMenu)
-                .WithMany(sm => sm.SetMenuItems)
-                .HasForeignKey(smi => smi.SetMenuId)
+            builder.HasOne(e => e.SetMenu)
+                .WithMany(s => s.SetMenuItems)
+                .HasForeignKey(e => e.SetMenuId)
+                .HasConstraintName("fk_set_menu_items_set_menu_id")
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(smi => smi.MenuItem)
+            builder.HasOne(e => e.MenuItem)
                 .WithMany(m => m.SetMenuItems)
-                .HasForeignKey(smi => smi.MenuItemId)
+                .HasForeignKey(e => e.MenuItemId)
+                .HasConstraintName("fk_set_menu_items_menu_item_id")
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // BaseEntity
+            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
+            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
+            builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+            
+            // Indexes
+            builder.HasIndex(e => e.SetMenuId).HasDatabaseName("idx_set_menu_items_set_menu_id");
+            builder.HasIndex(e => e.MenuItemId).HasDatabaseName("idx_set_menu_items_menu_item_id");
         }
     }
 }

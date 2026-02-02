@@ -8,34 +8,26 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Category> builder)
         {
-            builder.HasKey(c => c.CategoryId);
+            builder.ToTable("categories");
 
-            builder.Property(c => c.Name)
-                .IsRequired()
-                .HasMaxLength(100);
+            builder.HasKey(e => e.Id);
+            builder.Property(e => e.Id).HasColumnName("category_id");
 
-            builder.Property(c => c.Description)
-                .HasMaxLength(500);
-
-            builder.Property(c => c.DisplayOrder)
+            builder.Property(e => e.Name)
+                .HasColumnName("name")
+                .HasMaxLength(100)
                 .IsRequired();
 
-            builder.Property(c => c.IsActive)
-                .HasDefaultValue(true);
+            builder.HasIndex(e => e.Name).IsUnique();
 
-            builder.Property(c => c.CreatedAt)
-                .HasDefaultValueSql("now()");
+            builder.Property(e => e.Type).HasColumnName("type");
 
-            // Indexes
-            builder.HasIndex(c => c.Name).IsUnique();
-            builder.HasIndex(c => c.DisplayOrder);
-            builder.HasIndex(c => c.IsActive);
-
-            // Relationships
-            builder.HasMany(c => c.MenuItems)
-                .WithOne(m => m.Category)
-                .HasForeignKey(m => m.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // BaseEntity
+            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
+            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
+            builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
         }
     }
 }
