@@ -66,7 +66,7 @@ namespace FoodHub.Presentation.Controllers.MenuItems
                 return BadRequest(new { message = result.Error });
             }
 
-            return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data }, result.Data);
+            return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data.MenuItemId }, result.Data);
         }
 
         [HttpPut("{id}")]

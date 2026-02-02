@@ -46,3 +46,4 @@ appsettings.Development.json
 
 # Others
 .DS_Store
+server.log

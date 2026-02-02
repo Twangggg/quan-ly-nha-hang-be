@@ -16,6 +16,6 @@ namespace FoodHub.Application.DTOs.MenuItems
         public decimal? Cost { get; set; } // Only visible to Manager/Cashier
         public bool IsOutOfStock { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

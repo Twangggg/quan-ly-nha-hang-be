@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace FoodHub.Infrastructure.Persistence.Migrations
+namespace FoodHub.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMenuDb : Migration
+    public partial class AddMenuManagementTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
