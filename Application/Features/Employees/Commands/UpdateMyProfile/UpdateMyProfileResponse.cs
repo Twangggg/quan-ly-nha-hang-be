@@ -1,0 +1,20 @@
+﻿using AutoMapper;
+using FluentValidation;
+using FoodHub.Application.Common.Exceptions;
+using FoodHub.Application.Extensions.Mappings;
+using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Entities;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
+{
+    public class Response : IMapFrom<Employee>
+    {
+        public string FullName { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public string Phone { get; set; } = null!;
+        public string? Address { get; set; }
+        public DateOnly? DateOfBirth { get; set; }
+    }
+}
