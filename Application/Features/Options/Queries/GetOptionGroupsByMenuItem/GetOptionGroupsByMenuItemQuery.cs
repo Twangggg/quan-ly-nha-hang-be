@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.DTOs.Options;
 using MediatR;
 

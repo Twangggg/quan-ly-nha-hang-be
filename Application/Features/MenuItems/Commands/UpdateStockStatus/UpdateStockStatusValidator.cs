@@ -6,8 +6,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateStockStatus
     {
         public UpdateStockStatusValidator()
         {
-            RuleFor(x => x.MenuItemId)
-                .NotEmpty().WithMessage("Menu item ID is required");
+            // TODO: Add validation rules
         }
     }
 }
