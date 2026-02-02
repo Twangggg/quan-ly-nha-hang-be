@@ -60,7 +60,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            await _emailService.SendAccountCreationEmailAsync(
+            var emailSent = await _emailService.SendAccountCreationEmailAsync(
                 employee.Email,
                 employee.FullName,
                 employee.EmployeeCode,
@@ -69,6 +69,16 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
                 cancellationToken);
 
             var response = _mapper.Map<CreateEmployeeResponse>(employee);
+
+            if (!emailSent)
+            {
+                return Result<CreateEmployeeResponse>.SuccessWithWarning(
+                    response,
+                    $"Tài khoản đã được tạo thành công nhưng email thông báo không được gửi. " +
+                    $"Vui lòng thông báo trực tiếp cho nhân viên. Mã: {employee.EmployeeCode}, Mật khẩu: {randomPassword}"
+                );
+            }
+
             return Result<CreateEmployeeResponse>.Success(response);
         }
     }

@@ -72,16 +72,16 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
             };
             await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
-            // 6. Gửi email thông báo
-            await _emailService.SendPasswordResetByManagerEmailAsync(
+
+            var emailSent = await _emailService.SendPasswordResetByManagerEmailAsync(
                 employee.Email,
                 employee.FullName,
                 employee.EmployeeCode,
                 newPassword,
                 manager.FullName,
                 cancellationToken);
-            // 7. Trả về response
-            return Result<ResetEmployeePasswordResponse>.Success(new ResetEmployeePasswordResponse
+
+            var response = new ResetEmployeePasswordResponse
             {
                 EmployeeId = employee.EmployeeId,
                 EmployeeCode = employee.EmployeeCode,
@@ -89,8 +89,20 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 Email = employee.Email,
                 NewPassword = newPassword,
                 ResetAt = DateTime.UtcNow,
-                Message = $"Mật khẩu đã được reset thành công. Email thông báo đã được gửi tới {employee.Email}"
-            });
+                Message = emailSent
+                    ? $"Mật khẩu đã được reset thành công. Email thông báo đã được gửi tới {employee.Email}"
+                    : $"Mật khẩu đã được reset thành công nhưng email thông báo không được gửi. Vui lòng thông báo trực tiếp cho nhân viên. Mật khẩu mới: {newPassword}"
+            };
+
+            if (!emailSent)
+            {
+                return Result<ResetEmployeePasswordResponse>.SuccessWithWarning(
+                    response,
+                    "Email thông báo không được gửi. Vui lòng thông báo trực tiếp cho nhân viên."
+                );
+            }
+
+            return Result<ResetEmployeePasswordResponse>.Success(response);
         }
     }
 }

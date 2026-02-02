@@ -111,6 +111,10 @@ namespace FoodHub.Infrastructure.Services
             string password,
             CancellationToken cancellationToken = default)
         {
+            if (!IsValidEmail(email))
+            {
+                throw new ArgumentException("Invalid email format", nameof(email));
+            }
             try
             {
                 using var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort)
@@ -150,6 +154,10 @@ namespace FoodHub.Infrastructure.Services
             string newRole,
             CancellationToken cancellationToken = default)
         {
+            if (!IsValidEmail(email))
+            {
+                throw new ArgumentException("Invalid email format", nameof(email));
+            }
             try
             {
                 using var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort)
@@ -402,6 +410,10 @@ namespace FoodHub.Infrastructure.Services
     string managerName,
     CancellationToken cancellationToken = default)
         {
+            if (!IsValidEmail(email))
+            {
+                throw new ArgumentException("Invalid email format", nameof(email));
+            }
             try
             {
                 using var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort)

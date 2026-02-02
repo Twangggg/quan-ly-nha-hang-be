@@ -7,8 +7,9 @@ using FoodHub.Application.Features.Employees.Queries.GetEmployeeById;
 using FoodHub.Application.Features.Employees.Queries.GetEmployees;
 using FoodHub.Application.Features.Employees.Queries.GetAuditLogs;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using FoodHub.Application.Features.Employees.Commands.ChangeRole;
+using FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword;
 
 namespace FoodHub.Presentation.Controllers.Employees
 {
@@ -26,13 +27,24 @@ namespace FoodHub.Presentation.Controllers.Employees
         private IActionResult HandleResult<T>(Result<T> result)
         {
             if (result.IsSuccess)
+            {
+                if (result.HasWarning)
+                {
+                    return Ok(new
+                    {
+                        data = result.Data,
+                        warning = result.Warning
+                    });
+                }
                 return Ok(result.Data);
+            }
 
             return result.ErrorType switch
             {
                 ResultErrorType.NotFound => NotFound(new { message = result.Error }),
                 ResultErrorType.Unauthorized => Unauthorized(new { message = result.Error }),
                 ResultErrorType.Forbidden => Forbid(),
+                ResultErrorType.Conflict => Conflict(new { message = result.Error }),
                 _ => BadRequest(new { message = result.Error })
             };
         }
@@ -87,6 +99,20 @@ namespace FoodHub.Presentation.Controllers.Employees
             var query = new GetAuditLogsQuery(id, pagination);
             var result = await _mediator.Send(query);
             return HandleResult<PagedResult<GetAuditLogsResponse>>(result);
+        }
+
+        [HttpPost("change-role")]
+        public async Task<IActionResult> ChangeRole([FromBody] ChangeRoleCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetEmployeePassword([FromBody] ResetEmployeePasswordCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return HandleResult(result);
         }
     }
 }
