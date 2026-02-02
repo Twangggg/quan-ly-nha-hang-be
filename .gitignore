@@ -39,6 +39,8 @@ bld/
 # Sensitive files
 appsettings.json
 appsettings.Development.json
+.env
+*.env.local
 *.pfx
 *.publishsettings
 

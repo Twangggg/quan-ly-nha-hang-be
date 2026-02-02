@@ -1,5 +1,6 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces;
@@ -9,7 +10,7 @@ using System.Linq.Expressions;
 
 namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
 {
-    public class GetEmployeesHandler : IRequestHandler<GetEmployeesQuery, PagedResult<GetEmployeesResponse>>
+    public class GetEmployeesHandler : IRequestHandler<GetEmployeesQuery, Result<PagedResult<GetEmployeesResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -20,7 +21,7 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
             _mapper = mapper;
         }
 
-        public async Task<PagedResult<GetEmployeesResponse>> Handle(GetEmployeesQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<GetEmployeesResponse>>> Handle(GetEmployeesQuery request, CancellationToken cancellationToken)
         {
             var query = _unitOfWork.Repository<Employee>().Query();
 
@@ -58,9 +59,11 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
                 sortMapping,
                 u => u.EmployeeId);
 
-            return await query
+            var pagedResult = await query
                 .ProjectTo<GetEmployeesResponse>(_mapper.ConfigurationProvider)
                 .ToPagedResultAsync(request.Pagination);
+
+            return Result<PagedResult<GetEmployeesResponse>>.Success(pagedResult);
         }
     }
 }

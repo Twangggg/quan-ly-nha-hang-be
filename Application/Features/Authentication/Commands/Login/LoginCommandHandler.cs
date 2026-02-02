@@ -1,6 +1,4 @@
-using AutoMapper;
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.Authentication;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
@@ -10,26 +8,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Authentication.Commands.Login
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginResponseDto>>
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IPasswordHasher _passwordHasher;
+        private readonly IPasswordService _passwordService;
         private readonly ITokenService _tokenService;
-        private readonly IMapper _mapper;
 
         public LoginCommandHandler(
             IUnitOfWork unitOfWork,
-            IPasswordHasher passwordHasher,
-            ITokenService tokenService,
-            IMapper mapper)
+            IPasswordService passwordService,
+            ITokenService tokenService)
         {
             _unitOfWork = unitOfWork;
-            _passwordHasher = passwordHasher;
+            _passwordService = passwordService;
             _tokenService = tokenService;
-            _mapper = mapper;
         }
 
-        public async Task<Result<LoginResponseDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             // Tìm employee chỉ bằng EmployeeCode
             var employee = await _unitOfWork.Repository<Employee>()
@@ -38,19 +33,19 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
 
             if (employee == null)
             {
-                return Result<LoginResponseDto>.Failure(Messages.InvalidCredentials);
+                return Result<LoginResponse>.Failure(Messages.InvalidCredentials);
             }
 
             // Kiểm tra mật khẩu
-            if (!_passwordHasher.VerifyPassword(request.Password, employee.PasswordHash))
+            if (!_passwordService.VerifyPassword(request.Password, employee.PasswordHash))
             {
-                return Result<LoginResponseDto>.Failure(Messages.InvalidCredentials);
+                return Result<LoginResponse>.Failure(Messages.InvalidCredentials);
             }
 
             // Kiểm tra trạng thái account
             if (employee.Status == EmployeeStatus.Inactive)
             {
-                return Result<LoginResponseDto>.Failure(Messages.AccountInactive);
+                return Result<LoginResponse>.Failure(Messages.AccountInactive);
             }
 
             // Tạo access token
@@ -60,13 +55,13 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
             // Tạo refresh token
             var refreshToken = _tokenService.GenerateRefreshToken();
             // Config: Default 7 days from appsettings
-            var configDays = _tokenService.GetRefreshTokenExpirationDays(); 
-            
+            var configDays = _tokenService.GetRefreshTokenExpirationDays();
+
             // Logic: If RememberMe -> 30 Days (or config * 4). If not -> Config (7 days).
             var expirationDays = request.RememberMe ? 30 : configDays;
             var expirationDate = DateTime.UtcNow.AddDays(expirationDays);
 
-            var refreshTokenEntity = new FoodHub.Domain.Entities.RefreshToken
+            var refreshTokenEntity = new Domain.Entities.RefreshToken
             {
                 Token = refreshToken,
                 Expires = expirationDate,
@@ -77,7 +72,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
             await _unitOfWork.Repository<FoodHub.Domain.Entities.RefreshToken>().AddAsync(refreshTokenEntity);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            var response = new LoginResponseDto
+            var response = new LoginResponse
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
@@ -88,7 +83,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 ExpiresIn = expiresIn
             };
 
-            return Result<LoginResponseDto>.Success(response);
+            return Result<LoginResponse>.Success(response);
         }
     }
 }

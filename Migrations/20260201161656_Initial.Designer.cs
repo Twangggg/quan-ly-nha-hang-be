@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodHub.Infrastructure.Persistence.Migrations
+namespace FoodHub.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260131120717_MakeUsernameOptional")]
-    partial class MakeUsernameOptional
+    [Migration("20260201161656_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -119,7 +119,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnName("password_hash");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasMaxLength(15)
                         .HasColumnType("character varying(15)")
                         .HasColumnName("phone");
@@ -169,6 +168,53 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_employees_username");
 
                     b.ToTable("employees", (string)null);
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<Guid>("TokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("token_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.HasKey("TokenId")
+                        .HasName("pk_password_reset_tokens");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_password_reset_tokens_employee_id");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("ix_password_reset_tokens_expires_at");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_password_reset_tokens_token_hash");
+
+                    b.ToTable("password_reset_tokens", (string)null);
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
@@ -240,6 +286,18 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.Navigation("PerformedBy");
 
                     b.Navigation("Target");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_password_reset_tokens_employees_employee_id");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>

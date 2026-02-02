@@ -7,10 +7,89 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using System.Text;
 
 System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 var builder = WebApplication.CreateBuilder(args);
+
+// ========================================
+// Load Environment Variables from .env file
+// ========================================
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envPath))
+{
+    foreach (var line in File.ReadAllLines(envPath))
+    {
+        // Skip comments and empty lines
+        if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
+            continue;
+
+        var parts = line.Split('=', 2);
+        if (parts.Length == 2)
+        {
+            var key = parts[0].Trim();
+            var value = parts[1].Trim();
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+}
+
+// Override configuration from environment variables
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+if (!string.IsNullOrEmpty(jwtSecret))
+{
+    builder.Configuration["Jwt:SecretKey"] = jwtSecret;
+}
+
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
+var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+var dbUser = Environment.GetEnvironmentVariable("DB_USER");
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbPassword))
+{
+    var connectionString = $"Host={dbHost};Port={dbPort ?? "5432"};Database={dbName ?? "FoodHub"};Username={dbUser ?? "postgres"};Password={dbPassword}";
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
+}
+
+var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION");
+if (!string.IsNullOrEmpty(redisConnection))
+{
+    builder.Configuration["ConnectionStrings:Redis"] = redisConnection;
+}
+
+// Gmail SMTP settings from environment
+var emailSmtpHost = Environment.GetEnvironmentVariable("EMAIL_SMTP_HOST");
+var emailSmtpPort = Environment.GetEnvironmentVariable("EMAIL_SMTP_PORT");
+var emailSenderEmail = Environment.GetEnvironmentVariable("EMAIL_SENDER_EMAIL");
+var emailSenderName = Environment.GetEnvironmentVariable("EMAIL_SENDER_NAME");
+var emailAppPassword = Environment.GetEnvironmentVariable("EMAIL_APP_PASSWORD");
+
+if (!string.IsNullOrEmpty(emailSmtpHost))
+    builder.Configuration["EmailSettings:SmtpHost"] = emailSmtpHost;
+if (!string.IsNullOrEmpty(emailSmtpPort))
+    builder.Configuration["EmailSettings:SmtpPort"] = emailSmtpPort;
+if (!string.IsNullOrEmpty(emailSenderEmail))
+    builder.Configuration["EmailSettings:SenderEmail"] = emailSenderEmail;
+if (!string.IsNullOrEmpty(emailSenderName))
+    builder.Configuration["EmailSettings:SenderName"] = emailSenderName;
+if (!string.IsNullOrEmpty(emailAppPassword))
+    builder.Configuration["EmailSettings:AppPassword"] = emailAppPassword;
+
+var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
+if (!string.IsNullOrEmpty(allowedOrigins))
+{
+    builder.Configuration["AllowedOrigins"] = allowedOrigins;
+}
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+    options.InstanceName =
+        builder.Configuration["Redis:InstanceName"];
+});
 
 // Add services to the container.
 builder.Services.AddControllers(opt =>
@@ -23,7 +102,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "FoodHub API", Version = "v1" });
-    
+
     // Config JWT in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -54,12 +133,15 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-//Setting for CORS
+//Setting for CORS - Load origins from configuration
+var corsOrigins = builder.Configuration["AllowedOrigins"]?.Split(',')
+    ?? new[] { "http://localhost:3000" };
+
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("AllowReact",
         policy => policy
-            .WithOrigins("http://localhost:3000") // Explicit Origin required for Credentials
+            .WithOrigins(corsOrigins)
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()); // Allow Cookies
@@ -88,16 +170,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// Auto-apply migrations
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-    
-    db.Database.Migrate();
-    await DbSeeder.SeedAsync(db, hasher);
-}
-
 app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -105,23 +177,39 @@ if (app.Environment.IsDevelopment())
     // Use Swashbuckle Swagger
     app.UseSwagger();
     app.UseSwaggerUI();
-    
+
     // Auto Migrate & Seed Data
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
-        try
+        var retryCount = 0;
+        var maxRetries = 5;
+
+        while (retryCount < maxRetries)
         {
-            var context = services.GetRequiredService<AppDbContext>();
-            var initializer = services.GetRequiredService<DbInitializer>();
-            
-            context.Database.Migrate();
-            initializer.Initialize();
-        }
-        catch (Exception ex)
-        {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+            try
+            {
+                var context = services.GetRequiredService<AppDbContext>();
+                var initializer = services.GetRequiredService<DbInitializer>();
+
+                context.Database.Migrate();
+                initializer.Initialize();
+                break; // Success, exit loop
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+
+                if (retryCount >= maxRetries)
+                {
+                    logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+                    throw;
+                }
+
+                logger.LogWarning("Database not ready. Retry {Count}/{Max}...", retryCount, maxRetries);
+                Thread.Sleep(2000);
+            }
         }
     }
 }

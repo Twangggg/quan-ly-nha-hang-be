@@ -1,4 +1,5 @@
-﻿using FoodHub.Application.Extensions.Pagination;
+﻿using FoodHub.Application.Common.Models;
+using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.Employees.Commands.CreateEmployee;
 using FoodHub.Application.Features.Employees.Commands.DeleteEmployee;
 using FoodHub.Application.Features.Employees.Commands.UpdateEmployee;
@@ -22,12 +23,26 @@ namespace FoodHub.Presentation.Controllers.Employees
             _mediator = mediator;
         }
 
+        private IActionResult HandleResult<T>(Result<T> result)
+        {
+            if (result.IsSuccess)
+                return Ok(result.Data);
+
+            return result.ErrorType switch
+            {
+                ResultErrorType.NotFound => NotFound(new { message = result.Error }),
+                ResultErrorType.Unauthorized => Unauthorized(new { message = result.Error }),
+                ResultErrorType.Forbidden => Forbid(),
+                _ => BadRequest(new { message = result.Error })
+            };
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetEmployeesAsync([FromQuery] PaginationParams pagination)
         {
             var query = new GetEmployeesQuery(pagination);
             var result = await _mediator.Send(query);
-            return Ok(result);
+            return HandleResult<PagedResult<GetEmployeesResponse>>(result);
         }
 
         [HttpGet("{id}")]
@@ -35,14 +50,17 @@ namespace FoodHub.Presentation.Controllers.Employees
         {
             var query = new GetEmployeeByIdQuery(id);
             var result = await _mediator.Send(query);
-            return Ok(result);
+            return HandleResult(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateEmployeeAsync([FromBody] CreateEmployeeCommand command)
         {
             var result = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetEmployeeById), new { id = result.EmployeeId }, result);
+            if (!result.IsSuccess)
+                return HandleResult(result);
+
+            return CreatedAtAction(nameof(GetEmployeeById), new { id = result.Data!.EmployeeId }, result.Data);
         }
 
         [HttpPut("{id}")]
@@ -50,17 +68,17 @@ namespace FoodHub.Presentation.Controllers.Employees
         {
             if (id != command.EmployeeId)
             {
-                return BadRequest("ID mismatch");
+                return BadRequest(new { message = "ID mismatch" });
             }
             var result = await _mediator.Send(command);
-            return Ok(result);
+            return HandleResult(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployeeAsync(Guid id)
         {
             var result = await _mediator.Send(new DeleteEmployeeCommand(id));
-            return Ok(result);
+            return HandleResult(result);
         }
 
         [HttpGet("{id}/audit-logs")]
@@ -68,7 +86,7 @@ namespace FoodHub.Presentation.Controllers.Employees
         {
             var query = new GetAuditLogsQuery(id, pagination);
             var result = await _mediator.Send(query);
-            return Ok(result);
+            return HandleResult<PagedResult<GetAuditLogsResponse>>(result);
         }
     }
 }
