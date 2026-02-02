@@ -35,7 +35,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.Status)
                    .HasConversion<short>()
-                   .HasDefaultValue(EmployeeStatus.Active);
+                   .HasDefaultValue(EmployeeStatus.Active)
+                   .HasSentinel(EmployeeStatus.Inactive);
 
             builder.Property(x => x.CreatedAt)
                    .HasDefaultValueSql("now()");
