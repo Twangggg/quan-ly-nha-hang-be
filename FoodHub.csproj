@@ -16,6 +16,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="FoodHub.Tests\**" />
+    <Content Remove="FoodHub.Tests\**" />
+    <EmbeddedResource Remove="FoodHub.Tests\**" />
+    <None Remove="FoodHub.Tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Application\Features\Auth\**" />
     <Content Remove="Application\Features\Auth\**" />
     <EmbeddedResource Remove="Application\Features\Auth\**" />
