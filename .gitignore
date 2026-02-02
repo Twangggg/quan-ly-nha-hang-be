@@ -45,5 +45,8 @@ appsettings.Development.json
 *.pfx
 *.publishsettings
 
+# Auto-generated files
+**/*.Designer.cs
+
 # Others
 .DS_Store

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -11,11 +12,15 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public Handler(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IMessageService _messageService;
+
+        public Handler(IUnitOfWork unitOfWork, IMapper mapper, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _messageService = messageService;
         }
+
         public async Task<Result<Response>> Handle(Command request, CancellationToken cancellationToken)
         {
             var repo = _unitOfWork.Repository<Employee>();
@@ -30,21 +35,21 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
 
             if (employee == null)
             {
-                return Result<Response>.NotFound("User not found.");
+                return Result<Response>.NotFound(_messageService.GetMessage(MessageKeys.Employee.NotFound));
             }
 
             // Check duplicate phone number
             var phoneExists = await repo.Query().AnyAsync(e => e.EmployeeId != request.EmployeeId && e.Phone == phone, cancellationToken);
             if (phoneExists)
             {
-                return Result<Response>.Failure("Phone number already exists.");
+                return Result<Response>.Failure(_messageService.GetMessage(MessageKeys.Profile.PhoneExists));
             }
 
             // Check duplicate email
             var emailExists = await repo.Query().AnyAsync(e => e.EmployeeId != request.EmployeeId && e.Email == email, cancellationToken);
             if (emailExists)
             {
-                return Result<Response>.Failure("Email already exists.");
+                return Result<Response>.Failure(_messageService.GetMessage(MessageKeys.Profile.EmailExists));
             }
 
             // Update data

@@ -5,6 +5,7 @@ using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using FoodHub.Application.Constants;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -17,19 +18,22 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
         private readonly IRateLimiter _rateLimiter;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMessageService _messageService;
 
         public RequestPasswordResetCommandHandler(
             IUnitOfWork unitOfWork,
             IEmailService emailService,
             IRateLimiter rateLimiter,
             IConfiguration configuration,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _emailService = emailService;
             _rateLimiter = rateLimiter;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
+            _messageService = messageService;
         }
 
         public async Task<Result<string>> Handle(RequestPasswordResetCommand request, CancellationToken cancellationToken)
@@ -41,7 +45,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
             // Check rate limiting (3 requests per 10 minutes)
             if (await _rateLimiter.IsBlockedAsync(rateLimitKey, cancellationToken))
             {
-                return Result<string>.Failure("Too many password reset requests. Please try again later.");
+                return Result<string>.Failure(_messageService.GetMessage(MessageKeys.Auth.ResetRequestLimit));
             }
 
             // Find employee by EmployeeCode
@@ -50,7 +54,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
                 .FirstOrDefaultAsync(e => e.EmployeeCode == request.EmployeeCode, cancellationToken);
 
             // Security: Always return the same message to avoid revealing if employee exists
-            const string genericMessage = "If the account was valid, the system sent a password reset link via email.";
+            var genericMessage = _messageService.GetMessage(MessageKeys.Auth.PasswordResetGenericMessage);
 
             // Register this attempt for rate limiting
             await _rateLimiter.RegisterFailAsync(

@@ -5,6 +5,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Features.Authentication.Commands.Login
 {
@@ -14,17 +15,20 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
         private readonly IPasswordService _passwordService;
         private readonly ITokenService _tokenService;
         private readonly IRateLimiter _rateLimiter;
+        private readonly IMessageService _messageService;
 
         public LoginCommandHandler(
             IUnitOfWork unitOfWork,
             IPasswordService passwordService,
             ITokenService tokenService,
-            IRateLimiter rateLimiter)
+            IRateLimiter rateLimiter,
+            IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
             _tokenService = tokenService;
             _rateLimiter = rateLimiter;
+            _messageService = messageService;
         }
 
         public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -34,7 +38,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
             // Check if user is currently blocked
             if (await _rateLimiter.IsBlockedAsync(rateLimitKey, cancellationToken))
             {
-                return Result<LoginResponse>.Failure("Too many failed attempts. Your account is temporarily blocked.");
+                return Result<LoginResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.AccountBlocked));
             }
 
             // Tìm employee chỉ bằng EmployeeCode
@@ -44,7 +48,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
 
             if (employee == null)
             {
-                return Result<LoginResponse>.Failure(Messages.InvalidCredentials);
+                return Result<LoginResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.InvalidCredentials));
             }
 
             // Kiểm tra mật khẩu
@@ -58,7 +62,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                     blockFor: TimeSpan.FromMinutes(15),
                     cancellationToken);
 
-                return Result<LoginResponse>.Failure(Messages.InvalidCredentials);
+                return Result<LoginResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.InvalidCredentials));
             }
 
             // All good - reset failure count
@@ -67,7 +71,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
             // Kiểm tra trạng thái account
             if (employee.Status == EmployeeStatus.Inactive)
             {
-                return Result<LoginResponse>.Failure(Messages.AccountInactive);
+                return Result<LoginResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.AccountInactive));
             }
 
             // Tạo access token
@@ -76,7 +80,6 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
 
             // Tạo refresh token
             var refreshToken = _tokenService.GenerateRefreshToken();
-            // Config: Default 7 days from appsettings
             var configDays = _tokenService.GetRefreshTokenExpirationDays();
 
             // Logic: If RememberMe -> 30 Days (or config * 4). If not -> Config (7 days).

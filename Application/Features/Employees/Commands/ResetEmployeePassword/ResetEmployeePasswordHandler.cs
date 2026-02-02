@@ -4,6 +4,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using System.Security.Claims;
+using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
 {
@@ -13,17 +14,22 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
         private readonly IPasswordService _passwordService;
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMessageService _messageService;
+
         public ResetEmployeePasswordHandler(
             IUnitOfWork unitOfWork,
             IPasswordService passwordService,
             IEmailService emailService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
             _emailService = emailService;
             _httpContextAccessor = httpContextAccessor;
+            _messageService = messageService;
         }
+
         public async Task<Result<ResetEmployeePasswordResponse>> Handle(
             ResetEmployeePasswordCommand request,
             CancellationToken cancellationToken)
@@ -31,34 +37,43 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
             // 1. Lấy thông tin Manager đang thực hiện reset
             var managerId = _httpContextAccessor.HttpContext?.User
                 .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (string.IsNullOrEmpty(managerId) || !Guid.TryParse(managerId, out var managerGuid))
             {
-                return Result<ResetEmployeePasswordResponse>.Failure("Không thể xác định Manager thực hiện thao tác");
+                return Result<ResetEmployeePasswordResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyManager));
             }
+
             var manager = await _unitOfWork.Repository<Employee>()
                 .GetByIdAsync(managerGuid);
+
             if (manager == null || manager.Role != EmployeeRole.Manager)
             {
-                return Result<ResetEmployeePasswordResponse>.Failure("Chỉ Manager mới có quyền reset password");
+                return Result<ResetEmployeePasswordResponse>.Failure(_messageService.GetMessage(MessageKeys.ResetPassword.OnlyManagerCanReset));
             }
+
             // 2. Kiểm tra employee cần reset
             var employee = await _unitOfWork.Repository<Employee>()
                 .GetByIdAsync(request.EmployeeId);
+
             if (employee == null)
             {
-                return Result<ResetEmployeePasswordResponse>.Failure("Không tìm thấy nhân viên");
+                return Result<ResetEmployeePasswordResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.NotFound));
             }
+
             if (employee.Status != EmployeeStatus.Active)
             {
-                return Result<ResetEmployeePasswordResponse>.Failure("Chỉ có thể reset password cho tài khoản đang hoạt động");
+                return Result<ResetEmployeePasswordResponse>.Failure(_messageService.GetMessage(MessageKeys.ResetPassword.OnlyActiveEmployeeCanReset));
             }
+
             // 3. Generate hoặc dùng password do Manager đặt
             var newPassword = string.IsNullOrEmpty(request.NewPassword)
                 ? _passwordService.GenerateRandomPassword()
                 : request.NewPassword;
+
             // 4. Hash password và cập nhật
             employee.PasswordHash = _passwordService.HashPassword(newPassword);
             employee.UpdatedAt = DateTime.UtcNow;
+
             // 5. Ghi audit log
             var auditLog = new AuditLog
             {
@@ -90,15 +105,15 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 NewPassword = newPassword,
                 ResetAt = DateTime.UtcNow,
                 Message = emailSent
-                    ? $"Mật khẩu đã được reset thành công. Email thông báo đã được gửi tới {employee.Email}"
-                    : $"Mật khẩu đã được reset thành công nhưng email thông báo không được gửi. Vui lòng thông báo trực tiếp cho nhân viên. Mật khẩu mới: {newPassword}"
+                    ? _messageService.GetMessage(MessageKeys.ResetPassword.SuccessWithEmail, employee.Email)
+                    : _messageService.GetMessage(MessageKeys.ResetPassword.SuccessNoEmail, newPassword)
             };
 
             if (!emailSent)
             {
                 return Result<ResetEmployeePasswordResponse>.SuccessWithWarning(
                     response,
-                    "Email thông báo không được gửi. Vui lòng thông báo trực tiếp cho nhân viên."
+                    _messageService.GetMessage(MessageKeys.ResetPassword.StatusNoEmail)
                 );
             }
 

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -18,6 +19,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
         private readonly IPasswordService _passwordService;
+        private readonly IMessageService _messageService;
         private readonly ILogger<ChangeRoleHandler> _logger;
 
         public ChangeRoleHandler(
@@ -27,6 +29,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
             IEmailService emailService,
             IMapper mapper,
             IPasswordService passwordService,
+            IMessageService messageService,
             ILogger<ChangeRoleHandler> logger)
         {
             _unitOfWork = unitOfWork;
@@ -35,19 +38,25 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
             _mapper = mapper;
             _emailService = emailService;
             _passwordService = passwordService;
+            _messageService = messageService;
             _logger = logger;
         }
 
         public async Task<Result<ChangeRoleResponse>> Handle(ChangeRoleCommand request, CancellationToken cancellationToken)
         {
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            {
+                return Result<ChangeRoleResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
+            }
+
             if (request.NewRole == EmployeeRole.Manager)
             {
-                return Result<ChangeRoleResponse>.Failure("Bạn không thể cho người khác thành quản lí", ResultErrorType.BadRequest);
+                return Result<ChangeRoleResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotPromoteToManager), ResultErrorType.BadRequest);
 
             }
             if (request.CurrentRole == request.NewRole)
             {
-                return Result<ChangeRoleResponse>.Failure("Vị trí mới phải khác vị trí hiện tại", ResultErrorType.BadRequest);
+                return Result<ChangeRoleResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.NewRoleMustBeDifferent), ResultErrorType.BadRequest);
             }
             var oldEmployee = await _unitOfWork.Repository<Employee>()
                 .Query()
@@ -55,17 +64,12 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
 
             if (oldEmployee == null)
             {
-                return Result<ChangeRoleResponse>.Failure("Không tìm thấy nhân viên với mã và role hiện tại.", ResultErrorType.NotFound);
+                return Result<ChangeRoleResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.NotFound), ResultErrorType.NotFound);
             }
 
             if (oldEmployee.Status != EmployeeStatus.Active)
             {
-                return Result<ChangeRoleResponse>.Failure("Nhân viên hiện tại không còn hoạt động.", ResultErrorType.BadRequest);
-            }
-
-            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
-            {
-                return Result<ChangeRoleResponse>.Failure("Không xác định được người thực hiện thao tác.", ResultErrorType.Unauthorized);
+                return Result<ChangeRoleResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.NotActive), ResultErrorType.BadRequest);
             }
 
             var timestamp = DateTime.UtcNow.Ticks;
@@ -115,7 +119,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
                 TargetId = oldEmployee.EmployeeId,
                 PerformedByEmployeeId = auditorId,
                 CreatedAt = DateTimeOffset.UtcNow,
-                Reason = $"Vô hiệu hóa account cũ để đổi sang Role mới: {request.NewRole}"
+                Reason = $"Deactivate old account for Role Change to: {request.NewRole}"
             };
 
             var logCreate = new AuditLog
@@ -125,7 +129,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
                 TargetId = newEmployee.EmployeeId,
                 PerformedByEmployeeId = auditorId,
                 CreatedAt = DateTimeOffset.UtcNow,
-                Reason = $"Tạo account mới với Role: {request.NewRole} từ account cũ: {oldEmployee.EmployeeCode}"
+                Reason = $"Create new account with Role: {request.NewRole} from old account: {oldEmployee.EmployeeCode}"
             };
 
             await _unitOfWork.Repository<AuditLog>().AddAsync(logDeactivate);
@@ -146,13 +150,13 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
                     innerException.Contains("unique", StringComparison.OrdinalIgnoreCase))
                 {
                     return Result<ChangeRoleResponse>.Failure(
-                        "Có xung đột dữ liệu trong hệ thống. Vui lòng thử lại sau vài giây.",
+                        _messageService.GetMessage(MessageKeys.Common.DatabaseConflict),
                         ResultErrorType.Conflict
                     );
                 }
 
                 return Result<ChangeRoleResponse>.Failure(
-                    "Có lỗi xảy ra khi cập nhật dữ liệu. Vui lòng thử lại.",
+                    _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError),
                     ResultErrorType.BadRequest
                 );
             }
@@ -160,7 +164,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
             {
                 _logger.LogWarning("Role change operation was cancelled for {EmployeeCode}", request.EmployeeCode);
                 return Result<ChangeRoleResponse>.Failure(
-                    "Thao tác bị hủy do timeout. Vui lòng thử lại.",
+                    _messageService.GetMessage(MessageKeys.Common.OperationCancelled),
                     ResultErrorType.BadRequest
                 );
             }
@@ -186,8 +190,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
 
                 return Result<ChangeRoleResponse>.SuccessWithWarning(
                     response,
-                    $"Role đã được thay đổi thành công nhưng email thông báo không được gửi. " +
-                    $"Vui lòng thông báo trực tiếp cho nhân viên về mã nhân viên mới: {newEmployee.EmployeeCode}"
+                    _messageService.GetMessage(MessageKeys.Employee.RoleChangedButEmailFailed, newEmployee.EmployeeCode)
                 );
             }
 

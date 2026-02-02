@@ -31,7 +31,11 @@ namespace FoodHub.Application
             // Đăng ký FluentValidation
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+            // Đăng ký Application Services
             services.AddScoped<IEmployeeServices, EmployeeServices>();
+            services.AddScoped<IMessageService, MessageService>();
+
             return services;
         }
     }
