@@ -7,44 +7,45 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
 {
-    public class Handler : IRequestHandler<Command, Result<Response>>
+    public class UpdateProfileHandler : IRequestHandler<UpdateProfileCommand, Result<UpdateProfileResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public Handler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdateProfileHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public async Task<Result<Response>> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Result<UpdateProfileResponse>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
         {
             var repo = _unitOfWork.Repository<Employee>();
+
+            var employee = await repo.Query()
+                .FirstOrDefaultAsync(emp => emp.EmployeeCode == request.EmployeeCode, cancellationToken);
 
             var fullName = request.FullName.Trim();
             var email = request.Email.Trim().ToLower();
             var phone = request.Phone.Trim();
-            var address = request.Address?.Trim();
-
-            var employee = await repo.Query()
-                .FirstOrDefaultAsync(emp => emp.EmployeeId == request.EmployeeId, cancellationToken);
+            var address = request.Address.Trim();
+            var dateOfBirth = request.DateOfBirth;
 
             if (employee == null)
             {
-                return Result<Response>.NotFound("User not found.");
+                return Result<UpdateProfileResponse>.NotFound("User not found.");
             }
 
             // Check duplicate phone number
-            var phoneExists = await repo.Query().AnyAsync(e => e.EmployeeId != request.EmployeeId && e.Phone == phone, cancellationToken);
+            var phoneExists = await repo.Query().AnyAsync(e => e.EmployeeCode != request.EmployeeCode && e.Phone == phone, cancellationToken);
             if (phoneExists)
             {
-                return Result<Response>.Failure("Phone number already exists.");
+                return Result<UpdateProfileResponse>.Failure("Phone number already exists.");
             }
 
             // Check duplicate email
-            var emailExists = await repo.Query().AnyAsync(e => e.EmployeeId != request.EmployeeId && e.Email == email, cancellationToken);
+            var emailExists = await repo.Query().AnyAsync(e => e.EmployeeCode != request.EmployeeCode && e.Email == email, cancellationToken);
             if (emailExists)
             {
-                return Result<Response>.Failure("Email already exists.");
+                return Result<UpdateProfileResponse>.Failure("Email already exists.");
             }
 
             // Update data
@@ -57,8 +58,8 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            var response = _mapper.Map<Response>(employee);
-            return Result<Response>.Success(response);
+            var response = _mapper.Map<UpdateProfileResponse>(employee);
+            return Result<UpdateProfileResponse>.Success(response);
         }
     }
 }

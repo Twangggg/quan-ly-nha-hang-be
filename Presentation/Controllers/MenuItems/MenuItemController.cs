@@ -12,7 +12,7 @@ namespace FoodHub.Presentation.Controllers.MenuItems
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class MenuItemController : ControllerBase
+    public partial class MenuItemController : ControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -69,24 +69,24 @@ namespace FoodHub.Presentation.Controllers.MenuItems
             return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data }, result.Data);
         }
 
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> UpdateMenuItem(Guid id, [FromBody] UpdateMenuItemCommand command)
-        {
-            if (id != command.MenuItemId)
-            {
-                return BadRequest(new { message = "Menu item ID mismatch" });
-            }
+        //[HttpPut("{id}")]
+        //[Authorize(Roles = "Manager")]
+        //public async Task<IActionResult> UpdateMenuItem(Guid id, [FromBody] UpdateMenuItemCommand command)
+        //{
+        //    if (id != command.MenuItemId)
+        //    {
+        //        return BadRequest(new { message = "Menu item ID mismatch" });
+        //    }
 
-            var result = await _mediator.Send(command);
+        //    var result = await _mediator.Send(command);
 
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
+        //    if (!result.IsSuccess)
+        //    {
+        //        return BadRequest(new { message = result.Error });
+        //    }
 
-            return Ok(result.Data);
-        }
+        //    return Ok(result.Data);
+        //}
 
         [HttpPatch("{id}/stock-status")]
         [Authorize(Roles = "Manager")]

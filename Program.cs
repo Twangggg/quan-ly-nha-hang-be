@@ -5,6 +5,7 @@ using FoodHub.Infrastructure.Persistence;
 using FoodHub.Presentation.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
@@ -102,6 +103,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "FoodHub API", Version = "v1" });
+
+    c.CustomSchemaIds(type => type.FullName);
 
     // Config JWT in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
