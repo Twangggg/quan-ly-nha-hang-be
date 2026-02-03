@@ -63,7 +63,6 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
                 employee.Status = status;
             }
 
-
             employeeRepository.Update(employee);
 
             var auditLog = new AuditLog
