@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -11,11 +12,13 @@ namespace FoodHub.Application.Features.Employees.Queries.GetMyProfile
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IMessageService _messageService;
 
-        public Handler(IUnitOfWork unitOfWork, IMapper mapper)
+        public Handler(IUnitOfWork unitOfWork, IMapper mapper, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _messageService = messageService;
         }
 
         public async Task<Result<Response>> Handle(Query request, CancellationToken cancellationToken)
@@ -26,7 +29,7 @@ namespace FoodHub.Application.Features.Employees.Queries.GetMyProfile
 
             if (employee == null)
             {
-                return Result<Response>.NotFound("User not found.");
+                return Result<Response>.NotFound(_messageService.GetMessage(MessageKeys.Employee.NotFound));
             }
 
             var response = _mapper.Map<Response>(employee);

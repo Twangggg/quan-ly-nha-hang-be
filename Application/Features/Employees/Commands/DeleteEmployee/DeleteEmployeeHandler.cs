@@ -1,4 +1,5 @@
 using AutoMapper;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -12,24 +13,34 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IMessageService _messageService;
 
-        public DeleteEmployeeHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService)
+        public DeleteEmployeeHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ICurrentUserService currentUserService,
+            IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
+            _messageService = messageService;
         }
 
         public async Task<Result<DeleteEmployeeResponse>> Handle(DeleteEmployeeCommand request, CancellationToken cancellationToken)
         {
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            {
+                return Result<DeleteEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
+            }
+
             var employeeRepository = _unitOfWork.Repository<Employee>();
 
-            var employee = employeeRepository.Query().FirstOrDefault
-                (e => e.EmployeeId == request.EmployeeId);
+            var employee = await employeeRepository.GetByIdAsync(request.EmployeeId);
 
             if (employee == null)
             {
-                return Result<DeleteEmployeeResponse>.NotFound("This employee does not exist.");
+                return Result<DeleteEmployeeResponse>.NotFound(_messageService.GetMessage(MessageKeys.Employee.NotFound));
             }
 
             employee.Status = EmployeeStatus.Inactive;
@@ -37,11 +48,6 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
             employee.DeleteAt = DateTime.UtcNow;
 
             employeeRepository.Update(employee);
-
-            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
-            {
-                return Result<DeleteEmployeeResponse>.Failure("Current user identity is missing or invalid.", ResultErrorType.Unauthorized);
-            }
 
             var auditLog = new AuditLog
             {

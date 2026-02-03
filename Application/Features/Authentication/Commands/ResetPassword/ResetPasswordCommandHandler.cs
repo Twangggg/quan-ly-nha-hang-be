@@ -3,6 +3,7 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using FoodHub.Application.Constants;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -12,11 +13,13 @@ namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordService _passwordService;
+        private readonly IMessageService _messageService;
 
-        public ResetPasswordCommandHandler(IUnitOfWork unitOfWork, IPasswordService passwordService)
+        public ResetPasswordCommandHandler(IUnitOfWork unitOfWork, IPasswordService passwordService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
+            _messageService = messageService;
         }
 
         public async Task<Result<string>> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
@@ -32,7 +35,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
 
             // Validate token exists and meets requirements
             // Generic message for all failure cases to prevent information disclosure
-            const string invalidLinkMessage = "The link is invalid or has expired.";
+            var invalidLinkMessage = _messageService.GetMessage(MessageKeys.Auth.InvalidResetLink);
 
             if (resetToken == null)
             {
@@ -95,7 +98,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
             // Save all changes
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            return Result<string>.Success("Password reset successful. Please log in again.");
+            return Result<string>.Success(_messageService.GetMessage(MessageKeys.Auth.PasswordResetSuccess));
         }
 
         private static string ComputeSha256Hash(string input)
