@@ -7,6 +7,7 @@ namespace FoodHub.Domain.Enums
         Deactivate = 3,
         Activate = 4,
         ResetPassword = 5,
-        ChangeRole = 6
+        ChangeRole = 6,
+        EmailFailure = 7
     }
 }

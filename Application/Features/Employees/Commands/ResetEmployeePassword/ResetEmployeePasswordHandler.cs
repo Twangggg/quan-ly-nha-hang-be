@@ -12,20 +12,20 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordService _passwordService;
-        private readonly IEmailService _emailService;
+        private readonly IBackgroundEmailSender _emailSender;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMessageService _messageService;
 
         public ResetEmployeePasswordHandler(
             IUnitOfWork unitOfWork,
             IPasswordService passwordService,
-            IEmailService emailService,
+            IBackgroundEmailSender emailSender,
             IHttpContextAccessor httpContextAccessor,
             IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
-            _emailService = emailService;
+            _emailSender = emailSender;
             _httpContextAccessor = httpContextAccessor;
             _messageService = messageService;
         }
@@ -88,12 +88,14 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
             await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            var emailSent = await _emailService.SendPasswordResetByManagerEmailAsync(
+            await _emailSender.EnqueuePasswordResetByManagerEmailAsync(
                 employee.Email,
                 employee.FullName,
                 employee.EmployeeCode,
                 newPassword,
                 manager.FullName,
+                employee.EmployeeId,
+                managerGuid,
                 cancellationToken);
 
             var response = new ResetEmployeePasswordResponse
@@ -104,18 +106,8 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 Email = employee.Email,
                 NewPassword = newPassword,
                 ResetAt = DateTime.UtcNow,
-                Message = emailSent
-                    ? _messageService.GetMessage(MessageKeys.ResetPassword.SuccessWithEmail, employee.Email)
-                    : _messageService.GetMessage(MessageKeys.ResetPassword.SuccessNoEmail, newPassword)
+                Message = _messageService.GetMessage(MessageKeys.ResetPassword.SuccessWithEmail, employee.Email)
             };
-
-            if (!emailSent)
-            {
-                return Result<ResetEmployeePasswordResponse>.SuccessWithWarning(
-                    response,
-                    _messageService.GetMessage(MessageKeys.ResetPassword.StatusNoEmail)
-                );
-            }
 
             return Result<ResetEmployeePasswordResponse>.Success(response);
         }
