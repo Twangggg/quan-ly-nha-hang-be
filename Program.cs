@@ -72,9 +72,13 @@ if (!string.IsNullOrEmpty(allowedOrigins))
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
-    options.InstanceName =
-        builder.Configuration["Redis:InstanceName"];
+    var redisConn = builder.Configuration.GetConnectionString("Redis")
+                    ?? builder.Configuration["Redis:Configuration"]
+                    ?? builder.Configuration["Redis:ConnectionString"]
+                    ?? "localhost:6379";
+
+    options.Configuration = redisConn;
+    options.InstanceName = builder.Configuration["Redis:InstanceName"];
 });
 
 // Configure Forwarded Headers for Proxy/Load Balancer support
@@ -95,6 +99,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "FoodHub API", Version = "v1" });
+
+    // Use FullName for schema IDs to prevent conflicts (CQRS/Clean Architecture best practice)
+    c.CustomSchemaIds(type => type.FullName);
 
     // Config JWT in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

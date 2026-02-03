@@ -21,7 +21,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
             _mediator = mediator;
         }
 
-        [HttpGet]
+        [HttpGet(Name = "GetSetMenus")]
         public async Task<IActionResult> GetSetMenus(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
@@ -37,7 +37,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
             return Ok(result.Data);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetSetMenuById")]
         public async Task<IActionResult> GetSetMenuById(Guid id)
         {
             var query = new GetSetMenuByIdQuery(id);
@@ -51,7 +51,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
             return Ok(result.Data);
         }
 
-        [HttpPost]
+        [HttpPost(Name = "CreateSetMenu")]
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> CreateSetMenu([FromBody] CreateSetMenuCommand command)
         {
@@ -65,7 +65,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
             return CreatedAtAction(nameof(GetSetMenuById), new { id = result.Data }, result.Data);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id}", Name = "UpdateSetMenu")]
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> UpdateSetMenu(Guid id, [FromBody] UpdateSetMenuCommand command)
         {
@@ -84,7 +84,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
             return Ok(result.Data);
         }
 
-        [HttpPatch("{id}/stock-status")]
+        [HttpPatch("{id}/stock-status", Name = "UpdateSetMenuStockStatus")]
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] UpdateSetMenuStockStatusCommand command)
         {

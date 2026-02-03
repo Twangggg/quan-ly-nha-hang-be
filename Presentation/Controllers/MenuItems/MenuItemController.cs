@@ -1,3 +1,4 @@
+using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem;
 using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
 using FoodHub.Application.Features.MenuItems.Commands.UpdateStockStatus;
@@ -21,16 +22,10 @@ namespace FoodHub.Presentation.Controllers.MenuItems
             _mediator = mediator;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetMenuItems(
-            [FromQuery] string? searchCode,
-            [FromQuery] decimal? minPrice,
-            [FromQuery] decimal? maxPrice,
-            [FromQuery] Guid? categoryId,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10)
+        [HttpGet(Name = "GetMenuItems")]
+        public async Task<IActionResult> GetMenuItems([FromQuery] PaginationParams pagination)
         {
-            var query = new GetMenuItemsQuery(searchCode, minPrice, maxPrice, categoryId, pageNumber, pageSize);
+            var query = new GetMenuItemsQuery { Pagination = pagination };
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)
@@ -41,7 +36,7 @@ namespace FoodHub.Presentation.Controllers.MenuItems
             return Ok(result.Data);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetMenuItemById")]
         public async Task<IActionResult> GetMenuItemById(Guid id)
         {
             var query = new GetMenuItemByIdQuery(id);
@@ -55,40 +50,21 @@ namespace FoodHub.Presentation.Controllers.MenuItems
             return Ok(result.Data);
         }
 
-        [HttpPost]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> CreateMenuItem([FromBody] CreateMenuItemCommand command)
-        {
-            var result = await _mediator.Send(command);
+        // [HttpPost(Name = "CreateMenuItem")] - Disabled
+        // [Authorize(Roles = "Manager")]
+        // public async Task<IActionResult> CreateMenuItem([FromBody] CreateMenuItemCommand command)
+        // {
+        //     return NotFound();
+        // }
 
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
+        // [HttpPut("{id}", Name = "UpdateMenuItem")] - Disabled
+        // [Authorize(Roles = "Manager")]
+        // public async Task<IActionResult> UpdateMenuItem(Guid id, [FromBody] UpdateMenuItemCommand command)
+        // {
+        //     return NotFound();
+        // }
 
-            return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data }, result.Data);
-        }
-
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> UpdateMenuItem(Guid id, [FromBody] UpdateMenuItemCommand command)
-        {
-            if (id != command.MenuItemId)
-            {
-                return BadRequest(new { message = "Menu item ID mismatch" });
-            }
-
-            var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
-        }
-
-        [HttpPatch("{id}/stock-status")]
+        [HttpPatch("{id}/stock-status", Name = "UpdateMenuItemStockStatus")]
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] UpdateStockStatusCommand command)
         {

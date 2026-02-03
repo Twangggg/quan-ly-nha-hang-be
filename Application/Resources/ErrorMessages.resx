@@ -175,4 +175,15 @@
   <data name="Employee.CannotUpdateInactive" xml:space="preserve">
     <value>Không thể cập nhật thông tin cho nhân viên đang ngừng hoạt động.</value>
   </data>
+  
+  <!-- MenuItem Errors -->
+  <data name="MenuItem.CategoryNotFound" xml:space="preserve">
+    <value>Không tìm thấy danh mục với ID: {0}</value>
+  </data>
+  <data name="MenuItem.CodeExists" xml:space="preserve">
+    <value>Mã món '{0}' đã tồn tại</value>
+  </data>
+  <data name="MenuItem.NotFound" xml:space="preserve">
+    <value>Không tìm thấy món ăn với ID: {0}</value>
+  </data>
 </root>

@@ -6,7 +6,8 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateStockStatus
     {
         public UpdateStockStatusValidator()
         {
-            // TODO: Add validation rules
+            RuleFor(x => x.MenuItemId)
+                .NotEmpty().WithMessage("ID món ăn không được để trống");
         }
     }
 }

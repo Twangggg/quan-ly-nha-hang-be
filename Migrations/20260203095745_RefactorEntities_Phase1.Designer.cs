@@ -3,17 +3,20 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodHub.Infrastructure.Persistence.Migrations
+namespace FoodHub.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260203095745_RefactorEntities_Phase1")]
+    partial class RefactorEntities_Phase1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,50 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<Guid>("LogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("log_id");
+
+                    b.Property<short>("Action")
+                        .HasColumnType("smallint")
+                        .HasColumnName("action");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("metadata");
+
+                    b.Property<Guid>("PerformedByEmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("performed_by_employee_id");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.HasKey("LogId")
+                        .HasName("pk_audit_logs");
+
+                    b.HasIndex("PerformedByEmployeeId")
+                        .HasDatabaseName("ix_audit_logs_performed_by_employee_id");
+
+                    b.HasIndex("TargetId")
+                        .HasDatabaseName("ix_audit_logs_target_id");
+
+                    b.ToTable("audit_logs", (string)null);
+                });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.Category", b =>
                 {
@@ -40,10 +87,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -71,6 +114,107 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_categories_name");
 
                     b.ToTable("categories", (string)null);
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.Employee", b =>
+                {
+                    b.Property<Guid>("EmployeeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("address");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date")
+                        .HasColumnName("date_of_birth");
+
+                    b.Property<DateTime?>("DeleteAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("delete_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("EmployeeCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("employee_code");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("full_name");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(15)
+                        .HasColumnType("character varying(15)")
+                        .HasColumnName("phone");
+
+                    b.Property<short>("Role")
+                        .HasColumnType("smallint")
+                        .HasColumnName("role");
+
+                    b.Property<short>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)1)
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("username");
+
+                    b.HasKey("EmployeeId")
+                        .HasName("pk_employees");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_employees_email");
+
+                    b.HasIndex("EmployeeCode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_employees_employee_code");
+
+                    b.HasIndex("Phone")
+                        .IsUnique()
+                        .HasDatabaseName("ix_employees_phone");
+
+                    b.HasIndex("Role")
+                        .HasDatabaseName("ix_employees_role");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_employees_status");
+
+                    b.HasIndex("Username")
+                        .IsUnique()
+                        .HasDatabaseName("ix_employees_username");
+
+                    b.ToTable("employees", (string)null);
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.MenuItem", b =>
@@ -121,10 +265,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("image_url");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
 
                     b.Property<bool>("IsOutOfStock")
                         .HasColumnType("boolean")
@@ -190,10 +330,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
                     b.Property<bool>("IsRequired")
                         .HasColumnType("boolean")
                         .HasColumnName("is_required");
@@ -253,10 +389,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("extra_price");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
                     b.Property<string>("Label")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -284,6 +416,103 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.ToTable("option_items", (string)null);
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<Guid>("TokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("token_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.HasKey("TokenId")
+                        .HasName("pk_password_reset_tokens");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_password_reset_tokens_employee_id");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("ix_password_reset_tokens_expires_at");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_password_reset_tokens_token_hash");
+
+                    b.ToTable("password_reset_tokens", (string)null);
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires");
+
+                    b.Property<bool>("IsRevoked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_revoked");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("token");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_refresh_tokens");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_refresh_tokens_employee_id");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("ix_refresh_tokens_token");
+
+                    b.ToTable("refresh_tokens", (string)null);
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
                 {
                     b.Property<Guid>("Id")
@@ -308,10 +537,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
 
                     b.Property<bool>("IsOutOfStock")
                         .HasColumnType("boolean")
@@ -365,10 +590,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
                     b.Property<Guid>("MenuItemId")
                         .HasColumnType("uuid")
                         .HasColumnName("menu_item_id");
@@ -399,6 +620,27 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("idx_set_menu_items_set_menu_id");
 
                     b.ToTable("set_menu_items", (string)null);
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.AuditLog", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "PerformedBy")
+                        .WithMany("PerformedLogs")
+                        .HasForeignKey("PerformedByEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_audit_logs_employees_performed_by_employee_id");
+
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "Target")
+                        .WithMany("TargetLogs")
+                        .HasForeignKey("TargetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_audit_logs_employees_target_id");
+
+                    b.Navigation("PerformedBy");
+
+                    b.Navigation("Target");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.MenuItem", b =>
@@ -437,6 +679,30 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.Navigation("OptionGroup");
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_password_reset_tokens_employees_employee_id");
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "Employee")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_refresh_tokens_employees_employee_id");
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenuItem", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.MenuItem", "MenuItem")
@@ -461,6 +727,15 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("FoodHub.Domain.Entities.Category", b =>
                 {
                     b.Navigation("MenuItems");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.Employee", b =>
+                {
+                    b.Navigation("PerformedLogs");
+
+                    b.Navigation("RefreshTokens");
+
+                    b.Navigation("TargetLogs");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.MenuItem", b =>

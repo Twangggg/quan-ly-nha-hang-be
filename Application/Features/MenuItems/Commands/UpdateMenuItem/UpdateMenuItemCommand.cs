@@ -6,14 +6,16 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
 {
     public record UpdateMenuItemCommand(
         Guid MenuItemId,
+        string Code,
         string Name,
         string ImageUrl,
         string? Description,
         Guid CategoryId,
         int Station,
-        int? ExpectedTime,
+        int ExpectedTime,
         decimal PriceDineIn,
         decimal? PriceTakeAway,
-        decimal? Cost
-    ) : IRequest<Result<MenuItemDto>>;
+        decimal? Cost,
+        bool IsOutOfStock
+    ) : IRequest<Result<Unit>>;
 }

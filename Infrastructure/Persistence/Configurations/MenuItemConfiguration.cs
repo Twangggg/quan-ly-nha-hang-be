@@ -65,7 +65,10 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.CreatedBy).HasColumnName("created_by");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            builder.Property(e => e.IsDeleted).HasColumnName("is_deleted");
             builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+
+            builder.HasQueryFilter(e => !e.IsDeleted);
 
             // Indexes
             builder.HasIndex(e => e.CategoryId).HasDatabaseName("idx_menu_items_category_id");

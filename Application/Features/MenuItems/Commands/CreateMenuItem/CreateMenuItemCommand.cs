@@ -15,5 +15,5 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
         decimal PriceDineIn,
         decimal? PriceTakeAway,
         decimal? Cost
-    ) : IRequest<Result<MenuItemDto>>;
+    ) : IRequest<Result<Guid>>;
 }

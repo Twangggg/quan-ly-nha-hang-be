@@ -8,8 +8,8 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
         Guid SetMenuId,
         string Name,
         decimal Price,
-        List<SetMenuItemRequest> Items
+        List<UpdateSetMenuItemRequest> Items
     ) : IRequest<Result<SetMenuDto>>;
 
-    public record SetMenuItemRequest(Guid MenuItemId, int Quantity);
+    public record UpdateSetMenuItemRequest(Guid MenuItemId, int Quantity);
 }
