@@ -2,6 +2,8 @@ using FoodHub.Application;
 using FoodHub.Application.Interfaces;
 using FoodHub.Infrastructure;
 using FoodHub.Infrastructure.Persistence;
+using FoodHub.Infrastructure.Services;
+using FoodHub.Infrastructure.BackgroundJobs;
 using FoodHub.Presentation.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -27,6 +29,18 @@ var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 if (!string.IsNullOrEmpty(jwtSecret))
 {
     builder.Configuration["Jwt:SecretKey"] = jwtSecret;
+}
+
+var jwtAccessExpires = Environment.GetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRES_IN_MINUTE");
+if (!string.IsNullOrEmpty(jwtAccessExpires))
+{
+    builder.Configuration["Jwt:ExpiresInMinute"] = jwtAccessExpires;
+}
+
+var jwtRefreshExpires = Environment.GetEnvironmentVariable("JWT_REFRESH_TOKEN_EXPIRES_IN_DAYS");
+if (!string.IsNullOrEmpty(jwtRefreshExpires))
+{
+    builder.Configuration["Jwt:RefreshTokenExpiresInDays"] = jwtRefreshExpires;
 }
 
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
@@ -159,6 +173,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Register Layers
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Register Background Email Services
+builder.Services.AddSingleton<BackgroundEmailChannel>();
+builder.Services.AddSingleton<IBackgroundEmailSender>(provider => provider.GetRequiredService<BackgroundEmailChannel>());
+builder.Services.AddHostedService<EmailBackgroundWorker>();
 
 // Register Localization
 builder.Services.AddLocalization();
