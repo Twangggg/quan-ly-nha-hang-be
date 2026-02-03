@@ -1,5 +1,4 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.MenuItems;
 using MediatR;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
@@ -15,5 +14,5 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
         decimal PriceDineIn,
         decimal? PriceTakeAway,
         decimal? Cost
-    ) : IRequest<Result<MenuItemDto>>;
+    ) : IRequest<Result<CreateMenuItemResponse>>;
 }
