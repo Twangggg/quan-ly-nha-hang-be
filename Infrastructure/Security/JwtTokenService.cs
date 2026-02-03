@@ -22,13 +22,17 @@ namespace FoodHub.Infrastructure.Security
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, employee.EmployeeId.ToString()),
-                new(JwtRegisteredClaimNames.UniqueName, employee.Username),
                 new(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString()),
                 new(ClaimTypes.Name, employee.FullName),
                 new(ClaimTypes.Email, employee.Email),
                 new(ClaimTypes.Role, employee.Role.ToString()),
                 new("EmployeeCode", employee.EmployeeCode)
             };
+
+            if (!string.IsNullOrEmpty(employee.Username))
+            {
+                claims.Add(new Claim(JwtRegisteredClaimNames.UniqueName, employee.Username));
+            }
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));

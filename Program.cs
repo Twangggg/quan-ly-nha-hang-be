@@ -4,6 +4,7 @@ using FoodHub.Infrastructure;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Presentation.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -19,23 +20,9 @@ var builder = WebApplication.CreateBuilder(args);
 var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
 if (File.Exists(envPath))
 {
-    foreach (var line in File.ReadAllLines(envPath))
-    {
-        // Skip comments and empty lines
-        if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
-            continue;
-
-        var parts = line.Split('=', 2);
-        if (parts.Length == 2)
-        {
-            var key = parts[0].Trim();
-            var value = parts[1].Trim();
-            Environment.SetEnvironmentVariable(key, value);
-        }
-    }
+    DotNetEnv.Env.Load(envPath);
 }
 
-// Override configuration from environment variables
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 if (!string.IsNullOrEmpty(jwtSecret))
 {
@@ -60,7 +47,6 @@ if (!string.IsNullOrEmpty(redisConnection))
     builder.Configuration["ConnectionStrings:Redis"] = redisConnection;
 }
 
-// Gmail SMTP settings from environment
 var emailSmtpHost = Environment.GetEnvironmentVariable("EMAIL_SMTP_HOST");
 var emailSmtpPort = Environment.GetEnvironmentVariable("EMAIL_SMTP_PORT");
 var emailSenderEmail = Environment.GetEnvironmentVariable("EMAIL_SENDER_EMAIL");
@@ -89,6 +75,13 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
     options.InstanceName =
         builder.Configuration["Redis:InstanceName"];
+});
+
+// Configure Forwarded Headers for Proxy/Load Balancer support
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
 
 // Add services to the container.
@@ -129,10 +122,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Register Layers
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-
 //Setting for CORS - Load origins from configuration
 var corsOrigins = builder.Configuration["AllowedOrigins"]?.Split(',')
     ?? new[] { "http://localhost:3000" };
@@ -167,8 +156,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// Register Layers
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+
+// Register Localization
+builder.Services.AddLocalization();
 
 var app = builder.Build();
+
+// Configure Localization Middleware
+var supportedCultures = new[] { "vi", "en" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture("vi")
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
+
+app.UseForwardedHeaders();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
@@ -208,7 +214,7 @@ if (app.Environment.IsDevelopment())
                 }
 
                 logger.LogWarning("Database not ready. Retry {Count}/{Max}...", retryCount, maxRetries);
-                Thread.Sleep(2000);
+                await Task.Delay(2000);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodHub.Application.Constants;
 using FluentValidation;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Extensions.Mappings;
@@ -11,23 +12,23 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
 {
     public class Validator : AbstractValidator<Command>
     {
-        public Validator()
+        public Validator(IMessageService messageService)
         {
             RuleFor(x => x.EmployeeId)
-                .NotEmpty().WithMessage("EmployeeId not empty");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.EmployeeIdRequired));
 
             RuleFor(x => x.FullName)
-                .NotEmpty().WithMessage("Full name not empty")
-                .MaximumLength(100).WithMessage("Full name not exceed 100 characters");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.FullNameRequired))
+                .MaximumLength(100).WithMessage(messageService.GetMessage(MessageKeys.Profile.FullNameMaxLength));
 
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email not empty")
-                .EmailAddress().WithMessage("Email invalid");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.EmailRequired))
+                .EmailAddress().WithMessage(messageService.GetMessage(MessageKeys.Profile.EmailInvalid));
 
             RuleFor(x => x.Phone)
-                .NotEmpty().WithMessage("Phone number not empty")
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneRequired))
                 .Matches(@"^(0|\+84)[3|5|7|8|9][0-9]{8}$")
-                .WithMessage("Phone number invalid");
+                .WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneInvalid));
         }
     }
 

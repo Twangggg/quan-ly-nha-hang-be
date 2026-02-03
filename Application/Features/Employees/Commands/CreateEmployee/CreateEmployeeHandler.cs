@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
 {
@@ -14,59 +16,95 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
         private readonly ICurrentUserService _currentUserService;
         private readonly IPasswordService _passwordService;
         private readonly IEmailService _emailService;
+        private readonly IEmployeeServices _employeeServices;
+        private readonly IMessageService _messageService;
 
         public CreateEmployeeHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IPasswordService passwordService,
             ICurrentUserService currentUserService,
-            IEmailService emailService)
+            IEmailService emailService,
+            IEmployeeServices employeeServices,
+            IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
             _passwordService = passwordService;
             _emailService = emailService;
+            _employeeServices = employeeServices;
+            _messageService = messageService;
         }
 
         public async Task<Result<CreateEmployeeResponse>> Handle(CreateEmployeeCommand request, CancellationToken cancellationToken)
         {
-            var employee = _mapper.Map<Employee>(request);
-            var randomPassword = _passwordService.GenerateRandomPassword();
-            employee.PasswordHash = _passwordService.HashPassword(randomPassword);
-            employee.EmployeeId = Guid.NewGuid();
-            employee.CreatedAt = DateTime.UtcNow;
-
-            await _unitOfWork.Repository<Employee>().AddAsync(employee);
-
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                return Result<CreateEmployeeResponse>.Failure("Current user identity is missing or invalid.", ResultErrorType.Unauthorized);
+                return Result<CreateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
             }
 
-            var auditLog = new AuditLog
+            var employeeExists = await _unitOfWork.Repository<Employee>()
+                .Query()
+                .AnyAsync(e => e.Email == request.Email, cancellationToken);
+
+            if (employeeExists)
             {
-                LogId = Guid.NewGuid(),
-                Action = AuditAction.Create,
-                TargetId = employee.EmployeeId,
-                PerformedByEmployeeId = auditorId,
-                CreatedAt = DateTimeOffset.UtcNow,
-                Reason = "Create new employee"
-            };
-            await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
-            await _unitOfWork.SaveChangeAsync(cancellationToken);
+                return Result<CreateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Common.DatabaseConflict));
+            }
 
-            await _emailService.SendEmailAsync(employee.Email,
-                "Chào mừng đến FoodHub - Thông tin tài khoản",
-                $"<h2>Xin chào {employee.FullName}</h2>" +
-                $"<p>Tài khoản của bạn đã được tạo.</p>" +
-                $"<p><strong>Employee Code:</strong> {employee.EmployeeCode}</p>" +
-                $"<p><strong>Mật khẩu tạm thời:</strong> {randomPassword}</p>" +
-                $"<p>Vui lòng đổi mật khẩu ngay khi đăng nhập lần đầu.</p>",
-                cancellationToken);
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var employee = _mapper.Map<Employee>(request);
+                employee.EmployeeId = Guid.NewGuid();
+                employee.Status = EmployeeStatus.Active;
+                employee.CreatedAt = DateTime.UtcNow;
+                employee.EmployeeCode = await _employeeServices.GenerateEmployeeCodeAsync(request.Role);
 
-            var response = _mapper.Map<CreateEmployeeResponse>(employee);
-            return Result<CreateEmployeeResponse>.Success(response);
+                var randomPassword = _passwordService.GenerateRandomPassword();
+                employee.PasswordHash = _passwordService.HashPassword(randomPassword);
+
+                await _unitOfWork.Repository<Employee>().AddAsync(employee);
+
+
+
+                var auditLog = new AuditLog
+                {
+                    LogId = Guid.NewGuid(),
+                    Action = AuditAction.Create,
+                    TargetId = employee.EmployeeId,
+                    PerformedByEmployeeId = auditorId,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    Reason = "Create new employee"
+                };
+                await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+                var emailSent = await _emailService.SendAccountCreationEmailAsync(
+                    employee.Email,
+                    employee.FullName,
+                    employee.EmployeeCode,
+                    employee.Role.ToString(),
+                    randomPassword,
+                    cancellationToken);
+
+                if (!emailSent)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    return Result<CreateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.AccountCreationEmailFailed));
+                }
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                var response = _mapper.Map<CreateEmployeeResponse>(employee);
+                return Result<CreateEmployeeResponse>.Success(response);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                return Result<CreateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.AccountCreationEmailFailed) + $" ({ex.Message})");
+            }
         }
     }
 }

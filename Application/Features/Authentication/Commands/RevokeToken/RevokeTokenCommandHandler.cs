@@ -3,16 +3,19 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Features.Authentication.Commands.RevokeToken
 {
     public class RevokeTokenCommandHandler : IRequestHandler<RevokeTokenCommand, Result<bool>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMessageService _messageService;
 
-        public RevokeTokenCommandHandler(IUnitOfWork unitOfWork)
+        public RevokeTokenCommandHandler(IUnitOfWork unitOfWork, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
+            _messageService = messageService;
         }
 
         public async Task<Result<bool>> Handle(RevokeTokenCommand request, CancellationToken cancellationToken)
@@ -23,7 +26,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.RevokeToken
 
             if (token == null)
             {
-                return Result<bool>.Failure("Invalid token.");
+                return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Auth.InvalidToken));
             }
 
             _unitOfWork.Repository<FoodHub.Domain.Entities.RefreshToken>().Delete(token);
