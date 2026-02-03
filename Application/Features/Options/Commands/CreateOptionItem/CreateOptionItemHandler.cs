@@ -1,18 +1,47 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.DTOs.Options;
+using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Entities;
 using MediatR;
 
 namespace FoodHub.Application.Features.Options.Commands.CreateOptionItem
 {
     public class CreateOptionItemHandler : IRequestHandler<CreateOptionItemCommand, Result<OptionItemDto>>
     {
-        public CreateOptionItemHandler()
+        private readonly IUnitOfWork _unitOfWork;
+
+        public CreateOptionItemHandler(IUnitOfWork unitOfWork)
         {
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<OptionItemDto>> Handle(CreateOptionItemCommand request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var optionGroupRepository = _unitOfWork.Repository<OptionGroup>();
+            var optionGroup = await optionGroupRepository.GetByIdAsync(request.OptionGroupId);
+            if (optionGroup == null)
+            {
+                return Result<OptionItemDto>.Failure($"Option group with ID {request.OptionGroupId} not found.", ResultErrorType.NotFound);
+            }
+
+            var optionItem = new OptionItem
+            {
+                OptionGroupId = request.OptionGroupId,
+                Label = request.Label,
+                ExtraPrice = request.ExtraPrice
+            };
+
+            await _unitOfWork.Repository<OptionItem>().AddAsync(optionItem);
+            await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            var dto = new OptionItemDto
+            {
+                OptionItemId = optionItem.OptionItemId,
+                Label = optionItem.Label,
+                ExtraPrice = optionItem.ExtraPrice
+            };
+
+            return Result<OptionItemDto>.Success(dto);
         }
     }
 }

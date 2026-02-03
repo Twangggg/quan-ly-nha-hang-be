@@ -36,7 +36,7 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
             query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
 
             // 2. Apply Filters
-            var filterMapping = new Dictionary<string, Expression<Func<Employee, object>>>
+            var filterMapping = new Dictionary<string, Expression<Func<Employee, object?>>>
             {
                 { "status", u => u.Status },
                 { "role", u => u.Role }
@@ -44,7 +44,7 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployees
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
             // 3. Apply Multi-Sorting
-            var sortMapping = new Dictionary<string, Expression<Func<Employee, object>>>
+            var sortMapping = new Dictionary<string, Expression<Func<Employee, object?>>>
             {
                 {"username" , u => u.Username},
                 {"phone", u=> u.Phone },

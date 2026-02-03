@@ -61,11 +61,11 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Audit Properties
+            // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
-            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
-            builder.Property(e => e.IsDeleted).HasColumnName("is_deleted");
+            builder.Property(e => e.CreatedById).HasColumnName("created_by_id");
+            builder.Property(e => e.UpdatedById).HasColumnName("updated_by_id");
             builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
             // Indexes

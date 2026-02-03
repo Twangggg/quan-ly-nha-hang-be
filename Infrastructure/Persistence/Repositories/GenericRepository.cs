@@ -18,6 +18,9 @@ namespace FoodHub.Infrastructure.Persistence.Repositories
         public async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
         public Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
             => _dbSet.AnyAsync(predicate);
+
+        public Task<int> CountAsync(Expression<Func<T, bool>> predicate)
+            => _dbSet.CountAsync(predicate);
         public void Delete(T entity) => _dbSet.Remove(entity);
         public async Task<T?> GetByIdAsync(object id) => await _dbSet.FindAsync(id);
         public IQueryable<T> Query() => _dbSet.AsQueryable();

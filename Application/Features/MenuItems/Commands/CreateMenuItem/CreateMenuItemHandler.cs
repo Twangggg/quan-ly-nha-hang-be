@@ -10,10 +10,12 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
     public class CreateMenuItemHandler : IRequestHandler<CreateMenuItemCommand, Result<MenuItemDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CreateMenuItemHandler(IUnitOfWork unitOfWork)
+        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<MenuItemDto>> Handle(CreateMenuItemCommand request, CancellationToken cancellationToken)
@@ -24,7 +26,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             var existingMenuItem = await menuItemRepository.AnyAsync(x => x.Code == request.Code);
             if (existingMenuItem)
             {
-                return Result<MenuItemDto>.Failure($"Menu item with code '{request.Code}' already exists.");
+                return Result<MenuItemDto>.Failure($"Menu item with code '{request.Code}' already exists.", ResultErrorType.Conflict);
             }
 
             // 2. Check if Category exists
@@ -33,6 +35,12 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             if (category == null)
             {
                 return Result<MenuItemDto>.Failure($"Category with ID '{request.CategoryId}' not found.", ResultErrorType.NotFound);
+            }
+
+            Guid? auditorId = null;
+            if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
+            {
+                auditorId = parsedId;
             }
 
             // 3. Create MenuItem entity
@@ -48,7 +56,10 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 PriceDineIn = request.PriceDineIn,
                 PriceTakeAway = request.PriceTakeAway ?? request.PriceDineIn, // Default to DineIn price if not set
                 Cost = request.Cost ?? 0,
-                IsOutOfStock = false
+                IsOutOfStock = false,
+                CreatedAt = DateTime.UtcNow,
+                CreatedById = auditorId,
+                UpdatedById = auditorId
             };
 
             // 4. Save to database

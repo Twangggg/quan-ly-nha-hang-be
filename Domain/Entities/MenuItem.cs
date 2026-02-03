@@ -24,10 +24,9 @@ namespace FoodHub.Domain.Entities
 
         public bool IsOutOfStock { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public Guid? CreatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdatedBy { get; set; }
-        public bool IsDeleted { get; set; } = false;
+        public Guid? CreatedById { get; set; }
+        public Guid? UpdatedById { get; set; }
         public DateTime? DeletedAt { get; set; }
 
         public virtual ICollection<OptionGroup> OptionGroups { get; set; } = new List<OptionGroup>();

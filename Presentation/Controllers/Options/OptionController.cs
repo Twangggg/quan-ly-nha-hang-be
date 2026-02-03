@@ -12,7 +12,7 @@ namespace FoodHub.Presentation.Controllers.Options
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class OptionController : ControllerBase
+    public partial class OptionController : ControllerBase
     {
         private readonly IMediator _mediator;
 

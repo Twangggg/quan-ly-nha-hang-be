@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -13,13 +14,20 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
         private readonly IPasswordService _passwordService;
         private readonly ICurrentUserService _currentUserService;
         private readonly IRateLimiter _rateLimiter;
+        private readonly IMessageService _messageService;
 
-        public ChangePasswordCommandHandler(IUnitOfWork unitOfWork, IPasswordService passwordService, ICurrentUserService currentUserService, IRateLimiter rateLimiter)
+        public ChangePasswordCommandHandler(
+            IUnitOfWork unitOfWork,
+            IPasswordService passwordService,
+            ICurrentUserService currentUserService,
+            IRateLimiter rateLimiter,
+            IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
             _currentUserService = currentUserService;
             _rateLimiter = rateLimiter;
+            _messageService = messageService;
         }
 
         public async Task<Result<string>> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
@@ -27,7 +35,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
             var userId = _currentUserService.UserId;
             if (string.IsNullOrEmpty(userId))
             {
-                return Result<string>.Failure("The user is not logged in;");
+                return Result<string>.Failure(_messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn));
             }
 
             var employee = await _unitOfWork.Repository<Employee>()
@@ -36,44 +44,25 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
 
             if (employee == null)
             {
-                return Result<string>.Failure("Invalid action");
+                return Result<string>.Failure(_messageService.GetMessage(MessageKeys.Auth.InvalidAction));
             }
 
             if (employee.Status != EmployeeStatus.Active)
             {
-                return Result<string>.Failure("Invalid action");
+                return Result<string>.Failure(_messageService.GetMessage(MessageKeys.Auth.InvalidAction));
             }
 
             var key = $"cp:{userId}";
 
             // Check if user is blocked
             if (await _rateLimiter.IsBlockedAsync(key, cancellationToken))
-                return Result<string>.Failure("Too many attempts. Try again later");
-
-            // Validate new password format
-            var passwordValidationError = ValidatePasswordPolicy(request.NewPassword);
-            if (!string.IsNullOrEmpty(passwordValidationError))
-            {
-                return Result<string>.Failure(passwordValidationError);
-            }
-
-            // Validate password confirmation matches
-            if (request.NewPassword != request.ConfirmPassword)
-            {
-                return Result<string>.Failure("Password confirmation does not match.");
-            }
-
-            // Validate new password is different from current
-            if (request.NewPassword == request.CurrentPassword)
-            {
-                return Result<string>.Failure("New password must be different from current password.");
-            }
+                return Result<string>.Failure(_messageService.GetMessage(MessageKeys.Auth.TooManyAttempts));
 
             // Verify current password
             if (!_passwordService.VerifyPassword(request.CurrentPassword, employee.PasswordHash))
             {
                 await RegisterFailedAttempt(key, cancellationToken);
-                return Result<string>.Failure("The current password is incorrect.");
+                return Result<string>.Failure(_messageService.GetMessage(MessageKeys.Password.IncorrectCurrent));
             }
 
             // All validations passed - reset fail count
@@ -96,7 +85,6 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
                 _unitOfWork.Repository<Domain.Entities.RefreshToken>().Update(token);
             }
 
-
             //Log password reset
             await _unitOfWork.Repository<AuditLog>().AddAsync(new AuditLog
             {
@@ -109,8 +97,9 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            return Result<string>.Success("Password changed successfully. Please log in again.");
+            return Result<string>.Success(_messageService.GetMessage(MessageKeys.Auth.PasswordChangedSuccess));
         }
+
         private async Task RegisterFailedAttempt(string key, CancellationToken cancellationToken)
         {
             await _rateLimiter.RegisterFailAsync(
@@ -121,27 +110,6 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
                 cancellationToken);
         }
 
-        private string? ValidatePasswordPolicy(string password)
-        {
-            if (string.IsNullOrEmpty(password))
-                return "New password must not be empty.";
 
-            if (password.Length < 8)
-                return "Password must be at least 8 characters long.";
-
-            if (!password.Any(char.IsUpper))
-                return "Password must contain at least one uppercase letter.";
-
-            if (!password.Any(char.IsLower))
-                return "Password must contain at least one lowercase letter.";
-
-            if (!password.Any(char.IsDigit))
-                return "Password must contain at least one number.";
-
-            if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
-                return "Password must contain at least one special character.";
-
-            return null;
-        }
     }
 }

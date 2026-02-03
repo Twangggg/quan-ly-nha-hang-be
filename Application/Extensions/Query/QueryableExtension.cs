@@ -57,7 +57,7 @@ namespace FoodHub.Application.Extensions.Query
         public static IQueryable<T> ApplyFilters<T>(
             this IQueryable<T> query,
             List<string>? filters,
-            Dictionary<string, Expression<Func<T, object>>> filterMapping)
+            Dictionary<string, Expression<Func<T, object?>>> filterMapping)
         {
             if (filters == null || !filters.Any())
                 return query;
@@ -75,7 +75,7 @@ namespace FoodHub.Application.Extensions.Query
                     var parameter = Expression.Parameter(typeof(T), "x");
                     var memberAccess = Expression.Invoke(propertySelector, parameter);
                     var constant = Expression.Constant(value);
-                    
+
                     var body = Expression.Equal(Expression.Convert(memberAccess, typeof(string)), constant);
                     var lambda = Expression.Lambda<Func<T, bool>>(body, parameter);
                     query = query.Where(lambda);
@@ -88,8 +88,8 @@ namespace FoodHub.Application.Extensions.Query
         public static IQueryable<T> ApplySorting<T>(
             this IQueryable<T> query,
             string? orderBy,
-            Dictionary<string, Expression<Func<T, object>>> mapping,
-            Expression<Func<T, object>> defaultSort)
+            Dictionary<string, Expression<Func<T, object?>>> mapping,
+            Expression<Func<T, object?>> defaultSort)
         {
             if (string.IsNullOrWhiteSpace(orderBy))
             {

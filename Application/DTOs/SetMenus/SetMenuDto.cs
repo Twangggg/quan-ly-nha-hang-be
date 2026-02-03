@@ -9,5 +9,18 @@ namespace FoodHub.Application.DTOs.SetMenus
         public bool IsOutOfStock { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        public SetMenuDto() { }
+
+        public SetMenuDto(Guid setMenuId, string code, string name, decimal price, bool isOutOfStock, DateTime createdAt, DateTime updatedAt)
+        {
+            SetMenuId = setMenuId;
+            Code = code;
+            Name = name;
+            Price = price;
+            IsOutOfStock = isOutOfStock;
+            CreatedAt = createdAt;
+            UpdatedAt = updatedAt;
+        }
     }
 }
