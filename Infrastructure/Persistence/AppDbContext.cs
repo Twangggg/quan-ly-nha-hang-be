@@ -15,6 +15,13 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<OrderItem> OrderItems { get; set; } = null!;
         public DbSet<OrderAuditLog> OrderAuditLogs { get; set; } = null!;
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
+        
+        // Menu Management
+        public DbSet<MenuItem> MenuItems { get; set; } = null!;
+        public DbSet<OptionGroup> OptionGroups { get; set; } = null!;
+        public DbSet<OptionItem> OptionItems { get; set; } = null!;
+        public DbSet<SetMenu> SetMenus { get; set; } = null!;
+        public DbSet<SetMenuItem> SetMenuItems { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

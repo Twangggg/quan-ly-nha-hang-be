@@ -4,23 +4,32 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FoodHub.Infrastructure.Persistence.Configurations
 {
-    public class CategoryConfiguration : IEntityTypeConfiguration<Category>
+    public class SetMenuConfiguration : IEntityTypeConfiguration<SetMenu>
     {
-        public void Configure(EntityTypeBuilder<Category> builder)
+        public void Configure(EntityTypeBuilder<SetMenu> builder)
         {
-            builder.ToTable("categories");
+            builder.ToTable("set_menus");
 
             builder.HasKey(e => e.Id);
-            builder.Property(e => e.Id).HasColumnName("category_id");
+            builder.Property(e => e.Id).HasColumnName("set_menu_id");
+
+            builder.Property(e => e.Code)
+                .HasColumnName("code")
+                .HasMaxLength(50)
+                .IsRequired();
+
+            builder.HasIndex(e => e.Code).IsUnique();
 
             builder.Property(e => e.Name)
                 .HasColumnName("name")
-                .HasMaxLength(100)
+                .HasMaxLength(150)
                 .IsRequired();
 
-            builder.HasIndex(e => e.Name).IsUnique();
+            builder.Property(e => e.Price)
+                .HasColumnName("price")
+                .HasPrecision(12, 2);
 
-            builder.Property(e => e.Type).HasColumnName("type");
+            builder.Property(e => e.IsOutOfStock).HasColumnName("is_out_of_stock");
 
             // BaseEntity
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
