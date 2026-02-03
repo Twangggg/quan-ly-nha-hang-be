@@ -86,9 +86,11 @@ if (!string.IsNullOrEmpty(allowedOrigins))
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
-    options.InstanceName =
-        builder.Configuration["Redis:InstanceName"];
+    var connectionString = builder.Configuration.GetConnectionString("Redis")
+                          ?? builder.Configuration["Redis:ConnectionString"]
+                          ?? "localhost:6379";
+    options.Configuration = connectionString;
+    options.InstanceName = builder.Configuration["Redis:InstanceName"];
 });
 
 // Configure Forwarded Headers for Proxy/Load Balancer support
