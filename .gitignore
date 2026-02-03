@@ -46,7 +46,7 @@ appsettings.Development.json
 *.publishsettings
 
 # Auto-generated files
-**/*.Designer.cs
+
 
 # Others
 .DS_Store
