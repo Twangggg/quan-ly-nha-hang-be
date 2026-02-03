@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456@
+      POSTGRES_PASSWORD: 123456
       POSTGRES_DB: FoodHubDb
     ports:
       - "5432:5432"
@@ -18,7 +18,7 @@ services:
 
   backend:
     build:
-      context: ./FoodHub_BE
+      context: ./quan-ly-nha-hang-be
       dockerfile: Dockerfile
     container_name: foodhub_backend
     restart: always
@@ -60,7 +60,7 @@ services:
 
   frontend:
     build:
-      context: ./FoodHub_FE
+      context: ./quan-ly-nha-hang-fe
       dockerfile: Dockerfile
     container_name: foodhub_frontend
     depends_on:

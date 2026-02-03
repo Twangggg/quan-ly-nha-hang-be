@@ -68,7 +68,7 @@ namespace FoodHub.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.Category", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("CategoryId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("category_id");
@@ -107,7 +107,7 @@ namespace FoodHub.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
 
-                    b.HasKey("Id")
+                    b.HasKey("CategoryId")
                         .HasName("pk_categories");
 
                     b.HasIndex("Name")
@@ -220,7 +220,7 @@ namespace FoodHub.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.MenuItem", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("MenuItemId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("menu_item_id");
@@ -303,7 +303,7 @@ namespace FoodHub.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
 
-                    b.HasKey("Id")
+                    b.HasKey("MenuItemId")
                         .HasName("pk_menu_items");
 
                     b.HasIndex("CategoryId")
@@ -318,7 +318,7 @@ namespace FoodHub.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.OptionGroup", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("OptionGroupId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("option_group_id");
@@ -365,7 +365,7 @@ namespace FoodHub.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
 
-                    b.HasKey("Id")
+                    b.HasKey("OptionGroupId")
                         .HasName("pk_option_groups");
 
                     b.HasIndex("MenuItemId")
@@ -376,7 +376,7 @@ namespace FoodHub.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.OptionItem", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("OptionItemId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("option_item_id");
@@ -420,7 +420,7 @@ namespace FoodHub.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
 
-                    b.HasKey("Id")
+                    b.HasKey("OptionItemId")
                         .HasName("pk_option_items");
 
                     b.HasIndex("OptionGroupId")
@@ -528,7 +528,7 @@ namespace FoodHub.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("SetMenuId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("set_menu_id");
@@ -578,7 +578,7 @@ namespace FoodHub.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
 
-                    b.HasKey("Id")
+                    b.HasKey("SetMenuId")
                         .HasName("pk_set_menus");
 
                     b.HasIndex("Code")
@@ -590,7 +590,7 @@ namespace FoodHub.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenuItem", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("SetMenuItemId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("set_menu_item_id");
@@ -631,7 +631,7 @@ namespace FoodHub.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
 
-                    b.HasKey("Id")
+                    b.HasKey("SetMenuItemId")
                         .HasName("pk_set_menu_items");
 
                     b.HasIndex("MenuItemId")

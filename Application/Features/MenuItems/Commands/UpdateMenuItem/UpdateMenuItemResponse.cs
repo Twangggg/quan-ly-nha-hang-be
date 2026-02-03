@@ -7,7 +7,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
 {
     public class UpdateMenuItemResponse : IMapFrom<MenuItem>
     {
-        public Guid Id { get; set; }
+        public Guid MenuItemId { get; set; }
         public string Code { get; set; } = default!;
         public string Name { get; set; } = default!;
         public string ImageUrl { get; set; } = default!;

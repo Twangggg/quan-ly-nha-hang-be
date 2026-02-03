@@ -6,7 +6,7 @@ using MediatR;
 namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
 {
     public record UpdateMenuItemCommand(
-        Guid Id,
+        Guid MenuItemId,
         string? Code,
         string? Name,
         string? ImageUrl,

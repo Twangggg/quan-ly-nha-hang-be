@@ -10,14 +10,14 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("menu_items");
 
-            builder.HasKey(e => e.Id);
-            builder.Property(e => e.Id).HasColumnName("menu_item_id");
+            builder.HasKey(e => e.MenuItemId);
+            builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
 
             builder.Property(e => e.Code)
                 .HasColumnName("code")
                 .HasMaxLength(50)
                 .IsRequired();
-            
+
             builder.HasIndex(e => e.Code).IsUnique();
 
             builder.Property(e => e.Name)
@@ -60,11 +60,12 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasConstraintName("fk_menu_items_category_id")
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // BaseEntity
+            // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
             builder.Property(e => e.CreatedBy).HasColumnName("created_by");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            builder.Property(e => e.IsDeleted).HasColumnName("is_deleted");
             builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
             // Indexes
