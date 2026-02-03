@@ -27,7 +27,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
             var userId = _currentUserService.UserId;
             if (string.IsNullOrEmpty(userId))
             {
-                return Result<string>.Failure("The user is not logged in;");
+                return Result<string>.Failure("The user is not logged in");
             }
 
             var employee = await _unitOfWork.Repository<Employee>()
