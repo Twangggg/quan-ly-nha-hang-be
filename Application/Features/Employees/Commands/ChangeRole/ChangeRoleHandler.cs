@@ -79,6 +79,18 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
 
             oldEmployee.Status = EmployeeStatus.Inactive;
 
+            // Revoke all existing refresh tokens for the old account
+            var refreshTokens = await _unitOfWork.Repository<RefreshToken>()
+                .Query()
+                .Where(rt => rt.EmployeeId == oldEmployee.EmployeeId && !rt.IsRevoked)
+                .ToListAsync(cancellationToken);
+
+            foreach (var token in refreshTokens)
+            {
+                token.IsRevoked = true;
+                token.UpdatedAt = DateTime.UtcNow;
+            }
+
             var suffix = $"_old_{timestamp}";
             if (originalEmail.Length + suffix.Length > 150)
             {

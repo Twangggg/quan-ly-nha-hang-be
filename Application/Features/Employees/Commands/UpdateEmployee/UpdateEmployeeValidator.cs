@@ -28,7 +28,9 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
                 }).WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneExists));
 
 
-            RuleFor(x => x.FullName).NotEmpty();
+            RuleFor(x => x.FullName)
+                .NotEmpty()
+                .When(x => x.FullName != null);
 
             RuleFor(x => x.Address).MaximumLength(255);
         }

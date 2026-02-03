@@ -83,6 +83,18 @@ namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
                 token.UsedAt = DateTimeOffset.UtcNow;
             }
 
+            // Revoke all existing refresh tokens for the employee (security measure)
+            var refreshTokens = await _unitOfWork.Repository<Domain.Entities.RefreshToken>()
+                .Query()
+                .Where(rt => rt.EmployeeId == employee.EmployeeId && !rt.IsRevoked)
+                .ToListAsync(cancellationToken);
+
+            foreach (var token in refreshTokens)
+            {
+                token.IsRevoked = true;
+                token.UpdatedAt = DateTime.UtcNow;
+            }
+
             // Log the password reset using the standardized AuditLog
             await _unitOfWork.Repository<AuditLog>().AddAsync(new AuditLog
             {
