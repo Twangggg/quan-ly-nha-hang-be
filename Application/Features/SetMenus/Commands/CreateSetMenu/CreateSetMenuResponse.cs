@@ -1,6 +1,6 @@
-namespace FoodHub.Application.DTOs.SetMenus
+namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
 {
-    public class SetMenuDetailDto
+    public class CreateSetMenuResponse
     {
         public Guid SetMenuId { get; set; }
         public string Code { get; set; } = string.Empty;
@@ -8,16 +8,14 @@ namespace FoodHub.Application.DTOs.SetMenus
         public decimal Price { get; set; }
         public bool IsOutOfStock { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-
-        // Items included in the set menu
-        public List<SetMenuItemDto>? Items { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public List<SetMenuItemResponse> Items { get; set; } = new();
     }
 
-    public class SetMenuItemDto
+    public class SetMenuItemResponse
     {
+        public Guid SetMenuItemId { get; set; }
         public Guid MenuItemId { get; set; }
-        public string MenuItemName { get; set; } = string.Empty;
         public int Quantity { get; set; }
     }
 }

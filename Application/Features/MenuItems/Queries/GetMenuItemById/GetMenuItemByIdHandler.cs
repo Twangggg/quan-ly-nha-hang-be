@@ -10,10 +10,12 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
     public class GetMenuItemByIdHandler : IRequestHandler<GetMenuItemByIdQuery, Result<MenuItemDetailDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUserService;
 
-        public GetMenuItemByIdHandler(IUnitOfWork unitOfWork)
+        public GetMenuItemByIdHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<MenuItemDetailDto>> Handle(GetMenuItemByIdQuery request, CancellationToken cancellationToken)
@@ -30,6 +32,8 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
                 return Result<MenuItemDetailDto>.Failure($"Menu item with ID {request.MenuItemId} not found.", ResultErrorType.NotFound);
             }
 
+            var canViewCost = _currentUserService.IsInRole("Manager") || _currentUserService.IsInRole("Cashier");
+
             var dto = new MenuItemDetailDto
             {
                 MenuItemId = menuItem.MenuItemId,
@@ -43,7 +47,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
                 ExpectedTime = menuItem.ExpectedTime,
                 PriceDineIn = menuItem.PriceDineIn,
                 PriceTakeAway = menuItem.PriceTakeAway,
-                Cost = menuItem.Cost,
+                Cost = canViewCost ? menuItem.Cost : null,
                 IsOutOfStock = menuItem.IsOutOfStock,
                 CreatedAt = menuItem.CreatedAt,
                 UpdatedAt = menuItem.UpdatedAt ?? DateTime.MinValue,

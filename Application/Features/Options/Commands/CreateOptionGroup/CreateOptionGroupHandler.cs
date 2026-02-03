@@ -1,5 +1,4 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.Options;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -7,7 +6,7 @@ using MediatR;
 
 namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
 {
-    public class CreateOptionGroupHandler : IRequestHandler<CreateOptionGroupCommand, Result<OptionGroupDto>>
+    public class CreateOptionGroupHandler : IRequestHandler<CreateOptionGroupCommand, Result<CreateOptionGroupResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -16,13 +15,13 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<OptionGroupDto>> Handle(CreateOptionGroupCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CreateOptionGroupResponse>> Handle(CreateOptionGroupCommand request, CancellationToken cancellationToken)
         {
             var menuItemRepository = _unitOfWork.Repository<MenuItem>();
             var menuItem = await menuItemRepository.GetByIdAsync(request.MenuItemId);
             if (menuItem == null)
             {
-                return Result<OptionGroupDto>.Failure($"Menu item with ID {request.MenuItemId} not found.", ResultErrorType.NotFound);
+                return Result<CreateOptionGroupResponse>.Failure($"Menu item with ID {request.MenuItemId} not found.", ResultErrorType.NotFound);
             }
 
             var optionGroup = new OptionGroup
@@ -36,16 +35,17 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
             await _unitOfWork.Repository<OptionGroup>().AddAsync(optionGroup);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            var dto = new OptionGroupDto
+            var response = new CreateOptionGroupResponse
             {
                 OptionGroupId = optionGroup.OptionGroupId,
+                MenuItemId = optionGroup.MenuItemId,
                 Name = optionGroup.Name,
                 Type = (int)optionGroup.Type,
                 IsRequired = optionGroup.IsRequired,
-                OptionItems = new List<OptionItemDto>()
+                OptionItems = new List<OptionItemResponse>()
             };
 
-            return Result<OptionGroupDto>.Success(dto);
+            return Result<CreateOptionGroupResponse>.Success(response);
         }
     }
 }

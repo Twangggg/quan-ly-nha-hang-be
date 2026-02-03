@@ -1,5 +1,4 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.Options;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -8,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
 {
-    public class UpdateOptionGroupHandler : IRequestHandler<UpdateOptionGroupCommand, Result<OptionGroupDto>>
+    public class UpdateOptionGroupHandler : IRequestHandler<UpdateOptionGroupCommand, Result<UpdateOptionGroupResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -17,7 +16,7 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<OptionGroupDto>> Handle(UpdateOptionGroupCommand request, CancellationToken cancellationToken)
+        public async Task<Result<UpdateOptionGroupResponse>> Handle(UpdateOptionGroupCommand request, CancellationToken cancellationToken)
         {
             var optionGroup = await _unitOfWork.Repository<OptionGroup>()
                 .Query()
@@ -26,7 +25,7 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
 
             if (optionGroup == null)
             {
-                return Result<OptionGroupDto>.Failure($"Option group with ID {request.OptionGroupId} not found.", ResultErrorType.NotFound);
+                return Result<UpdateOptionGroupResponse>.Failure($"Option group with ID {request.OptionGroupId} not found.", ResultErrorType.NotFound);
             }
 
             optionGroup.Name = request.Name;
@@ -36,21 +35,16 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
             _unitOfWork.Repository<OptionGroup>().Update(optionGroup);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            var dto = new OptionGroupDto
+            var response = new UpdateOptionGroupResponse
             {
                 OptionGroupId = optionGroup.OptionGroupId,
+                MenuItemId = optionGroup.MenuItemId,
                 Name = optionGroup.Name,
                 Type = (int)optionGroup.Type,
-                IsRequired = optionGroup.IsRequired,
-                OptionItems = optionGroup.OptionItems.Select(oi => new OptionItemDto
-                {
-                    OptionItemId = oi.OptionItemId,
-                    Label = oi.Label,
-                    ExtraPrice = oi.ExtraPrice
-                }).ToList()
+                IsRequired = optionGroup.IsRequired
             };
 
-            return Result<OptionGroupDto>.Success(dto);
+            return Result<UpdateOptionGroupResponse>.Success(response);
         }
     }
 }

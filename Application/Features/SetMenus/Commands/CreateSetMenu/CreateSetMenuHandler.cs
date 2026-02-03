@@ -1,12 +1,11 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.SetMenus;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
 {
-    public class CreateSetMenuHandler : IRequestHandler<CreateSetMenuCommand, Result<SetMenuDto>>
+    public class CreateSetMenuHandler : IRequestHandler<CreateSetMenuCommand, Result<CreateSetMenuResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -15,7 +14,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<SetMenuDto>> Handle(CreateSetMenuCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CreateSetMenuResponse>> Handle(CreateSetMenuCommand request, CancellationToken cancellationToken)
         {
             var setMenuRepository = _unitOfWork.Repository<SetMenu>();
             var menuItemRepository = _unitOfWork.Repository<MenuItem>();
@@ -24,7 +23,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
             var existingSetMenu = await setMenuRepository.AnyAsync(sm => sm.Code == request.Code);
             if (existingSetMenu)
             {
-                return Result<SetMenuDto>.Failure($"Set Menu with code '{request.Code}' already exists.", ResultErrorType.Conflict);
+                return Result<CreateSetMenuResponse>.Failure($"Set Menu with code '{request.Code}' already exists.", ResultErrorType.Conflict);
             }
 
             // 2. Validate if all MenuItems exist
@@ -33,8 +32,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
 
             if (existingMenuItemsCount != menuItemIds.Count)
             {
-                // Find which ones are missing for better error message? For now generic error.
-                return Result<SetMenuDto>.Failure("One or more Menu Items do not exist.", ResultErrorType.BadRequest);
+                return Result<CreateSetMenuResponse>.Failure("One or more Menu Items do not exist.", ResultErrorType.BadRequest);
             }
 
             // 3. Create SetMenu
@@ -56,18 +54,25 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
             await setMenuRepository.AddAsync(setMenu);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            // 5. Return Result
-            var dto = new SetMenuDto(
-                setMenu.SetMenuId,
-                setMenu.Code,
-                setMenu.Name,
-                setMenu.Price,
-                setMenu.IsOutOfStock,
-                setMenu.CreatedAt,
-                setMenu.UpdatedAt ?? DateTime.MinValue // Handle null
-            );
+            // 5. Return Response
+            var response = new CreateSetMenuResponse
+            {
+                SetMenuId = setMenu.SetMenuId,
+                Code = setMenu.Code,
+                Name = setMenu.Name,
+                Price = setMenu.Price,
+                IsOutOfStock = setMenu.IsOutOfStock,
+                CreatedAt = setMenu.CreatedAt,
+                UpdatedAt = setMenu.UpdatedAt,
+                Items = setMenu.SetMenuItems.Select(item => new SetMenuItemResponse
+                {
+                    SetMenuItemId = item.SetMenuItemId,
+                    MenuItemId = item.MenuItemId,
+                    Quantity = item.Quantity
+                }).ToList()
+            };
 
-            return Result<SetMenuDto>.Success(dto);
+            return Result<CreateSetMenuResponse>.Success(response);
         }
     }
 }

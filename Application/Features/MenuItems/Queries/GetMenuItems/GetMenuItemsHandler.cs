@@ -11,10 +11,12 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
     public class GetMenuItemsHandler : IRequestHandler<GetMenuItemsQuery, Result<PagedResult<MenuItemDto>>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUserService;
 
-        public GetMenuItemsHandler(IUnitOfWork unitOfWork)
+        public GetMenuItemsHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<PagedResult<MenuItemDto>>> Handle(GetMenuItemsQuery request, CancellationToken cancellationToken)
@@ -49,6 +51,8 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
                 .Take(request.PageSize)
                 .ToListAsync(cancellationToken);
 
+            var canViewCost = _currentUserService.IsInRole("Manager") || _currentUserService.IsInRole("Cashier");
+
             var dtos = items.Select(m => new MenuItemDto
             {
                 MenuItemId = m.MenuItemId,
@@ -62,7 +66,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
                 ExpectedTime = m.ExpectedTime,
                 PriceDineIn = m.PriceDineIn,
                 PriceTakeAway = m.PriceTakeAway,
-                Cost = m.Cost,
+                Cost = canViewCost ? m.Cost : null,
                 IsOutOfStock = m.IsOutOfStock,
                 CreatedAt = m.CreatedAt,
                 UpdatedAt = m.UpdatedAt
