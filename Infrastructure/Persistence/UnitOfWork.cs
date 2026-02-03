@@ -14,7 +14,7 @@ namespace FoodHub.Infrastructure.Persistence
             _repositories = new Dictionary<string, object>();
         }
 
-        public void Dispose() 
+        public void Dispose()
         {
             _context.Dispose();
         }
@@ -35,6 +35,57 @@ namespace FoodHub.Infrastructure.Persistence
         public async Task<int> SaveChangeAsync(CancellationToken ct = default)
         {
             return await _context.SaveChangesAsync(ct);
+        }
+
+        private Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction? _currentTransaction;
+
+        public async Task BeginTransactionAsync()
+        {
+            if (_currentTransaction != null) return;
+            _currentTransaction = await _context.Database.BeginTransactionAsync();
+        }
+
+        public async Task CommitTransactionAsync()
+        {
+            try
+            {
+                if (_currentTransaction != null)
+                {
+                    await _currentTransaction.CommitAsync();
+                }
+            }
+            catch
+            {
+                await RollbackTransactionAsync();
+                throw;
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null;
+                }
+            }
+        }
+
+        public async Task RollbackTransactionAsync()
+        {
+            try
+            {
+                if (_currentTransaction != null)
+                {
+                    await _currentTransaction.RollbackAsync();
+                }
+            }
+            finally
+            {
+                if (_currentTransaction != null)
+                {
+                    _currentTransaction.Dispose();
+                    _currentTransaction = null;
+                }
+            }
         }
     }
 }

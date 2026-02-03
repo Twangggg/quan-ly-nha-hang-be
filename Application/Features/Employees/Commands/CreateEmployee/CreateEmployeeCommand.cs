@@ -8,7 +8,6 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
 {
     public record CreateEmployeeCommand : IRequest<Result<CreateEmployeeResponse>>, IMapFrom<Employee>
     {
-        public string EmployeeCode { get; init; } = null!;
         public string FullName { get; init; } = null!;
         public string Email { get; init; } = null!;
         public EmployeeRole Role { get; init; }

@@ -35,7 +35,8 @@ bld/
 
 # Visual Studio 2015/2017/2019/2022 cache build results
 .vs/
-
+# Visual Studio Code
+.vscode/
 # Sensitive files
 appsettings.json
 appsettings.Development.json
@@ -43,6 +44,9 @@ appsettings.Development.json
 *.env.local
 *.pfx
 *.publishsettings
+
+# Auto-generated files
+
 
 # Others
 .DS_Store
