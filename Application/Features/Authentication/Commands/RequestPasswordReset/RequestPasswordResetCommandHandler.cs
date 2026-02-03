@@ -14,7 +14,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
     public class RequestPasswordResetCommandHandler : IRequestHandler<RequestPasswordResetCommand, Result<string>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IEmailService _emailService;
+        private readonly IBackgroundEmailSender _emailSender;
         private readonly IRateLimiter _rateLimiter;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -22,14 +22,14 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
 
         public RequestPasswordResetCommandHandler(
             IUnitOfWork unitOfWork,
-            IEmailService emailService,
+            IBackgroundEmailSender emailSender,
             IRateLimiter rateLimiter,
             IConfiguration configuration,
             IHttpContextAccessor httpContextAccessor,
             IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
-            _emailService = emailService;
+            _emailSender = emailSender;
             _rateLimiter = rateLimiter;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
@@ -102,16 +102,13 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
             var resetLink = $"{frontendUrl}/reset-password?token={plainToken}";
 
             // Send email
-            var emailSent = await _emailService.SendPasswordResetEmailAsync(
+            await _emailSender.EnqueuePasswordResetEmailAsync(
                 employee.Email,
                 resetLink,
                 employee.FullName,
+                employee.EmployeeId,
+                null, // No PerformedBy info for self-service
                 cancellationToken);
-
-            if (!emailSent)
-            {
-                // Log this error but still return generic message for security
-            }
 
             return Result<string>.Success(genericMessage);
         }

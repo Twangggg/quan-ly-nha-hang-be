@@ -1,8 +1,10 @@
-﻿namespace FoodHub.Domain.Enums
+namespace FoodHub.Domain.Enums
 {
     public enum CategoryType
     {
-        Normal,
-        SpecialGroup // Combo, Set Morning, Set Lunch
+        Food = 1,
+        Drink = 2,
+        Dessert = 3,
+        Other = 4
     }
 }

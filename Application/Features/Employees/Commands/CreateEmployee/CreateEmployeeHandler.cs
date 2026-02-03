@@ -15,7 +15,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
         private readonly IPasswordService _passwordService;
-        private readonly IEmailService _emailService;
+        private readonly IBackgroundEmailSender _emailSender;
         private readonly IEmployeeServices _employeeServices;
         private readonly IMessageService _messageService;
 
@@ -24,7 +24,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             IMapper mapper,
             IPasswordService passwordService,
             ICurrentUserService currentUserService,
-            IEmailService emailService,
+            IBackgroundEmailSender emailSender,
             IEmployeeServices employeeServices,
             IMessageService messageService)
         {
@@ -32,7 +32,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             _mapper = mapper;
             _currentUserService = currentUserService;
             _passwordService = passwordService;
-            _emailService = emailService;
+            _emailSender = emailSender;
             _employeeServices = employeeServices;
             _messageService = messageService;
         }
@@ -81,19 +81,16 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
                 await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-                var emailSent = await _emailService.SendAccountCreationEmailAsync(
+                // Queue email asynchronously
+                await _emailSender.EnqueueAccountCreationEmailAsync(
                     employee.Email,
                     employee.FullName,
                     employee.EmployeeCode,
                     employee.Role.ToString(),
                     randomPassword,
+                    employee.EmployeeId, // TargetId
+                    auditorId, // PerformedBy
                     cancellationToken);
-
-                if (!emailSent)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    return Result<CreateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.AccountCreationEmailFailed));
-                }
 
                 await _unitOfWork.CommitTransactionAsync();
 
