@@ -26,20 +26,20 @@ namespace FoodHub.Application.Features.Employees.Queries.GetAuditLogs
             var query = _unitOfWork.Repository<AuditLog>().Query()
                 .Where(x => x.TargetId == request.EmployeeId);
 
-            var filterMapping = new Dictionary<string, Expression<Func<AuditLog, object>>>
+            var filterMapping = new Dictionary<string, Expression<Func<AuditLog, object?>>>
             {
                 { "action", x => x.Action.ToString() }
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
             query = query.ApplySorting(
-                request.Pagination.OrderBy, 
-                new Dictionary<string, Expression<Func<AuditLog, object>>>
+                request.Pagination.OrderBy,
+                new Dictionary<string, Expression<Func<AuditLog, object?>>>
                 {
                     { "action", x => x.Action },
                     { "time", x => x.CreatedAt },
                     { "actor", x => x.PerformedBy.FullName }
-                }, 
+                },
                 x => x.LogId
             );
 

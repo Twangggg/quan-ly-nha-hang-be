@@ -35,9 +35,9 @@ namespace FoodHub.Infrastructure.Persistence
                 new Employee
                 {
                     EmployeeId = Guid.NewGuid(),
-                    EmployeeCode = "NV001",
+                    EmployeeCode = "M001001",
                     Username = "admin",
-                    PasswordHash = _passwordService.HashPassword("admin"), // Hash password
+                    PasswordHash = _passwordService.HashPassword("admin"),
                     FullName = "Admin Manager",
                     Email = "admin@foodhub.com",
                     Phone = "0909000001",
@@ -48,7 +48,7 @@ namespace FoodHub.Infrastructure.Persistence
                 new Employee
                 {
                     EmployeeId = Guid.NewGuid(),
-                    EmployeeCode = "NV002",
+                    EmployeeCode = "B002001",
                     Username = "chef",
                     PasswordHash = _passwordService.HashPassword("chef"),
                     FullName = "Chief Chef",
@@ -61,7 +61,7 @@ namespace FoodHub.Infrastructure.Persistence
                 new Employee
                 {
                     EmployeeId = Guid.NewGuid(),
-                    EmployeeCode = "NV003",
+                    EmployeeCode = "W003001",
                     Username = "waiter",
                     PasswordHash = _passwordService.HashPassword("waiter"),
                     FullName = "Waiter One",
@@ -74,7 +74,7 @@ namespace FoodHub.Infrastructure.Persistence
                 new Employee
                 {
                     EmployeeId = Guid.NewGuid(),
-                    EmployeeCode = "NV004",
+                    EmployeeCode = "C004001",
                     Username = "cashier",
                     PasswordHash = _passwordService.HashPassword("cashier"),
                     FullName = "Cashier One",

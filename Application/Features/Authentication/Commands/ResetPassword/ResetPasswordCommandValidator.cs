@@ -1,25 +1,27 @@
 using FluentValidation;
+using FoodHub.Application.Constants;
+using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
 {
     public class ResetPasswordCommandValidator : AbstractValidator<ResetPasswordCommand>
     {
-        public ResetPasswordCommandValidator()
+        public ResetPasswordCommandValidator(IMessageService messageService)
         {
             RuleFor(x => x.Token)
-                .NotEmpty().WithMessage("Token is required.");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Auth.TokenRequired));
 
             RuleFor(x => x.NewPassword)
-                .NotEmpty().WithMessage("New password is required.")
-                .MinimumLength(8).WithMessage("Password must be at least 8 characters long.")
-                .Matches(@"[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
-                .Matches(@"[a-z]").WithMessage("Password must contain at least one lowercase letter.")
-                .Matches(@"[0-9]").WithMessage("Password must contain at least one number.")
-                .Matches(@"[^a-zA-Z0-9]").WithMessage("Password must contain at least one special character.");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Auth.NewPasswordRequired))
+                .MinimumLength(8).WithMessage(messageService.GetMessage(MessageKeys.Password.MinLength))
+                .Matches(@"[A-Z]").WithMessage(messageService.GetMessage(MessageKeys.Password.RequireUppercase))
+                .Matches(@"[a-z]").WithMessage(messageService.GetMessage(MessageKeys.Password.RequireLowercase))
+                .Matches(@"[0-9]").WithMessage(messageService.GetMessage(MessageKeys.Password.RequireDigit))
+                .Matches(@"[^a-zA-Z0-9]").WithMessage(messageService.GetMessage(MessageKeys.Password.RequireSpecial));
 
             RuleFor(x => x.ConfirmPassword)
-                .NotEmpty().WithMessage("Confirm password is required.")
-                .Equal(x => x.NewPassword).WithMessage("Confirm password does not match new password.");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Auth.ConfirmPasswordRequired))
+                .Equal(x => x.NewPassword).WithMessage(messageService.GetMessage(MessageKeys.Auth.ConfirmPasswordMismatch));
         }
     }
 }
