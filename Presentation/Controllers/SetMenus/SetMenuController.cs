@@ -62,7 +62,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
                 return BadRequest(new { message = result.Error });
             }
 
-            return CreatedAtAction(nameof(GetSetMenuById), new { id = result.Data }, result.Data);
+            return CreatedAtAction(nameof(GetSetMenuById), new { id = result.Data.SetMenuId }, result.Data);
         }
 
         [HttpPut("{id}")]
@@ -100,7 +100,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
                 return BadRequest(new { message = result.Error });
             }
 
-            return Ok(new { success = result.Data });
+            return Ok(result.Data);
         }
     }
 }

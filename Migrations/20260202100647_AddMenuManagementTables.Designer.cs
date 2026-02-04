@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodHub.Infrastructure.Persistence.Migrations
+namespace FoodHub.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260203085155_UpdateMenuItemSchema")]
-    partial class UpdateMenuItemSchema
+    [Migration("20260202100647_AddMenuManagementTables")]
+    partial class AddMenuManagementTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

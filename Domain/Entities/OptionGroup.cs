@@ -13,12 +13,7 @@ namespace FoodHub.Domain.Entities
         public required string Name { get; set; }
         public OptionGroupType Type { get; set; }
         public bool IsRequired { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public Guid? CreatedBy { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdatedBy { get; set; }
-        public bool IsDeleted { get; set; } = false;
-        public DateTime? DeletedAt { get; set; }
+
 
         public virtual ICollection<OptionItem> OptionItems { get; set; } = new List<OptionItem>();
     }

@@ -1,5 +1,4 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.MenuItems;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -7,16 +6,18 @@ using MediatR;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
 {
-    public class CreateMenuItemHandler : IRequestHandler<CreateMenuItemCommand, Result<MenuItemDto>>
+    public class CreateMenuItemHandler : IRequestHandler<CreateMenuItemCommand, Result<CreateMenuItemResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CreateMenuItemHandler(IUnitOfWork unitOfWork)
+        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
+            _currentUserService = currentUserService;
         }
 
-        public async Task<Result<MenuItemDto>> Handle(CreateMenuItemCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CreateMenuItemResponse>> Handle(CreateMenuItemCommand request, CancellationToken cancellationToken)
         {
             var menuItemRepository = _unitOfWork.Repository<MenuItem>();
 
@@ -24,7 +25,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             var existingMenuItem = await menuItemRepository.AnyAsync(x => x.Code == request.Code);
             if (existingMenuItem)
             {
-                return Result<MenuItemDto>.Failure($"Menu item with code '{request.Code}' already exists.");
+                return Result<CreateMenuItemResponse>.Failure($"Menu item with code '{request.Code}' already exists.", ResultErrorType.Conflict);
             }
 
             // 2. Check if Category exists
@@ -32,7 +33,13 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             var category = await categoryRepository.GetByIdAsync(request.CategoryId);
             if (category == null)
             {
-                return Result<MenuItemDto>.Failure($"Category with ID '{request.CategoryId}' not found.", ResultErrorType.NotFound);
+                return Result<CreateMenuItemResponse>.Failure($"Category with ID '{request.CategoryId}' not found.", ResultErrorType.NotFound);
+            }
+
+            Guid? auditorId = null;
+            if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
+            {
+                auditorId = parsedId;
             }
 
             // 3. Create MenuItem entity
@@ -48,15 +55,18 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 PriceDineIn = request.PriceDineIn,
                 PriceTakeAway = request.PriceTakeAway ?? request.PriceDineIn, // Default to DineIn price if not set
                 Cost = request.Cost ?? 0,
-                IsOutOfStock = false
+                IsOutOfStock = false,
+                CreatedAt = DateTime.UtcNow,
+                CreatedById = auditorId,
+                UpdatedById = auditorId
             };
 
             // 4. Save to database
             await menuItemRepository.AddAsync(menuItem);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            // 5. Return DTO
-            var dto = new MenuItemDto
+            // 5. Return Response
+            var response = new CreateMenuItemResponse
             {
                 MenuItemId = menuItem.MenuItemId,
                 Code = menuItem.Code,
@@ -75,7 +85,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 UpdatedAt = menuItem.UpdatedAt
             };
 
-            return Result<MenuItemDto>.Success(dto);
+            return Result<CreateMenuItemResponse>.Success(response);
         }
     }
 }
