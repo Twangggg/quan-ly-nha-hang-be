@@ -1,6 +1,4 @@
 using FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem;
-using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
-using FoodHub.Application.Features.MenuItems.Commands.UpdateStockStatus;
 using FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById;
 using FoodHub.Application.Features.MenuItems.Queries.GetMenuItems;
 using MediatR;
@@ -88,23 +86,23 @@ namespace FoodHub.Presentation.Controllers.MenuItems
         //    return Ok(result.Data);
         //}
 
-        [HttpPatch("{id}/stock-status")]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] ToggleOutOfStockCommand command)
-        {
-            if (id != command.MenuItemId)
-            {
-                return BadRequest(new { message = "Menu item ID mismatch" });
-            }
+        //[HttpPatch("{id}/stock-status")]
+        //[Authorize(Roles = "Manager")]
+        //public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] ToggleOutOfStockCommand command)
+        //{
+        //    if (id != command.MenuItemId)
+        //    {
+        //        return BadRequest(new { message = "Menu item ID mismatch" });
+        //    }
 
-            var result = await _mediator.Send(command);
+        //    var result = await _mediator.Send(command);
 
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
+        //    if (!result.IsSuccess)
+        //    {
+        //        return BadRequest(new { message = result.Error });
+        //    }
 
-            return Ok(new { success = result.Data });
-        }
+        //    return Ok(new { success = result.Data });
+        //}
     }
 }

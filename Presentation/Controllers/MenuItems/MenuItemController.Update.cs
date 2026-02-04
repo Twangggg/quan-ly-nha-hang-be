@@ -1,5 +1,4 @@
-﻿using FoodHub.Application.Common.Exceptions;
-using FoodHub.Application.Features.Employees.Commands.UpdateMyProfile;
+﻿using FoodHub.Application.Features.MenuItems.Commands.ToggleOutOfStock;
 using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
 using FoodHub.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -13,20 +12,15 @@ namespace FoodHub.Presentation.Controllers.MenuItems
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMenuItem(Guid id, UpdateMenuItemCommand command)
         {
-            var result = await _mediator.Send(new UpdateMenuItemCommand(
-                id,
-                command.Code?.Trim(),
-                command.Name?.Trim(),
-                command.ImageUrl?.Trim(),
-                command.Description?.Trim(),
-                command.CategoryId,
-                command.Station,
-                command.ExpectedTime,
-                command.PriceDineIn,
-                command.PriceTakeAway,
-                command.Cost
-            ));
+            var result = await _mediator.Send(command with {MenuItemId = id});
+            return Ok(result);
+        }
 
+        [Authorize(Roles = nameof(EmployeeRole.Manager))]
+        [HttpPut("{id}/stock")]
+        public async Task<IActionResult> ToggleOutOfStock(Guid id, ToggleOutOfStockCommand command)
+        {
+            var result = await _mediator.Send(command with {MenuItemId = id});
             return Ok(result);
         }
     }
