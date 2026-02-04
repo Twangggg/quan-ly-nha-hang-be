@@ -2,7 +2,7 @@
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 
-namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
+namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 {
     public class AddOrderItemCommandValidator : AbstractValidator<AddOrderItemCommand>
     {

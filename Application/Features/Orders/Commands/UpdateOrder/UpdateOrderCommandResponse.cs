@@ -1,9 +1,9 @@
 ﻿using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Enums;
 
-namespace FoodHub.Application.Features.Orders.Commands.UpdateDraftOrder
+namespace FoodHub.Application.Features.Orders.Commands.UpdateOrder
 {
-    public class UpdateDraftOrderCommandResponse : IMapFrom<Domain.Entities.Order>
+    public class UpdateOrderCommandResponse : IMapFrom<Domain.Entities.Order>
     {
         public string? Note { get; set; } = null;
         public OrderType OrderType { get; set; }

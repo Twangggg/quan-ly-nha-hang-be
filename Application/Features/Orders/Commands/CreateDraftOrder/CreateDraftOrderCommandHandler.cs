@@ -62,7 +62,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateDraftOrder
                 OrderId = Guid.NewGuid(),
                 OrderCode = newOrderCode,
                 OrderType = request.OrderType,
-                Status = OrderStatus.Draft,
+                Status = OrderItemStatus.Draft,
                 TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
                 Note = request.Note,
                 TotalAmount = 0,

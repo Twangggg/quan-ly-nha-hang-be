@@ -48,6 +48,12 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
                 return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidAction));
             }
 
+            // Requirement 5.5: Reason is required for non-draft cancellation
+            if (order.Status != OrderStatus.Draft && string.IsNullOrWhiteSpace(request.Reason))
+            {
+                return Result<bool>.Failure("Reason is required when cancelling an order in this status.");
+            }
+
             order.Status = OrderStatus.Cancelled;
             order.CancelledAt = DateTime.UtcNow;
             order.UpdatedAt = DateTime.UtcNow;

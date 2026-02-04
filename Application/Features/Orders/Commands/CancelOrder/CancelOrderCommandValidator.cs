@@ -18,7 +18,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
                 {
                     var order = await unitOfWork.Repository<Domain.Entities.Order>()
                         .GetByIdAsync(command.OrderId);
-                    return order != null && order.Status == OrderStatus.Preparing;
+                    return order != null && order.Status == OrderItemStatus.Preparing;
                 })
                 .WithMessage(messageService.GetMessage(MessageKeys.ResetPassword.ReasonRequired));
         }

@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodHub.Migrations
+namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260203091443_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20260204091003_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -610,10 +610,6 @@ namespace FoodHub.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("station_snapshot");
-
-                    b.Property<bool>("Status")
-                        .HasColumnType("boolean")
-                        .HasColumnName("status");
 
                     b.Property<decimal>("UnitPriceSnapshot")
                         .HasColumnType("decimal(15,2)")

@@ -5,7 +5,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using FoodHub.Application.Constants;
 
-namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
+namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 {
     public class AddOrderItemCommandHandler : IRequestHandler<AddOrderItemCommand, Result<Guid>>
     {
@@ -37,7 +37,7 @@ namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
             {
                 return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidQuantiry));
             }
-            if (order.Status != Domain.Enums.OrderStatus.Draft)
+            if (order.Status != Domain.Enums.OrderItemStatus.Draft)
             {
                 return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidAction));
             }
@@ -69,7 +69,7 @@ namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
                             ? menuItem.PriceTakeAway
                             : menuItem.PriceDineIn;
 
-                var newItem = new Domain.Entities.OrderItem
+                var newItem = new OrderItem
                 {
                     OrderItemId = Guid.NewGuid(),
                     OrderId = request.OrderId,

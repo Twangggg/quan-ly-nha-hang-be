@@ -2,14 +2,15 @@
 using FoodHub.Domain.Enums;
 using MediatR;
 
-namespace FoodHub.Application.Features.Orders.Commands.UpdateDraftOrder
+namespace FoodHub.Application.Features.Orders.Commands.UpdateOrder
 {
-    public class UpdateDraftOrderCommand : IRequest<Result<UpdateDraftOrderCommandResponse>>
+    public class UpdateOrderCommand : IRequest<Result<UpdateOrderCommandResponse>>
     {
         public Guid OrderId { get; set; }
         public string? Note { get; set; } = null;
         public OrderType OrderType { get; set; }
         public Guid? TableId { get; set; }
+        public string? Reason { get; set; }
         public ICollection<UpdateOrderItemDto> OrderItems { get; set; } = new List<UpdateOrderItemDto>();
     }
 
