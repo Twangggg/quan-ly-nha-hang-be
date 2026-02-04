@@ -3,6 +3,7 @@ using FoodHub.Application.DTOs.MenuItems;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,7 +52,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
                 .Take(request.PageSize)
                 .ToListAsync(cancellationToken);
 
-            var canViewCost = _currentUserService.IsInRole("Manager") || _currentUserService.IsInRole("Cashier");
+            var canViewCost = _currentUserService.Role is EmployeeRole.Manager or EmployeeRole.Cashier;
 
             var dtos = items.Select(m => new MenuItemDto
             {
