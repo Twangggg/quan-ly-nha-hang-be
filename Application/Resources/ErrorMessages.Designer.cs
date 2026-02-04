@@ -223,6 +223,15 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy món ăn trong menu..
+        /// </summary>
+        public static string MenuItem_NotFound {
+            get {
+                return ResourceManager.GetString("MenuItem.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Chỉ có thể reset password cho tài khoản đang hoạt động.
         /// </summary>
         public static string OnlyActiveEmployeeCanReset {
@@ -246,6 +255,51 @@ namespace FoodHub.Application.Resources {
         public static string OperationCancelled {
             get {
                 return ResourceManager.GetString("OperationCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thao tác không hợp lệ.
+        /// </summary>
+        public static string Order_InvalidAction {
+            get {
+                return ResourceManager.GetString("Order.InvalidAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Số lượng không hợp lệ.
+        /// </summary>
+        public static string Order_InvalidQuantity {
+            get {
+                return ResourceManager.GetString("Order.InvalidQuantity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loại đơn không hợp lệ..
+        /// </summary>
+        public static string Order_InvalidType {
+            get {
+                return ResourceManager.GetString("Order.InvalidType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy đơn..
+        /// </summary>
+        public static string Order_NotFound {
+            get {
+                return ResourceManager.GetString("Order.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vui lòng chọn bàn cho đơn dùng tại nhà hàng.
+        /// </summary>
+        public static string Order_SelectTable {
+            get {
+                return ResourceManager.GetString("Order.SelectTable", resourceCulture);
             }
         }
         

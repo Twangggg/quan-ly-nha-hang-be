@@ -14,7 +14,7 @@
         public int Quantity { get; set; }
         public decimal UnitPriceSnapshot { get; set; }
 
-        public bool Status { get; set; } // Requested as Boolean
+
         public string? ItemNote { get; set; }
 
         public DateTime CreatedAt { get; set; }
