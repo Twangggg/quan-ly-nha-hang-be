@@ -1,4 +1,3 @@
-using FoodHub.Application.DTOs.Options;
 using FoodHub.Application.Common.Models;
 using MediatR;
 
@@ -9,5 +8,5 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
         string Name,
         int Type,
         bool IsRequired
-    ) : IRequest<Result<OptionGroupDto>>;
+    ) : IRequest<Result<UpdateOptionGroupResponse>>;
 }

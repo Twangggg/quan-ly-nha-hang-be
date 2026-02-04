@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers.MenuItems
 {
-    [Route("api/[controller]")]
+    [Route("api/menuitems")]
     [ApiController]
     [Authorize]
     public class MenuItemController : ControllerBase
@@ -50,19 +50,38 @@ namespace FoodHub.Presentation.Controllers.MenuItems
             return Ok(result.Data);
         }
 
-        // [HttpPost(Name = "CreateMenuItem")] - Disabled
-        // [Authorize(Roles = "Manager")]
-        // public async Task<IActionResult> CreateMenuItem([FromBody] CreateMenuItemCommand command)
-        // {
-        //     return NotFound();
-        // }
+        [HttpPost(Name = "CreateMenuItem")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> CreateMenuItem([FromBody] CreateMenuItemCommand command)
+        {
+            var result = await _mediator.Send(command);
 
-        // [HttpPut("{id}", Name = "UpdateMenuItem")] - Disabled
-        // [Authorize(Roles = "Manager")]
-        // public async Task<IActionResult> UpdateMenuItem(Guid id, [FromBody] UpdateMenuItemCommand command)
-        // {
-        //     return NotFound();
-        // }
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Error });
+            }
+
+            return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data.MenuItemId }, result.Data);
+        }
+
+        [HttpPut("{id}", Name = "UpdateMenuItem")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> UpdateMenuItem(Guid id, [FromBody] UpdateMenuItemCommand command)
+        {
+            if (id != command.MenuItemId)
+            {
+                return BadRequest(new { message = "MenuItem ID mismatch" });
+            }
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Error });
+            }
+
+            return Ok(result.Data);
+        }
 
         [HttpPatch("{id}/stock-status", Name = "UpdateMenuItemStockStatus")]
         [Authorize(Roles = "Manager")]

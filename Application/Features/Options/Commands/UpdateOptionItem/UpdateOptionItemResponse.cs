@@ -1,6 +1,8 @@
-namespace FoodHub.Application.DTOs.Options
+using System;
+
+namespace FoodHub.Application.Features.Options.Commands.UpdateOptionItem
 {
-    public class OptionItemDto
+    public class UpdateOptionItemResponse
     {
         public Guid OptionItemId { get; set; }
         public Guid OptionGroupId { get; set; }

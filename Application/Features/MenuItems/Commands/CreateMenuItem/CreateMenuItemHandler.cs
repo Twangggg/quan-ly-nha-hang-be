@@ -9,7 +9,7 @@ using Microsoft.Extensions.Localization;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
 {
-    public class CreateMenuItemHandler : IRequestHandler<CreateMenuItemCommand, Result<Guid>>
+    public class CreateMenuItemHandler : IRequestHandler<CreateMenuItemCommand, Result<CreateMenuItemResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStringLocalizer<ErrorMessages> _localizer;
@@ -20,9 +20,31 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             _localizer = localizer;
         }
 
-        public Task<Result<Guid>> Handle(CreateMenuItemCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CreateMenuItemResponse>> Handle(CreateMenuItemCommand request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("This feature has been disabled.");
+            var menuItem = new MenuItem
+            {
+                Code = request.Code,
+                Name = request.Name,
+                ImageUrl = request.ImageUrl,
+                Description = request.Description,
+                CategoryId = request.CategoryId,
+                Station = (Station)request.Station,
+                ExpectedTime = request.ExpectedTime ?? 0,
+                PriceDineIn = request.PriceDineIn,
+                PriceTakeAway = request.PriceTakeAway ?? request.PriceDineIn,
+                Cost = request.Cost ?? 0
+            };
+
+            await _unitOfWork.Repository<MenuItem>().AddAsync(menuItem);
+            await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            var response = new CreateMenuItemResponse
+            {
+                MenuItemId = menuItem.Id
+            };
+
+            return Result<CreateMenuItemResponse>.Success(response);
         }
     }
 }

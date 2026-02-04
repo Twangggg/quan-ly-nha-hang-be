@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers.Categories
 {
-    [Route("api/[controller]")]
+    [Route("api/categories")]
     [ApiController]
     [Authorize]
     public class CategoryController : ControllerBase

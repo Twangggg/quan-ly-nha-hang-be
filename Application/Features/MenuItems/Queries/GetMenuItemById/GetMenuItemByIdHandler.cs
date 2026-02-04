@@ -1,5 +1,4 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.MenuItems;
 using FoodHub.Application.Interfaces;
 using FoodHub.Application.Resources;
 using FoodHub.Domain.Entities;
@@ -9,7 +8,7 @@ using Microsoft.Extensions.Localization;
 
 namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
 {
-    public class GetMenuItemByIdHandler : IRequestHandler<GetMenuItemByIdQuery, Result<MenuItemDto>>
+    public class GetMenuItemByIdHandler : IRequestHandler<GetMenuItemByIdQuery, Result<GetMenuItemByIdResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStringLocalizer<ErrorMessages> _localizer;
@@ -20,7 +19,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
             _localizer = localizer;
         }
 
-        public async Task<Result<MenuItemDto>> Handle(GetMenuItemByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<GetMenuItemByIdResponse>> Handle(GetMenuItemByIdQuery request, CancellationToken cancellationToken)
         {
             var menuItem = await _unitOfWork.Repository<MenuItem>()
                 .Query()
@@ -30,10 +29,10 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
 
             if (menuItem == null)
             {
-                return Result<MenuItemDto>.Failure(_localizer["MenuItem.NotFound", request.Id].Value);
+                return Result<GetMenuItemByIdResponse>.Failure(_localizer["MenuItem.NotFound", request.Id].Value);
             }
 
-            var dto = new MenuItemDto
+            var response = new GetMenuItemByIdResponse
             {
                 MenuItemId = menuItem.Id,
                 Code = menuItem.Code,
@@ -52,7 +51,8 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
                 UpdatedAt = menuItem.UpdatedAt ?? menuItem.CreatedAt
             };
 
-            return Result<MenuItemDto>.Success(dto);
+            return Result<GetMenuItemByIdResponse>.Success(response);
         }
     }
 }
+

@@ -1,5 +1,4 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.SetMenus;
 using MediatR;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
@@ -9,7 +8,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
         string Name,
         decimal Price,
         List<CreateSetMenuItemRequest> Items
-    ) : IRequest<Result<SetMenuDto>>;
+    ) : IRequest<Result<CreateSetMenuResponse>>;
 
     public record CreateSetMenuItemRequest(Guid MenuItemId, int Quantity);
 }

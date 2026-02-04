@@ -1,6 +1,6 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Resources;
 using FoodHub.Application.Interfaces;
-using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +27,7 @@ namespace FoodHub.Application.Features.Authentication.Queries.GetCurrentUser
 
             if (string.IsNullOrEmpty(employeeCode))
             {
-                return Result<CurrentUserResponse>.Failure(Messages.Unauthorized);
+                return Result<CurrentUserResponse>.Failure(ErrorMessages.Unauthorized);
             }
 
             // Fetch employee from database

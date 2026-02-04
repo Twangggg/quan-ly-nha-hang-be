@@ -1,46 +1,45 @@
 using FluentValidation;
-using FoodHub.Domain.Constants;
+using FoodHub.Application.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
 {
     public class UpdateMenuItemValidator : AbstractValidator<UpdateMenuItemCommand>
     {
-        public UpdateMenuItemValidator()
+        public UpdateMenuItemValidator(IStringLocalizer<ErrorMessages> localizer)
         {
             RuleFor(x => x.MenuItemId)
-                .NotEmpty().WithMessage("ID món ăn không được để trống");
+                .NotEmpty().WithMessage(localizer["MenuItem.MenuItemIdRequired"]);
 
             RuleFor(x => x.Code)
-                .NotEmpty().WithMessage(Messages.MenuItemCodeRequired)
-                .MaximumLength(50).WithMessage(Messages.MenuItemCodeTooLong);
+                .NotEmpty().WithMessage(localizer["MenuItem.CodeRequired"])
+                .MaximumLength(50).WithMessage(localizer["MenuItem.CodeTooLong"]);
 
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage(Messages.MenuItemNameRequired)
-                .MaximumLength(150).WithMessage(Messages.MenuItemNameTooLong);
+                .NotEmpty().WithMessage(localizer["MenuItem.NameRequired"])
+                .MaximumLength(150).WithMessage(localizer["MenuItem.NameTooLong"]);
 
             RuleFor(x => x.ImageUrl)
-                .NotEmpty().WithMessage(Messages.MenuItemImageRequired)
-                .MaximumLength(255);
+                .NotEmpty().WithMessage(localizer["MenuItem.ImageRequired"]);
 
             RuleFor(x => x.CategoryId)
-                .NotEmpty().WithMessage(Messages.MenuItemCategoryRequired);
+                .NotEmpty().WithMessage(localizer["MenuItem.CategoryRequired"]);
 
             RuleFor(x => x.PriceDineIn)
-                .GreaterThan(0).WithMessage(Messages.MenuItemPriceInvalid);
+                .GreaterThan(0).WithMessage(localizer["MenuItem.PriceInvalid"]);
 
             RuleFor(x => x.PriceTakeAway)
-                .GreaterThan(0).WithMessage(Messages.MenuItemPriceInvalid)
-                .When(x => x.PriceTakeAway.HasValue);
+                .GreaterThan(0).When(x => x.PriceTakeAway.HasValue).WithMessage(localizer["MenuItem.PriceInvalid"]);
 
             RuleFor(x => x.Cost)
                 .GreaterThanOrEqualTo(0)
                 .When(x => x.Cost.HasValue);
 
             RuleFor(x => x.ExpectedTime)
-                .GreaterThan(0).WithMessage(Messages.MenuItemExpectedTimeInvalid);
+                .GreaterThan(0).WithMessage(localizer["MenuItem.ExpectedTimeInvalid"]);
 
             RuleFor(x => x.Station)
-                .IsInEnum().WithMessage("Station không hợp lệ");
+                .IsInEnum().WithMessage(localizer["MenuItem.StationInvalid"]);
         }
     }
 }

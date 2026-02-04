@@ -1,0 +1,20 @@
+using System;
+
+namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
+{
+    public class UpdateMenuItemResponse
+    {
+        public Guid MenuItemId { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public Guid CategoryId { get; set; }
+        public int Station { get; set; }
+        public int? ExpectedTime { get; set; }
+        public decimal PriceDineIn { get; set; }
+        public decimal? PriceTakeAway { get; set; }
+        public decimal? Cost { get; set; }
+        public bool IsOutOfStock { get; set; }
+    }
+}

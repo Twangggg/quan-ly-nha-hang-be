@@ -1,6 +1,8 @@
-namespace FoodHub.Application.DTOs.SetMenus
+using System;
+
+namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
 {
-    public class SetMenuDto
+    public class UpdateSetMenuResponse
     {
         public Guid SetMenuId { get; set; }
         public string Code { get; set; } = string.Empty;

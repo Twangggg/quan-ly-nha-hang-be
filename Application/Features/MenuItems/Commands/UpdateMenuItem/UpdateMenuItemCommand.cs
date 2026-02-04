@@ -1,5 +1,5 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.MenuItems;
+using FoodHub.Domain.Enums;
 using MediatR;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
@@ -11,11 +11,11 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         string ImageUrl,
         string? Description,
         Guid CategoryId,
-        int Station,
+        Station Station,
         int ExpectedTime,
         decimal PriceDineIn,
         decimal? PriceTakeAway,
         decimal? Cost,
         bool IsOutOfStock
-    ) : IRequest<Result<Unit>>;
+    ) : IRequest<Result<UpdateMenuItemResponse>>;
 }

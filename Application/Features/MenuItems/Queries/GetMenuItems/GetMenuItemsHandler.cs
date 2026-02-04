@@ -1,7 +1,6 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.MenuItems;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces;
@@ -12,7 +11,7 @@ using System.Linq.Expressions;
 
 namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
 {
-    public class GetMenuItemsHandler : IRequestHandler<GetMenuItemsQuery, Result<PagedResult<MenuItemDto>>>
+    public class GetMenuItemsHandler : IRequestHandler<GetMenuItemsQuery, Result<PagedResult<GetMenuItemsResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -23,7 +22,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
             _mapper = mapper;
         }
 
-        public async Task<Result<PagedResult<MenuItemDto>>> Handle(GetMenuItemsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<GetMenuItemsResponse>>> Handle(GetMenuItemsQuery request, CancellationToken cancellationToken)
         {
             var query = _unitOfWork.Repository<MenuItem>().Query();
 
@@ -83,10 +82,10 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
                 m => m.Name);
 
             var pagedResult = await query
-                .ProjectTo<MenuItemDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<GetMenuItemsResponse>(_mapper.ConfigurationProvider)
                 .ToPagedResultAsync(request.Pagination);
 
-            return Result<PagedResult<MenuItemDto>>.Success(pagedResult);
+            return Result<PagedResult<GetMenuItemsResponse>>.Success(pagedResult);
         }
     }
 }

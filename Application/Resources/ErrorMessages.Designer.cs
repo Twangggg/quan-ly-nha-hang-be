@@ -11,8 +11,8 @@
 namespace FoodHub.Application.Resources
 {
     using System;
-
-
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -21,16 +21,16 @@ namespace FoodHub.Application.Resources
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class ErrorMessages
     {
-
+        
         private static global::System.Resources.ResourceManager resourceMan;
-
+        
         private static global::System.Globalization.CultureInfo resourceCulture;
-
+        
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal ErrorMessages()
         {
         }
-
+        
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -47,7 +47,7 @@ namespace FoodHub.Application.Resources
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -64,7 +64,7 @@ namespace FoodHub.Application.Resources
                 resourceCulture = value;
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Có xung đột dữ liệu trong hệ thống. Vui lòng thử lại sau vài giây..
         /// </summary>
@@ -75,7 +75,7 @@ namespace FoodHub.Application.Resources
                 return ResourceManager.GetString("DatabaseConflict", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Có lỗi xảy ra khi cập nhật dữ liệu. Vui lòng thử lại..
         /// </summary>
@@ -86,7 +86,7 @@ namespace FoodHub.Application.Resources
                 return ResourceManager.GetString("DatabaseUpdateError", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Current user identity is missing or invalid..
         /// </summary>
@@ -97,7 +97,7 @@ namespace FoodHub.Application.Resources
                 return ResourceManager.GetString("InvalidUserId", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Thao tác bị hủy do timeout. Vui lòng thử lại..
         /// </summary>
@@ -108,7 +108,7 @@ namespace FoodHub.Application.Resources
                 return ResourceManager.GetString("OperationCancelled", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Bạn không có quyền thực hiện thao tác này..
         /// </summary>

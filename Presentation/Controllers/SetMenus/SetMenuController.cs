@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers.SetMenus
 {
-    [Route("api/[controller]")]
+    [Route("api/setmenus")]
     [ApiController]
     [Authorize]
     public class SetMenuController : ControllerBase
@@ -62,7 +62,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
                 return BadRequest(new { message = result.Error });
             }
 
-            return CreatedAtAction(nameof(GetSetMenuById), new { id = result.Data }, result.Data);
+            return CreatedAtAction(nameof(GetSetMenuById), new { id = result.Data.SetMenuId }, result.Data);
         }
 
         [HttpPut("{id}", Name = "UpdateSetMenu")]
