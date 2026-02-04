@@ -228,6 +228,21 @@
   <data name="Order.SelectTable" xml:space="preserve">
     <value>Please select a table for dine-in orders.</value>
   </data>
+  <data name="Order.InvalidQuantity" xml:space="preserve">
+    <value>Quantity must greater than 0</value>
+  </data>
+  <data name="Order.NotFound" xml:space="preserve">
+    <value>Order not found.</value>
+  </data>
+  <data name="Order.InvalidAction" xml:space="preserve">
+    <value>Invalid action</value>
+  </data>
+  <data name="MenuItem.NotFound" xml:space="preserve">
+    <value>Menu Item not found.</value>
+  </data>
+  <data name="Order.InvalidActionWithStatus" xml:space="preserve">
+    <value>Invalid action with </value>
+  </data>
   <data name="Password.NotEmpty" xml:space="preserve">
     <value>Password cannot be empty.</value>
   </data>
@@ -288,16 +303,7 @@
   <data name="RoleChangedButEmailFailed" xml:space="preserve">
     <value>Role changed successfully for {0}, but notification email failed to send.</value>
   </data>
-  <data name="Order.InvalidQuantity" xml:space="preserve">
-    <value>Quantity must greater than 0</value>
-  </data>
-  <data name="Order.NotFound" xml:space="preserve">
-    <value>Order not found.</value>
-  </data>
-  <data name="Order.InvalidAction" xml:space="preserve">
-    <value>Invalid action</value>
-  </data>
-  <data name="MenuItem.NotFound" xml:space="preserve">
-    <value>Menu Item not found.</value>
+  <data name="Order.MustHaveItem" xml:space="preserve">
+    <value>Order must have item</value>
   </data>
 </root>

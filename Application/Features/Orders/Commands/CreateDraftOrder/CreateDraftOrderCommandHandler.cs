@@ -5,8 +5,6 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration.UserSecrets;
-using System.Linq;
 
 namespace FoodHub.Application.Features.Orders.Commands.CreateDraftOrder
 {
@@ -51,7 +49,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateDraftOrder
                 var part = lastCode.Split("-");
                 if (part.Length == 3 && int.TryParse(part[2], out int lastPart))
                 {
-                    sequenceNumber += 1;
+                    sequenceNumber = lastPart + 1;
                 }
             }
 
@@ -74,6 +72,18 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateDraftOrder
                 OrderItems = new List<Domain.Entities.OrderItem>(),
                 OrderAuditLogs = new List<OrderAuditLog>()
             };
+
+            // Audit Log
+            var auditLog = new OrderAuditLog
+            {
+                LogId = Guid.NewGuid(),
+                OrderId = order.OrderId,
+                EmployeeId = userId,
+                Action = "CREATE",
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
             await _unitOfWork.Repository<Domain.Entities.Order>().AddAsync(order);
             await _unitOfWork.SaveChangeAsync(cancellationToken);

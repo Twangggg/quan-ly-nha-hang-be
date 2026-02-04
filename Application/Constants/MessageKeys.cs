@@ -96,6 +96,9 @@ namespace FoodHub.Application.Constants
             public const string SelectTable = "Order.SelectTable";
             public const string InvalidQuantiry = "Order.InvalidQuantity";
             public const string InvalidAction = "Order.InvalidAction";
+            public const string InvalidActionWithStatus = "Order.InvalidActionWithStatus";
+            public const string MustHaveItem = "Order.MustHaveItem";
+
         }
 
         public static class MenuItem

@@ -243,4 +243,10 @@
   <data name="MenuItem.NotFound" xml:space="preserve">
     <value>Không tìm thấy món ăn trong menu.</value>
   </data>
+  <data name="Order.InvalidActionWithStatus" xml:space="preserve">
+    <value>Thao tác không hợp lệ với trạng thái</value>
+  </data>
+  <data name="Order.MustHaveItem" xml:space="preserve">
+    <value>Đơn hàng đang trống.</value>
+  </data>
 </root>

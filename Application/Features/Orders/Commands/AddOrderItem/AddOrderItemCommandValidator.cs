@@ -8,8 +8,8 @@ namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
     {
         public AddOrderItemCommandValidator(IMessageService message)
         {
-            RuleFor(o => o.OrderId).NotEmpty();
-            RuleFor(o => o.MenuItemId).NotEmpty();
+            RuleFor(o => o.OrderId).NotEmpty().WithMessage(message.GetMessage(MessageKeys.Order.NotFound));
+            RuleFor(o => o.MenuItemId).NotEmpty().WithMessage(message.GetMessage(MessageKeys.MenuItem.NotFound));
             RuleFor(o => o.Quantity).GreaterThan(0).WithMessage(message.GetMessage(MessageKeys.Order.InvalidQuantiry));
         }
     }

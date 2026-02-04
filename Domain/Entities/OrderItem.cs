@@ -1,4 +1,6 @@
-﻿namespace FoodHub.Domain.Entities
+﻿using FoodHub.Domain.Enums;
+
+namespace FoodHub.Domain.Entities
 {
     public class OrderItem
     {
@@ -11,6 +13,7 @@
         public string ItemNameSnapshot { get; set; } = null!;
         public string StationSnapshot { get; set; } = null!;
 
+        public OrderItemStatus Status { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPriceSnapshot { get; set; }
 

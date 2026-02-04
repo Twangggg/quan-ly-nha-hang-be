@@ -22,6 +22,13 @@ namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
 
         public async Task<Result<Guid>> Handle(AddOrderItemCommand request, CancellationToken cancellationToken)
         {
+            //Get current user id
+            var currentIdString = _currentUserService.UserId;
+            if (string.IsNullOrEmpty(currentIdString) || !Guid.TryParse(currentIdString, out var userId))
+            {
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn));
+            }
+
             var order = await _unitOfWork.Repository<Domain.Entities.Order>()
                 .Query()
                 .Include(x => x.OrderItems)
@@ -82,6 +89,18 @@ namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
 
             // Recalculate Total
             order.TotalAmount = order.OrderItems.Sum(x => x.Quantity * x.UnitPriceSnapshot);
+
+            // Audit Log
+            var auditLog = new OrderAuditLog
+            {
+                LogId = Guid.NewGuid(),
+                OrderId = order.OrderId,
+                EmployeeId = userId,
+                Action = "ADD_ITEM",
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
             return Result<Guid>.Success(order.OrderId);

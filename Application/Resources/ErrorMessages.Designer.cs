@@ -268,6 +268,15 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Thao tác không hợp lệ với trạng thái.
+        /// </summary>
+        public static string Order_InvalidActionWithStatus {
+            get {
+                return ResourceManager.GetString("Order.InvalidActionWithStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Số lượng không hợp lệ.
         /// </summary>
         public static string Order_InvalidQuantity {
@@ -282,6 +291,15 @@ namespace FoodHub.Application.Resources {
         public static string Order_InvalidType {
             get {
                 return ResourceManager.GetString("Order.InvalidType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Đơn hàng đang trống..
+        /// </summary>
+        public static string Order_MustHaveItem {
+            get {
+                return ResourceManager.GetString("Order.MustHaveItem", resourceCulture);
             }
         }
         
