@@ -86,5 +86,19 @@ namespace FoodHub.Application.Constants
             public const string PhoneRequired = "Profile.PhoneRequired";
             public const string PhoneInvalid = "Profile.PhoneInvalid";
         }
+
+        public static class Order
+        {
+            public const string NotFound = "Order.NotFound";
+            public const string InvalidType = "Order.InvalidType";
+            public const string SelectTable = "Order.SelectTable";
+            public const string InvalidQuantiry = "Order.InvalidQuantity";
+            public const string InvalidAction = "Order.InvalidAction";
+        }
+
+        public static class MenuItem
+        {
+            public const string NotFound = "MenuItem.NotFound";
+        }
     }
 }

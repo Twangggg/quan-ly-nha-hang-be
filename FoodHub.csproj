@@ -30,7 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Features\Order\Commands\AddOrderItem\" />
     <Folder Include="Application\Services\" />
     <Folder Include="Infrastructure\Persistence\Migrations\" />
   </ItemGroup>

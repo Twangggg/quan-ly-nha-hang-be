@@ -3,18 +3,21 @@ using FoodHub.Domain.Entities;
 using FoodHub.Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Features.Order.Commands.AddOrderItem
 {
-    public class AddOrderItemCommadHadler : IRequestHandler<AddOrderItemCommand, Result<Guid>>
-    { 
+    public class AddOrderItemCommandHandler : IRequestHandler<AddOrderItemCommand, Result<Guid>>
+    {
         private readonly Interfaces.IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IMessageService _messageService;
 
-        public AddOrderItemCommadHadler(Interfaces.IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+        public AddOrderItemCommandHandler(Interfaces.IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
+            _messageService = messageService;
         }
 
         public async Task<Result<Guid>> Handle(AddOrderItemCommand request, CancellationToken cancellationToken)
@@ -25,23 +28,40 @@ namespace FoodHub.Application.Features.Order.Commands.AddOrderItem
                 .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
             if (order == null)
             {
-                return Result<Guid>.Failure("Order not found");
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidQuantiry));
             }
             if (order.Status != Domain.Enums.OrderStatus.Draft)
             {
-                return Result<Guid>.Failure($"Cannot change order with status {order.Status}");
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidAction));
             }
 
-            var exitingItem = order.OrderItems.FirstOrDefault(x =>
+            // Get MenuItem
+            var menuItem = await _unitOfWork.Repository<MenuItem>()
+                .Query()
+                .FirstOrDefaultAsync(x => x.Id == request.MenuItemId, cancellationToken);
+
+            if (menuItem == null)
+            {
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.NotFound));
+            }
+
+            var existingItem = order.OrderItems.FirstOrDefault(x =>
                 x.MenuItemId == request.MenuItemId &&
                 (x.ItemNote ?? "") == (request.Note ?? "")
                 );
 
-            if (exitingItem != null) 
+            if (existingItem != null)
             {
-                exitingItem.Quantity += request.Quantity;
-            } else
+                existingItem.Quantity += request.Quantity;
+                existingItem.UpdatedAt = DateTime.UtcNow;
+                // existingItem.UnitPriceSnapshot = menuItem.PriceDineIn; 
+            }
+            else
             {
+                var price = order.OrderType == Domain.Enums.OrderType.Takeaway 
+                            ? menuItem.PriceTakeAway 
+                            : menuItem.PriceDineIn;
+
                 var newItem = new OrderItem
                 {
                     OrderItemId = Guid.NewGuid(),
@@ -50,12 +70,19 @@ namespace FoodHub.Application.Features.Order.Commands.AddOrderItem
                     Quantity = request.Quantity,
                     ItemNote = request.Note,
                     CreatedAt = DateTime.UtcNow,
-                    //Thieu
+
+                    // Snapshot from MenuItem
+                    ItemNameSnapshot = menuItem.Name,
+                    ItemCodeSnapshot = menuItem.Code,
+                    UnitPriceSnapshot = price,
+                    StationSnapshot = menuItem.Station.ToString() // Storing as string or use Enum if Snapshot is string
                 };
-                order.OrderItems.Add(newItem);  
+                order.OrderItems.Add(newItem);
             }
 
+            // Recalculate Total
             order.TotalAmount = order.OrderItems.Sum(x => x.Quantity * x.UnitPriceSnapshot);
+
             await _unitOfWork.SaveChangeAsync(cancellationToken);
             return Result<Guid>.Success(order.OrderId);
         }

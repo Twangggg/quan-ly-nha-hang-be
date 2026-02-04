@@ -1,16 +1,18 @@
 ﻿using FluentValidation;
+using FoodHub.Application.Constants;
+using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.Order.Commands.CreateDraftOrder
 {
     public class CreateDraftOrderCommandValidatior : AbstractValidator<CreateDraftOrderCommand>
     {
-        public CreateDraftOrderCommandValidatior()
+        public CreateDraftOrderCommandValidatior(IMessageService messageService)
         {
             RuleFor(v => v.OrderType)
-                .IsInEnum().WithMessage("Invalid Order Type.");
+                .IsInEnum().WithMessage(messageService.GetMessage(MessageKeys.Order.InvalidType));
             RuleFor(v => v.TableId).NotEmpty().When(v => v.OrderType == OrderType.DineIn)
-                .WithMessage("Please select a table for dine-in orders.");
+                .WithMessage(messageService.GetMessage(MessageKeys.Order.SelectTable));
         }
     }
 }

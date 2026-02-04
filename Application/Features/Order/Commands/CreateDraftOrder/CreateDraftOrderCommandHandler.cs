@@ -1,4 +1,5 @@
 ﻿using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -13,11 +14,12 @@ namespace FoodHub.Application.Features.Order.Commands.CreateDraftOrder
     {
         private IUnitOfWork _unitOfWork;
         private ICurrentUserService _currentUserService;
-
-        public CreateDraftOrderCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+        private readonly IMessageService _messageService;
+        public CreateDraftOrderCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
+            _messageService = messageService;
         }
 
         public async Task<Result<Guid>> Handle(CreateDraftOrderCommand request, CancellationToken cancellationToken)
@@ -26,7 +28,7 @@ namespace FoodHub.Application.Features.Order.Commands.CreateDraftOrder
             var currentIdString = _currentUserService.UserId;
             if (string.IsNullOrEmpty(currentIdString) || !Guid.TryParse(currentIdString, out var userId))
             {
-                return Result<Guid>.Failure("The user is not logged in");
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn));
             }
 
             //Gen order code (Format ORD-yyyymmdd-xxxx .... x is number order in db)

@@ -608,10 +608,6 @@ namespace FoodHub.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("station_snapshot");
 
-                    b.Property<bool>("Status")
-                        .HasColumnType("boolean")
-                        .HasColumnName("status");
-
                     b.Property<decimal>("UnitPriceSnapshot")
                         .HasColumnType("decimal(15,2)")
                         .HasColumnName("unit_price_snapshot");
