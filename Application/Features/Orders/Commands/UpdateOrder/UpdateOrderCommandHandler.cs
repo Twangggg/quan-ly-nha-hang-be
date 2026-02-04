@@ -6,23 +6,23 @@ using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace FoodHub.Application.Features.Orders.Commands.UpdateDraftOrder
+namespace FoodHub.Application.Features.Orders.Commands.UpdateOrder
 {
-    public class UpdateDraftOrderCommandHandler : IRequestHandler<UpdateDraftOrderCommand, Result<UpdateDraftOrderCommandResponse>>
+    public class UpdateOrderCommandHandler : IRequestHandler<UpdateOrderCommand, Result<UpdateOrderCommandResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
-        private readonly ILogger<UpdateDraftOrderCommand> _logger;
+        private readonly ILogger<UpdateOrderCommand> _logger;
 
 
-        public UpdateDraftOrderCommandHandler(
+        public UpdateOrderCommandHandler(
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
             IMapper mapper,
-            ILogger<UpdateDraftOrderCommand> logger)
+            ILogger<UpdateOrderCommand> logger)
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;
@@ -30,11 +30,11 @@ namespace FoodHub.Application.Features.Orders.Commands.UpdateDraftOrder
             _mapper = mapper;
             _logger = logger;
         }
-        public async Task<Result<UpdateDraftOrderCommandResponse>> Handle(UpdateDraftOrderCommand request, CancellationToken cancellationToken)
+        public async Task<Result<UpdateOrderCommandResponse>> Handle(UpdateOrderCommand request, CancellationToken cancellationToken)
         {
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                return Result<UpdateDraftOrderCommandResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
+                return Result<UpdateOrderCommandResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
             }
 
             var order = await _unitOfWork.Repository<Domain.Entities.Order>()
@@ -44,12 +44,17 @@ namespace FoodHub.Application.Features.Orders.Commands.UpdateDraftOrder
 
             if (order == null)
             {
-                return Result<UpdateDraftOrderCommandResponse>.Failure(_messageService.GetMessage(MessageKeys.Order.NotFound), ResultErrorType.NotFound);
+                return Result<UpdateOrderCommandResponse>.Failure(_messageService.GetMessage(MessageKeys.Order.NotFound), ResultErrorType.NotFound);
             }
 
-            if (order.Status != Domain.Enums.OrderStatus.Draft)
+            if (order.Status != Domain.Enums.OrderStatus.Draft && order.Status != Domain.Enums.OrderStatus.Preparing)
             {
-                return Result<UpdateDraftOrderCommandResponse>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidAction));
+                return Result<UpdateOrderCommandResponse>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidAction));
+            }
+
+            if (order.Status != Domain.Enums.OrderStatus.Draft && string.IsNullOrWhiteSpace(request.Reason))
+            {
+                return Result<UpdateOrderCommandResponse>.Failure("Reason is required for this update.");
             }
 
             order.Note = request.Note;
@@ -113,6 +118,7 @@ namespace FoodHub.Application.Features.Orders.Commands.UpdateDraftOrder
                 EmployeeId = auditorId,
                 Action = "UPDATE",
                 CreatedAt = DateTime.UtcNow,
+                ChangeReason = request.Reason,
                 NewValue = "{\"action\": \"Updated Order Details and Items\"}"
             };
 
@@ -126,11 +132,11 @@ namespace FoodHub.Application.Features.Orders.Commands.UpdateDraftOrder
             catch (DbUpdateException ex)
             {
                 _logger.LogError(ex, "Database error occurred while updating order {OrderId}", request.OrderId);
-                return Result<UpdateDraftOrderCommandResponse>.Failure(_messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError));
+                return Result<UpdateOrderCommandResponse>.Failure(_messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError));
             }
 
-            var response = _mapper.Map<UpdateDraftOrderCommandResponse>(order);
-            return Result<UpdateDraftOrderCommandResponse>.Success(response);
+            var response = _mapper.Map<UpdateOrderCommandResponse>(order);
+            return Result<UpdateOrderCommandResponse>.Success(response);
         }
     }
 }

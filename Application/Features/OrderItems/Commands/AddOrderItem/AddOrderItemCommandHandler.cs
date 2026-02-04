@@ -5,7 +5,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using FoodHub.Application.Constants;
 
-namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
+namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 {
     public class AddOrderItemCommandHandler : IRequestHandler<AddOrderItemCommand, Result<Guid>>
     {
@@ -22,7 +22,7 @@ namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
 
         public async Task<Result<Guid>> Handle(AddOrderItemCommand request, CancellationToken cancellationToken)
         {
-            var order = await _unitOfWork.Repository<Domain.Entities.Order>()
+            var order = await _unitOfWork.Repository<Order>()
                 .Query()
                 .Include(x => x.OrderItems)
                 .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
@@ -62,7 +62,7 @@ namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
                             ? menuItem.PriceTakeAway
                             : menuItem.PriceDineIn;
 
-                var newItem = new Domain.Entities.OrderItem
+                var newItem = new OrderItem
                 {
                     OrderItemId = Guid.NewGuid(),
                     OrderId = request.OrderId,

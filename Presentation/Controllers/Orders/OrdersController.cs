@@ -1,11 +1,11 @@
 ﻿using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Orders.Commands.CreateDraftOrder;
-using FoodHub.Application.Features.Orders.Commands.UpdateDraftOrder;
+using FoodHub.Application.Features.Orders.Commands.UpdateOrder;
 using FoodHub.Application.Features.Orders.Commands.CancelOrder;
-using FoodHub.Application.Features.Orders.Commands.AddOrderItem;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -45,7 +45,7 @@ namespace FoodHub.Presentation.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> UpdateOrder(Guid id, [FromBody] UpdateDraftOrderCommand command)
+        public async Task<IActionResult> UpdateOrder(Guid id, [FromBody] UpdateOrderCommand command)
         {
             if (id != command.OrderId)
             {
