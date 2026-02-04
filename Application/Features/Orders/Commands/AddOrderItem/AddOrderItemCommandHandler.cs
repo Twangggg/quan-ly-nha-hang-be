@@ -5,7 +5,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using FoodHub.Application.Constants;
 
-namespace FoodHub.Application.Features.OrderItem.Commands.AddOrderItem
+namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
 {
     public class AddOrderItemCommandHandler : IRequestHandler<AddOrderItemCommand, Result<Guid>>
     {

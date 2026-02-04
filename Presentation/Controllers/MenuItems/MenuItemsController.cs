@@ -1,32 +1,37 @@
-using FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu;
-using FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu;
-using FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatus;
-using FoodHub.Application.Features.SetMenus.Queries.GetSetMenuById;
-using FoodHub.Application.Features.SetMenus.Queries.GetSetMenus;
+using FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem;
+using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
+using FoodHub.Application.Features.MenuItems.Commands.UpdateStockStatus;
+using FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById;
+using FoodHub.Application.Features.MenuItems.Queries.GetMenuItems;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FoodHub.Presentation.Controllers.SetMenus
+namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class SetMenuController : ControllerBase
+    [Tags("MenuItems")]
+    public class MenuItemsController : ControllerBase
     {
         private readonly IMediator _mediator;
 
-        public SetMenuController(IMediator mediator)
+        public MenuItemsController(IMediator mediator)
         {
             _mediator = mediator;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSetMenus(
+        public async Task<IActionResult> GetMenuItems(
+            [FromQuery] string? searchCode,
+            [FromQuery] decimal? minPrice,
+            [FromQuery] decimal? maxPrice,
+            [FromQuery] Guid? categoryId,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10)
         {
-            var query = new GetSetMenusQuery(pageNumber, pageSize);
+            var query = new GetMenuItemsQuery(searchCode, minPrice, maxPrice, categoryId, pageNumber, pageSize);
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)
@@ -38,9 +43,9 @@ namespace FoodHub.Presentation.Controllers.SetMenus
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetSetMenuById(Guid id)
+        public async Task<IActionResult> GetMenuItemById(Guid id)
         {
-            var query = new GetSetMenuByIdQuery(id);
+            var query = new GetMenuItemByIdQuery(id);
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)
@@ -53,7 +58,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
 
         [HttpPost]
         [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> CreateSetMenu([FromBody] CreateSetMenuCommand command)
+        public async Task<IActionResult> CreateMenuItem([FromBody] CreateMenuItemCommand command)
         {
             var result = await _mediator.Send(command);
 
@@ -62,16 +67,16 @@ namespace FoodHub.Presentation.Controllers.SetMenus
                 return BadRequest(new { message = result.Error });
             }
 
-            return CreatedAtAction(nameof(GetSetMenuById), new { id = result.Data }, result.Data);
+            return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data }, result.Data);
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> UpdateSetMenu(Guid id, [FromBody] UpdateSetMenuCommand command)
+        public async Task<IActionResult> UpdateMenuItem(Guid id, [FromBody] UpdateMenuItemCommand command)
         {
-            if (id != command.SetMenuId)
+            if (id != command.MenuItemId)
             {
-                return BadRequest(new { message = "Set menu ID mismatch" });
+                return BadRequest(new { message = "Menu item ID mismatch" });
             }
 
             var result = await _mediator.Send(command);
@@ -86,11 +91,11 @@ namespace FoodHub.Presentation.Controllers.SetMenus
 
         [HttpPatch("{id}/stock-status")]
         [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] UpdateSetMenuStockStatusCommand command)
+        public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] UpdateStockStatusCommand command)
         {
-            if (id != command.SetMenuId)
+            if (id != command.MenuItemId)
             {
-                return BadRequest(new { message = "Set menu ID mismatch" });
+                return BadRequest(new { message = "Menu item ID mismatch" });
             }
 
             var result = await _mediator.Send(command);

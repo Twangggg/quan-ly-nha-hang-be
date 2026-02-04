@@ -8,6 +8,8 @@ namespace FoodHub.Application.Constants
             public const string DatabaseUpdateError = "DatabaseUpdateError";
             public const string OperationCancelled = "OperationCancelled";
             public const string Unauthorized = "Unauthorized";
+            public const string InvalidFormat = "Common.InvalidFormat";
+            public const string InvalidDate = "Common.InvalidDate";
         }
 
         public static class Password

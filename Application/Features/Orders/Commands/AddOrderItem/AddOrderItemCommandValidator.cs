@@ -2,11 +2,11 @@
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 
-namespace FoodHub.Application.Features.OrderItem.Commands.AddOrderItem
+namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
 {
     public class AddOrderItemCommandValidator : AbstractValidator<AddOrderItemCommand>
     {
-        public AddOrderItemCommandValidator(IMessageService message) 
+        public AddOrderItemCommandValidator(IMessageService message)
         {
             RuleFor(o => o.OrderId).NotEmpty();
             RuleFor(o => o.MenuItemId).NotEmpty();

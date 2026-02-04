@@ -6,12 +6,13 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FoodHub.Presentation.Controllers.Profile
+namespace FoodHub.Presentation.Controllers
 {
 
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [Tags("Profile")]
     public class ProfileController : ControllerBase
     {
         private readonly IMediator _mediator;

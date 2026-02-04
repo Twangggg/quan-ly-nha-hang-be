@@ -1,7 +1,7 @@
 ﻿using FoodHub.Application.Common.Models;
 using MediatR;
 
-namespace FoodHub.Application.Features.OrderItem.Commands.AddOrderItem
+namespace FoodHub.Application.Features.Orders.Commands.AddOrderItem
 {
     public class AddOrderItemCommand : IRequest<Result<Guid>>
     {

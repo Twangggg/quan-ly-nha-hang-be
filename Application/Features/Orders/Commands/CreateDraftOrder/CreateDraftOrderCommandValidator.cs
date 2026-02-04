@@ -3,7 +3,7 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Enums;
 
-namespace FoodHub.Application.Features.Order.Commands.CreateDraftOrder
+namespace FoodHub.Application.Features.Orders.Commands.CreateDraftOrder
 {
     public class CreateDraftOrderCommandValidatior : AbstractValidator<CreateDraftOrderCommand>
     {

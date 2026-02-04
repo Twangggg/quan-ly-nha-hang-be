@@ -11,11 +11,12 @@ using Microsoft.AspNetCore.Mvc;
 using FoodHub.Application.Features.Employees.Commands.ChangeRole;
 using FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword;
 
-namespace FoodHub.Presentation.Controllers.Employees
+namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Manager")]
+    [Tags("Employees")]
     public class EmployeesController : ControllerBase
     {
         private readonly IMediator _mediator;

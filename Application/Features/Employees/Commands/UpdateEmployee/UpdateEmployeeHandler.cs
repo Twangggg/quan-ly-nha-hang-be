@@ -64,8 +64,17 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
             if (request.Address != null)
                 employee.Address = request.Address;
 
-            if (request.DateOfBirth.HasValue)
-                employee.DateOfBirth = request.DateOfBirth;
+            if (request.DateOfBirth != null)
+            {
+                if (string.IsNullOrWhiteSpace(request.DateOfBirth))
+                {
+                    employee.DateOfBirth = null;
+                }
+                else if (DateOnly.TryParse(request.DateOfBirth, out var dob))
+                {
+                    employee.DateOfBirth = dob;
+                }
+            }
 
             employee.UpdatedAt = DateTime.UtcNow;
 

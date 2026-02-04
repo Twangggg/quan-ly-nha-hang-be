@@ -33,6 +33,10 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
                 .When(x => x.FullName != null);
 
             RuleFor(x => x.Address).MaximumLength(255);
+
+            RuleFor(x => x.DateOfBirth)
+                .Must(dob => string.IsNullOrEmpty(dob) || DateOnly.TryParse(dob, out _))
+                .WithMessage(messageService.GetMessage(MessageKeys.Common.InvalidFormat));
         }
     }
 }

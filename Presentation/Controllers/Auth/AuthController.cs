@@ -9,10 +9,11 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FoodHub.Presentation.Controllers.Authentication
+namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Tags("Auth")]
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;

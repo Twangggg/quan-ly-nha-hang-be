@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using System.Linq;
 
-namespace FoodHub.Application.Features.Order.Commands.CreateDraftOrder
+namespace FoodHub.Application.Features.Orders.Commands.CreateDraftOrder
 {
     public class CreateDraftOrderCommandHandler : IRequestHandler<CreateDraftOrderCommand, Result<Guid>>
     {

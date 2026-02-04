@@ -6,16 +6,17 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FoodHub.Presentation.Controllers.Categories
+namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class CategoryController : ControllerBase
+    [Tags("Categories")]
+    public class CategoriesController : ControllerBase
     {
         private readonly IMediator _mediator;
 
-        public CategoryController(IMediator mediator)
+        public CategoriesController(IMediator mediator)
         {
             _mediator = mediator;
         }

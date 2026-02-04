@@ -7,16 +7,17 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FoodHub.Presentation.Controllers.Options
+namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class OptionController : ControllerBase
+    [Tags("Options")]
+    public class OptionsController : ControllerBase
     {
         private readonly IMediator _mediator;
 
-        public OptionController(IMediator mediator)
+        public OptionsController(IMediator mediator)
         {
             _mediator = mediator;
         }
