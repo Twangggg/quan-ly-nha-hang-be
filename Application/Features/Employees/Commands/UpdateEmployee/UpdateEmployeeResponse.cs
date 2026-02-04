@@ -10,6 +10,7 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
         public string FullName { get; set; } = null!;
         public string? Phone { get; set; }
         public string? Address { get; set; }
+        public string? Status { get; set; }
         public DateOnly? DateOfBirth { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
