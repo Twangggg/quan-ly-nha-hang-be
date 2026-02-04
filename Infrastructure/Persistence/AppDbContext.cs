@@ -7,7 +7,6 @@ namespace FoodHub.Infrastructure.Persistence
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-
         public DbSet<Employee> Employees { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -20,7 +19,6 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<OptionItem> OptionItems { get; set; }
         public DbSet<SetMenu> SetMenus { get; set; }
         public DbSet<SetMenuItem> SetMenuItems { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

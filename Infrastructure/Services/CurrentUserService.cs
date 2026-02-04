@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Infrastructure.Services
 {
@@ -14,8 +15,8 @@ namespace FoodHub.Infrastructure.Services
 
         public string? UserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        public IEnumerable<string> Roles => _httpContextAccessor.HttpContext?.User?.FindAll(ClaimTypes.Role).Select(x => x.Value) ?? Enumerable.Empty<string>();
+        public EmployeeRole Role => (EmployeeRole)Enum.Parse(typeof(EmployeeRole), _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty);
 
-        public bool IsInRole(string role) => _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
+        public string? EmployeeCode => _httpContextAccessor.HttpContext?.User?.FindFirstValue("EmployeeCode");
     }
 }

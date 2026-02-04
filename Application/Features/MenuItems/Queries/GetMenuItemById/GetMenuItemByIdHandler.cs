@@ -2,6 +2,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.DTOs.MenuItems;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +33,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
                 return Result<MenuItemDetailDto>.Failure($"Menu item with ID {request.MenuItemId} not found.", ResultErrorType.NotFound);
             }
 
-            var canViewCost = _currentUserService.IsInRole("Manager") || _currentUserService.IsInRole("Cashier");
+            var canViewCost = _currentUserService.Role is EmployeeRole.Manager or EmployeeRole.Cashier;
 
             var dto = new MenuItemDetailDto
             {
