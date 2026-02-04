@@ -58,11 +58,11 @@ namespace FoodHub.Application.Features.OrderItem.Commands.AddOrderItem
             }
             else
             {
-                var price = order.OrderType == Domain.Enums.OrderType.Takeaway 
-                            ? menuItem.PriceTakeAway 
+                var price = order.OrderType == Domain.Enums.OrderType.Takeaway
+                            ? menuItem.PriceTakeAway
                             : menuItem.PriceDineIn;
 
-                var newItem = new OrderItem
+                var newItem = new Domain.Entities.OrderItem
                 {
                     OrderItemId = Guid.NewGuid(),
                     OrderId = request.OrderId,

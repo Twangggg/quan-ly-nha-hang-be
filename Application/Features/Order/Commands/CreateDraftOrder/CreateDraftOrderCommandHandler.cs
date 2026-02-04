@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace FoodHub.Application.Features.Order.Commands.CreateDraftOrder
 {
-    public class CreateDraftOrderCommandHandler : IRequestHandler<CreateDraftOrderCommand, Result<Guid>> 
+    public class CreateDraftOrderCommandHandler : IRequestHandler<CreateDraftOrderCommand, Result<Guid>>
     {
         private IUnitOfWork _unitOfWork;
         private ICurrentUserService _currentUserService;
@@ -71,7 +71,7 @@ namespace FoodHub.Application.Features.Order.Commands.CreateDraftOrder
                 IsPriority = false,
                 CreatedBy = userId,
                 CreatedAt = DateTime.UtcNow,
-                OrderItems = new List<OrderItem>(),
+                OrderItems = new List<Domain.Entities.OrderItem>(),
                 OrderAuditLogs = new List<OrderAuditLog>()
             };
 
