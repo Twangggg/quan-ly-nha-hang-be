@@ -4,8 +4,8 @@ using FoodHub.Application.Features.Order.Commands.SubmitOrder;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using FoodHub.Application.Features.Orders.Commands.AddOrderItem;
 using FoodHub.Application.Features.Orders.Commands.CreateDraftOrder;
+using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;
 
 namespace FoodHub.Presentation.Controllers.Order
 {
@@ -42,7 +42,7 @@ namespace FoodHub.Presentation.Controllers.Order
         }
 
         [HttpPost("add-order-item")]
-        [Authorize(Roles ="Manager,Waiter")]
+        [Authorize(Roles = "Manager,Waiter")]
         public async Task<IActionResult> AddOrderItem([FromBody] AddOrderItemCommand command)
         {
             var result = await _mediator.Send(command);

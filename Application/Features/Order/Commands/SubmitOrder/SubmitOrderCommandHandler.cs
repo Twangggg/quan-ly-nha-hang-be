@@ -38,10 +38,10 @@ namespace FoodHub.Application.Features.Order.Commands.SubmitOrder
                 return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.NotFound));
             }
 
-            if(order.Status != Domain.Enums.OrderStatus.Draft)
-            {
-                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus) + $"{order.Status}");
-            }
+            // if(order.Status != Domain.Enums.OrderStatus.Draft)
+            // {
+            //     return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus) + $"{order.Status}");
+            // }
 
             if (order.OrderItems == null || !order.OrderItems.Any())
             {

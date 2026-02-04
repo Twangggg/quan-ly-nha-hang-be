@@ -188,10 +188,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// Register Background Email Services
-builder.Services.AddSingleton<BackgroundEmailChannel>();
-builder.Services.AddSingleton<IBackgroundEmailSender>(provider => provider.GetRequiredService<BackgroundEmailChannel>());
-builder.Services.AddHostedService<EmailBackgroundWorker>();
+
 
 // Register Localization
 builder.Services.AddLocalization();

@@ -1,4 +1,5 @@
 ﻿using FoodHub.Application.Interfaces;
+using FoodHub.Infrastructure.BackgroundJobs;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
@@ -53,6 +54,12 @@ namespace FoodHub.Infrastructure
 
             // Cache Service
             services.AddScoped<ICacheService, RedisCacheService>();
+
+
+            // Register Background Email Services
+            services.AddSingleton<BackgroundEmailChannel>();
+            services.AddSingleton<IBackgroundEmailSender>(provider => provider.GetRequiredService<BackgroundEmailChannel>());
+            services.AddHostedService<EmailBackgroundWorker>();
 
             return services;
         }

@@ -4,20 +4,20 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
+namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
 {
-    public class CancelOrderCommandValidator : AbstractValidator<CancelOrderCommand>
+    public class CancelOrderItemValidator : AbstractValidator<CancelOrderItemCommand>
     {
-        public CancelOrderCommandValidator(IUnitOfWork unitOfWork, IMessageService messageService)
+        public CancelOrderItemValidator(IUnitOfWork unitOfWork, IMessageService messageService)
         {
-            RuleFor(x => x.OrderId).NotEmpty();
+            RuleFor(x => x.OrderItemId).NotEmpty();
 
             RuleFor(x => x.Reason)
                 .NotEmpty()
                 .WhenAsync(async (command, cancellation) =>
                 {
-                    var order = await unitOfWork.Repository<Domain.Entities.Order>()
-                        .GetByIdAsync(command.OrderId);
+                    var order = await unitOfWork.Repository<Domain.Entities.OrderItem>()
+                        .GetByIdAsync(command.OrderItemId);
                     return order != null && order.Status == OrderItemStatus.Preparing;
                 })
                 .WithMessage(messageService.GetMessage(MessageKeys.ResetPassword.ReasonRequired));

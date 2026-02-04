@@ -23,7 +23,6 @@ namespace FoodHub.Domain.Entities
         public DateTime? UpdatedAt { get; set; }
         public DateTime? SubmittedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
-        public DateTime? CancelledAt { get; set; }
 
         public Guid? TransactionId { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

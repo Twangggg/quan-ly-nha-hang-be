@@ -35,12 +35,12 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
             if (order == null)
             {
-                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidQuantiry));
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidQuantity));
             }
-            if (order.Status != Domain.Enums.OrderItemStatus.Draft)
-            {
-                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidAction));
-            }
+            // if (order.Status != Domain.Enums.OrderItemStatus.Draft)
+            // {
+            //     return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidAction));
+            // }
 
             // Get MenuItem
             var menuItem = await _unitOfWork.Repository<MenuItem>()

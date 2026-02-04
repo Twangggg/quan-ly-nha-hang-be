@@ -10,7 +10,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
         {
             RuleFor(o => o.OrderId).NotEmpty().WithMessage(message.GetMessage(MessageKeys.Order.NotFound));
             RuleFor(o => o.MenuItemId).NotEmpty().WithMessage(message.GetMessage(MessageKeys.MenuItem.NotFound));
-            RuleFor(o => o.Quantity).GreaterThan(0).WithMessage(message.GetMessage(MessageKeys.Order.InvalidQuantiry));
+            RuleFor(o => o.Quantity).GreaterThan(0).WithMessage(message.GetMessage(MessageKeys.Order.InvalidQuantity));
         }
     }
 }
