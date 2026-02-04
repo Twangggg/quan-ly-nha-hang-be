@@ -17,7 +17,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
         private readonly IEmployeeServices _employeeServices;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMapper _mapper;
-        private readonly IEmailService _emailService;
+        private readonly IBackgroundEmailSender _emailSender;
         private readonly IPasswordService _passwordService;
         private readonly IMessageService _messageService;
         private readonly ILogger<ChangeRoleHandler> _logger;
@@ -26,7 +26,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
             IUnitOfWork unitOfWork,
             IEmployeeServices employeeServices,
             ICurrentUserService currentUserService,
-            IEmailService emailService,
+            IBackgroundEmailSender emailSender,
             IMapper mapper,
             IPasswordService passwordService,
             IMessageService messageService,
@@ -36,7 +36,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
             _employeeServices = employeeServices;
             _currentUserService = currentUserService;
             _mapper = mapper;
-            _emailService = emailService;
+            _emailSender = emailSender;
             _passwordService = passwordService;
             _messageService = messageService;
             _logger = logger;
@@ -169,32 +169,21 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
                 );
             }
 
-            var emailSent = await _emailService.SendRoleChangeConfirmationEmailAsync(
+            await _emailSender.EnqueueRoleChangeEmailAsync(
                 newEmployee.Email,
                 newEmployee.FullName,
                 oldEmployee.EmployeeCode,
                 newEmployee.EmployeeCode,
                 request.CurrentRole.ToString(),
                 request.NewRole.ToString(),
+                newEmployee.EmployeeId,
+                auditorId,
                 cancellationToken);
 
             var response = _mapper.Map<ChangeRoleResponse>(newEmployee);
-
-            if (!emailSent)
-            {
-                _logger.LogWarning(
-                    "Role changed successfully for {EmployeeCode} but email notification failed for {Email}",
-                    newEmployee.EmployeeCode,
-                    newEmployee.Email
-                );
-
-                return Result<ChangeRoleResponse>.SuccessWithWarning(
-                    response,
-                    _messageService.GetMessage(MessageKeys.Employee.RoleChangedButEmailFailed, newEmployee.EmployeeCode)
-                );
-            }
-
             return Result<ChangeRoleResponse>.Success(response);
+
+
         }
     }
 }

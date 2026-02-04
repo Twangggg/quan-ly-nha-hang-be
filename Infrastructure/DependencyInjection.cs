@@ -34,8 +34,10 @@ namespace FoodHub.Infrastructure
             // Register Redis Connection
             services.AddSingleton<IConnectionMultiplexer>(sp =>
             {
-                var redisConnection = configuration.GetConnectionString("Redis") ?? "localhost:6379";
-                return ConnectionMultiplexer.Connect(redisConnection);
+                var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+                var options = ConfigurationOptions.Parse(redisConnectionString);
+                options.AbortOnConnectFail = false; // Allow app to start even if Redis is down
+                return ConnectionMultiplexer.Connect(options);
             });
 
             // Register Services

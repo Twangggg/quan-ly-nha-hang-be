@@ -1,6 +1,8 @@
+
 using System;
 using System.Collections.Generic;
 using FoodHub.Domain.Enums;
+
 
 namespace FoodHub.Domain.Entities
 {

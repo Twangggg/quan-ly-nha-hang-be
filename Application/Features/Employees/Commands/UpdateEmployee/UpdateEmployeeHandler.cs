@@ -58,6 +58,10 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
             employee.Address = request.Address;
             employee.DateOfBirth = request.DateOfBirth;
             employee.UpdatedAt = DateTime.UtcNow;
+            if (Enum.TryParse<EmployeeStatus>(request.Status, true, out var status))
+            {
+                employee.Status = status;
+            }
 
             employeeRepository.Update(employee);
 

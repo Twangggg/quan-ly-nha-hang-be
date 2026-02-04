@@ -1,0 +1,24 @@
+﻿namespace FoodHub.Domain.Entities
+{
+    public class OrderItem
+    {
+        public Guid OrderItemId { get; set; }
+        public Guid OrderId { get; set; }
+        public Guid MenuItemId { get; set; }
+
+        // Snapshots
+        public string ItemCodeSnapshot { get; set; } = null!;
+        public string ItemNameSnapshot { get; set; } = null!;
+        public string StationSnapshot { get; set; } = null!;
+
+        public int Quantity { get; set; }
+        public decimal UnitPriceSnapshot { get; set; }
+
+        public bool Status { get; set; } // Requested as Boolean
+        public string? ItemNote { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public virtual Order Order { get; set; } = null!;
+    }
+}
