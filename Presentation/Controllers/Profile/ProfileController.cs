@@ -24,9 +24,9 @@ namespace FoodHub.Presentation.Controllers.Profile
         [HttpGet]
         public async Task<IActionResult> GetMyProfile()
         {
-            var userIdClaim = User.FindFirst("uid");
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim?.Value, out var userId))
                 throw new NotFoundException("User not found");
 
             var result = await _mediator.Send(new Query(userId));
@@ -37,12 +37,12 @@ namespace FoodHub.Presentation.Controllers.Profile
         [HttpPut]
         public async Task<IActionResult> UpdateProfileAsync(UpdateProfileCommand command)
         {
-            var userIdClaim = User.FindFirst("EmployeeCode")?.Value;
-            if (string.IsNullOrWhiteSpace(userIdClaim))
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim?.Value, out var userId))
                 throw new NotFoundException("User not found");
 
             var result = await _mediator.Send(new UpdateProfileCommand(
-                userIdClaim,
+                userId,
                 command.FullName?.Trim(),
                 command.Email?.Trim(),
                 command.Phone?.Trim(),

@@ -62,14 +62,11 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             menuItem.PriceTakeAway = priceTakeAway;
             menuItem.UpdatedAt = DateTime.UtcNow;
 
-            if (_currentUserService.Role is EmployeeRole.Manager or EmployeeRole.Cashier)
+            if (cost.HasValue)
             {
-                if (cost.HasValue)
+                if (_currentUserService.Role is EmployeeRole.Manager or EmployeeRole.Cashier)
                     menuItem.Cost = cost.Value;
-            }
-            else
-            {
-                    return Result<UpdateMenuItemResponse>.Failure("You do not have permission to update the cost of the menu item!", ResultErrorType.Forbidden);
+                else Result<UpdateMenuItemResponse>.Failure("You do not have permission to update the cost of the menu item!", ResultErrorType.Forbidden);
             }
 
             await _unitOfWork.SaveChangeAsync();

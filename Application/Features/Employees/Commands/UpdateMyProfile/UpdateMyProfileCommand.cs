@@ -4,7 +4,7 @@ using MediatR;
 namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
 {
     public record UpdateProfileCommand(
-        string? EmployeeCode,
+        Guid EmployeeId,
         string? FullName,
         string? Email,
         string? Phone,

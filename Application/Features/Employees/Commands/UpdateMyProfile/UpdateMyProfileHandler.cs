@@ -21,7 +21,7 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
             var repo = _unitOfWork.Repository<Employee>();
 
             var employee = await repo.Query()
-                .FirstOrDefaultAsync(emp => emp.EmployeeCode == request.EmployeeCode, cancellationToken);
+                .FirstOrDefaultAsync(emp => emp.EmployeeId == request.EmployeeId, cancellationToken);
 
             var fullName = request.FullName.Trim();
             var email = request.Email.Trim().ToLower();
@@ -35,14 +35,14 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
             }
 
             // Check duplicate phone number
-            var phoneExists = await repo.Query().AnyAsync(e => e.EmployeeCode != request.EmployeeCode && e.Phone == phone, cancellationToken);
+            var phoneExists = await repo.Query().AnyAsync(e => e.EmployeeId != request.EmployeeId && e.Phone == phone, cancellationToken);
             if (phoneExists)
             {
                 return Result<UpdateProfileResponse>.Failure("Phone number already exists.");
             }
 
             // Check duplicate email
-            var emailExists = await repo.Query().AnyAsync(e => e.EmployeeCode != request.EmployeeCode && e.Email == email, cancellationToken);
+            var emailExists = await repo.Query().AnyAsync(e => e.EmployeeId != request.EmployeeId && e.Email == email, cancellationToken);
             if (emailExists)
             {
                 return Result<UpdateProfileResponse>.Failure("Email already exists.");

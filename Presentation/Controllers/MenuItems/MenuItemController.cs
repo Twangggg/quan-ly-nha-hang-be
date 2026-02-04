@@ -90,7 +90,7 @@ namespace FoodHub.Presentation.Controllers.MenuItems
 
         [HttpPatch("{id}/stock-status")]
         [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] UpdateStockStatusCommand command)
+        public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] ToggleOutOfStockCommand command)
         {
             if (id != command.MenuItemId)
             {

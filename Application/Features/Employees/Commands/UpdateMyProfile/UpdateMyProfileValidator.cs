@@ -13,8 +13,8 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
     {
         public UpdateProfileValidator()
         {
-            RuleFor(x => x.EmployeeCode)
-                .NotEmpty().WithMessage("EmployeeCode not empty");
+            RuleFor(x => x.EmployeeId)
+                .NotEmpty().WithMessage("EmployeeId not empty");
 
             RuleFor(x => x.FullName)
                 .NotEmpty().WithMessage("Full name not empty")
