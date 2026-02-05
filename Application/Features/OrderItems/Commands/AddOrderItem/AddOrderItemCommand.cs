@@ -9,5 +9,6 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
         public Guid MenuItemId { get; set; }
         public int Quantity { get; set; }
         public string? Note { get; set; }
+        public string? Reason { get; set; }
     }
 }

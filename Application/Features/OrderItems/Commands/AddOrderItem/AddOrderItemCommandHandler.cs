@@ -4,6 +4,7 @@ using FoodHub.Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using FoodHub.Application.Constants;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 {
@@ -22,9 +23,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 
         public async Task<Result<Guid>> Handle(AddOrderItemCommand request, CancellationToken cancellationToken)
         {
-            //Get current user id
-            var currentIdString = _currentUserService.UserId;
-            if (string.IsNullOrEmpty(currentIdString) || !Guid.TryParse(currentIdString, out var userId))
+            if (!Guid.TryParse(_currentUserService.UserId, out var userId))
             {
                 return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn));
             }
@@ -33,16 +32,18 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 .Query()
                 .Include(x => x.OrderItems)
                 .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
+
             if (order == null)
             {
-                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidQuantity));
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.NotFound),
+                    ResultErrorType.NotFound);
             }
-            // if (order.Status != Domain.Enums.OrderItemStatus.Draft)
-            // {
-            //     return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidAction));
-            // }
 
-            // Get MenuItem
+            if (order.Status == OrderStatus.Completed)
+            {
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidAction));
+            }
+
             var menuItem = await _unitOfWork.Repository<MenuItem>()
                 .Query()
                 .FirstOrDefaultAsync(x => x.Id == request.MenuItemId, cancellationToken);
@@ -52,24 +53,24 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.NotFound));
             }
 
-            // Disable merge logic for Sprint I Add-on requirement
-            // Always add new item line
 
             var existingItem = order.OrderItems.FirstOrDefault(x =>
-                x.MenuItemId == request.MenuItemId &&
-                (x.ItemNote ?? "") == (request.Note ?? "")
-                );
+                x.MenuItemId == request.MenuItemId && x.Status == OrderItemStatus.Preparing);
 
             if (existingItem != null)
             {
+                if (request.Reason == null)
+                {
+                    return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidAction),
+                        ResultErrorType.BadRequest);
+                }
                 existingItem.Quantity += request.Quantity;
                 existingItem.UpdatedAt = DateTime.UtcNow;
-                // existingItem.UnitPriceSnapshot = menuItem.PriceDineIn; 
+                existingItem.UnitPriceSnapshot = menuItem.PriceDineIn;
             }
             else
             {
-
-                var price = order.OrderType == Domain.Enums.OrderType.Takeaway
+                var price = order.OrderType == OrderType.Takeaway
                                 ? menuItem.PriceTakeAway
                                 : menuItem.PriceDineIn;
 
@@ -81,6 +82,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                     Quantity = request.Quantity,
                     ItemNote = request.Note,
                     CreatedAt = DateTime.UtcNow,
+                    Status = OrderItemStatus.Preparing,
 
                     // Snapshot from MenuItem
                     ItemNameSnapshot = menuItem.Name,
@@ -101,6 +103,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 OrderId = order.OrderId,
                 EmployeeId = userId,
                 Action = "ADD_ITEM",
+                ChangeReason = request.Reason,
                 CreatedAt = DateTime.UtcNow,
             };
 
