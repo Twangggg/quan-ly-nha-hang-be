@@ -1,11 +1,8 @@
 ﻿using FoodHub.Application.Common.Models;
-using FoodHub.Application.Features.Orders.Commands.CreateDraftOrder;
-using FoodHub.Application.Features.Orders.Commands.UpdateOrder;
-using FoodHub.Application.Features.Orders.Commands.CancelOrder;
+using FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -35,46 +32,10 @@ namespace FoodHub.Presentation.Controllers
             };
         }
 
-        [HttpPost]
+        [HttpPost("submit-to-kitchen")]
         [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateDraftOrderCommand command)
+        public async Task<IActionResult> SubmitOrderToKitchen([FromBody] SubmitOrderToKitchenCommand command)
         {
-            var result = await _mediator.Send(command);
-            return HandleResult(result);
-        }
-
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> UpdateOrder(Guid id, [FromBody] UpdateOrderCommand command)
-        {
-            if (id != command.OrderId)
-            {
-                return BadRequest(new { message = "ID mismatch" });
-            }
-            var result = await _mediator.Send(command);
-            return HandleResult(result);
-        }
-
-        [HttpPost("{id}/cancel")]
-        [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> CancelOrder(Guid id, [FromBody] CancelOrderCommand command)
-        {
-            if (id != command.OrderId)
-            {
-                return BadRequest(new { message = "ID mismatch" });
-            }
-            var result = await _mediator.Send(command);
-            return HandleResult(result);
-        }
-
-        [HttpPost("{id}/items")]
-        [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> AddOrderItem(Guid id, [FromBody] AddOrderItemCommand command)
-        {
-            if (id != command.OrderId)
-            {
-                return BadRequest(new { message = "ID mismatch" });
-            }
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }

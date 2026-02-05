@@ -84,7 +84,6 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 IsPriority = false,
                 CreatedBy = userId,
                 CreatedAt = DateTime.UtcNow,
-                SubmittedAt = DateTime.UtcNow, 
                 OrderItems = new List<OrderItem>(),
                 OrderAuditLogs = new List<OrderAuditLog>()
             };
