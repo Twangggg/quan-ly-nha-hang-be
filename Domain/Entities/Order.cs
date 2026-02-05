@@ -21,7 +21,6 @@ namespace FoodHub.Domain.Entities
         public virtual Employee CreatedByEmployee { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public DateTime? SubmittedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public DateTime? CancelledAt { get; set; }
 
