@@ -58,7 +58,6 @@ namespace FoodHub.Application.Features.Order.Commands.SubmitOrder
 
             // Update status
             order.Status = Domain.Enums.OrderStatus.Serving;
-            order.SubmittedAt = DateTime.UtcNow;
 
             // Set all items status to Preparing
             if (order.OrderItems != null)
