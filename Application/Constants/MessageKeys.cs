@@ -101,9 +101,17 @@ namespace FoodHub.Application.Constants
 
         }
 
+        public static class OrderItem
+        {
+            public const string InvalidQuantity = "OrderItem.InvalidQuantity";
+        }
+
         public static class MenuItem
         {
             public const string NotFound = "MenuItem.NotFound";
+            public const string OutOfStock = "MenuItem.OutOfStock";
+            public const string InvalodQuantity = "MenuItem.InvalidQuantity";
+
         }
     }
 }

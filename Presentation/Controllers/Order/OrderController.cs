@@ -1,11 +1,8 @@
 ﻿using FoodHub.Application.Common.Models;
-
-using FoodHub.Application.Features.Order.Commands.SubmitOrder;
+using FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using FoodHub.Application.Features.Orders.Commands.AddOrderItem;
-using FoodHub.Application.Features.Orders.Commands.CreateDraftOrder;
 
 namespace FoodHub.Presentation.Controllers.Order
 {
@@ -33,27 +30,10 @@ namespace FoodHub.Presentation.Controllers.Order
             };
         }
 
-        [HttpPost("draft")]
+        [HttpPost("submit-to-kitchen")]
         [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> CreateDraftOrder([FromBody] CreateDraftOrderCommand command)
+        public async Task<IActionResult> SubmitOrderToKitchen([FromBody] SubmitOrderToKitchenCommand command)
         {
-            var result = await _mediator.Send(command);
-            return HandleResult(result);
-        }
-
-        [HttpPost("add-order-item")]
-        [Authorize(Roles ="Manager,Waiter")]
-        public async Task<IActionResult> AddOrderItem([FromBody] AddOrderItemCommand command)
-        {
-            var result = await _mediator.Send(command);
-            return HandleResult(result);
-        }
-
-        [HttpPost("{id}/submit")]
-        [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> SubmitOrder(Guid id)
-        {
-            var command = new SubmitOrderCommand { OrderId = id };
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }

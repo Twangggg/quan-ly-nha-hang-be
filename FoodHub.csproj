@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Application\Features\OrderItems\Commands\" />
     <Folder Include="Application\Services\" />
   </ItemGroup>
 

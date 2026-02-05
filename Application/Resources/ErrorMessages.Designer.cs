@@ -223,11 +223,29 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Số lượng phải lớn hơn 0..
+        /// </summary>
+        public static string MenuItem_InvalidQuantity {
+            get {
+                return ResourceManager.GetString("MenuItem.InvalidQuantity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Không tìm thấy món ăn trong menu..
         /// </summary>
         public static string MenuItem_NotFound {
             get {
                 return ResourceManager.GetString("MenuItem.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Món đã hết: .
+        /// </summary>
+        public static string MenuItem_OutOfStock {
+            get {
+                return ResourceManager.GetString("MenuItem.OutOfStock", resourceCulture);
             }
         }
         
@@ -318,6 +336,15 @@ namespace FoodHub.Application.Resources {
         public static string Order_SelectTable {
             get {
                 return ResourceManager.GetString("Order.SelectTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Phải có ít nhất 1 món để gửi bếp.
+        /// </summary>
+        public static string OrderItem_InvalidQuantity {
+            get {
+                return ResourceManager.GetString("OrderItem.InvalidQuantity", resourceCulture);
             }
         }
         
