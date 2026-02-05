@@ -219,7 +219,7 @@ if (app.Environment.IsDevelopment())
     {
         var services = scope.ServiceProvider;
         var retryCount = 0;
-        var maxRetries = 5;
+        var maxRetries = 20; // Increased from 5
 
         while (retryCount < maxRetries)
         {
@@ -244,7 +244,7 @@ if (app.Environment.IsDevelopment())
                 }
 
                 logger.LogWarning("Database not ready. Retry {Count}/{Max}...", retryCount, maxRetries);
-                await Task.Delay(2000);
+                await Task.Delay(3000);
             }
         }
     }
