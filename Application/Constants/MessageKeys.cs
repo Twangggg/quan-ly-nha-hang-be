@@ -98,7 +98,7 @@ namespace FoodHub.Application.Constants
             public const string InvalidAction = "Order.InvalidAction";
             public const string InvalidActionWithStatus = "Order.InvalidActionWithStatus";
             public const string MustHaveItem = "Order.MustHaveItem";
-
+            public const string WrongTotalMount = "Order.WrongTotalMount";
         }
 
         public static class MenuItem

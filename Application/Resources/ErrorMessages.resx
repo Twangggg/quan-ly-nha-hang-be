@@ -249,4 +249,7 @@
   <data name="Order.MustHaveItem" xml:space="preserve">
     <value>Đơn hàng đang trống.</value>
   </data>
+  <data name="Order.WrongTotalMount" xml:space="preserve">
+    <value>Tổng số tiền đang có sự chênh lệch</value>
+  </data>
 </root>

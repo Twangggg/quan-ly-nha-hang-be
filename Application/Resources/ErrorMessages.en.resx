@@ -243,6 +243,9 @@
   <data name="Order.InvalidActionWithStatus" xml:space="preserve">
     <value>Invalid action with </value>
   </data>
+  <data name="Order.MustHaveItem" xml:space="preserve">
+    <value>Order must have item</value>
+  </data>
   <data name="Password.NotEmpty" xml:space="preserve">
     <value>Password cannot be empty.</value>
   </data>
@@ -303,7 +306,8 @@
   <data name="RoleChangedButEmailFailed" xml:space="preserve">
     <value>Role changed successfully for {0}, but notification email failed to send.</value>
   </data>
-  <data name="Order.MustHaveItem" xml:space="preserve">
-    <value>Order must have item</value>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Order.WrongTotalMount" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
   </data>
 </root>

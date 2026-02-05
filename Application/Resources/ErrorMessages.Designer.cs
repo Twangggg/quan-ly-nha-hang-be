@@ -322,6 +322,15 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tổng số tiền đang có sự chênh lệch.
+        /// </summary>
+        public static string Order_WrongTotalMount {
+            get {
+                return ResourceManager.GetString("Order.WrongTotalMount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Mật khẩu xác nhận không khớp..
         /// </summary>
         public static string Password_ConfirmationMismatch {

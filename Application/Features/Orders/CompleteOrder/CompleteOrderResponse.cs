@@ -1,7 +1,7 @@
 ﻿using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Enums;
 
-namespace FoodHub.Application.Features.Order.Commands.CompleteOrder
+namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
 {
     public class CompleteOrderResponse : IMapFrom<Domain.Entities.Order>
     {
