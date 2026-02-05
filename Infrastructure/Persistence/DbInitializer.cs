@@ -25,13 +25,10 @@ namespace FoodHub.Infrastructure.Persistence
             }
 
             // Seed Data
-            if (_context.Employees.Any())
+            if (!_context.Employees.Any())
             {
-                return;
-            }
-
-            var employees = new Employee[]
-            {
+                var employees = new Employee[]
+                {
                 new Employee
                 {
                     EmployeeId = Guid.NewGuid(),
@@ -84,28 +81,185 @@ namespace FoodHub.Infrastructure.Persistence
                     Status = EmployeeStatus.Active,
                     CreatedAt = DateTime.UtcNow
                 }
-            };
+                };
 
-            foreach (var e in employees)
-            {
-                // Check if already exists to avoid duplicate key errors
-                if (!_context.Employees.Any(x => x.EmployeeCode == e.EmployeeCode || x.Username == e.Username || x.Email == e.Email))
+                foreach (var e in employees)
                 {
-                    _context.Employees.Add(e);
-
-                    // Add Audit Log for Seed Data
-                    _context.AuditLogs.Add(new AuditLog
+                    // Check if already exists to avoid duplicate key errors
+                    if (!_context.Employees.Any(x => x.EmployeeCode == e.EmployeeCode || x.Username == e.Username || x.Email == e.Email))
                     {
-                        LogId = Guid.NewGuid(),
-                        Action = AuditAction.Create,
-                        TargetId = e.EmployeeId,
-                        PerformedByEmployeeId = e.EmployeeId, // Self-created for seed
-                        CreatedAt = DateTimeOffset.UtcNow,
-                        Reason = "Seed data initialization",
-                        Metadata = "{\"info\": \"System generated\"}" // Valid JSON for jsonb column
-                    });
+                        _context.Employees.Add(e);
+
+                        // Add Audit Log for Seed Data
+                        _context.AuditLogs.Add(new AuditLog
+                        {
+                            LogId = Guid.NewGuid(),
+                            Action = AuditAction.Create,
+                            TargetId = e.EmployeeId,
+                            PerformedByEmployeeId = e.EmployeeId, // Self-created for seed
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            Reason = "Seed data initialization",
+                            Metadata = "{\"info\": \"System generated\"}" // Valid JSON for jsonb column
+                        });
+                    }
                 }
+                _context.SaveChanges();
             }
+
+            if (!_context.Categories.Any() && !_context.MenuItems.Any())
+            {
+                var foodCategory = new Category
+                {
+                    CategoryId = Guid.NewGuid(),
+                    Name = "Main Dishes",
+                    Type = CategoryType.Normal,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var drinkCategory = new Category
+                {
+                    CategoryId = Guid.NewGuid(),
+                    Name = "Drinks",
+                    Type = CategoryType.Normal,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var comboCategory = new Category
+                {
+                    CategoryId = Guid.NewGuid(),
+                    Name = "Combo Sets",
+                    Type = CategoryType.SpecialGroup,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Categories.AddRange(foodCategory, drinkCategory, comboCategory);
+
+                var menuItems = new List<MenuItem>
+                {
+                    new MenuItem
+                    {
+                        MenuItemId = Guid.NewGuid(),
+                        Code = "FOOD001",
+                        Name = "Grilled Chicken Rice",
+                        ImageUrl = "images/chicken_rice.jpg",
+                        Description = "Grilled chicken served with fragrant rice",
+                        CategoryId = foodCategory.CategoryId,
+                        Station = Station.HotKitchen,
+                        ExpectedTime = 15,
+                        PriceDineIn = 50000,
+                        PriceTakeAway = 48000,
+                        Cost = 30000,
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new MenuItem
+                    {
+                        MenuItemId = Guid.NewGuid(),
+                        Code = "FOOD002",
+                        Name = "Beef Noodle Soup",
+                        ImageUrl = "images/beef_noodle.jpg",
+                        Description = "Traditional beef noodle soup",
+                        CategoryId = foodCategory.CategoryId,
+                        Station = Station.HotKitchen,
+                        ExpectedTime = 12,
+                        PriceDineIn = 45000,
+                        PriceTakeAway = 43000,
+                        Cost = 25000,
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new MenuItem
+                    {
+                        MenuItemId = Guid.NewGuid(),
+                        Code = "DRINK001",
+                        Name = "Lemon Tea",
+                        ImageUrl = "images/lemon_tea.jpg",
+                        Description = "Refreshing iced lemon tea",
+                        CategoryId = drinkCategory.CategoryId,
+                        Station = Station.Bar,
+                        ExpectedTime = 3,
+                        PriceDineIn = 20000,
+                        PriceTakeAway = 18000,
+                        Cost = 8000,
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new MenuItem
+                    {
+                        MenuItemId = Guid.NewGuid(),
+                        Code = "COMBO001",
+                        Name = "Chicken Combo Set",
+                        ImageUrl = "images/chicken_combo.jpg",
+                        Description = "Chicken rice + drink combo",
+                        CategoryId = comboCategory.CategoryId,
+                        Station = Station.HotKitchen,
+                        ExpectedTime = 18,
+                        PriceDineIn = 65000,
+                        PriceTakeAway = 62000,
+                        Cost = 40000,
+                        CreatedAt = DateTime.UtcNow
+                    }
+                };
+
+                _context.MenuItems.AddRange(menuItems);
+            }
+
+            if (!_context.SetMenus.Any())
+            {
+                var setMenu = new SetMenu
+                {
+                    SetMenuId = Guid.NewGuid(),
+                    Code = "SET001",
+                    Name = "Lunch Set",
+                    Price = 70000,
+                    IsOutOfStock = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var setMenu2 = new SetMenu
+                {
+                    SetMenuId = Guid.NewGuid(),
+                    Code = "SET002",
+                    Name = "Dinner Set",
+                    Price = 85000,
+                    IsOutOfStock = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var setMenuItem21 = new SetMenuItem
+                {
+                    SetMenuItemId = Guid.NewGuid(),
+                    SetMenuId = setMenu2.SetMenuId,
+                    MenuItemId = _context.MenuItems.First(mi => mi.Code == "FOOD002").MenuItemId,
+                    Quantity = 1
+                };
+
+                var setMenuItem22 = new SetMenuItem
+                {
+                    SetMenuItemId = Guid.NewGuid(),
+                    SetMenuId = setMenu2.SetMenuId,
+                    MenuItemId = _context.MenuItems.First(mi => mi.Code == "DRINK001").MenuItemId,
+                    Quantity = 1
+                };
+
+                var setMenu3 = new SetMenu
+                {
+                    SetMenuId = Guid.NewGuid(),
+                    Code = "SET003",
+                    Name = "Family Set",
+                    Price = 150000,
+                    IsOutOfStock = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var setMenuItem31 = new SetMenuItem
+                {
+                    SetMenuItemId = Guid.NewGuid(),
+                    SetMenuId = setMenu3.SetMenuId,
+                    MenuItemId = _context.MenuItems.First(mi => mi.Code == "FOOD001").MenuItemId,
+                    Quantity = 2
+                };
+
+                _context.SetMenus.AddRangeAsync(setMenu, setMenu2, setMenu3);
+            }
+
             _context.SaveChanges();
         }
     }

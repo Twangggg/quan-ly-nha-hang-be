@@ -1,28 +1,38 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatus
 {
-    public class UpdateSetMenuStockStatusHandler : IRequestHandler<UpdateSetMenuStockStatusCommand, Result<UpdateSetMenuStockStatusResponse>>
+    public class UpdateSetMenuStockStatusHandler : IRequestHandler<UpdateSetMenuStockStatusCommand, Result<bool>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUserService;
 
-        public UpdateSetMenuStockStatusHandler(IUnitOfWork unitOfWork)
+        public UpdateSetMenuStockStatusHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
+            _currentUserService = currentUserService;
         }
 
-        public async Task<Result<UpdateSetMenuStockStatusResponse>> Handle(UpdateSetMenuStockStatusCommand request, CancellationToken cancellationToken)
+        public async Task<Result<bool>> Handle(UpdateSetMenuStockStatusCommand request, CancellationToken cancellationToken)
         {
-            var setMenuRepository = _unitOfWork.Repository<SetMenu>();
+            var setMenuRepo = _unitOfWork.Repository<SetMenu>();
+
+            // Authorization: Only Managers can update stock status
+            var userRole = _currentUserService.Role;
+            if (userRole is not EmployeeRole.Manager)
+            {
+                return Result<bool>.Failure("You do not have permission to update set menu stock status!", ResultErrorType.Forbidden);
+            }
 
             // 1. Get existing SetMenu
-            var setMenu = await setMenuRepository.GetByIdAsync(request.SetMenuId);
+            var setMenu = await setMenuRepo.GetByIdAsync(request.SetMenuId);
             if (setMenu == null)
             {
-                return Result<UpdateSetMenuStockStatusResponse>.Failure($"Set Menu with ID '{request.SetMenuId}' not found.", ResultErrorType.NotFound);
+                return Result<bool>.Failure($"Set Menu with ID '{request.SetMenuId}' not found.", ResultErrorType.NotFound);
             }
 
             // 2. Update stock status
@@ -30,18 +40,10 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatu
             setMenu.UpdatedAt = DateTime.UtcNow;
 
             // 3. Save changes
-            setMenuRepository.Update(setMenu);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             // 4. Return Response
-            var response = new UpdateSetMenuStockStatusResponse
-            {
-                SetMenuId = setMenu.SetMenuId,
-                IsOutOfStock = setMenu.IsOutOfStock,
-                UpdatedAt = setMenu.UpdatedAt ?? DateTime.UtcNow
-            };
-
-            return Result<UpdateSetMenuStockStatusResponse>.Success(response);
+            return Result<bool>.Success(true);
         }
     }
 }

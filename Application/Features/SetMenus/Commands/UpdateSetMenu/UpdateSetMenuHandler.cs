@@ -1,17 +1,22 @@
+using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
 {
     public class UpdateSetMenuHandler : IRequestHandler<UpdateSetMenuCommand, Result<UpdateSetMenuResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUserService;
 
-        public UpdateSetMenuHandler(IUnitOfWork unitOfWork)
+        public UpdateSetMenuHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<UpdateSetMenuResponse>> Handle(UpdateSetMenuCommand request, CancellationToken cancellationToken)
@@ -19,6 +24,12 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
             var setMenuRepository = _unitOfWork.Repository<SetMenu>();
             var menuItemRepository = _unitOfWork.Repository<MenuItem>();
             var setMenuItemRepository = _unitOfWork.Repository<SetMenuItem>();
+
+            var userRole = _currentUserService.Role;
+            if (userRole is not EmployeeRole.Manager)
+            {
+                return Result<UpdateSetMenuResponse>.Failure("You do not have permission to update the set menu.", ResultErrorType.Forbidden);
+            }
 
             // 1. Get existing SetMenu
             var setMenu = await setMenuRepository.GetByIdAsync(request.SetMenuId);
@@ -36,53 +47,74 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
                 return Result<UpdateSetMenuResponse>.Failure("One or more Menu Items do not exist.", ResultErrorType.BadRequest);
             }
 
-            // 3. Update SetMenu properties
-            setMenu.Name = request.Name;
-            setMenu.Price = request.Price;
-            setMenu.UpdatedAt = DateTime.UtcNow;
-
-            // 4. Update SetMenuItems - remove old and add new
-            var existingItems = setMenuItemRepository.Query().Where(smi => smi.SetMenuId == request.SetMenuId).ToList();
-            foreach (var item in existingItems)
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                setMenuItemRepository.Delete(item);
-            }
+                // 3. Update SetMenu properties
+                setMenu.Name = request.Name;
+                setMenu.Price = request.Price;
+                setMenu.UpdatedAt = DateTime.UtcNow;
 
-            var newItems = request.Items.Select(itemRequest => new SetMenuItem
-            {
-                SetMenuId = request.SetMenuId,
-                MenuItemId = itemRequest.MenuItemId,
-                Quantity = itemRequest.Quantity
-            }).ToList();
+                // 4. Handle SetMenuItems
+                var existingItems = await setMenuItemRepository.Query()
+                    .Where(ei => ei.SetMenuId == request.SetMenuId)
+                    .ToListAsync();
+                var requestItemIds = request.Items.Select(x => x.MenuItemId).ToList();
+                var toRemove = existingItems.Where(x => !requestItemIds.Contains(x.MenuItemId));
+                foreach (var item in toRemove)
+                    setMenuItemRepository.Delete(item);
 
-            foreach (var item in newItems)
-            {
-                await setMenuItemRepository.AddAsync(item);
-            }
-
-            // 5. Save changes
-            setMenuRepository.Update(setMenu);
-            await _unitOfWork.SaveChangeAsync(cancellationToken);
-
-            // 6. Return Response
-            var response = new UpdateSetMenuResponse
-            {
-                SetMenuId = setMenu.SetMenuId,
-                Name = setMenu.Name,
-                Price = setMenu.Price,
-                IsOutOfStock = setMenu.IsOutOfStock,
-                UpdatedAt = setMenu.UpdatedAt ?? DateTime.UtcNow,
-                Items = newItems.Select(item => new UpdateSetMenuItemResponse
+                // Add or update items
+                foreach (var req in request.Items)
                 {
-                    SetMenuItemId = item.SetMenuItemId,
-                    MenuItemId = item.MenuItemId,
-                    Quantity = item.Quantity
-                }).ToList()
-            };
+                    var existing = existingItems.FirstOrDefault(x => x.MenuItemId == req.MenuItemId);
+                    if (existing != null)
+                    {
+                        existing.Quantity = req.Quantity;
+                    }
+                    else
+                    {
+                        await setMenuItemRepository.AddAsync(new SetMenuItem
+                        {
+                            SetMenuItemId = Guid.NewGuid(),
+                            SetMenuId = request.SetMenuId,
+                            MenuItemId = req.MenuItemId,
+                            Quantity = req.Quantity
+                        });
+                    }
+                }
 
-            return Result<UpdateSetMenuResponse>.Success(response);
+                // 5. Save changes
+                setMenuRepository.Update(setMenu);
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.CommitTransactionAsync();
+
+                // 6. Return Response
+                var updatedItems = await setMenuItemRepository.Query()
+                    .Where(x => x.SetMenuId == request.SetMenuId)
+                    .ToListAsync(cancellationToken);
+                var response = new UpdateSetMenuResponse
+                {
+                    SetMenuId = setMenu.SetMenuId,
+                    Name = setMenu.Name,
+                    Price = setMenu.Price,
+                    IsOutOfStock = setMenu.IsOutOfStock,
+                    UpdatedAt = setMenu.UpdatedAt.Value,
+                    Items = updatedItems.Select(item => new UpdateSetMenuItemResponse
+                    {
+                        SetMenuItemId = item.SetMenuItemId,
+                        MenuItemId = item.MenuItemId,
+                        Quantity = item.Quantity
+                    }).ToList()
+                };
+
+                return Result<UpdateSetMenuResponse>.Success(response);
+            }
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                return Result<UpdateSetMenuResponse>.Failure("Failed to update set menu.", ResultErrorType.BadRequest);
+            }
         }
     }
 }
-
-

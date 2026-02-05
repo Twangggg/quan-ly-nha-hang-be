@@ -12,7 +12,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class SetMenuController : ControllerBase
+    public partial class SetMenuController : ControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -65,42 +65,42 @@ namespace FoodHub.Presentation.Controllers.SetMenus
             return CreatedAtAction(nameof(GetSetMenuById), new { id = result.Data.SetMenuId }, result.Data);
         }
 
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> UpdateSetMenu(Guid id, [FromBody] UpdateSetMenuCommand command)
-        {
-            if (id != command.SetMenuId)
-            {
-                return BadRequest(new { message = "Set menu ID mismatch" });
-            }
+        //[HttpPut("{id}")]
+        //[Authorize(Roles = "Manager")]
+        //public async Task<IActionResult> UpdateSetMenu(Guid id, [FromBody] UpdateSetMenuCommand command)
+        //{
+        //    if (id != command.SetMenuId)
+        //    {
+        //        return BadRequest(new { message = "Set menu ID mismatch" });
+        //    }
 
-            var result = await _mediator.Send(command);
+        //    var result = await _mediator.Send(command);
 
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
+        //    if (!result.IsSuccess)
+        //    {
+        //        return BadRequest(new { message = result.Error });
+        //    }
 
-            return Ok(result.Data);
-        }
+        //    return Ok(result.Data);
+        //}
 
-        [HttpPatch("{id}/stock-status")]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] UpdateSetMenuStockStatusCommand command)
-        {
-            if (id != command.SetMenuId)
-            {
-                return BadRequest(new { message = "Set menu ID mismatch" });
-            }
+        //[HttpPatch("{id}/stock-status")]
+        //[Authorize(Roles = "Manager")]
+        //public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] UpdateSetMenuStockStatusCommand command)
+        //{
+        //    if (id != command.SetMenuId)
+        //    {
+        //        return BadRequest(new { message = "Set menu ID mismatch" });
+        //    }
 
-            var result = await _mediator.Send(command);
+        //    var result = await _mediator.Send(command);
 
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
+        //    if (!result.IsSuccess)
+        //    {
+        //        return BadRequest(new { message = result.Error });
+        //    }
 
-            return Ok(result.Data);
-        }
+        //    return Ok(result.Data);
+        //}
     }
 }
