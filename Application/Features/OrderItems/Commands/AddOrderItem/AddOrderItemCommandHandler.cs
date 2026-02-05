@@ -52,6 +52,9 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.NotFound));
             }
 
+            // Disable merge logic for Sprint I Add-on requirement
+            // Always add new item line
+
             var existingItem = order.OrderItems.FirstOrDefault(x =>
                 x.MenuItemId == request.MenuItemId &&
                 (x.ItemNote ?? "") == (request.Note ?? "")
@@ -65,9 +68,10 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             }
             else
             {
+
                 var price = order.OrderType == Domain.Enums.OrderType.Takeaway
-                            ? menuItem.PriceTakeAway
-                            : menuItem.PriceDineIn;
+                                ? menuItem.PriceTakeAway
+                                : menuItem.PriceDineIn;
 
                 var newItem = new OrderItem
                 {

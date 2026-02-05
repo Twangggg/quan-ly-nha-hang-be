@@ -45,7 +45,6 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                 return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Order.NotFound), ResultErrorType.NotFound);
             }
 
-            // Logic: Chỉ cho phép hủy món khi đang ở trạng thái Preparing
             if (orderItem.Status != OrderItemStatus.Preparing)
             {
                 return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus), ResultErrorType.BadRequest);
@@ -57,7 +56,6 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
 
             orderItemRepository.Update(orderItem);
 
-            // Recalculate Order Total
             var order = await _unitOfWork.Repository<Domain.Entities.Order>()
                 .Query()
                 .Include(o => o.OrderItems)

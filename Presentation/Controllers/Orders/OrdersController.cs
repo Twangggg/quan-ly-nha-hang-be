@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;
 using FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem;
 using FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem;
+using FoodHub.Application.Features.Orders.Commands.CompleteOrder;
+using FoodHub.Application.Features.Orders.CancelOrder;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -43,26 +45,33 @@ namespace FoodHub.Presentation.Controllers
             return HandleResult(result);
         }
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}/items/{itemId}")]
         [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> UpdateOrder(Guid id, [FromBody] UpdateOrderItemCommand command)
+        public async Task<IActionResult> UpdateOrderItem(Guid id, Guid itemId, [FromBody] UpdateOrderItemCommand command)
         {
-            if (id != command.OrderId)
-            {
-                return BadRequest(new { message = "ID mismatch" });
-            }
+            if (id != command.OrderId) return BadRequest(new { message = "Order ID mismatch" });
+            if (itemId != command.OrderItemId) return BadRequest(new { message = "Item ID mismatch" });
+
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
 
-        [HttpPost("{id}/cancel")]
+        [HttpPatch("{id}/cancel")]
         [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> CancelOrder(Guid id, [FromBody] CancelOrderItemCommand command)
+        public async Task<IActionResult> CancelOrder(Guid id, [FromBody] CancelOrderCommand command)
         {
-            if (id != command.OrderId)
-            {
-                return BadRequest(new { message = "ID mismatch" });
-            }
+            if (id != command.OrderId) return BadRequest(new { message = "Order ID mismatch" });
+            var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        [HttpPatch("{id}/items/{itemId}/cancel")]
+        [Authorize(Roles = "Manager,Waiter")]
+        public async Task<IActionResult> CancelOrderItem(Guid id, Guid itemId, [FromBody] CancelOrderItemCommand command)
+        {
+            if (id != command.OrderId) return BadRequest(new { message = "Order ID mismatch" });
+            if (itemId != command.OrderItemId) return BadRequest(new { message = "Item ID mismatch" });
+
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
@@ -71,10 +80,16 @@ namespace FoodHub.Presentation.Controllers
         [Authorize(Roles = "Manager,Waiter")]
         public async Task<IActionResult> AddOrderItem(Guid id, [FromBody] AddOrderItemCommand command)
         {
-            if (id != command.OrderId)
-            {
-                return BadRequest(new { message = "ID mismatch" });
-            }
+            if (id != command.OrderId) return BadRequest(new { message = "ID mismatch" });
+            var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        [HttpPatch("{id}/complete")]
+        [Authorize(Roles = "Manager,Waiter")]
+        public async Task<IActionResult> CompleteOrder(Guid id, [FromBody] CompleteOrderCommand command)
+        {
+            if (id != command.OrderId) return BadRequest(new { message = "ID mismatch" });
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
