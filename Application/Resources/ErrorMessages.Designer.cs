@@ -277,6 +277,24 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy nhóm lựa chọn này.
+        /// </summary>
+        public static string OptionGroup_NotFound {
+            get {
+                return ResourceManager.GetString("OptionGroup.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy lựa chọn này..
+        /// </summary>
+        public static string OptionItem_NotFound {
+            get {
+                return ResourceManager.GetString("OptionItem.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Thao tác không hợp lệ.
         /// </summary>
         public static string Order_InvalidAction {

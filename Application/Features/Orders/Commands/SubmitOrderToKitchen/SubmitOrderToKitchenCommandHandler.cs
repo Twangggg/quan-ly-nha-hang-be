@@ -42,22 +42,57 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 //    .Query()
                 //    .AnyAsync(t => t.Id == request.TableId, cancellationToken);
 
-                if (request.TableId != null)
-                {
-                    return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.SelectTable));
-                }
             }
 
             //Validate All Menu Items Exist 
             var menuItemIds = request.Items.Select(i => i.MenuItemId).Distinct().ToList();
             var menuItems = await _unitOfWork.Repository<MenuItem>()
                 .Query()
-                .Where(m => menuItemIds.Contains(m.Id))
-                .ToDictionaryAsync(m => m.Id, cancellationToken);
+                .Where(m => menuItemIds.Contains(m.MenuItemId))
+                .ToDictionaryAsync(m => m.MenuItemId, cancellationToken);
             if (menuItems.Count != menuItemIds.Count)
             {
                 var missingIds = menuItemIds.Except(menuItems.Keys);
                 return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.NotFound));
+            }
+
+            // Validate Options Exist (if provided)
+            var allOptionGroupIds = request.Items
+                .Where(i => i.SelectedOptions != null)
+                .SelectMany(i => i.SelectedOptions!)
+                .Select(og => og.OptionGroupId)
+                .Distinct()
+                .ToList();
+            var allOptionItemIds = request.Items
+                .Where(i => i.SelectedOptions != null)
+                .SelectMany(i => i.SelectedOptions!)
+                .SelectMany(og => og.SelectedValues)
+                .Select(v => v.OptionItemId)
+                .Distinct()
+                .ToList();
+            Dictionary<Guid, OptionGroup> optionGroups = new();
+            Dictionary<Guid, OptionItem> optionItems = new();
+            if (allOptionGroupIds.Any())
+            {
+                optionGroups = await _unitOfWork.Repository<OptionGroup>()
+                    .Query()
+                    .Where(og => allOptionGroupIds.Contains(og.OptionGroupId))
+                    .ToDictionaryAsync(og => og.OptionGroupId, cancellationToken);
+                if (optionGroups.Count != allOptionGroupIds.Count)
+                {
+                    return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.OptionGroup.NotFound));
+                }
+            }
+            if (allOptionItemIds.Any())
+            {
+                optionItems = await _unitOfWork.Repository<OptionItem>()
+                    .Query()
+                    .Where(oi => allOptionItemIds.Contains(oi.OptionItemId))
+                    .ToDictionaryAsync(oi => oi.OptionItemId, cancellationToken);
+                if (optionItems.Count != allOptionItemIds.Count)
+                {
+                    return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.OptionItem.NotFound));
+                }
             }
 
             //Check Out of Stock
@@ -89,14 +124,33 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             };
 
             //Merge Duplicate Items and Create Order Items 
-            // Group by MenuItemId + Note to merge duplicates
+            // Group by MenuItemId + Note + Options to merge duplicates
             var groupedItems = request.Items
-                .GroupBy(i => new { i.MenuItemId, Note = i.Note ?? string.Empty })
+                .Select(i => new
+                {
+                    Item = i,
+                    // Create option signature for grouping
+                    OptionSignature = i.SelectedOptions == null ? string.Empty :
+                        string.Join("|", i.SelectedOptions
+                            .OrderBy(og => og.OptionGroupId)
+                            .Select(og => $"{og.OptionGroupId}:{string.Join(",",
+                                og.SelectedValues
+                                    .OrderBy(v => v.OptionItemId)
+                                    .Select(v => $"{v.OptionItemId}x{v.Quantity}"))}")
+                        )
+                })
+                .GroupBy(x => new
+                {
+                    x.Item.MenuItemId,
+                    Note = x.Item.Note ?? string.Empty,
+                    x.OptionSignature
+                })
                 .Select(g => new
                 {
                     g.Key.MenuItemId,
                     Note = string.IsNullOrEmpty(g.Key.Note) ? null : g.Key.Note,
-                    TotalQuantity = g.Sum(i => i.Quantity)
+                    TotalQuantity = g.Sum(x => x.Item.Quantity),
+                    SelectedOptions = g.First().Item.SelectedOptions // Use first item's options
                 })
                 .ToList();
             foreach (var group in groupedItems)
@@ -121,11 +175,60 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                     UnitPriceSnapshot = price,
                     StationSnapshot = menuItem.Station.ToString()
                 };
-                order.OrderItems.Add(orderItem);
+
+                // NEW: Add option snapshots
+                if (group.SelectedOptions != null && group.SelectedOptions.Any())
+                {
+                    foreach (var optionGroupDto in group.SelectedOptions)
+                    {
+                        var optionGroup = optionGroups[optionGroupDto.OptionGroupId];
+
+                        var orderItemOptionGroup = new OrderItemOptionGroup
+                        {
+                            OrderItemOptionGroupId = Guid.NewGuid(),
+                            OrderItemId = orderItem.OrderItemId,
+                            GroupNameSnapshot = optionGroup.Name,
+                            GroupTypeSnapshot = optionGroup.Type.ToString(),
+                            IsRequiredSnapshot = optionGroup.IsRequired,
+                            CreatedAt = DateTime.UtcNow
+                        };
+
+                        foreach (var valueDto in optionGroupDto.SelectedValues)
+                        {
+                            var optionItem = optionItems[valueDto.OptionItemId];
+
+                            var orderItemOptionValue = new OrderItemOptionValue
+                            {
+                                OrderItemOptionValueId = Guid.NewGuid(),
+                                OrderItemOptionGroupId = orderItemOptionGroup.OrderItemOptionGroupId,
+                                OptionItemId = valueDto.OptionItemId, // Trace back
+                                LabelSnapshot = optionItem.Label,
+                                ExtraPriceSnapshot = optionItem.ExtraPrice,
+                                Quantity = valueDto.Quantity,
+                                Note = valueDto.Note,
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            orderItemOptionGroup.OptionValues.Add(orderItemOptionValue);
+                        }
+
+                        orderItem.OptionGroups.Add(orderItemOptionGroup);
+                    }
+                }
+
+                order.OrderItems.Add(orderItem);    
             }
 
             //Calculate total amount
-            order.TotalAmount = order.OrderItems.Sum(x => x.Quantity * x.UnitPriceSnapshot);
+            //Calculate total amount including option extra prices
+            order.TotalAmount = order.OrderItems.Sum(item =>
+            {
+                var itemTotal = item.Quantity * item.UnitPriceSnapshot;
+                var optionsTotal = item.OptionGroups
+                    .SelectMany(og => og.OptionValues)
+                    .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity);
+                return itemTotal + (optionsTotal * item.Quantity); // Option price x item quantity
+            });
 
             //Audit Log
             var auditLog = new OrderAuditLog

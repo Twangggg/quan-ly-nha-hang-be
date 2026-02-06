@@ -10,8 +10,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("option_groups");
 
-            builder.HasKey(e => e.Id);
-            builder.Property(e => e.Id).HasColumnName("option_group_id");
+            builder.HasKey(e => e.OptionGroupId);
+            builder.Property(e => e.OptionGroupId).HasColumnName("option_group_id");
 
             builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
 
@@ -30,12 +30,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasConstraintName("fk_option_groups_menu_item_id")
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // BaseEntity
-            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
-            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
-            builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
-            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+
 
             // Indexes
             builder.HasIndex(e => e.MenuItemId).HasDatabaseName("idx_option_groups_menu_item_id");

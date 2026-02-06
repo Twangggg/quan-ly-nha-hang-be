@@ -10,8 +10,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("set_menus");
 
-            builder.HasKey(e => e.Id);
-            builder.Property(e => e.Id).HasColumnName("set_menu_id");
+            builder.HasKey(e => e.SetMenuId);
+            builder.Property(e => e.SetMenuId).HasColumnName("set_menu_id");
 
             builder.Property(e => e.Code)
                 .HasColumnName("code")
@@ -31,12 +31,10 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(e => e.IsOutOfStock).HasColumnName("is_out_of_stock");
 
-            // BaseEntity
+            // Audit Properties
+            // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
-            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
-            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
         }
     }
 }

@@ -246,6 +246,15 @@
   <data name="Order.MustHaveItem" xml:space="preserve">
     <value>Order must have item</value>
   </data>
+  <data name="MenuItem.OutOfStock" xml:space="preserve">
+    <value>Out of stock for: </value>
+  </data>
+  <data name="OrderItem.InvalidQuantity" xml:space="preserve">
+    <value>At least one item must be sent to the kitchen.</value>
+  </data>
+  <data name="MenuItem.InvalidQuantity" xml:space="preserve">
+    <value>Quantity must greater than 0.</value>
+  </data>
   <data name="Password.NotEmpty" xml:space="preserve">
     <value>Password cannot be empty.</value>
   </data>
@@ -306,13 +315,10 @@
   <data name="RoleChangedButEmailFailed" xml:space="preserve">
     <value>Role changed successfully for {0}, but notification email failed to send.</value>
   </data>
-  <data name="MenuItem.OutOfStock" xml:space="preserve">
-    <value>Out of stock for: </value>
+  <data name="OptionGroup.NotFound" xml:space="preserve">
+    <value>Option group not found.</value>
   </data>
-  <data name="OrderItem.InvalidQuantity" xml:space="preserve">
-    <value>At least one item must be sent to the kitchen.</value>
-  </data>
-  <data name="MenuItem.InvalidQuantity" xml:space="preserve">
-    <value>Quantity must greater than 0.</value>
+  <data name="OptionItem.NotFound" xml:space="preserve">
+    <value>Option item not found</value>
   </data>
 </root>

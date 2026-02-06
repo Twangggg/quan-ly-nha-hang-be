@@ -10,8 +10,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("set_menu_items");
 
-            builder.HasKey(e => e.Id);
-            builder.Property(e => e.Id).HasColumnName("set_menu_item_id");
+            builder.HasKey(e => e.SetMenuItemId);
+            builder.Property(e => e.SetMenuItemId).HasColumnName("set_menu_item_id");
 
             builder.Property(e => e.SetMenuId).HasColumnName("set_menu_id");
             builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
@@ -31,13 +31,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasConstraintName("fk_set_menu_items_menu_item_id")
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // BaseEntity
-            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
-            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
-            builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
-            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
-            
+
+
             // Indexes
             builder.HasIndex(e => e.SetMenuId).HasDatabaseName("idx_set_menu_items_set_menu_id");
             builder.HasIndex(e => e.MenuItemId).HasDatabaseName("idx_set_menu_items_menu_item_id");

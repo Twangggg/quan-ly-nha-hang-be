@@ -1,3 +1,5 @@
+using System.Reflection.Metadata;
+
 namespace FoodHub.Application.Constants
 {
     public static class MessageKeys
@@ -111,7 +113,16 @@ namespace FoodHub.Application.Constants
             public const string NotFound = "MenuItem.NotFound";
             public const string OutOfStock = "MenuItem.OutOfStock";
             public const string InvalodQuantity = "MenuItem.InvalidQuantity";
+        }
 
+        public static class OptionGroup
+        {
+            public const String NotFound = "OptionGroup.NotFound";
+        }
+
+        public static class OptionItem
+        {
+            public const String NotFound = "OptionItem.NotFound";
         }
     }
 }
