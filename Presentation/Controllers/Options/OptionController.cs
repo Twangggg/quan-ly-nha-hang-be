@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers.Options
 {
-    [Route("api/[controller]")]
+    [Route("api/options")]
     [ApiController]
     [Authorize]
     public partial class OptionController : ControllerBase

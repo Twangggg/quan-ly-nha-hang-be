@@ -2,6 +2,7 @@
 using FluentValidation;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
+using Microsoft.Extensions.Hosting;
 
 namespace FoodHub.Presentation.Middleware;
 
@@ -9,11 +10,13 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly IHostEnvironment _env;
 
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     public async Task Invoke(HttpContext context)
@@ -29,7 +32,7 @@ public class ExceptionMiddleware
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         var statusCode = (int)HttpStatusCode.InternalServerError;
         var message = "Internal server error";
@@ -49,6 +52,13 @@ public class ExceptionMiddleware
             case NotFoundException notFoundException:
                 statusCode = (int)HttpStatusCode.NotFound;
                 message = notFoundException.Message;
+                break;
+            default:
+                if (_env.IsDevelopment())
+                {
+                    message = exception.Message;
+                    errors = new List<string> { exception.ToString() };
+                }
                 break;
         }
 

@@ -1,6 +1,7 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Authentication.Commands.Login;
 using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

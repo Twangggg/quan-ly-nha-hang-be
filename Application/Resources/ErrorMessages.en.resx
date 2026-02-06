@@ -233,4 +233,10 @@
   <data name="RoleChangedButEmailFailed" xml:space="preserve">
      <value>Role changed successfully for {0}, but notification email failed to send.</value>
    </data>
- </root>
+  <data name="MenuItem.StationInvalid" xml:space="preserve">
+    <value>Station is invalid.</value>
+  </data>
+  <data name="OptionGroup.Required" xml:space="preserve">
+    <value>Option group is required.</value>
+  </data>
+</root>

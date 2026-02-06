@@ -1,6 +1,8 @@
-namespace FoodHub.Application.DTOs.Categories
+using System;
+
+namespace FoodHub.Application.Features.Categories.Commands.CreateCategory
 {
-    public class CategoryDto
+    public class CreateCategoryResponse
     {
         public Guid CategoryId { get; set; }
         public string Name { get; set; } = string.Empty;

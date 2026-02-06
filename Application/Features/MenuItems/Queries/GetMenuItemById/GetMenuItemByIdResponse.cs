@@ -1,6 +1,10 @@
-namespace FoodHub.Application.DTOs.MenuItems
+using AutoMapper;
+using FoodHub.Application.Extensions.Mappings;
+using FoodHub.Domain.Entities;
+
+namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
 {
-    public class MenuItemDetailDto
+    public class GetMenuItemByIdResponse : IMapFrom<MenuItem>
     {
         public Guid MenuItemId { get; set; }
         public string Code { get; set; } = string.Empty;
@@ -18,23 +22,13 @@ namespace FoodHub.Application.DTOs.MenuItems
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        // Include OptionGroups for detail view
-        public List<OptionGroupDto>? OptionGroups { get; set; }
-    }
-
-    public class OptionGroupDto
-    {
-        public Guid OptionGroupId { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public int Type { get; set; }
-        public bool IsRequired { get; set; }
-        public List<OptionItemDto>? OptionItems { get; set; }
-    }
-
-    public class OptionItemDto
-    {
-        public Guid OptionItemId { get; set; }
-        public string Label { get; set; } = string.Empty;
-        public decimal ExtraPrice { get; set; }
+        public void Mapping(Profile profile)
+        {
+            profile.CreateMap<MenuItem, GetMenuItemByIdResponse>()
+                .ForMember(d => d.MenuItemId, opt => opt.MapFrom(s => s.CategoryId))
+                .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.Category.Name))
+                .ForMember(d => d.Station, opt => opt.MapFrom(s => (int)s.Station))
+                .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(s => s.UpdatedAt ?? s.CreatedAt));
+        }
     }
 }

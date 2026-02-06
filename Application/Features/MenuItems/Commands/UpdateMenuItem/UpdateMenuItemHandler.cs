@@ -1,6 +1,5 @@
 using AutoMapper;
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.MenuItems;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;

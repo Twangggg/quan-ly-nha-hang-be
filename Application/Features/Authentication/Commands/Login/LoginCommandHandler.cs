@@ -1,6 +1,5 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
-using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;

@@ -175,4 +175,78 @@
   <data name="Employee.CannotUpdateInactive" xml:space="preserve">
     <value>Không thể cập nhật thông tin cho nhân viên đang ngừng hoạt động.</value>
   </data>
+  
+  <!-- MenuItem Errors -->
+  <data name="MenuItem.CategoryNotFound" xml:space="preserve">
+    <value>Không tìm thấy danh mục với ID: {0}</value>
+  </data>
+  <data name="MenuItem.CodeExists" xml:space="preserve">
+    <value>Mã món '{0}' đã tồn tại</value>
+  </data>
+  <data name="MenuItem.NotFound" xml:space="preserve">
+    <value>Không tìm thấy món ăn với ID: {0}</value>
+  </data>
+  <data name="MenuItem.CodeRequired" xml:space="preserve">
+    <value>Mã món ăn không được để trống.</value>
+  </data>
+  <data name="MenuItem.CodeTooLong" xml:space="preserve">
+    <value>Mã món ăn không được quá 50 ký tự.</value>
+  </data>
+  <data name="MenuItem.NameRequired" xml:space="preserve">
+    <value>Tên món ăn không được để trống.</value>
+  </data>
+  <data name="MenuItem.NameTooLong" xml:space="preserve">
+    <value>Tên món ăn không được quá 150 ký tự.</value>
+  </data>
+  <data name="MenuItem.ImageRequired" xml:space="preserve">
+    <value>Hình ảnh không được để trống.</value>
+  </data>
+  <data name="MenuItem.CategoryRequired" xml:space="preserve">
+    <value>Danh mục không được để trống.</value>
+  </data>
+  <data name="MenuItem.PriceInvalid" xml:space="preserve">
+    <value>Giá bán phải lớn hơn 0.</value>
+  </data>
+  <data name="MenuItem.ExpectedTimeInvalid" xml:space="preserve">
+    <value>Thời gian chờ phải lớn hơn 0.</value>
+  </data>
+  <!-- SetMenu Errors -->
+  <data name="SetMenu.CodeRequired" xml:space="preserve">
+    <value>Mã set menu không được để trống.</value>
+  </data>
+  <data name="SetMenu.NameRequired" xml:space="preserve">
+    <value>Tên set menu không được để trống.</value>
+  </data>
+  <data name="SetMenu.PriceInvalid" xml:space="preserve">
+    <value>Giá bán phải lớn hơn 0.</value>
+  </data>
+  <data name="SetMenu.ItemsRequired" xml:space="preserve">
+    <value>Set menu phải có ít nhất 1 món.</value>
+  </data>
+  <!-- Category Errors -->
+  <data name="Category.NameRequired" xml:space="preserve">
+    <value>Tên danh mục không được để trống.</value>
+  </data>
+  <data name="Category.TypeInvalid" xml:space="preserve">
+    <value>Loại danh mục không hợp lệ.</value>
+  </data>
+  <!-- Option Errors -->
+  <data name="OptionGroup.NameRequired" xml:space="preserve">
+    <value>Tên nhóm tùy chọn không được để trống.</value>
+  </data>
+  <data name="OptionGroup.MenuItemIdRequired" xml:space="preserve">
+    <value>Món ăn không được để trống.</value>
+  </data>
+  <data name="OptionItem.LabelRequired" xml:space="preserve">
+    <value>Tên tùy chọn không được để trống.</value>
+  </data>
+  <data name="OptionItem.ExtraPriceInvalid" xml:space="preserve">
+    <value>Giá thêm phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="MenuItem.StationInvalid" xml:space="preserve">
+    <value>Station không hợp lệ.</value>
+  </data>
+  <data name="OptionGroup.Required" xml:space="preserve">
+    <value>Nhóm tùy chọn không được để trống.</value>
+  </data>
 </root>
