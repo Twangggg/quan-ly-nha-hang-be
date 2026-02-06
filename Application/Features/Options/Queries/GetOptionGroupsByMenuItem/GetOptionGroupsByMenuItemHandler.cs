@@ -28,7 +28,7 @@ namespace FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem
                 OptionGroupId = og.OptionGroupId,
                 MenuItemId = og.MenuItemId,
                 Name = og.Name,
-                Type = (int)og.Type,
+                Type = (int)og.OptionType,
                 IsRequired = og.IsRequired,
                 OptionItems = og.OptionItems.Select(oi => new OptionItemResponse
                 {

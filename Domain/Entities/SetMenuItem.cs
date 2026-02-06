@@ -4,7 +4,7 @@ namespace FoodHub.Domain.Entities
 {
     public class SetMenuItem
     {
-        public Guid SetMenuItemId { get; set; } = Guid.NewGuid();
+        public Guid SetMenuItemId { get; set; }
         public Guid SetMenuId { get; set; }
         public virtual SetMenu SetMenu { get; set; } = null!;
 
@@ -12,6 +12,6 @@ namespace FoodHub.Domain.Entities
         public virtual MenuItem MenuItem { get; set; } = null!;
 
         public int Quantity { get; set; }
-
+  public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

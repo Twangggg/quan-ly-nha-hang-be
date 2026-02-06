@@ -18,8 +18,9 @@ namespace FoodHub.Application.Features.Categories.Commands.CreateCategory
         {
             var category = new Domain.Entities.Category
             {
+                CategoryId = Guid.NewGuid(),
                 Name = request.Name,
-                Type = request.Type
+                CategoryType = request.Type
             };
 
             await _unitOfWork.Repository<Domain.Entities.Category>().AddAsync(category);
@@ -29,7 +30,7 @@ namespace FoodHub.Application.Features.Categories.Commands.CreateCategory
             {
                 CategoryId = category.CategoryId,
                 Name = category.Name,
-                Type = (int)category.Type
+                Type = (int)category.CategoryType
             };
 
             return Result<CreateCategoryResponse>.Success(response);

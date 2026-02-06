@@ -6,7 +6,7 @@ namespace FoodHub.Domain.Entities
 {
     public class MenuItem
     {
-        public Guid MenuItemId { get; set; } = Guid.NewGuid();
+        public Guid MenuItemId { get; set; }
         public required string Code { get; set; }
         public required string Name { get; set; }
         public required string ImageUrl { get; set; }
@@ -20,15 +20,16 @@ namespace FoodHub.Domain.Entities
 
         public decimal PriceDineIn { get; set; }
         public decimal PriceTakeAway { get; set; }
-        public decimal Cost { get; set; } // Internal cost
+        public decimal CostPrice { get; set; } // Internal cost
 
         public bool IsOutOfStock { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
-        public Guid? CreatedById { get; set; }
-        public Guid? UpdatedById { get; set; }
         public DateTime? DeletedAt { get; set; }
 
+        public Guid? CreatedByEmployeeId { get; set; }
+        public Guid? UpdatedByEmployeeId { get; set; }
+    
         public virtual ICollection<OptionGroup> OptionGroups { get; set; } = new List<OptionGroup>();
         public virtual ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();
     }

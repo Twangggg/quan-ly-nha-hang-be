@@ -45,6 +45,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
                 IsOutOfStock = false,
                 SetMenuItems = request.Items.Select(itemRequest => new SetMenuItem
                 {
+                    SetMenuItemId = Guid.NewGuid(),
                     MenuItemId = itemRequest.MenuItemId,
                     Quantity = itemRequest.Quantity
                 }).ToList()

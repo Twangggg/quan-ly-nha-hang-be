@@ -3,9 +3,9 @@ using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 
-namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
+namespace FoodHub.Application.Features.MenuItems.Commands.DeleteMenuItem
 {
-    public class UpdateMenuItemResponse : IMapFrom<MenuItem>
+    public class DeleteMenuItemResponse : IMapFrom<MenuItem>
     {
         public Guid MenuItemId { get; set; }
         public required string Code { get; set; }
@@ -17,12 +17,18 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         public string CategoryName { get; set; } = null!;
 
         public Station Station { get; set; }
-        public int ExpectedTime { get; set; } // Minutes
+        public int ExpectedTime { get; set; } 
 
         public decimal PriceDineIn { get; set; }
         public decimal PriceTakeAway { get; set; }
-        public decimal? CostPrice { get; set; } // Internal cost
+        public decimal CostPrice { get; set; } 
+
+        public bool IsOutOfStock { get; set; }
+        public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
+
+        public Guid? CreatedByEmployeeId { get; set; }
         public Guid? UpdatedByEmployeeId { get; set; }
     }
 }

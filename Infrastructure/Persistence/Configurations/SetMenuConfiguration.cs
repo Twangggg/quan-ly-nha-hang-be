@@ -25,16 +25,40 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasMaxLength(150)
                 .IsRequired();
 
+            builder.Property(e => e.SetType)
+                .HasColumnName("set_type")
+                .HasConversion<string>();
+
+            builder.Property(e => e.ImageUrl)
+                .HasColumnName("image_url")
+                .HasMaxLength(500);
+
+            builder.Property(e => e.Description)
+                .HasColumnName("description")
+                .HasMaxLength(500);
+
             builder.Property(e => e.Price)
                 .HasColumnName("price")
                 .HasPrecision(12, 2);
 
+            builder.Property(e => e.CostPrice)
+                .HasColumnName("cost_price")
+                .HasPrecision(12, 2);
+
             builder.Property(e => e.IsOutOfStock).HasColumnName("is_out_of_stock");
 
-            // Audit Properties
+            builder.Property(e => e.CreatedByEmployeeId)
+                .HasColumnName("created_by_employee_id")
+                .HasMaxLength(50);
+
+            builder.Property(e => e.UpdatedByEmployeeId)
+                .HasColumnName("updated_by_employee_id")
+                .HasMaxLength(50);
+
             // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
         }
     }
 }
