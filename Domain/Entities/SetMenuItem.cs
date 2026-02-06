@@ -12,6 +12,6 @@ namespace FoodHub.Domain.Entities
         public virtual MenuItem MenuItem { get; set; } = null!;
 
         public int Quantity { get; set; }
-  public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

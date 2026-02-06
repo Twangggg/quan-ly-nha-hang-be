@@ -1,7 +1,7 @@
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 
-namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
+namespace FoodHub.Application.Features.SetMenus.Commands.DeleteSetMenu
 {
     public class DeleteSetMenuResponse
     {
@@ -15,10 +15,10 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
         public decimal CostPrice { get; set; }
         public string? UpdatedByEmployeeId { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public virtual List<UpdateSetMenuItemResponse> Items { get; set; } = new List<UpdateSetMenuItemResponse>();
+        public virtual List<DeleteSetMenuItemResponse> Items { get; set; } = new List<DeleteSetMenuItemResponse>();
     }
 
-    public class UpdateSetMenuItemResponse
+    public class DeleteSetMenuItemResponse
     {
         public Guid SetMenuItemId { get; set; }
         public Guid MenuItemId { get; set; }

@@ -3,12 +3,15 @@ using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
 {
-    public class UpdateSetMenuValidator : AbstractValidator<UpdateSetMenuCommand>
+    public class DeleteSetMenuValidator : AbstractValidator<DeleteSetMenuCommand>
     {
-        public UpdateSetMenuValidator()
+        public DeleteSetMenuValidator()
         {
             RuleFor(x => x.SetMenuId)
                 .NotEmpty().WithMessage("SetMenuId is required.");
+
+            RuleFor(x => x.Description)
+                .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
 
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name is required.")

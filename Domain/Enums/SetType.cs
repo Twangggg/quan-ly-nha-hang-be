@@ -1,8 +1,9 @@
-namespace FoodHub.Domain.Enums{
-public enum SetType
+namespace FoodHub.Domain.Enums
 {
-    COMBO = 1,
-    SET_MORNING = 2,
-    SET_LUNCH = 3
-}
+    public enum SetType
+    {
+        COMBO = 1,
+        SET_MORNING = 2,
+        SET_LUNCH = 3
+    }
 }
