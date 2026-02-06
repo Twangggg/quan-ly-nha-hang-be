@@ -98,6 +98,24 @@ if (!string.IsNullOrEmpty(allowedOrigins))
     builder.Configuration["AllowedOrigins"] = allowedOrigins;
 }
 
+var cloudinaryCloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
+if (!string.IsNullOrEmpty(cloudinaryCloudName))
+{
+    builder.Configuration["Cloudinary:CloudName"] = cloudinaryCloudName;
+}
+
+var cloudinaryApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
+if (!string.IsNullOrEmpty(cloudinaryApiKey))
+{
+    builder.Configuration["Cloudinary:ApiKey"] = cloudinaryApiKey;
+}
+
+var cloudinaryApiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
+if (!string.IsNullOrEmpty(cloudinaryApiSecret))
+{
+    builder.Configuration["Cloudinary:ApiSecret"] = cloudinaryApiSecret;
+}
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("Redis")

@@ -8,11 +8,16 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
     public class CreateSetMenuHandler : IRequestHandler<CreateSetMenuCommand, Result<CreateSetMenuResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUserService;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public CreateSetMenuHandler(IUnitOfWork unitOfWork)
+        public CreateSetMenuHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, ICloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
+            _currentUserService = currentUserService;
+            _cloudinaryService = cloudinaryService;
         }
+
 
         public async Task<Result<CreateSetMenuResponse>> Handle(CreateSetMenuCommand request, CancellationToken cancellationToken)
         {
@@ -35,21 +40,50 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
                 return Result<CreateSetMenuResponse>.Failure("One or more Menu Items do not exist.", ResultErrorType.BadRequest);
             }
 
-            // 3. Create SetMenu
+            Guid? auditorId = null;
+            if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
+            {
+                auditorId = parsedId;
+            }
+
+            // 3. Handle Image Upload if provided
+            var imageUrl = request.ImageUrl;
+            if (request.ImageFile != null)
+            {
+                try
+                {
+                    imageUrl = await _cloudinaryService.UploadImageAsync(request.ImageFile, "set-menus");
+                }
+                catch (Exception ex)
+                {
+                    return Result<CreateSetMenuResponse>.Failure($"Image upload failed: {ex.Message}", ResultErrorType.BadRequest);
+                }
+            }
+
+            // 4. Create SetMenu
             var setMenu = new SetMenu
             {
                 SetMenuId = Guid.NewGuid(),
                 Code = request.Code,
                 Name = request.Name,
+                SetType = request.SetType,
+                ImageUrl = imageUrl,
+                Description = request.Description,
                 Price = request.Price,
+                CostPrice = request.CostPrice,
                 IsOutOfStock = false,
+                CreatedAt = DateTime.UtcNow,
+                CreatedByEmployeeId = auditorId,
+                UpdatedByEmployeeId = auditorId,
                 SetMenuItems = request.Items.Select(itemRequest => new SetMenuItem
                 {
                     SetMenuItemId = Guid.NewGuid(),
                     MenuItemId = itemRequest.MenuItemId,
-                    Quantity = itemRequest.Quantity
+                    Quantity = itemRequest.Quantity,
+                    CreatedAt = DateTime.UtcNow
                 }).ToList()
             };
+
 
             // 4. Save to database
             await setMenuRepository.AddAsync(setMenu);
@@ -61,7 +95,11 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
                 SetMenuId = setMenu.SetMenuId,
                 Code = setMenu.Code,
                 Name = setMenu.Name,
+                SetType = setMenu.SetType,
+                ImageUrl = setMenu.ImageUrl,
+                Description = setMenu.Description,
                 Price = setMenu.Price,
+                CostPrice = setMenu.CostPrice,
                 IsOutOfStock = setMenu.IsOutOfStock,
                 CreatedAt = setMenu.CreatedAt,
                 UpdatedAt = setMenu.UpdatedAt,
@@ -72,6 +110,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
                     Quantity = item.Quantity
                 }).ToList()
             };
+
 
             return Result<CreateSetMenuResponse>.Success(response);
         }

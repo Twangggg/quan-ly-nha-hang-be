@@ -133,6 +133,7 @@ namespace FoodHub.Infrastructure.Persistence
                 };
 
                 _context.Categories.AddRange(foodCategory, drinkCategory, comboCategory);
+                _context.SaveChanges();
 
                 var menuItems = new List<MenuItem>
                 {
@@ -199,6 +200,7 @@ namespace FoodHub.Infrastructure.Persistence
                 };
 
                 _context.MenuItems.AddRange(menuItems);
+                _context.SaveChanges();
             }
 
             if (!_context.SetMenus.Any())
@@ -258,6 +260,7 @@ namespace FoodHub.Infrastructure.Persistence
                 };
 
                 _context.SetMenus.AddRangeAsync(setMenu, setMenu2, setMenu3);
+                _context.SaveChanges();
             }
 
             _context.SaveChanges();

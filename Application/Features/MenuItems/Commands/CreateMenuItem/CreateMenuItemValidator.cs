@@ -15,8 +15,11 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 .MaximumLength(150).WithMessage("Name must not exceed 150 characters.");
 
             RuleFor(x => x.ImageUrl)
-                .NotEmpty().WithMessage("Image URL is required.")
-                .MaximumLength(255).WithMessage("Image URL must not exceed 255 characters.");
+                .NotEmpty()
+                .When(x => x.ImageFile == null)
+                .WithMessage("Either Image URL or Image File is required.")
+                .MaximumLength(255)
+                .WithMessage("Image URL must not exceed 255 characters.");
 
             RuleFor(x => x.Description)
                 .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
@@ -27,8 +30,12 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             RuleFor(x => x.Station)
                 .IsInEnum().WithMessage("Invalid station.");
 
+            RuleFor(x => x.ExpectedTime)
+                .GreaterThan(0).WithMessage("Expected time must be greater than 0.");
+
             RuleFor(x => x.PriceDineIn)
                 .GreaterThanOrEqualTo(0).WithMessage("Price (Dine In) must be greater than or equal to 0.");
+
 
             RuleFor(x => x.PriceTakeAway)
                 .GreaterThanOrEqualTo(0).When(x => x.PriceTakeAway.HasValue).WithMessage("Price (Take Away) must be greater than or equal to 0.");

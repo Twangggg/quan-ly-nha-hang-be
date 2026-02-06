@@ -51,6 +51,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
                 UpdatedAt = menuItem.UpdatedAt ?? menuItem.CreatedAt
             };
 
+
             return Result<GetMenuItemByIdResponse>.Success(response);
         }
     }
