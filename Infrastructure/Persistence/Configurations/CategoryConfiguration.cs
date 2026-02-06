@@ -20,11 +20,14 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.HasIndex(e => e.Name).IsUnique();
 
-            builder.Property(e => e.Type).HasColumnName("type");
+            builder.Property(e => e.CategoryType).HasColumnName("type");
+
+            builder.Property(e => e.IsActive).HasColumnName("is_active");
 
             // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
         }
     }
 }

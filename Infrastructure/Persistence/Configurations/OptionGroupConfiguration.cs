@@ -20,8 +20,13 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasMaxLength(100)
                 .IsRequired();
 
-            builder.Property(e => e.Type).HasColumnName("type");
+            builder.Property(e => e.OptionType).HasColumnName("type");
             builder.Property(e => e.IsRequired).HasColumnName("is_required");
+
+            // Audit Properties
+            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
+            builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
             // Relationships
             builder.HasOne(e => e.MenuItem)

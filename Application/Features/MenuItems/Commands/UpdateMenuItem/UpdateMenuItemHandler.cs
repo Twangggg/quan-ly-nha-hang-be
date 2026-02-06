@@ -65,7 +65,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             if (cost.HasValue)
             {
                 if (_currentUserService.Role is EmployeeRole.Manager or EmployeeRole.Cashier)
-                    menuItem.Cost = cost.Value;
+                    menuItem.CostPrice = cost.Value;
                 else Result<UpdateMenuItemResponse>.Failure("You do not have permission to update the cost of the menu item!", ResultErrorType.Forbidden);
             }
 

@@ -48,7 +48,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
                 ExpectedTime = menuItem.ExpectedTime,
                 PriceDineIn = menuItem.PriceDineIn,
                 PriceTakeAway = menuItem.PriceTakeAway,
-                Cost = canViewCost ? menuItem.Cost : null,
+                Cost = canViewCost ? menuItem.CostPrice : null,
                 IsOutOfStock = menuItem.IsOutOfStock,
                 CreatedAt = menuItem.CreatedAt,
                 UpdatedAt = menuItem.UpdatedAt ?? DateTime.MinValue,
@@ -56,7 +56,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
                 {
                     OptionGroupId = og.OptionGroupId,
                     Name = og.Name,
-                    Type = (int)og.Type,
+                    Type = (int)og.OptionType,
                     IsRequired = og.IsRequired,
                     OptionItems = og.OptionItems.Select(oi => new OptionItemDto
                     {

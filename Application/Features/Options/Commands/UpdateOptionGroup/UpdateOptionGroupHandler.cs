@@ -29,7 +29,7 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
             }
 
             optionGroup.Name = request.Name;
-            optionGroup.Type = (OptionGroupType)request.Type;
+            optionGroup.OptionType = (OptionGroupType)request.Type;
             optionGroup.IsRequired = request.IsRequired;
 
             _unitOfWork.Repository<OptionGroup>().Update(optionGroup);
@@ -40,7 +40,7 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
                 OptionGroupId = optionGroup.OptionGroupId,
                 MenuItemId = optionGroup.MenuItemId,
                 Name = optionGroup.Name,
-                Type = (int)optionGroup.Type,
+                Type = (int)optionGroup.OptionType,
                 IsRequired = optionGroup.IsRequired
             };
 

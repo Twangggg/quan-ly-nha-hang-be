@@ -67,7 +67,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
                 ExpectedTime = m.ExpectedTime,
                 PriceDineIn = m.PriceDineIn,
                 PriceTakeAway = m.PriceTakeAway,
-                Cost = canViewCost ? m.Cost : null,
+                Cost = canViewCost ? m.CostPrice : null,
                 IsOutOfStock = m.IsOutOfStock,
                 CreatedAt = m.CreatedAt,
                 UpdatedAt = m.UpdatedAt

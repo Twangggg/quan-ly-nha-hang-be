@@ -28,7 +28,7 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
             {
                 MenuItemId = request.MenuItemId,
                 Name = request.Name,
-                Type = (OptionGroupType)request.Type,
+                OptionType = (OptionGroupType)request.Type,
                 IsRequired = request.IsRequired
             };
 
@@ -40,7 +40,7 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
                 OptionGroupId = optionGroup.OptionGroupId,
                 MenuItemId = optionGroup.MenuItemId,
                 Name = optionGroup.Name,
-                Type = (int)optionGroup.Type,
+                Type = (int)optionGroup.OptionType,
                 IsRequired = optionGroup.IsRequired,
                 OptionItems = new List<OptionItemResponse>()
             };

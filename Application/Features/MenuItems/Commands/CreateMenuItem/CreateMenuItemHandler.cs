@@ -54,11 +54,11 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 ExpectedTime = request.ExpectedTime ?? 0,
                 PriceDineIn = request.PriceDineIn,
                 PriceTakeAway = request.PriceTakeAway ?? request.PriceDineIn, // Default to DineIn price if not set
-                Cost = request.Cost ?? 0,
+                CostPrice = request.Cost ?? 0,
                 IsOutOfStock = false,
                 CreatedAt = DateTime.UtcNow,
-                CreatedById = auditorId,
-                UpdatedById = auditorId
+                CreatedByEmployeeId = auditorId,
+                UpdatedByEmployeeId = auditorId
             };
 
             // 4. Save to database
@@ -79,7 +79,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 ExpectedTime = menuItem.ExpectedTime,
                 PriceDineIn = menuItem.PriceDineIn,
                 PriceTakeAway = menuItem.PriceTakeAway,
-                Cost = menuItem.Cost,
+                Cost = menuItem.CostPrice,
                 IsOutOfStock = menuItem.IsOutOfStock,
                 CreatedAt = menuItem.CreatedAt,
                 UpdatedAt = menuItem.UpdatedAt

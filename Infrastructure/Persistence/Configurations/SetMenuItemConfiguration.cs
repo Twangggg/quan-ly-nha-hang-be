@@ -18,6 +18,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(e => e.Quantity).HasColumnName("quantity");
 
+            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
+
             // Relationships
             builder.HasOne(e => e.SetMenu)
                 .WithMany(s => s.SetMenuItems)
