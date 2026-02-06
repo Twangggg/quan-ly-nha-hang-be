@@ -50,7 +50,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 ImageUrl = request.ImageUrl,
                 Description = request.Description,
                 CategoryId = request.CategoryId,
-                Station = (Station)request.Station,
+                Station = request.Station,
                 ExpectedTime = request.ExpectedTime ?? 0,
                 PriceDineIn = request.PriceDineIn,
                 PriceTakeAway = request.PriceTakeAway ?? request.PriceDineIn, // Default to DineIn price if not set

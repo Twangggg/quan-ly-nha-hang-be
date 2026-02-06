@@ -57,7 +57,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             menuItem.Description = description;
             menuItem.CategoryId = categoryId;
             menuItem.Station = station;
-            menuItem.ExpectedTime = expectedTime;
+            menuItem.ExpectedTime = expectedTime ?? menuItem.ExpectedTime;
             menuItem.PriceDineIn = priceDineIn;
             menuItem.PriceTakeAway = priceTakeAway;
             menuItem.UpdatedAt = DateTime.UtcNow;

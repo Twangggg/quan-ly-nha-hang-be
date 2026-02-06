@@ -30,6 +30,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
                 .IsInEnum().WithMessage("Invalid station.");
 
             RuleFor(x => x.ExpectedTime)
+            .NotEmpty()
                 .GreaterThan(0)
                 .WithMessage("Expected time must be greater than 0 minutes.");
 

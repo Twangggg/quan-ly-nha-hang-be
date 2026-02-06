@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Domain.Enums;
 using MediatR;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
@@ -9,7 +10,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
         string ImageUrl,
         string? Description,
         Guid CategoryId,
-        int Station,
+        Station Station,
         int? ExpectedTime,
         decimal PriceDineIn,
         decimal? PriceTakeAway,

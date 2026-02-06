@@ -13,7 +13,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         string? Description,
         Guid CategoryId,
         Station Station,
-        int ExpectedTime,
+        int? ExpectedTime,
         decimal PriceDineIn,
         decimal PriceTakeAway,
         decimal? Cost) : IRequest<Result<UpdateMenuItemResponse>>;
