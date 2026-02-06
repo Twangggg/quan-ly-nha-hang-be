@@ -112,7 +112,7 @@ namespace FoodHub.Infrastructure.Persistence
                 {
                     CategoryId = Guid.NewGuid(),
                     Name = "Main Dishes",
-                    Type = CategoryType.Normal,
+                    CategoryType = CategoryType.Normal,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -120,7 +120,7 @@ namespace FoodHub.Infrastructure.Persistence
                 {
                     CategoryId = Guid.NewGuid(),
                     Name = "Drinks",
-                    Type = CategoryType.Normal,
+                    CategoryType = CategoryType.Normal,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -128,7 +128,7 @@ namespace FoodHub.Infrastructure.Persistence
                 {
                     CategoryId = Guid.NewGuid(),
                     Name = "Combo Sets",
-                    Type = CategoryType.SpecialGroup,
+                    CategoryType = CategoryType.SpecialGroup,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -148,7 +148,7 @@ namespace FoodHub.Infrastructure.Persistence
                         ExpectedTime = 15,
                         PriceDineIn = 50000,
                         PriceTakeAway = 48000,
-                        Cost = 30000,
+                        CostPrice = 30000,
                         CreatedAt = DateTime.UtcNow
                     },
                     new MenuItem
@@ -163,7 +163,7 @@ namespace FoodHub.Infrastructure.Persistence
                         ExpectedTime = 12,
                         PriceDineIn = 45000,
                         PriceTakeAway = 43000,
-                        Cost = 25000,
+                        CostPrice = 25000,
                         CreatedAt = DateTime.UtcNow
                     },
                     new MenuItem
@@ -178,7 +178,7 @@ namespace FoodHub.Infrastructure.Persistence
                         ExpectedTime = 3,
                         PriceDineIn = 20000,
                         PriceTakeAway = 18000,
-                        Cost = 8000,
+                        CostPrice = 8000,
                         CreatedAt = DateTime.UtcNow
                     },
                     new MenuItem
@@ -193,7 +193,7 @@ namespace FoodHub.Infrastructure.Persistence
                         ExpectedTime = 18,
                         PriceDineIn = 65000,
                         PriceTakeAway = 62000,
-                        Cost = 40000,
+                        CostPrice = 40000,
                         CreatedAt = DateTime.UtcNow
                     }
                 };

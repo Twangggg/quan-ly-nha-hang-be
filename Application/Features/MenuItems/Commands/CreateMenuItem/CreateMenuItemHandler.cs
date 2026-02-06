@@ -10,11 +10,13 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, ICloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<Result<CreateMenuItemResponse>> Handle(CreateMenuItemCommand request, CancellationToken cancellationToken)
@@ -42,17 +44,31 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 auditorId = parsedId;
             }
 
-            // 3. Create MenuItem entity
+            // 3. Handle Image Upload if provided
+            var imageUrl = request.ImageUrl;
+            if (request.ImageFile != null)
+            {
+                try
+                {
+                    imageUrl = await _cloudinaryService.UploadImageAsync(request.ImageFile, "menu-items");
+                }
+                catch (Exception ex)
+                {
+                    return Result<CreateMenuItemResponse>.Failure($"Image upload failed: {ex.Message}", ResultErrorType.BadRequest);
+                }
+            }
+
+            // 4. Create MenuItem entity
             var menuItem = new MenuItem
             {
                 MenuItemId = Guid.NewGuid(),
                 Code = request.Code,
                 Name = request.Name,
-                ImageUrl = request.ImageUrl,
+                ImageUrl = imageUrl ?? "",
                 Description = request.Description,
                 CategoryId = request.CategoryId,
                 Station = request.Station,
-                ExpectedTime = request.ExpectedTime ?? 0,
+                ExpectedTime = request.ExpectedTime,
                 PriceDineIn = request.PriceDineIn,
                 PriceTakeAway = request.PriceTakeAway ?? request.PriceDineIn, // Default to DineIn price if not set
                 CostPrice = request.Cost ?? 0,
@@ -61,6 +77,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 CreatedByEmployeeId = auditorId,
                 UpdatedByEmployeeId = auditorId
             };
+
 
             // 4. Save to database
             await menuItemRepository.AddAsync(menuItem);

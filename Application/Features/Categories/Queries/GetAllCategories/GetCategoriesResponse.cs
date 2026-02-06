@@ -16,7 +16,8 @@ namespace FoodHub.Application.Features.Categories.Queries.GetAllCategories
         {
             profile.CreateMap<Category, GetCategoriesResponse>()
                 .ForMember(d => d.CategoryId, opt => opt.MapFrom(s => s.CategoryId))
-                .ForMember(d => d.Type, opt => opt.MapFrom(s => (int)s.Type));
+                .ForMember(d => d.Type, opt => opt.MapFrom(s => (int)s.CategoryType));
+
         }
     }
 }

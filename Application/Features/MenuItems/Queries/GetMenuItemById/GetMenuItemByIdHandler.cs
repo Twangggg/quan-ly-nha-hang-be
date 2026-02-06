@@ -45,11 +45,12 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
                 ExpectedTime = menuItem.ExpectedTime,
                 PriceDineIn = menuItem.PriceDineIn,
                 PriceTakeAway = menuItem.PriceTakeAway,
-                Cost = menuItem.Cost,
+                Cost = menuItem.CostPrice,
                 IsOutOfStock = menuItem.IsOutOfStock,
                 CreatedAt = menuItem.CreatedAt,
                 UpdatedAt = menuItem.UpdatedAt ?? menuItem.CreatedAt
             };
+
 
             return Result<GetMenuItemByIdResponse>.Success(response);
         }
