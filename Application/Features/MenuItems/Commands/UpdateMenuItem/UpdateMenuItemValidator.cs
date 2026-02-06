@@ -42,9 +42,9 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
                 .GreaterThanOrEqualTo(0)
                 .WithMessage("Take-away price cannot be negative.");
 
-            RuleFor(x => x.Cost)
+            RuleFor(x => x.CostPrice)
                 .GreaterThanOrEqualTo(0)
-                .When(x => x.Cost.HasValue)
+                .When(x => x.CostPrice.HasValue)
                 .WithMessage("Cost cannot be negative.");
 
             RuleFor(x => x)
