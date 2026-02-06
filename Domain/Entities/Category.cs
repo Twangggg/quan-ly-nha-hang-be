@@ -8,7 +8,7 @@ namespace FoodHub.Domain.Entities
 {
     public class Category
     {
-        public Guid CategoryId { get; set; } = Guid.NewGuid();
+        public Guid CategoryId { get; set; }
         public required string Name { get; set; }
         public CategoryType CategoryType { get; set; }
         public bool IsActive { get; set; } = true;

@@ -1,87 +1,91 @@
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.MenuItems;
 using FoodHub.Application.Extensions.Pagination;
+using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
 {
-    public class GetMenuItemsHandler : IRequestHandler<GetMenuItemsQuery, Result<PagedResult<MenuItemDto>>>
+    public class GetMenuItemsHandler : IRequestHandler<GetMenuItemsQuery, Result<PagedResult<GetMenuItemsResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ICurrentUserService _currentUserService;
+        private readonly IMapper _mapper;
 
-        public GetMenuItemsHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+        public GetMenuItemsHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            _currentUserService = currentUserService;
+            _mapper = mapper;
         }
 
-        public async Task<Result<PagedResult<MenuItemDto>>> Handle(GetMenuItemsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<GetMenuItemsResponse>>> Handle(GetMenuItemsQuery request, CancellationToken cancellationToken)
         {
-            var query = _unitOfWork.Repository<MenuItem>().Query()
-                .Include(x => x.Category)
-                .AsNoTracking();
+            var query = _unitOfWork.Repository<MenuItem>().Query();
 
-            if (!string.IsNullOrEmpty(request.SearchCode))
+            // 1. Apply Global Search
+            var searchableFields = new List<Expression<Func<MenuItem, string?>>>
             {
-                query = query.Where(x => x.Code.Contains(request.SearchCode) || x.Name.Contains(request.SearchCode));
+                m => m.Code,
+                m => m.Name,
+                m => m.Description
+            };
+            query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
+
+            // 2. Apply Filters
+            var filterMapping = new Dictionary<string, Expression<Func<MenuItem, object?>>>
+            {
+                { "categoryId", m => m.CategoryId },
+                { "station", m => m.Station },
+                { "isOutOfStock", m => m.IsOutOfStock }
+            };
+            query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
+
+            // Apply Price Range Filter
+            if (request.Pagination.Filters != null)
+            {
+                foreach (var filter in request.Pagination.Filters)
+                {
+                    var parts = filter.Split(':');
+                    if (parts.Length < 2) continue;
+
+                    var key = parts[0].Trim();
+                    var value = parts[1].Trim();
+
+                    if (key.Equals("minPrice", StringComparison.OrdinalIgnoreCase) && decimal.TryParse(value, out var minPrice))
+                    {
+                        query = query.Where(m => m.PriceDineIn >= minPrice);
+                    }
+                    else if (key.Equals("maxPrice", StringComparison.OrdinalIgnoreCase) && decimal.TryParse(value, out var maxPrice))
+                    {
+                        query = query.Where(m => m.PriceDineIn <= maxPrice);
+                    }
+                }
             }
 
-            if (request.CategoryId.HasValue)
+            // 3. Apply Multi-Sorting
+            var sortMapping = new Dictionary<string, Expression<Func<MenuItem, object?>>>
             {
-                query = query.Where(x => x.CategoryId == request.CategoryId.Value);
-            }
-
-            if (request.MinPrice.HasValue)
-            {
-                query = query.Where(x => x.PriceDineIn >= request.MinPrice.Value);
-            }
-
-            if (request.MaxPrice.HasValue)
-            {
-                query = query.Where(x => x.PriceDineIn <= request.MaxPrice.Value);
-            }
-
-            var totalCount = await query.CountAsync(cancellationToken);
-            var items = await query
-                .Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync(cancellationToken);
-
-            var canViewCost = _currentUserService.Role is EmployeeRole.Manager or EmployeeRole.Cashier;
-
-            var dtos = items.Select(m => new MenuItemDto
-            {
-                MenuItemId = m.MenuItemId,
-                Code = m.Code,
-                Name = m.Name,
-                ImageUrl = m.ImageUrl,
-                Description = m.Description,
-                CategoryId = m.CategoryId,
-                CategoryName = m.Category?.Name ?? string.Empty,
-                Station = (int)m.Station,
-                ExpectedTime = m.ExpectedTime,
-                PriceDineIn = m.PriceDineIn,
-                PriceTakeAway = m.PriceTakeAway,
-                Cost = canViewCost ? m.CostPrice : null,
-                IsOutOfStock = m.IsOutOfStock,
-                CreatedAt = m.CreatedAt,
-                UpdatedAt = m.UpdatedAt
-            }).ToList();
-
-            var paginationParams = new PaginationParams
-            {
-                PageIndex = request.PageNumber,
-                PageSize = request.PageSize
+                { "code", m => m.Code },
+                { "name", m => m.Name },
+                { "priceDineIn", m => m.PriceDineIn },
+                { "priceTakeAway", m => m.PriceTakeAway },
+                { "createdAt", m => m.CreatedAt }
             };
 
-            var result = new PagedResult<MenuItemDto>(dtos, paginationParams, totalCount);
+            query = query.ApplySorting(
+                request.Pagination.OrderBy,
+                sortMapping,
+                m => m.Name);
 
-            return Result<PagedResult<MenuItemDto>>.Success(result);
+            var pagedResult = await query
+                .ProjectTo<GetMenuItemsResponse>(_mapper.ConfigurationProvider)
+                .ToPagedResultAsync(request.Pagination);
+
+            return Result<PagedResult<GetMenuItemsResponse>>.Success(pagedResult);
         }
     }
 }

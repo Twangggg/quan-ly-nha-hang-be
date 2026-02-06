@@ -26,6 +26,7 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
 
             var optionGroup = new OptionGroup
             {
+                OptionGroupId = Guid.NewGuid(),
                 MenuItemId = request.MenuItemId,
                 Name = request.Name,
                 OptionType = (OptionGroupType)request.Type,

@@ -1,3 +1,4 @@
+using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem;
 using FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById;
 using FoodHub.Application.Features.MenuItems.Queries.GetMenuItems;
@@ -19,16 +20,10 @@ namespace FoodHub.Presentation.Controllers.MenuItems
             _mediator = mediator;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetMenuItems(
-            [FromQuery] string? searchCode,
-            [FromQuery] decimal? minPrice,
-            [FromQuery] decimal? maxPrice,
-            [FromQuery] Guid? categoryId,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10)
+        [HttpGet(Name = "GetMenuItems")]
+        public async Task<IActionResult> GetMenuItems([FromQuery] PaginationParams pagination)
         {
-            var query = new GetMenuItemsQuery(searchCode, minPrice, maxPrice, categoryId, pageNumber, pageSize);
+            var query = new GetMenuItemsQuery { Pagination = pagination };
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)

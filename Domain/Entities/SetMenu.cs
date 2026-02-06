@@ -6,7 +6,7 @@ namespace FoodHub.Domain.Entities
 {
     public class SetMenu
     {
-        public Guid SetMenuId { get; set; } = Guid.NewGuid();
+        public Guid SetMenuId { get; set; }
         public required string Code { get; set; }
         public required string Name { get; set; }
         public SetType SetType { get; set; }

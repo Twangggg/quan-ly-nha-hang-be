@@ -1,41 +1,38 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.DTOs.MenuItems;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Resources;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
 {
-    public class GetMenuItemByIdHandler : IRequestHandler<GetMenuItemByIdQuery, Result<MenuItemDetailDto>>
+    public class GetMenuItemByIdHandler : IRequestHandler<GetMenuItemByIdQuery, Result<GetMenuItemByIdResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ICurrentUserService _currentUserService;
+        private readonly IStringLocalizer<ErrorMessages> _localizer;
 
-        public GetMenuItemByIdHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+        public GetMenuItemByIdHandler(IUnitOfWork unitOfWork, IStringLocalizer<ErrorMessages> localizer)
         {
             _unitOfWork = unitOfWork;
-            _currentUserService = currentUserService;
+            _localizer = localizer;
         }
 
-        public async Task<Result<MenuItemDetailDto>> Handle(GetMenuItemByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<GetMenuItemByIdResponse>> Handle(GetMenuItemByIdQuery request, CancellationToken cancellationToken)
         {
             var menuItem = await _unitOfWork.Repository<MenuItem>()
                 .Query()
                 .Include(m => m.Category)
-                .Include(m => m.OptionGroups)
-                    .ThenInclude(og => og.OptionItems)
-                .FirstOrDefaultAsync(m => m.MenuItemId == request.MenuItemId, cancellationToken);
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.CategoryId == request.Id, cancellationToken);
 
             if (menuItem == null)
             {
-                return Result<MenuItemDetailDto>.Failure($"Menu item with ID {request.MenuItemId} not found.", ResultErrorType.NotFound);
+                return Result<GetMenuItemByIdResponse>.Failure(_localizer["MenuItem.NotFound", request.Id].Value);
             }
 
-            var canViewCost = _currentUserService.Role is EmployeeRole.Manager or EmployeeRole.Cashier;
-
-            var dto = new MenuItemDetailDto
+            var response = new GetMenuItemByIdResponse
             {
                 MenuItemId = menuItem.MenuItemId,
                 Code = menuItem.Code,
@@ -43,31 +40,19 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
                 ImageUrl = menuItem.ImageUrl,
                 Description = menuItem.Description,
                 CategoryId = menuItem.CategoryId,
-                CategoryName = menuItem.Category?.Name ?? string.Empty,
+                CategoryName = menuItem.Category.Name,
                 Station = (int)menuItem.Station,
                 ExpectedTime = menuItem.ExpectedTime,
                 PriceDineIn = menuItem.PriceDineIn,
                 PriceTakeAway = menuItem.PriceTakeAway,
-                Cost = canViewCost ? menuItem.CostPrice : null,
+                Cost = menuItem.Cost,
                 IsOutOfStock = menuItem.IsOutOfStock,
                 CreatedAt = menuItem.CreatedAt,
-                UpdatedAt = menuItem.UpdatedAt ?? DateTime.MinValue,
-                OptionGroups = menuItem.OptionGroups.Select(og => new OptionGroupDto
-                {
-                    OptionGroupId = og.OptionGroupId,
-                    Name = og.Name,
-                    Type = (int)og.OptionType,
-                    IsRequired = og.IsRequired,
-                    OptionItems = og.OptionItems.Select(oi => new OptionItemDto
-                    {
-                        OptionItemId = oi.OptionItemId,
-                        Label = oi.Label,
-                        ExtraPrice = oi.ExtraPrice
-                    }).ToList()
-                }).ToList()
+                UpdatedAt = menuItem.UpdatedAt ?? menuItem.CreatedAt
             };
 
-            return Result<MenuItemDetailDto>.Success(dto);
+            return Result<GetMenuItemByIdResponse>.Success(response);
         }
     }
 }
+

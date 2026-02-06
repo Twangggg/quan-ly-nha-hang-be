@@ -6,7 +6,7 @@ namespace FoodHub.Domain.Entities
 {
     public class OptionGroup
     {
-        public Guid OptionGroupId { get; set; } = Guid.NewGuid();
+        public Guid OptionGroupId { get; set; }
         public Guid MenuItemId { get; set; }
         public virtual MenuItem MenuItem { get; set; } = null!;
 

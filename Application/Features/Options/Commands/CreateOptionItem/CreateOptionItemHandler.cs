@@ -25,6 +25,7 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionItem
 
             var optionItem = new OptionItem
             {
+                OptionItemId = Guid.NewGuid(),
                 OptionGroupId = request.OptionGroupId,
                 Label = request.Label,
                 ExtraPrice = request.ExtraPrice

@@ -9,19 +9,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.ToggleOutOfStock
 {
-    public class ToggleOutOfStockHandler : IRequestHandler<ToggleOutOfStockCommand, Result<bool>>
+    public class UpdateMenuItemStockStatusHandler : IRequestHandler<UpdateMenuItemStockStatusCommand, Result<bool>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
-        public ToggleOutOfStockHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService)
+        public UpdateMenuItemStockStatusHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
         }
 
-        public async Task<Result<bool>> Handle(ToggleOutOfStockCommand request, CancellationToken cancellationToken)
+        public async Task<Result<bool>> Handle(UpdateMenuItemStockStatusCommand request, CancellationToken cancellationToken)
         {
             // Get the repository for MenuItem
             var repo = _unitOfWork.Repository<MenuItem>();

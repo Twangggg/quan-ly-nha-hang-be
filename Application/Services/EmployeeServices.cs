@@ -26,10 +26,20 @@ namespace FoodHub.Application.Services
                 _ => 'U'
             };
 
-            var currentCount = await _unitOfWork.Repository<Employee>()
+            var lastEmployee = await _unitOfWork.Repository<Employee>()
                 .Query()
-                .CountAsync(e => e.Role == role);
-            int nextNumber = currentCount + 1;
+                .Where(e => e.Role == role)
+                .OrderByDescending(e => e.EmployeeCode)
+                .FirstOrDefaultAsync();
+
+            int nextNumber = 1;
+            if (lastEmployee != null && !string.IsNullOrEmpty(lastEmployee.EmployeeCode) && lastEmployee.EmployeeCode.Length > 1)
+            {
+                if (int.TryParse(lastEmployee.EmployeeCode.Substring(1), out int lastId))
+                {
+                    nextNumber = lastId + 1;
+                }
+            }
 
             // Format "D6" sẽ biến số 1 thành "000001"
             return $"{prefix}{nextNumber.ToString("D6")}";

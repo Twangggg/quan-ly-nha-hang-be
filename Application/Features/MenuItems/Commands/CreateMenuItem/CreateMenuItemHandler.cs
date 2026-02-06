@@ -45,6 +45,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             // 3. Create MenuItem entity
             var menuItem = new MenuItem
             {
+                MenuItemId = Guid.NewGuid(),
                 Code = request.Code,
                 Name = request.Name,
                 ImageUrl = request.ImageUrl,
