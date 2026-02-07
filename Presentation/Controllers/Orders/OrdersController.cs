@@ -50,7 +50,6 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> UpdateOrderItem(Guid id, [FromBody] UpdateOrderItemCommand command)
         {
             if (id != command.OrderId) return BadRequest(new { message = "Order ID mismatch" });
-
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }

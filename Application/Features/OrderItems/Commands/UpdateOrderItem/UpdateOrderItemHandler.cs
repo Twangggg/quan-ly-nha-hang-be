@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -53,7 +54,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
             var incomingItems = request.Items ?? new List<UpdateOrderItemDto>();
 
             var itemsToRemove = order.OrderItems
-                .Where(oi => oi.Status != OrderItemStatus.Cancelled && 
+                .Where(oi => oi.Status != OrderItemStatus.Cancelled &&
                 !incomingItems.Any(ii => ii.OrderItemId == oi.OrderItemId))
                 .ToList();
 
@@ -103,7 +104,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                         UnitPriceSnapshot = price,
                         StationSnapshot = menuItem.Station.ToString()
                     };
-                    
+
                     await ProcessOptionsAsync(newItem, incomingItem.SelectedOptions, cancellationToken);
                     order.OrderItems.Add(newItem);
                 }
