@@ -7,7 +7,7 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
         Guid EmployeeId,
         string FullName,
         string Email,
-        string Phone,
+        string? Phone,
         string? Address,
         DateOnly? DateOfBirth
         ) : IRequest<Result<Response>>;

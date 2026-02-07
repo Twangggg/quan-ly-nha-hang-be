@@ -20,10 +20,16 @@ namespace FoodHub.Presentation.Controllers.Profile
             _mediator = mediator;
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProfile(Guid id)
+        [HttpGet]
+        public async Task<IActionResult> GetProfile()
         {
-            var result = await _mediator.Send(new Query(id));
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                throw new NotFoundException("User not found");
+            }
+
+            var result = await _mediator.Send(new Query(userId));
             return Ok(result);
         }
 
@@ -40,7 +46,7 @@ namespace FoodHub.Presentation.Controllers.Profile
                 userId,
                 command.FullName.Trim(),
                 command.Email.Trim(),
-                command.Phone.Trim(),
+                command.Phone?.Trim(),
                 command.Address?.Trim(),
                 command.DateOfBirth
                 ));
