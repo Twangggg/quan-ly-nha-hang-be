@@ -6,6 +6,9 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
 {
     public record GetSetMenusQuery(
         int PageNumber = 1,
-        int PageSize = 10
+        int PageSize = 10,
+        string? Search = null,
+        List<string>? Filters = null,
+        string? OrderBy = null
     ) : IRequest<Result<PagedResult<GetSetMenusResponse>>>;
 }

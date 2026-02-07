@@ -25,7 +25,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
         public void Mapping(Profile profile)
         {
             profile.CreateMap<MenuItem, GetMenuItemsResponse>()
-                .ForMember(d => d.MenuItemId, opt => opt.MapFrom(s => s.CategoryId))
+                .ForMember(d => d.MenuItemId, opt => opt.MapFrom(s => s.MenuItemId))
                 .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.Category.Name))
                 .ForMember(d => d.Station, opt => opt.MapFrom(s => (int)s.Station))
                 .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(s => s.UpdatedAt ?? s.CreatedAt));

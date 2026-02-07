@@ -24,9 +24,12 @@ namespace FoodHub.Presentation.Controllers.SetMenus
         [HttpGet]
         public async Task<IActionResult> GetSetMenus(
             [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10)
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? search = null,
+            [FromQuery] List<string>? filters = null,
+            [FromQuery] string? orderBy = null)
         {
-            var query = new GetSetMenusQuery(pageNumber, pageSize);
+            var query = new GetSetMenusQuery(pageNumber, pageSize, search, filters, orderBy);
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)
