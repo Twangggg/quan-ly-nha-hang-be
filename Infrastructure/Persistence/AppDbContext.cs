@@ -22,6 +22,11 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<OptionItem> OptionItems { get; set; } = null!;
         public DbSet<SetMenu> SetMenus { get; set; } = null!;
         public DbSet<SetMenuItem> SetMenuItems { get; set; } = null!;
+
+        // Order Item Options
+        public DbSet<OrderItemOptionGroup> OrderItemOptionGroups { get; set; } = null!;
+        public DbSet<OrderItemOptionValue> OrderItemOptionValues { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

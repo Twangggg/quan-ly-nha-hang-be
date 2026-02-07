@@ -1,4 +1,5 @@
 ﻿using FoodHub.Application.Common.Models;
+<<<<<<< HEAD
 using FoodHub.Application.Features.Orders.Commands.CreateDraftOrder;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +9,12 @@ using FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem;
 using FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem;
 using FoodHub.Application.Features.Orders.Commands.CompleteOrder;
 using FoodHub.Application.Features.Orders.CancelOrder;
+=======
+using FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+>>>>>>> origin/feature/ordering-system-liemdt
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -37,13 +44,14 @@ namespace FoodHub.Presentation.Controllers
             };
         }
 
-        [HttpPost]
+        [HttpPost("submit-to-kitchen")]
         [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateDraftOrderCommand command)
+        public async Task<IActionResult> SubmitOrderToKitchen([FromBody] SubmitOrderToKitchenCommand command)
         {
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
+<<<<<<< HEAD
 
         [HttpPatch("{id}/items/{itemId}")]
         [Authorize(Roles = "Manager,Waiter")]
@@ -93,5 +101,7 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
+=======
+>>>>>>> origin/feature/ordering-system-liemdt
     }
 }

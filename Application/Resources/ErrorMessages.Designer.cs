@@ -223,11 +223,29 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Số lượng phải lớn hơn 0..
+        /// </summary>
+        public static string MenuItem_InvalidQuantity {
+            get {
+                return ResourceManager.GetString("MenuItem.InvalidQuantity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Không tìm thấy món ăn trong menu..
         /// </summary>
         public static string MenuItem_NotFound {
             get {
                 return ResourceManager.GetString("MenuItem.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Món đã hết: .
+        /// </summary>
+        public static string MenuItem_OutOfStock {
+            get {
+                return ResourceManager.GetString("MenuItem.OutOfStock", resourceCulture);
             }
         }
         
@@ -255,6 +273,24 @@ namespace FoodHub.Application.Resources {
         public static string OperationCancelled {
             get {
                 return ResourceManager.GetString("OperationCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy nhóm lựa chọn này.
+        /// </summary>
+        public static string OptionGroup_NotFound {
+            get {
+                return ResourceManager.GetString("OptionGroup.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy lựa chọn này..
+        /// </summary>
+        public static string OptionItem_NotFound {
+            get {
+                return ResourceManager.GetString("OptionItem.NotFound", resourceCulture);
             }
         }
         
@@ -322,11 +358,19 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+<<<<<<< HEAD
         ///   Looks up a localized string similar to Tổng số tiền đang có sự chênh lệch.
         /// </summary>
         public static string Order_WrongTotalMount {
             get {
                 return ResourceManager.GetString("Order.WrongTotalMount", resourceCulture);
+=======
+        ///   Looks up a localized string similar to Phải có ít nhất 1 món để gửi bếp.
+        /// </summary>
+        public static string OrderItem_InvalidQuantity {
+            get {
+                return ResourceManager.GetString("OrderItem.InvalidQuantity", resourceCulture);
+>>>>>>> origin/feature/ordering-system-liemdt
             }
         }
         

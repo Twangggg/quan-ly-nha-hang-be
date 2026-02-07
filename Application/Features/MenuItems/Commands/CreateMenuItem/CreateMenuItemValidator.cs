@@ -6,7 +6,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
     {
         public CreateMenuItemValidator()
         {
-            // TODO: Add validation rules
+            // TODO: Add validation rules       
         }
     }
 }

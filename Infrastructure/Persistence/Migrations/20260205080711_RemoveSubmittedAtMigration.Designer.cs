@@ -3,6 +3,7 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260205080711_RemoveSubmittedAtMigration")]
+    partial class RemoveSubmittedAtMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,7 +71,7 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.Category", b =>
                 {
-                    b.Property<Guid>("CategoryId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("category_id");
@@ -76,6 +79,18 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -91,7 +106,11 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.HasKey("CategoryId")
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
                         .HasName("pk_categories");
 
                     b.HasIndex("Name")
@@ -204,7 +223,7 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.MenuItem", b =>
                 {
-                    b.Property<Guid>("MenuItemId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("menu_item_id");
@@ -228,9 +247,9 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<Guid?>("CreatedById")
+                    b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uuid")
-                        .HasColumnName("created_by_id");
+                        .HasColumnName("created_by");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
@@ -250,6 +269,10 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("image_url");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
 
                     b.Property<bool>("IsOutOfStock")
                         .HasColumnType("boolean")
@@ -279,11 +302,11 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<Guid?>("UpdatedById")
+                    b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uuid")
-                        .HasColumnName("updated_by_id");
+                        .HasColumnName("updated_by");
 
-                    b.HasKey("MenuItemId")
+                    b.HasKey("Id")
                         .HasName("pk_menu_items");
 
                     b.HasIndex("CategoryId")
@@ -298,10 +321,26 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.OptionGroup", b =>
                 {
-                    b.Property<Guid>("OptionGroupId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("option_group_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
 
                     b.Property<bool>("IsRequired")
                         .HasColumnType("boolean")
@@ -321,7 +360,15 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("type");
 
-                    b.HasKey("OptionGroupId")
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
                         .HasName("pk_option_groups");
 
                     b.HasIndex("MenuItemId")
@@ -332,15 +379,31 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.OptionItem", b =>
                 {
-                    b.Property<Guid>("OptionItemId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("option_item_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
 
                     b.Property<decimal>("ExtraPrice")
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("extra_price");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -352,7 +415,15 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("option_group_id");
 
-                    b.HasKey("OptionItemId")
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
                         .HasName("pk_option_items");
 
                     b.HasIndex("OptionGroupId")
@@ -495,10 +566,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("order_item_id");
 
-                    b.Property<DateTime?>("CanceledAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("canceled_at");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -559,107 +626,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_order_items_order_id");
 
                     b.ToTable("order_items", (string)null);
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.OrderItemOptionGroup", b =>
-                {
-                    b.Property<Guid>("OrderItemOptionGroupId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("order_item_option_group_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("GroupNameSnapshot")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("group_name_snapshot");
-
-                    b.Property<string>("GroupTypeSnapshot")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("group_type_snapshot");
-
-                    b.Property<bool>("IsRequiredSnapshot")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_required_snapshot");
-
-                    b.Property<Guid>("OrderItemId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("order_item_id");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("OrderItemOptionGroupId")
-                        .HasName("pk_order_item_option_groups");
-
-                    b.HasIndex("OrderItemId")
-                        .HasDatabaseName("idx_order_item_option_groups_order_item_id");
-
-                    b.ToTable("order_item_option_groups", (string)null);
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.OrderItemOptionValue", b =>
-                {
-                    b.Property<Guid>("OrderItemOptionValueId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("order_item_option_value_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<decimal>("ExtraPriceSnapshot")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("numeric(12,2)")
-                        .HasColumnName("extra_price_snapshot");
-
-                    b.Property<string>("LabelSnapshot")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("label_snapshot");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("note");
-
-                    b.Property<Guid?>("OptionItemId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("option_item_id");
-
-                    b.Property<Guid>("OrderItemOptionGroupId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("order_item_option_group_id");
-
-                    b.Property<int>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1)
-                        .HasColumnName("quantity");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("OrderItemOptionValueId")
-                        .HasName("pk_order_item_option_values");
-
-                    b.HasIndex("OptionItemId")
-                        .HasDatabaseName("ix_order_item_option_values_option_item_id");
-
-                    b.HasIndex("OrderItemOptionGroupId")
-                        .HasDatabaseName("idx_order_item_option_values_group_id");
-
-                    b.ToTable("order_item_option_values", (string)null);
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetToken", b =>
@@ -761,7 +727,7 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
                 {
-                    b.Property<Guid>("SetMenuId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("set_menu_id");
@@ -775,6 +741,18 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
 
                     b.Property<bool>("IsOutOfStock")
                         .HasColumnType("boolean")
@@ -795,7 +773,11 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.HasKey("SetMenuId")
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
                         .HasName("pk_set_menus");
 
                     b.HasIndex("Code")
@@ -807,10 +789,26 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenuItem", b =>
                 {
-                    b.Property<Guid>("SetMenuItemId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("set_menu_item_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
 
                     b.Property<Guid>("MenuItemId")
                         .HasColumnType("uuid")
@@ -824,7 +822,15 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("set_menu_id");
 
-                    b.HasKey("SetMenuItemId")
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
                         .HasName("pk_set_menu_items");
 
                     b.HasIndex("MenuItemId")
@@ -938,38 +944,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("FoodHub.Domain.Entities.OrderItemOptionGroup", b =>
-                {
-                    b.HasOne("FoodHub.Domain.Entities.OrderItem", "OrderItem")
-                        .WithMany("OptionGroups")
-                        .HasForeignKey("OrderItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_order_item_option_groups_order_item_id");
-
-                    b.Navigation("OrderItem");
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.OrderItemOptionValue", b =>
-                {
-                    b.HasOne("FoodHub.Domain.Entities.OptionItem", "OptionItem")
-                        .WithMany()
-                        .HasForeignKey("OptionItemId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_order_item_option_values_option_item_id");
-
-                    b.HasOne("FoodHub.Domain.Entities.OrderItemOptionGroup", "OptionGroup")
-                        .WithMany("OptionValues")
-                        .HasForeignKey("OrderItemOptionGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_order_item_option_values_group_id");
-
-                    b.Navigation("OptionGroup");
-
-                    b.Navigation("OptionItem");
-                });
-
             modelBuilder.Entity("FoodHub.Domain.Entities.PasswordResetToken", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.Employee", "Employee")
@@ -1046,16 +1020,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     b.Navigation("OrderAuditLogs");
 
                     b.Navigation("OrderItems");
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.OrderItem", b =>
-                {
-                    b.Navigation("OptionGroups");
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.OrderItemOptionGroup", b =>
-                {
-                    b.Navigation("OptionValues");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
