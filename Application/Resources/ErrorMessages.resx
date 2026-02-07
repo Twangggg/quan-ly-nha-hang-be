@@ -249,10 +249,9 @@
   <data name="Order.MustHaveItem" xml:space="preserve">
     <value>Đơn hàng đang trống.</value>
   </data>
-<<<<<<< HEAD
-  <data name="Order.WrongTotalMount" xml:space="preserve">
+  <data name="Order.WrongTotalAmount" xml:space="preserve">
     <value>Tổng số tiền đang có sự chênh lệch</value>
-=======
+  </data>
   <data name="MenuItem.OutOfStock" xml:space="preserve">
     <value>Món đã hết: </value>
   </data>
@@ -267,6 +266,5 @@
   </data>
   <data name="OptionItem.NotFound" xml:space="preserve">
     <value>Không tìm thấy lựa chọn này.</value>
->>>>>>> origin/feature/ordering-system-liemdt
   </data>
 </root>

@@ -22,13 +22,8 @@ namespace FoodHub.Domain.Entities
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-<<<<<<< HEAD
         public DateTime? CanceledAt { get; set; }
-        public Order Order { get; set; } = null!;
-=======
-        
-        public virtual Order Order { get; set; } = null!;
-        public virtual ICollection<OrderItemOptionGroup> OptionGroups { get; set; } = new List<OrderItemOptionGroup>();
->>>>>>> origin/feature/ordering-system-liemdt
+        public Order Order { get; set; } = null!;        
+        public ICollection<OrderItemOptionGroup> OptionGroups { get; set; } = new List<OrderItemOptionGroup>();
     }
 }

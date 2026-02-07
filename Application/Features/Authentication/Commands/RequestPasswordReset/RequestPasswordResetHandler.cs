@@ -11,7 +11,7 @@ using System.Text;
 
 namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordReset
 {
-    public class RequestPasswordResetCommandHandler : IRequestHandler<RequestPasswordResetCommand, Result<string>>
+    public class RequestPasswordResetHandler : IRequestHandler<RequestPasswordResetCommand, Result<string>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBackgroundEmailSender _emailSender;
@@ -20,7 +20,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMessageService _messageService;
 
-        public RequestPasswordResetCommandHandler(
+        public RequestPasswordResetHandler(
             IUnitOfWork unitOfWork,
             IBackgroundEmailSender emailSender,
             IRateLimiter rateLimiter,

@@ -358,19 +358,19 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
-<<<<<<< HEAD
         ///   Looks up a localized string similar to Tổng số tiền đang có sự chênh lệch.
         /// </summary>
         public static string Order_WrongTotalMount {
             get {
                 return ResourceManager.GetString("Order.WrongTotalMount", resourceCulture);
-=======
+            }
+        }
+        /// <summary>
         ///   Looks up a localized string similar to Phải có ít nhất 1 món để gửi bếp.
         /// </summary>
         public static string OrderItem_InvalidQuantity {
             get {
                 return ResourceManager.GetString("OrderItem.InvalidQuantity", resourceCulture);
->>>>>>> origin/feature/ordering-system-liemdt
             }
         }
         

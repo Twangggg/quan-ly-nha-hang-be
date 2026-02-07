@@ -7,7 +7,7 @@ using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace FoodHub.Application.Features.Orders.CancelOrder
+namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
 {
     public class CancelOrderHandler : IRequestHandler<CancelOrderCommand, Result<bool>>
     {
@@ -74,7 +74,7 @@ namespace FoodHub.Application.Features.Orders.CancelOrder
                 LogId = Guid.NewGuid(),
                 OrderId = order.OrderId,
                 EmployeeId = auditorId,
-                Action = "CANCEL_ORDER",
+                Action = AuditLogActions.CancelOrder,
                 CreatedAt = DateTime.UtcNow,
                 ChangeReason = request.Reason,
                 NewValue = "{\"status\": \"Cancelled\"}"

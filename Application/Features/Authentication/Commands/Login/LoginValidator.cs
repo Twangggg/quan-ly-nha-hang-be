@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace FoodHub.Application.Features.Authentication.Commands.Login
 {
-    public class LoginCommandValidator : AbstractValidator<LoginCommand>
+    public class LoginValidator : AbstractValidator<LoginCommand>
     {
-        public LoginCommandValidator()
+        public LoginValidator()
         {
             RuleFor(x => x.EmployeeCode)
                 .NotEmpty();

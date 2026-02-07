@@ -20,7 +20,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                         .GetByIdAsync(command.OrderItemId);
                     return order != null && order.Status == OrderItemStatus.Preparing;
                 })
-                .WithMessage(messageService.GetMessage(MessageKeys.ResetPassword.ReasonRequired));
+                .WithMessage(messageService.GetMessage(MessageKeys.Order.ReasonRequired));
         }
     }
 }

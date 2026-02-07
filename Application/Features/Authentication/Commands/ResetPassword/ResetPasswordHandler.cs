@@ -9,13 +9,13 @@ using System.Text;
 
 namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
 {
-    public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand, Result<string>>
+    public class ResetPasswordHandler : IRequestHandler<ResetPasswordCommand, Result<string>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordService _passwordService;
         private readonly IMessageService _messageService;
 
-        public ResetPasswordCommandHandler(IUnitOfWork unitOfWork, IPasswordService passwordService, IMessageService messageService)
+        public ResetPasswordHandler(IUnitOfWork unitOfWork, IPasswordService passwordService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;

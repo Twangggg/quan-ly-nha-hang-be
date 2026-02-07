@@ -4,9 +4,9 @@ using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordReset
 {
-    public class RequestPasswordResetCommandValidator : AbstractValidator<RequestPasswordResetCommand>
+    public class RequestPasswordResetValidator : AbstractValidator<RequestPasswordResetCommand>
     {
-        public RequestPasswordResetCommandValidator(IMessageService messageService)
+        public RequestPasswordResetValidator(IMessageService messageService)
         {
             RuleFor(x => x.EmployeeCode)
                 .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Auth.EmployeeCodeRequired))

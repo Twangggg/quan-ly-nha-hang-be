@@ -4,9 +4,9 @@ using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 {
-    public class SubmitOrderToKitchenCommandValidator : AbstractValidator<SubmitOrderToKitchenCommand>
+    public class SubmitOrderToKitchenValidator : AbstractValidator<SubmitOrderToKitchenCommand>
     {
-        public SubmitOrderToKitchenCommandValidator( IMessageService messageService)
+        public SubmitOrderToKitchenValidator( IMessageService messageService)
         {
             RuleFor(x => x.Items)
                 .NotEmpty()

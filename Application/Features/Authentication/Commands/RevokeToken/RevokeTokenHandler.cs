@@ -7,12 +7,12 @@ using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Features.Authentication.Commands.RevokeToken
 {
-    public class RevokeTokenCommandHandler : IRequestHandler<RevokeTokenCommand, Result<bool>>
+    public class RevokeTokenHandler : IRequestHandler<RevokeTokenCommand, Result<bool>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
 
-        public RevokeTokenCommandHandler(IUnitOfWork unitOfWork, IMessageService messageService)
+        public RevokeTokenHandler(IUnitOfWork unitOfWork, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;

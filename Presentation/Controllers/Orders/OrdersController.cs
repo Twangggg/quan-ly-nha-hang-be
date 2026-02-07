@@ -1,6 +1,4 @@
 ﻿using FoodHub.Application.Common.Models;
-<<<<<<< HEAD
-using FoodHub.Application.Features.Orders.Commands.CreateDraftOrder;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,13 +6,8 @@ using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;
 using FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem;
 using FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem;
 using FoodHub.Application.Features.Orders.Commands.CompleteOrder;
-using FoodHub.Application.Features.Orders.CancelOrder;
-=======
+using FoodHub.Application.Features.Orders.Commands.CancelOrder;
 using FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen;
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
->>>>>>> origin/feature/ordering-system-liemdt
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -51,14 +44,12 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
-<<<<<<< HEAD
 
-        [HttpPatch("{id}/items/{itemId}")]
+        [HttpPatch("{id}/items")]
         [Authorize(Roles = "Manager,Waiter")]
-        public async Task<IActionResult> UpdateOrderItem(Guid id, Guid itemId, [FromBody] UpdateOrderItemCommand command)
+        public async Task<IActionResult> UpdateOrderItem(Guid id, [FromBody] UpdateOrderItemCommand command)
         {
             if (id != command.OrderId) return BadRequest(new { message = "Order ID mismatch" });
-            if (itemId != command.OrderItemId) return BadRequest(new { message = "Item ID mismatch" });
 
             var result = await _mediator.Send(command);
             return HandleResult(result);
@@ -101,7 +92,5 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
-=======
->>>>>>> origin/feature/ordering-system-liemdt
     }
 }

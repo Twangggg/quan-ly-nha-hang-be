@@ -9,13 +9,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 {
-    public class SubmitOrderToKitchenCommandHandler : IRequestHandler<SubmitOrderToKitchenCommand, Result<Guid>>
+    public class SubmitOrderToKitchenHandler : IRequestHandler<SubmitOrderToKitchenCommand, Result<Guid>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
 
-        public SubmitOrderToKitchenCommandHandler(
+        public SubmitOrderToKitchenHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService)
@@ -37,11 +37,19 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             //Validate Table for dine in
             if (request.OrderType == OrderType.DineIn)
             {
-                //Table cho sprint sau thay tạm bằng table ko tróng
-                //var tableExists = await _unitOfWork.Repository<Table>()
-                //    .Query()
-                //    .AnyAsync(t => t.Id == request.TableId, cancellationToken);
+                if (!request.TableId.HasValue)
+                {
+                    return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.SelectTable));
+                }
 
+                var existingServingOrder = await _unitOfWork.Repository<Order>()
+                    .Query()
+                    .AnyAsync(o => o.TableId == request.TableId && o.Status == OrderStatus.Serving, cancellationToken);
+                
+                if (existingServingOrder)
+                {
+                    return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.TableAlreadyOccupied));
+                }
             }
 
             //Validate All Menu Items Exist 
@@ -236,7 +244,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 LogId = Guid.NewGuid(),
                 OrderId = order.OrderId,
                 EmployeeId = userId,
-                Action = "SUBMIT", // ✅ Only one action: SUBMIT (no CREATE or ADD_ITEM)
+                Action = AuditLogActions.SubmitOrder, // ✅ Only one action: SUBMIT (no CREATE or ADD_ITEM)
                 CreatedAt = DateTime.UtcNow
             };
 

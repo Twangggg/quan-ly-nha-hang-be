@@ -3,7 +3,7 @@ using FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem;
 using FoodHub.Domain.Enums;
 using MediatR;
 
-namespace FoodHub.Application.Features.Orders.CancelOrder
+namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
 {
     public class CancelOrderCommand : IRequest<Result<bool>>
     {

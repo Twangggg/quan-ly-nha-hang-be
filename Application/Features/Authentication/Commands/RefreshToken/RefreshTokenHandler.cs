@@ -8,13 +8,13 @@ using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Features.Authentication.Commands.RefreshToken
 {
-    public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<LoginResponse>>
+    public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, Result<LoginResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenService _tokenService;
         private readonly IMessageService _messageService;
 
-        public RefreshTokenCommandHandler(IUnitOfWork unitOfWork, ITokenService tokenService, IMessageService messageService)
+        public RefreshTokenHandler(IUnitOfWork unitOfWork, ITokenService tokenService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _tokenService = tokenService;

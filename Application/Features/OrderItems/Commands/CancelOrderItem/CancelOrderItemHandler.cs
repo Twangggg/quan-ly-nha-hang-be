@@ -59,13 +59,22 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
             var order = await _unitOfWork.Repository<Domain.Entities.Order>()
                 .Query()
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.OptionGroups)
+                        .ThenInclude(og => og.OptionValues)
                 .FirstOrDefaultAsync(o => o.OrderId == orderItem.OrderId, cancellationToken);
 
             if (order != null)
             {
                 order.TotalAmount = order.OrderItems
                     .Where(x => x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected)
-                    .Sum(x => x.Quantity * x.UnitPriceSnapshot);
+                    .Sum(item =>
+                    {
+                        var itemTotal = item.Quantity * item.UnitPriceSnapshot;
+                        var optionsTotal = item.OptionGroups?
+                            .SelectMany(og => og.OptionValues)
+                            .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity) ?? 0;
+                        return itemTotal + (optionsTotal * item.Quantity);
+                    });
                 order.UpdatedAt = DateTime.UtcNow;
                 _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
             }
@@ -75,7 +84,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                 LogId = Guid.NewGuid(),
                 OrderId = orderItem.OrderId,
                 EmployeeId = auditorId,
-                Action = "CANCEL_ITEM",
+                Action = AuditLogActions.CancelOrderItem,
                 CreatedAt = DateTime.UtcNow,
                 ChangeReason = request.Reason,
                 NewValue = "{\"status\": \"Cancelled\"}"

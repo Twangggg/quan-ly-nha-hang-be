@@ -3,9 +3,9 @@ using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
 {
-    public class ChangePasswordCommandValidator : AbstractValidator<ChangePasswordCommand>
+    public class ChangePasswordValidator : AbstractValidator<ChangePasswordCommand>
     {
-        public ChangePasswordCommandValidator(Interfaces.IMessageService messageService)
+        public ChangePasswordValidator(Interfaces.IMessageService messageService)
         {
             // Current password required
             RuleFor(v => v.CurrentPassword)

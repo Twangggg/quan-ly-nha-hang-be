@@ -42,6 +42,8 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
             var order = await _unitOfWork.Repository<Domain.Entities.Order>()
                 .Query()
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.OptionGroups)
+                        .ThenInclude(og => og.OptionValues)
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId && o.Status != Domain.Enums.OrderStatus.Completed);
 
             if (order == null)
@@ -52,7 +54,14 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
 
             var finalAmount = order.OrderItems
                 .Where(oi => oi.Status != OrderItemStatus.Cancelled && oi.Status != OrderItemStatus.Rejected)
-                .Sum(oi => oi.UnitPriceSnapshot * oi.Quantity);
+                .Sum(item =>
+                {
+                    var itemTotal = item.Quantity * item.UnitPriceSnapshot;
+                    var optionsTotal = item.OptionGroups?
+                        .SelectMany(og => og.OptionValues)
+                        .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity) ?? 0;
+                    return itemTotal + (optionsTotal * item.Quantity);
+                });
 
             order.Status = OrderStatus.Completed;
             order.TotalAmount = finalAmount;
@@ -82,7 +91,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
                 LogId = Guid.NewGuid(),
                 OrderId = order.OrderId,
                 EmployeeId = auditorId,
-                Action = "COMPLETE_ORDER",
+                Action = AuditLogActions.CompleteOrder,
                 CreatedAt = DateTime.UtcNow,
                 NewValue = $"{{\"finalAmount\": {finalAmount}, \"itemsCount\": {order.OrderItems.Count}}}"
             };

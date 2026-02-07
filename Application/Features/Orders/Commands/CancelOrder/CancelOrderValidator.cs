@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace FoodHub.Application.Features.Orders.CancelOrder
+namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
 {
     public class CancelOrderValidator : AbstractValidator<CancelOrderCommand>
     {

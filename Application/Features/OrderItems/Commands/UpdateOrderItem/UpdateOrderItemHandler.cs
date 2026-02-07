@@ -41,6 +41,8 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
             var order = await _unitOfWork.Repository<Domain.Entities.Order>()
                 .Query()
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.OptionGroups)
+                        .ThenInclude(og => og.OptionValues)
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
 
             if (order == null)
@@ -51,13 +53,14 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
             var incomingItems = request.Items ?? new List<UpdateOrderItemDto>();
 
             var itemsToRemove = order.OrderItems
-                .Where(oi => !incomingItems.Any(ii => ii.OrderItemId == oi.OrderItemId))
+                .Where(oi => oi.Status != OrderItemStatus.Cancelled && 
+                !incomingItems.Any(ii => ii.OrderItemId == oi.OrderItemId))
                 .ToList();
 
             foreach (var item in itemsToRemove)
             {
-                order.OrderItems.Remove(item);
-                _unitOfWork.Repository<OrderItem>().Delete(item);
+                item.Status = OrderItemStatus.Cancelled;
+                item.UpdatedAt = DateTime.UtcNow;
             }
 
             foreach (var incomingItem in incomingItems)
@@ -70,6 +73,8 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                     existingItem.Quantity = incomingItem.Quantity;
                     existingItem.ItemNote = incomingItem.ItemNote;
                     existingItem.UpdatedAt = DateTime.UtcNow;
+
+                    await ProcessOptionsAsync(existingItem, incomingItem.SelectedOptions, cancellationToken);
                 }
                 else
                 {
@@ -92,18 +97,28 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                         Quantity = incomingItem.Quantity,
                         ItemNote = incomingItem.ItemNote,
                         CreatedAt = DateTime.UtcNow,
+                        Status = OrderItemStatus.Preparing,
                         ItemNameSnapshot = menuItem.Name,
                         ItemCodeSnapshot = menuItem.Code,
                         UnitPriceSnapshot = price,
                         StationSnapshot = menuItem.Station.ToString()
                     };
+                    
+                    await ProcessOptionsAsync(newItem, incomingItem.SelectedOptions, cancellationToken);
                     order.OrderItems.Add(newItem);
                 }
             }
 
             order.TotalAmount = order.OrderItems
                 .Where(x => x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected)
-                .Sum(x => x.Quantity * x.UnitPriceSnapshot);
+                .Sum(item =>
+                {
+                    var itemTotal = item.Quantity * item.UnitPriceSnapshot;
+                    var optionsTotal = item.OptionGroups?
+                        .SelectMany(og => og.OptionValues)
+                        .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity) ?? 0;
+                    return itemTotal + (optionsTotal * item.Quantity);
+                });
             order.UpdatedAt = DateTime.UtcNow;
 
             var auditLog = new OrderAuditLog
@@ -111,7 +126,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                 LogId = Guid.NewGuid(),
                 OrderId = order.OrderId,
                 EmployeeId = auditorId,
-                Action = "UPDATE_ITEMS",
+                Action = AuditLogActions.UpdateOrderItem,
                 CreatedAt = DateTime.UtcNow,
                 ChangeReason = request.Reason,
                 NewValue = "{\"action\": \"Updated Order Items Sync\"}"
@@ -132,6 +147,63 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
 
             var response = _mapper.Map<UpdateOrderItemResponse>(order);
             return Result<UpdateOrderItemResponse>.Success(response);
+        }
+
+        private async Task ProcessOptionsAsync(OrderItem item, List<OrderItemOptionGroupDto>? selectedOptions, CancellationToken cancellationToken)
+        {
+            // Clear existing options
+            item.OptionGroups.Clear();
+
+            if (selectedOptions == null || !selectedOptions.Any()) return;
+
+            var optionGroupIds = selectedOptions.Select(og => og.OptionGroupId).ToList();
+            var optionItemIds = selectedOptions.SelectMany(og => og.SelectedValues).Select(v => v.OptionItemId).ToList();
+
+            var optionGroups = await _unitOfWork.Repository<OptionGroup>()
+                .Query()
+                .Where(og => optionGroupIds.Contains(og.OptionGroupId))
+                .ToDictionaryAsync(og => og.OptionGroupId, cancellationToken);
+
+            var optionItems = await _unitOfWork.Repository<OptionItem>()
+                .Query()
+                .Where(oi => optionItemIds.Contains(oi.OptionItemId))
+                .ToDictionaryAsync(oi => oi.OptionItemId, cancellationToken);
+
+            foreach (var optionGroupDto in selectedOptions)
+            {
+                if (optionGroups.TryGetValue(optionGroupDto.OptionGroupId, out var ogDef))
+                {
+                    var orderItemOptionGroup = new OrderItemOptionGroup
+                    {
+                        OrderItemOptionGroupId = Guid.NewGuid(),
+                        OrderItemId = item.OrderItemId,
+                        GroupNameSnapshot = ogDef.Name,
+                        GroupTypeSnapshot = ogDef.Type.ToString(),
+                        IsRequiredSnapshot = ogDef.IsRequired,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    foreach (var valueDto in optionGroupDto.SelectedValues)
+                    {
+                        if (optionItems.TryGetValue(valueDto.OptionItemId, out var oiDef))
+                        {
+                            var orderItemOptionValue = new OrderItemOptionValue
+                            {
+                                OrderItemOptionValueId = Guid.NewGuid(),
+                                OrderItemOptionGroupId = orderItemOptionGroup.OrderItemOptionGroupId,
+                                OptionItemId = valueDto.OptionItemId,
+                                LabelSnapshot = oiDef.Label,
+                                ExtraPriceSnapshot = oiDef.ExtraPrice,
+                                Quantity = valueDto.Quantity,
+                                Note = valueDto.Note,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            orderItemOptionGroup.OptionValues.Add(orderItemOptionValue);
+                        }
+                    }
+                    item.OptionGroups.Add(orderItemOptionGroup);
+                }
+            }
         }
     }
 }
