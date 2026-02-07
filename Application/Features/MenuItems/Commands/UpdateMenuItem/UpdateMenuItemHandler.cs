@@ -29,7 +29,6 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
                 .FirstOrDefaultAsync(mi => mi.MenuItemId == request.MenuItemId, cancellationToken);
             if (menuItem is null) return Result<UpdateMenuItemResponse>.NotFound("Menu item is not found!");
 
-            var code = request.Code.Trim();
             var name = request.Name.Trim();
             var imageUrl = request.ImageUrl.Trim();
             var description = request.Description?.Trim();
@@ -40,17 +39,11 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             var priceTakeAway = request.PriceTakeAway;
             var costPrice = request.CostPrice;
 
-            var codeExists = await repo.Query()
-                .AnyAsync(mi => mi.MenuItemId != request.MenuItemId && mi.Code == code, cancellationToken);
-            if (codeExists)
-                return Result<UpdateMenuItemResponse>.Failure("Menu item code already exists!");
-
             var categoryExists = await _unitOfWork.Repository<Category>().Query()
                 .AnyAsync(c => c.CategoryId == categoryId, cancellationToken);
             if (!categoryExists)
                 return Result<UpdateMenuItemResponse>.Failure("Category is not exist!");
 
-            menuItem.Code = code;
             menuItem.Name = name;
             menuItem.ImageUrl = imageUrl;
             menuItem.Description = description;

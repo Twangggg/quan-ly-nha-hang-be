@@ -9,13 +9,13 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
-        private readonly ICloudinaryService _cloudinaryService;
+        //private readonly ICloudinaryService _cloudinaryService;
 
-        public CreateSetMenuHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, ICloudinaryService cloudinaryService)
+        public CreateSetMenuHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)//, ICloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
-            _cloudinaryService = cloudinaryService;
+            //_cloudinaryService = cloudinaryService;
         }
 
 
@@ -48,17 +48,17 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
 
             // 3. Handle Image Upload if provided
             var imageUrl = request.ImageUrl;
-            if (request.ImageFile != null)
-            {
-                try
-                {
-                    imageUrl = await _cloudinaryService.UploadImageAsync(request.ImageFile, "set-menus");
-                }
-                catch (Exception ex)
-                {
-                    return Result<CreateSetMenuResponse>.Failure($"Image upload failed: {ex.Message}", ResultErrorType.BadRequest);
-                }
-            }
+            //if (request.ImageFile != null)
+            //{
+            //    try
+            //    {
+            //        imageUrl = await _cloudinaryService.UploadImageAsync(request.ImageFile, "set-menus");
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        return Result<CreateSetMenuResponse>.Failure($"Image upload failed: {ex.Message}", ResultErrorType.BadRequest);
+            //    }
+            //}
 
             // 4. Create SetMenu
             var setMenu = new SetMenu

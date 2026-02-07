@@ -15,8 +15,8 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
         int ExpectedTime,
         decimal PriceDineIn,
         decimal? PriceTakeAway,
-        decimal? Cost,
-        IFormFile? ImageFile
+        //IFormFile? ImageFile,
+        decimal? Cost
     ) : IRequest<Result<CreateMenuItemResponse>>;
 
 }

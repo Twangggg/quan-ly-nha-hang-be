@@ -25,7 +25,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
                 .Query()
                 .Include(m => m.Category)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.CategoryId == request.Id, cancellationToken);
+                .FirstOrDefaultAsync(m => m.MenuItemId == request.Id, cancellationToken);
 
             if (menuItem == null)
             {

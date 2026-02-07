@@ -3,9 +3,9 @@ using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
 {
-    public class DeleteSetMenuValidator : AbstractValidator<DeleteSetMenuCommand>
+    public class UpdateSetMenuValidator : AbstractValidator<UpdateSetMenuCommand>
     {
-        public DeleteSetMenuValidator()
+        public UpdateSetMenuValidator()
         {
             RuleFor(x => x.SetMenuId)
                 .NotEmpty().WithMessage("SetMenuId is required.");

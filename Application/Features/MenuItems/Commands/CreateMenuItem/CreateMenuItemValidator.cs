@@ -14,12 +14,12 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 .NotEmpty().WithMessage("Name is required.")
                 .MaximumLength(150).WithMessage("Name must not exceed 150 characters.");
 
-            RuleFor(x => x.ImageUrl)
-                .NotEmpty()
-                .When(x => x.ImageFile == null)
-                .WithMessage("Either Image URL or Image File is required.")
-                .MaximumLength(255)
-                .WithMessage("Image URL must not exceed 255 characters.");
+            //RuleFor(x => x.ImageUrl)
+            //    .NotEmpty()
+            //    .When(x => x.ImageFile == null)
+            //    .WithMessage("Either Image URL or Image File is required.")
+            //    .MaximumLength(255)
+            //    .WithMessage("Image URL must not exceed 255 characters.");
 
             RuleFor(x => x.Description)
                 .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");

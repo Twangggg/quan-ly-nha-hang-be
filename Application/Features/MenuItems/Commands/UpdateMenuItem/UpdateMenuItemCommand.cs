@@ -7,7 +7,6 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
 {
     public record UpdateMenuItemCommand(
         Guid MenuItemId,
-        string Code,
         string Name,
         string ImageUrl,
         string? Description,

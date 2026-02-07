@@ -10,7 +10,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
     {
         [HttpPut("{id}")]
         [Authorize(Roles = nameof(EmployeeRole.Manager))]
-        public async Task<IActionResult> UpdateSetMenu(Guid id, [FromBody] DeleteSetMenuCommand command)
+        public async Task<IActionResult> UpdateSetMenu(Guid id, [FromBody] UpdateSetMenuCommand command)
         {
             var result = await _mediator.Send(command with { SetMenuId = id });
 

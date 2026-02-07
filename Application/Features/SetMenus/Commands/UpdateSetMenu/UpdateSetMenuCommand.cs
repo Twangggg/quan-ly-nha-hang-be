@@ -6,7 +6,7 @@ using MediatR;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
 {
-    public record DeleteSetMenuCommand(
+    public record UpdateSetMenuCommand(
         Guid SetMenuId,
         string Name,
         SetType SetType,
@@ -15,7 +15,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
         decimal Price,
         decimal CostPrice,
         List<SetMenuItemCommand> Items
-    ) : IRequest<Result<DeleteSetMenuResponse>>;
+    ) : IRequest<Result<UpdateSetMenuResponse>>;
 
     public record SetMenuItemCommand(Guid MenuItemId, int Quantity);
 }

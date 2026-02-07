@@ -56,7 +56,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
 
         [HttpPost]
         [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> CreateSetMenu([FromForm] CreateSetMenuCommand command)
+        public async Task<IActionResult> CreateSetMenu([FromBody] CreateSetMenuCommand command)
         {
             var result = await _mediator.Send(command);
 

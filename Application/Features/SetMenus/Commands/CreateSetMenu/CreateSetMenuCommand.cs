@@ -14,8 +14,8 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
         string? Description,
         decimal Price,
         decimal CostPrice,
-        List<CreateSetMenuItemRequest> Items,
-        IFormFile? ImageFile
+        //IFormFile? ImageFile,
+        List<CreateSetMenuItemRequest> Items
     ) : IRequest<Result<CreateSetMenuResponse>>;
 
     public record CreateSetMenuItemRequest(Guid MenuItemId, int Quantity);

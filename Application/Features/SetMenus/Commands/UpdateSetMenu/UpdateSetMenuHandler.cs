@@ -8,18 +8,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
 {
-    public class DeleteSetMenuHandler : IRequestHandler<DeleteSetMenuCommand, Result<DeleteSetMenuResponse>>
+    public class UpdateSetMenuHandler : IRequestHandler<UpdateSetMenuCommand, Result<UpdateSetMenuResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
 
-        public DeleteSetMenuHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+        public UpdateSetMenuHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
         }
 
-        public async Task<Result<DeleteSetMenuResponse>> Handle(DeleteSetMenuCommand request, CancellationToken cancellationToken)
+        public async Task<Result<UpdateSetMenuResponse>> Handle(UpdateSetMenuCommand request, CancellationToken cancellationToken)
         {
             var setMenuRepository = _unitOfWork.Repository<SetMenu>();
             var menuItemRepository = _unitOfWork.Repository<MenuItem>();
@@ -28,14 +28,14 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
             var userRole = _currentUserService.Role;
             if (userRole is not EmployeeRole.Manager)
             {
-                return Result<DeleteSetMenuResponse>.Failure("You do not have permission to update the set menu.", ResultErrorType.Forbidden);
+                return Result<UpdateSetMenuResponse>.Failure("You do not have permission to update the set menu.", ResultErrorType.Forbidden);
             }
 
             // 1. Get existing SetMenu
             var setMenu = await setMenuRepository.GetByIdAsync(request.SetMenuId);
             if (setMenu == null)
             {
-                return Result<DeleteSetMenuResponse>.Failure($"Set Menu with ID '{request.SetMenuId}' not found.", ResultErrorType.NotFound);
+                return Result<UpdateSetMenuResponse>.Failure($"Set Menu with ID '{request.SetMenuId}' not found.", ResultErrorType.NotFound);
             }
 
             // 2. Validate if all MenuItems exist
@@ -44,7 +44,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
 
             if (existingMenuItemsCount != menuItemIds.Count)
             {
-                return Result<DeleteSetMenuResponse>.Failure("One or more Menu Items do not exist.", ResultErrorType.BadRequest);
+                return Result<UpdateSetMenuResponse>.Failure("One or more Menu Items do not exist.", ResultErrorType.BadRequest);
             }
 
             await _unitOfWork.BeginTransactionAsync();
@@ -99,7 +99,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
                 var updatedItems = await setMenuItemRepository.Query()
                     .Where(x => x.SetMenuId == request.SetMenuId)
                     .ToListAsync(cancellationToken);
-                var response = new DeleteSetMenuResponse
+                var response = new UpdateSetMenuResponse
                 {
                     SetMenuId = setMenu.SetMenuId,
                     Code = setMenu.Code,
@@ -119,12 +119,12 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
                     }).ToList()
                 };
 
-                return Result<DeleteSetMenuResponse>.Success(response);
+                return Result<UpdateSetMenuResponse>.Success(response);
             }
             catch
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                return Result<DeleteSetMenuResponse>.Failure("Failed to update set menu.", ResultErrorType.BadRequest);
+                return Result<UpdateSetMenuResponse>.Failure("Failed to update set menu.", ResultErrorType.BadRequest);
             }
         }
     }

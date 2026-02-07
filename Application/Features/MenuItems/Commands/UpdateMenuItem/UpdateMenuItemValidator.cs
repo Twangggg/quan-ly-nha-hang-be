@@ -9,12 +9,6 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             RuleFor(x => x.MenuItemId)
                 .NotEmpty().WithMessage("Menu item id is required.");
 
-            RuleFor(x => x.Code)
-                .NotEmpty().WithMessage("Menu item code is required.")
-                .MaximumLength(50).WithMessage("Code cannot exceed 50 characters.")
-                .Must(code => code.Trim() == code)
-                .WithMessage("Code must not contain leading or trailing spaces.");
-
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Menu item name is required.")
                 .MaximumLength(200).WithMessage("Name cannot exceed 200 characters.");

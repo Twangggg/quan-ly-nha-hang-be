@@ -10,13 +10,13 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
-        private readonly ICloudinaryService _cloudinaryService;
+        //private readonly ICloudinaryService _cloudinaryService;
 
-        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, ICloudinaryService cloudinaryService)
+        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)//, ICloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
-            _cloudinaryService = cloudinaryService;
+            //_cloudinaryService = cloudinaryService;
         }
 
         public async Task<Result<CreateMenuItemResponse>> Handle(CreateMenuItemCommand request, CancellationToken cancellationToken)
@@ -46,17 +46,17 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
 
             // 3. Handle Image Upload if provided
             var imageUrl = request.ImageUrl;
-            if (request.ImageFile != null)
-            {
-                try
-                {
-                    imageUrl = await _cloudinaryService.UploadImageAsync(request.ImageFile, "menu-items");
-                }
-                catch (Exception ex)
-                {
-                    return Result<CreateMenuItemResponse>.Failure($"Image upload failed: {ex.Message}", ResultErrorType.BadRequest);
-                }
-            }
+            //if (request.ImageFile != null)
+            //{
+            //    try
+            //    {
+            //        imageUrl = await _cloudinaryService.UploadImageAsync(request.ImageFile, "menu-items");
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        return Result<CreateMenuItemResponse>.Failure($"Image upload failed: {ex.Message}", ResultErrorType.BadRequest);
+            //    }
+            //}
 
             // 4. Create MenuItem entity
             var menuItem = new MenuItem

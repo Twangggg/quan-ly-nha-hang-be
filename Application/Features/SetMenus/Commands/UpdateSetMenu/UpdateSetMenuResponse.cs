@@ -3,7 +3,7 @@ using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
 {
-    public class DeleteSetMenuResponse
+    public class UpdateSetMenuResponse
     {
         public Guid SetMenuId { get; set; }
         public required string Code { get; set; }
