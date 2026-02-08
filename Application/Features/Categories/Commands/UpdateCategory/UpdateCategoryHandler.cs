@@ -1,7 +1,7 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Domain.Enums;
 using MediatR;
-using MediatR;
+
 
 namespace FoodHub.Application.Features.Categories.Commands.UpdateCategory
 {
@@ -13,6 +13,7 @@ namespace FoodHub.Application.Features.Categories.Commands.UpdateCategory
 
         public async Task<Result<UpdateCategoryResponse>> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
             throw new NotImplementedException();
         }
     }

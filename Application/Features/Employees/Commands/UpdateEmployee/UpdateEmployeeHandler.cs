@@ -52,13 +52,33 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
                 return Result<UpdateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotUpdateInactive));
             }
 
-            employee.FullName = request.FullName;
-            employee.Username = request.Username;
-            employee.Phone = request.Phone;
-            employee.Address = request.Address;
-            employee.DateOfBirth = request.DateOfBirth;
+            if (!string.IsNullOrWhiteSpace(request.FullName))
+                employee.FullName = request.FullName;
+
+            if (request.Username != null)
+                employee.Username = request.Username;
+
+            if (request.Phone != null)
+                employee.Phone = request.Phone;
+
+            if (request.Address != null)
+                employee.Address = request.Address;
+
+            if (request.DateOfBirth != null)
+            {
+                if (string.IsNullOrWhiteSpace(request.DateOfBirth))
+                {
+                    employee.DateOfBirth = null;
+                }
+                else if (DateOnly.TryParse(request.DateOfBirth, out var dob))
+                {
+                    employee.DateOfBirth = dob;
+                }
+            }
+
             employee.UpdatedAt = DateTime.UtcNow;
-            if (Enum.TryParse<EmployeeStatus>(request.Status, true, out var status))
+
+            if (!string.IsNullOrEmpty(request.Status) && Enum.TryParse<EmployeeStatus>(request.Status, true, out var status))
             {
                 employee.Status = status;
             }

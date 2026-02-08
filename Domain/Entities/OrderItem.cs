@@ -1,4 +1,6 @@
-﻿namespace FoodHub.Domain.Entities
+﻿using FoodHub.Domain.Enums;
+
+namespace FoodHub.Domain.Entities
 {
     public class OrderItem
     {
@@ -11,14 +13,17 @@
         public string ItemNameSnapshot { get; set; } = null!;
         public string StationSnapshot { get; set; } = null!;
 
+        public OrderItemStatus Status { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPriceSnapshot { get; set; }
 
-        public bool Status { get; set; } // Requested as Boolean
+
         public string? ItemNote { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public virtual Order Order { get; set; } = null!;
+        public DateTime? CanceledAt { get; set; }
+        public Order Order { get; set; } = null!;        
+        public ICollection<OrderItemOptionGroup> OptionGroups { get; set; } = new List<OrderItemOptionGroup>();
     }
 }

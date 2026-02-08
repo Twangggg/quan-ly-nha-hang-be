@@ -43,6 +43,9 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.HasIndex(x => x.Role);
             builder.HasIndex(x => x.Status);
+
+            // Global Query Filter: Hide soft-deleted employees
+            builder.HasQueryFilter(x => x.DeleteAt == null);
         }
     }
 }

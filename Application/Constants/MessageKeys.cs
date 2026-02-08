@@ -1,3 +1,5 @@
+using System.Reflection.Metadata;
+
 namespace FoodHub.Application.Constants
 {
     public static class MessageKeys
@@ -8,6 +10,8 @@ namespace FoodHub.Application.Constants
             public const string DatabaseUpdateError = "DatabaseUpdateError";
             public const string OperationCancelled = "OperationCancelled";
             public const string Unauthorized = "Unauthorized";
+            public const string InvalidFormat = "Common.InvalidFormat";
+            public const string InvalidDate = "Common.InvalidDate";
         }
 
         public static class Password
@@ -85,6 +89,42 @@ namespace FoodHub.Application.Constants
             public const string EmailInvalid = "Profile.EmailInvalid";
             public const string PhoneRequired = "Profile.PhoneRequired";
             public const string PhoneInvalid = "Profile.PhoneInvalid";
+        }
+
+        public static class Order
+        {
+            public const string NotFound = "Order.NotFound";
+            public const string InvalidType = "Order.InvalidType";
+            public const string SelectTable = "Order.SelectTable";
+            public const string InvalidQuantity = "Order.InvalidQuantity";
+            public const string InvalidAction = "Order.InvalidAction";
+            public const string InvalidActionWithStatus = "Order.InvalidActionWithStatus";
+            public const string MustHaveItem = "Order.MustHaveItem";
+            public const string WrongTotalAmount = "Order.WrongTotalAmount";
+            public const string ReasonRequired = "Order.ReasonRequired";
+            public const string TableAlreadyOccupied = "Order.TableAlreadyOccupied";
+        }
+
+        public static class OrderItem
+        {
+            public const string InvalidQuantity = "OrderItem.InvalidQuantity";
+        }
+
+        public static class MenuItem
+        {
+            public const string NotFound = "MenuItem.NotFound";
+            public const string OutOfStock = "MenuItem.OutOfStock";
+            public const string InvalodQuantity = "MenuItem.InvalidQuantity";
+        }
+
+        public static class OptionGroup
+        {
+            public const String NotFound = "OptionGroup.NotFound";
+        }
+
+        public static class OptionItem
+        {
+            public const String NotFound = "OptionItem.NotFound";
         }
     }
 }

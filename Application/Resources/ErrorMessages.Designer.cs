@@ -99,6 +99,51 @@ namespace FoodHub.Application.Resources
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Số lượng phải lớn hơn 0..
+        /// </summary>
+        public static string MenuItem_InvalidQuantity {
+            get {
+                return ResourceManager.GetString("MenuItem.InvalidQuantity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy món ăn trong menu..
+        /// </summary>
+        public static string MenuItem_NotFound {
+            get {
+                return ResourceManager.GetString("MenuItem.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Món đã hết: .
+        /// </summary>
+        public static string MenuItem_OutOfStock {
+            get {
+                return ResourceManager.GetString("MenuItem.OutOfStock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chỉ có thể reset password cho tài khoản đang hoạt động.
+        /// </summary>
+        public static string OnlyActiveEmployeeCanReset {
+            get {
+                return ResourceManager.GetString("OnlyActiveEmployeeCanReset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chỉ Manager mới có quyền reset password.
+        /// </summary>
+        public static string OnlyManagerCanReset {
+            get {
+                return ResourceManager.GetString("OnlyManagerCanReset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Thao tác bị hủy do timeout. Vui lòng thử lại..
         /// </summary>
         public static string OperationCancelled
@@ -106,6 +151,230 @@ namespace FoodHub.Application.Resources
             get
             {
                 return ResourceManager.GetString("OperationCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy nhóm lựa chọn này.
+        /// </summary>
+        public static string OptionGroup_NotFound {
+            get {
+                return ResourceManager.GetString("OptionGroup.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy lựa chọn này..
+        /// </summary>
+        public static string OptionItem_NotFound {
+            get {
+                return ResourceManager.GetString("OptionItem.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thao tác không hợp lệ.
+        /// </summary>
+        public static string Order_InvalidAction {
+            get {
+                return ResourceManager.GetString("Order.InvalidAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thao tác không hợp lệ với trạng thái.
+        /// </summary>
+        public static string Order_InvalidActionWithStatus {
+            get {
+                return ResourceManager.GetString("Order.InvalidActionWithStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Số lượng không hợp lệ.
+        /// </summary>
+        public static string Order_InvalidQuantity {
+            get {
+                return ResourceManager.GetString("Order.InvalidQuantity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loại đơn không hợp lệ..
+        /// </summary>
+        public static string Order_InvalidType {
+            get {
+                return ResourceManager.GetString("Order.InvalidType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Đơn hàng đang trống..
+        /// </summary>
+        public static string Order_MustHaveItem {
+            get {
+                return ResourceManager.GetString("Order.MustHaveItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy đơn..
+        /// </summary>
+        public static string Order_NotFound {
+            get {
+                return ResourceManager.GetString("Order.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vui lòng chọn bàn cho đơn dùng tại nhà hàng.
+        /// </summary>
+        public static string Order_SelectTable {
+            get {
+                return ResourceManager.GetString("Order.SelectTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tổng số tiền đang có sự chênh lệch.
+        /// </summary>
+        public static string Order_WrongTotalMount {
+            get {
+                return ResourceManager.GetString("Order.WrongTotalMount", resourceCulture);
+            }
+        }
+        /// <summary>
+        ///   Looks up a localized string similar to Phải có ít nhất 1 món để gửi bếp.
+        /// </summary>
+        public static string OrderItem_InvalidQuantity {
+            get {
+                return ResourceManager.GetString("OrderItem.InvalidQuantity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu xác nhận không khớp..
+        /// </summary>
+        public static string Password_ConfirmationMismatch {
+            get {
+                return ResourceManager.GetString("Password.ConfirmationMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu hiện tại không chính xác..
+        /// </summary>
+        public static string Password_IncorrectCurrent {
+            get {
+                return ResourceManager.GetString("Password.IncorrectCurrent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phải có ít nhất 8 ký tự.
+        /// </summary>
+        public static string Password_MinLength {
+            get {
+                return ResourceManager.GetString("Password.MinLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu mới phải khác mật khẩu hiện tại..
+        /// </summary>
+        public static string Password_MustBeDifferent {
+            get {
+                return ResourceManager.GetString("Password.MustBeDifferent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phải có ít nhất 1 số.
+        /// </summary>
+        public static string Password_RequireDigit {
+            get {
+                return ResourceManager.GetString("Password.RequireDigit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phải có ít nhất 1 chữ thường.
+        /// </summary>
+        public static string Password_RequireLowercase {
+            get {
+                return ResourceManager.GetString("Password.RequireLowercase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phải có ít nhất 1 ký tự đặc biệt.
+        /// </summary>
+        public static string Password_RequireSpecial {
+            get {
+                return ResourceManager.GetString("Password.RequireSpecial", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mật khẩu phải có ít nhất 1 chữ hoa.
+        /// </summary>
+        public static string Password_RequireUppercase {
+            get {
+                return ResourceManager.GetString("Password.RequireUppercase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email đã được sử dụng bởi người khác..
+        /// </summary>
+        public static string Profile_EmailExists {
+            get {
+                return ResourceManager.GetString("Profile.EmailExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Số điện thoại đã được sử dụng bởi người khác..
+        /// </summary>
+        public static string Profile_PhoneExists {
+            get {
+                return ResourceManager.GetString("Profile.PhoneExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to EmployeeId không được để trống.
+        /// </summary>
+        public static string ResetPassword_EmployeeIdRequired {
+            get {
+                return ResourceManager.GetString("ResetPassword.EmployeeIdRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lý do reset không được quá 500 ký tự.
+        /// </summary>
+        public static string ResetPassword_ReasonMaxLength {
+            get {
+                return ResourceManager.GetString("ResetPassword.ReasonMaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lý do reset phải có ít nhất 10 ký tự.
+        /// </summary>
+        public static string ResetPassword_ReasonMinLength {
+            get {
+                return ResourceManager.GetString("ResetPassword.ReasonMinLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lý do reset password là bắt buộc.
+        /// </summary>
+        public static string ResetPassword_ReasonRequired {
+            get {
+                return ResourceManager.GetString("ResetPassword.ReasonRequired", resourceCulture);
             }
         }
         

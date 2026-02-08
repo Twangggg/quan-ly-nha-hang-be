@@ -5,6 +5,7 @@ using FoodHub.Domain.Enums;
 using MediatR;
 using System.Security.Claims;
 using FoodHub.Application.Constants;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
 {
@@ -34,7 +35,6 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
             ResetEmployeePasswordCommand request,
             CancellationToken cancellationToken)
         {
-            // 1. Lấy thông tin Manager đang thực hiện reset
             var managerId = _httpContextAccessor.HttpContext?.User
                 .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -51,7 +51,6 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 return Result<ResetEmployeePasswordResponse>.Failure(_messageService.GetMessage(MessageKeys.ResetPassword.OnlyManagerCanReset));
             }
 
-            // 2. Kiểm tra employee cần reset
             var employee = await _unitOfWork.Repository<Employee>()
                 .GetByIdAsync(request.EmployeeId);
 
@@ -65,16 +64,24 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 return Result<ResetEmployeePasswordResponse>.Failure(_messageService.GetMessage(MessageKeys.ResetPassword.OnlyActiveEmployeeCanReset));
             }
 
-            // 3. Generate hoặc dùng password do Manager đặt
             var newPassword = string.IsNullOrEmpty(request.NewPassword)
                 ? _passwordService.GenerateRandomPassword()
                 : request.NewPassword;
 
-            // 4. Hash password và cập nhật
             employee.PasswordHash = _passwordService.HashPassword(newPassword);
             employee.UpdatedAt = DateTime.UtcNow;
 
-            // 5. Ghi audit log
+            var refreshTokens = await _unitOfWork.Repository<RefreshToken>()
+                .Query()
+                .Where(rt => rt.EmployeeId == employee.EmployeeId && !rt.IsRevoked)
+                .ToListAsync(cancellationToken);
+
+            foreach (var token in refreshTokens)
+            {
+                token.IsRevoked = true;
+                token.UpdatedAt = DateTime.UtcNow;
+            }
+
             var auditLog = new AuditLog
             {
                 LogId = Guid.NewGuid(),

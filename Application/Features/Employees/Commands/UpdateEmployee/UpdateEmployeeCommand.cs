@@ -11,7 +11,7 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
         string FullName,
         string? Phone,
         string? Address,
-        DateOnly? DateOfBirth,
-        string Status
+        string? Status,
+        string? DateOfBirth
         ) : IRequest<Result<UpdateEmployeeResponse>>;
 }

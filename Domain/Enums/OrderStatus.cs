@@ -2,11 +2,8 @@
 {
     public enum OrderStatus
     {
-        Draft = 1,
-        Preparing = 2,
-        Cooking = 3,
-        Ready = 4,
-        Completed = 5,
-        Cancelled = 6
+        Serving = 1,
+        Completed = 2,
+        Cancelled = 3
     }
 }

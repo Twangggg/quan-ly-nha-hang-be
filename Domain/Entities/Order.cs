@@ -21,13 +21,12 @@ namespace FoodHub.Domain.Entities
         public virtual Employee CreatedByEmployee { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public DateTime? SubmittedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public DateTime? CancelledAt { get; set; }
 
         public Guid? TransactionId { get; set; }
-        public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-        public virtual ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
+        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
     }
 }
 

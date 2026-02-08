@@ -59,7 +59,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.DeleteSetMenu
                 Description = setMenu.Description,
                 CostPrice = setMenu.CostPrice,
                 Price = setMenu.Price,
-                UpdatedAt = setMenu.UpdatedAt.Value,
+                UpdatedAt = setMenu.UpdatedAt ?? DateTime.UtcNow,
                 Items = updatedItems.Select(item => new DeleteSetMenuItemResponse
                 {
                     SetMenuItemId = item.SetMenuItemId,

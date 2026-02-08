@@ -57,6 +57,8 @@ if (!string.IsNullOrEmpty(jwtRefreshExpires))
     builder.Configuration["Jwt:RefreshTokenExpiresInDays"] = jwtRefreshExpires;
 }
 
+
+
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
 var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
 var dbName = Environment.GetEnvironmentVariable("DB_NAME");
@@ -211,10 +213,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// Register Background Email Services
-builder.Services.AddSingleton<BackgroundEmailChannel>();
-builder.Services.AddSingleton<IBackgroundEmailSender>(provider => provider.GetRequiredService<BackgroundEmailChannel>());
-builder.Services.AddHostedService<EmailBackgroundWorker>();
+
 
 // Register Localization
 builder.Services.AddLocalization();
@@ -245,7 +244,7 @@ if (app.Environment.IsDevelopment())
     {
         var services = scope.ServiceProvider;
         var retryCount = 0;
-        var maxRetries = 5;
+        var maxRetries = 20; // Increased from 5
 
         while (retryCount < maxRetries)
         {
@@ -270,7 +269,7 @@ if (app.Environment.IsDevelopment())
                 }
 
                 logger.LogWarning("Database not ready. Retry {Count}/{Max}...", retryCount, maxRetries);
-                await Task.Delay(2000);
+                await Task.Delay(3000);
             }
         }
     }
