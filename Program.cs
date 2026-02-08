@@ -57,17 +57,7 @@ if (!string.IsNullOrEmpty(jwtRefreshExpires))
     builder.Configuration["Jwt:RefreshTokenExpiresInDays"] = jwtRefreshExpires;
 }
 
-var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
-if (!string.IsNullOrEmpty(jwtIssuer))
-{
-    builder.Configuration["Jwt:Issuer"] = jwtIssuer;
-}
 
-var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
-if (!string.IsNullOrEmpty(jwtAudience))
-{
-    builder.Configuration["Jwt:Audience"] = jwtAudience;
-}
 
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
 var dbPort = Environment.GetEnvironmentVariable("DB_PORT");

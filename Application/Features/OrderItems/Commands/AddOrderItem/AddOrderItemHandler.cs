@@ -179,7 +179,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                         OrderItemOptionGroupId = Guid.NewGuid(),
                         OrderItemId = item.OrderItemId,
                         GroupNameSnapshot = ogDef.Name,
-                        GroupTypeSnapshot = ogDef.Type.ToString(),
+                        GroupTypeSnapshot = ogDef.OptionType.ToString(),
                         IsRequiredSnapshot = ogDef.IsRequired,
                         CreatedAt = DateTime.UtcNow
                     };

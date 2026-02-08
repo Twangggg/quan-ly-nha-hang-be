@@ -11,6 +11,7 @@ namespace FoodHub.Application.Features.Categories.Queries.GetCategoryById
 
         public async Task<Result<GetCategoryByIdResponse>> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
             throw new NotImplementedException();
         }
     }

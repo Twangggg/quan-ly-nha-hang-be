@@ -196,7 +196,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                             OrderItemOptionGroupId = Guid.NewGuid(),
                             OrderItemId = orderItem.OrderItemId,
                             GroupNameSnapshot = optionGroup.Name,
-                            GroupTypeSnapshot = optionGroup.Type.ToString(),
+                            GroupTypeSnapshot = optionGroup.OptionType.ToString(),
                             IsRequiredSnapshot = optionGroup.IsRequired,
                             CreatedAt = DateTime.UtcNow
                         };

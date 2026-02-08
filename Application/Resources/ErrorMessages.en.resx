@@ -321,10 +321,6 @@
   <data name="OptionGroup.Required" xml:space="preserve">
     <value>Option group is required.</value>
   </data>
-</root>
-
-    <value>Role changed successfully for {0}, but notification email failed to send.</value>
-  </data>
   <data name="OptionGroup.NotFound" xml:space="preserve">
     <value>Option group not found.</value>
   </data>
