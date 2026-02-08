@@ -71,7 +71,7 @@ namespace FoodHub.Presentation.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMenuItem(Guid id, UpdateMenuItemCommand command)
         {
-            var result = await _mediator.Send(command with {MenuItemId = id});
+            var result = await _mediator.Send(command with { MenuItemId = id });
             return Ok(result);
         }
 
@@ -79,7 +79,7 @@ namespace FoodHub.Presentation.Controllers
         [HttpPut("{id}/stock")]
         public async Task<IActionResult> UpdateMenuItemStockStatus(Guid id, UpdateMenuItemStockStatusCommand command)
         {
-            var result = await _mediator.Send(command with {MenuItemId = id});
+            var result = await _mediator.Send(command with { MenuItemId = id });
             return Ok(result);
         }
 

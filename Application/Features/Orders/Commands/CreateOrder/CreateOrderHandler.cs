@@ -59,15 +59,15 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 OrderCode = newOrderCode,
                 OrderType = request.OrderType,
                 // Per discussion: Start at SERVING immediately
-                Status = OrderStatus.Serving, 
+                Status = OrderStatus.Serving,
                 TableId = request.TableId,
                 Note = request.Note,
                 TotalAmount = 0, // Initial amount is 0
                 IsPriority = false,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : Guid.Empty 
+                CreatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : Guid.Empty
             };
-            
+
             // If TableId provided, we might want to check if table exists or is occupied?
             // Assuming simplified logic for now as requested in plan.
 

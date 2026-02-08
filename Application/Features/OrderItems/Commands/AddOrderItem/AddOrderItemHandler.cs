@@ -71,7 +71,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 );
 
             var existingItem = order.OrderItems.FirstOrDefault(x =>
-                x.MenuItemId == request.MenuItemId && 
+                x.MenuItemId == request.MenuItemId &&
                 x.Status == OrderItemStatus.Preparing &&
                 (x.ItemNote ?? string.Empty) == (request.Note ?? string.Empty) &&
                 GetItemSignature(x) == requestSignature);

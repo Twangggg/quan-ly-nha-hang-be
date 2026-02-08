@@ -19,11 +19,94 @@ jobs:
         with:
           dotnet-version: "9.0.x"
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Restore dependencies
         run: dotnet restore
+
+      - name: Install EF Core Tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Check Migrations
+        run: |
+          dotnet ef migrations list --project FoodHub.csproj
+          dotnet ef migrations has-pending-model-changes --project FoodHub.csproj
+
+      - name: Check Formatting
+        run: dotnet format FoodHub.sln --verify-no-changes
+
+      - name: Check Vulnerabilities
+        run: |
+          echo "🔍 Kiểm tra dependencies có lỗ hổng bảo mật..."
+          dotnet list package --vulnerable --include-transitive || true
+          echo "📦 Kiểm tra packages lỗi thời..."
+          dotnet list package --outdated || true
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Run Tests
-        run: dotnet test --no-build --configuration Release --verbosity normal
+      - name: Run Tests With Coverage
+        run: |
+          echo "🧪 Run tests with code coverage..."
+          dotnet test --no-build --configuration Release \
+            --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            /p:Threshold=80 \
+            /p:ThresholdType=line \
+            /p:ThresholdStat=total
+
+      - name: Generate Coverage Report
+        if: always()
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+          reportgenerator \
+            -reports:./coverage/**/coverage.cobertura.xml \
+            -targetdir:./coverage-report \
+            -reporttypes:Html
+
+      - name: Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage-report
+
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: SonarCloud Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"Twangggg_quan-ly-nha-hang-be" \
+            /o:"twangggg" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
+            /d:sonar.exclusions="**/Migrations/**,**/bin/**,**/obj/**" \
+            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs"
+          dotnet build --configuration Release --no-restore
+          dotnet test --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage.opencover.xml
+          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image Với Cache
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: foodhub-be:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

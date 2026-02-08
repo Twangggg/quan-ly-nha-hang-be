@@ -23,7 +23,7 @@ namespace FoodHub.Domain.Entities
         public decimal CostPrice { get; set; } // Internal cost
 
         public bool IsOutOfStock { get; set; }
-    
+
         public virtual ICollection<OptionGroup> OptionGroups { get; set; } = new List<OptionGroup>();
         public virtual ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();
     }

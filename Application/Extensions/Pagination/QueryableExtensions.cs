@@ -10,7 +10,7 @@ namespace FoodHub.Application.Extensions.Pagination
             int pageSize,
             CancellationToken cancellationToken = default)
         {
-            var pagination = new PaginationParams  
+            var pagination = new PaginationParams
             {
                 PageIndex = pageNumber,
                 PageSize = pageSize
