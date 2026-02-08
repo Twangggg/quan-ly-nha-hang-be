@@ -1,8 +1,10 @@
 using FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu;
+using FoodHub.Application.Features.SetMenus.Commands.DeleteSetMenu;
 using FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu;
 using FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatus;
 using FoodHub.Application.Features.SetMenus.Queries.GetSetMenuById;
 using FoodHub.Application.Features.SetMenus.Queries.GetSetMenus;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +14,7 @@ namespace FoodHub.Presentation.Controllers.SetMenus
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public partial class SetMenuController : ControllerBase
+    public class SetMenuController : ControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -68,42 +70,30 @@ namespace FoodHub.Presentation.Controllers.SetMenus
             return CreatedAtAction(nameof(GetSetMenuById), new { id = result.Data.SetMenuId }, result.Data);
         }
 
-        //[HttpPut("{id}")]
-        //[Authorize(Roles = "Manager")]
-        //public async Task<IActionResult> UpdateSetMenu(Guid id, [FromBody] UpdateSetMenuCommand command)
-        //{
-        //    if (id != command.SetMenuId)
-        //    {
-        //        return BadRequest(new { message = "Set menu ID mismatch" });
-        //    }
+        [HttpPut("{id}")]
+        [Authorize(Roles = nameof(EmployeeRole.Manager))]
+        public async Task<IActionResult> UpdateSetMenu(Guid id, [FromBody] UpdateSetMenuCommand command)
+        {
+            var result = await _mediator.Send(command with { SetMenuId = id });
 
-        //    var result = await _mediator.Send(command);
+            return Ok(result);
+        }
 
-        //    if (!result.IsSuccess)
-        //    {
-        //        return BadRequest(new { message = result.Error });
-        //    }
+        [HttpPut("{id}/stock")]
+        [Authorize(Roles = nameof(EmployeeRole.Manager))]
+        public async Task<IActionResult> UpdateSetMenuStockStatus(Guid id, [FromBody] UpdateSetMenuStockStatusCommand command)
+        {
+            var result = await _mediator.Send(command with { SetMenuId = id });
 
-        //    return Ok(result.Data);
-        //}
+            return Ok(result);
+        }
 
-        //[HttpPatch("{id}/stock-status")]
-        //[Authorize(Roles = "Manager")]
-        //public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] UpdateSetMenuStockStatusCommand command)
-        //{
-        //    if (id != command.SetMenuId)
-        //    {
-        //        return BadRequest(new { message = "Set menu ID mismatch" });
-        //    }
-
-        //    var result = await _mediator.Send(command);
-
-        //    if (!result.IsSuccess)
-        //    {
-        //        return BadRequest(new { message = result.Error });
-        //    }
-
-        //    return Ok(result.Data);
-        //}
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteSetMenu(Guid id)
+        {
+            var result = await _mediator.Send(new DeleteSetMenuCommand(id));
+            return Ok(result);
+        }
     }
 }

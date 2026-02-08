@@ -10,6 +10,9 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("menu_items");
 
+            // Global Query Filter for Soft Delete
+            builder.HasQueryFilter(e => e.DeletedAt == null);
+
             builder.HasKey(e => e.MenuItemId);
             builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
 

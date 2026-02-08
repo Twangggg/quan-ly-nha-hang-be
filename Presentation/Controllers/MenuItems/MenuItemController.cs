@@ -1,7 +1,11 @@
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem;
+using FoodHub.Application.Features.MenuItems.Commands.DeleteMenuItem;
+using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
+using FoodHub.Application.Features.MenuItems.Commands.ToggleOutOfStock; // Kept this as it was in original, but verified UpdateMenuItemStockStatusCommand usage in added methods
 using FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById;
 using FoodHub.Application.Features.MenuItems.Queries.GetMenuItems;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +15,7 @@ namespace FoodHub.Presentation.Controllers.MenuItems
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public partial class MenuItemController : ControllerBase
+    public class MenuItemController : ControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -62,42 +66,28 @@ namespace FoodHub.Presentation.Controllers.MenuItems
             return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data.MenuItemId }, result.Data);
         }
 
-        //[HttpPut("{id}")]
-        //[Authorize(Roles = "Manager")]
-        //public async Task<IActionResult> UpdateMenuItem(Guid id, [FromBody] UpdateMenuItemCommand command)
-        //{
-        //    if (id != command.MenuItemId)
-        //    {
-        //        return BadRequest(new { message = "Menu item ID mismatch" });
-        //    }
+        [Authorize]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateMenuItem(Guid id, UpdateMenuItemCommand command)
+        {
+            var result = await _mediator.Send(command with {MenuItemId = id});
+            return Ok(result);
+        }
 
-        //    var result = await _mediator.Send(command);
+        [Authorize(Roles = nameof(EmployeeRole.Manager))]
+        [HttpPut("{id}/stock")]
+        public async Task<IActionResult> UpdateMenuItemStockStatus(Guid id, UpdateMenuItemStockStatusCommand command)
+        {
+            var result = await _mediator.Send(command with {MenuItemId = id});
+            return Ok(result);
+        }
 
-        //    if (!result.IsSuccess)
-        //    {
-        //        return BadRequest(new { message = result.Error });
-        //    }
-
-        //    return Ok(result.Data);
-        //}
-
-        //[HttpPatch("{id}/stock-status")]
-        //[Authorize(Roles = "Manager")]
-        //public async Task<IActionResult> UpdateStockStatus(Guid id, [FromBody] ToggleOutOfStockCommand command)
-        //{
-        //    if (id != command.MenuItemId)
-        //    {
-        //        return BadRequest(new { message = "Menu item ID mismatch" });
-        //    }
-
-        //    var result = await _mediator.Send(command);
-
-        //    if (!result.IsSuccess)
-        //    {
-        //        return BadRequest(new { message = result.Error });
-        //    }
-
-        //    return Ok(new { success = result.Data });
-        //}
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMenuItem(Guid id)
+        {
+            var result = await _mediator.Send(new DeleteMenuItemCommand(id));
+            return Ok(result);
+        }
     }
 }

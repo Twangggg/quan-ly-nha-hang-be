@@ -1,4 +1,5 @@
 using FoodHub.Application.Features.Categories.Commands.CreateCategory;
+using FoodHub.Application.Features.Categories.Commands.DeleteCategory;
 using FoodHub.Application.Features.Categories.Commands.UpdateCategory;
 using FoodHub.Application.Features.Categories.Queries.GetAllCategories;
 using FoodHub.Application.Features.Categories.Queries.GetCategoryById;
@@ -72,6 +73,20 @@ namespace FoodHub.Presentation.Controllers.Categories
             }
 
             var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Error });
+            }
+
+            return Ok(result.Data);
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> DeleteCategory(Guid id)
+        {
+            var result = await _mediator.Send(new DeleteCategoryCommand(id));
 
             if (!result.IsSuccess)
             {

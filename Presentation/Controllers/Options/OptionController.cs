@@ -1,5 +1,7 @@
 using FoodHub.Application.Features.Options.Commands.CreateOptionGroup;
 using FoodHub.Application.Features.Options.Commands.CreateOptionItem;
+using FoodHub.Application.Features.Options.Commands.DeleteOptionGroup;
+using FoodHub.Application.Features.Options.Commands.DeleteOptionItem;
 using FoodHub.Application.Features.Options.Commands.UpdateOptionGroup;
 using FoodHub.Application.Features.Options.Commands.UpdateOptionItem;
 using FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem;
@@ -12,7 +14,7 @@ namespace FoodHub.Presentation.Controllers.Options
     [Route("api/options")]
     [ApiController]
     [Authorize]
-    public partial class OptionController : ControllerBase
+    public class OptionController : ControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -70,6 +72,20 @@ namespace FoodHub.Presentation.Controllers.Options
             return Ok(result.Data);
         }
 
+        [HttpDelete("group/{id}")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> DeleteOptionGroup(Guid id)
+        {
+            var result = await _mediator.Send(new DeleteOptionGroupCommand(id));
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Error });
+            }
+
+            return Ok(result.Data);
+        }
+
         #endregion
 
         #region OptionItem
@@ -98,6 +114,20 @@ namespace FoodHub.Presentation.Controllers.Options
             }
 
             var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new { message = result.Error });
+            }
+
+            return Ok(result.Data);
+        }
+
+        [HttpDelete("item/{id}")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> DeleteOptionItem(Guid id)
+        {
+            var result = await _mediator.Send(new DeleteOptionItemCommand(id));
 
             if (!result.IsSuccess)
             {
