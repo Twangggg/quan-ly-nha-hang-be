@@ -35,8 +35,8 @@ jobs:
 
       - name: Check Migrations
         run: |
-          dotnet ef migrations list --project Infrastructure --startup-project WebAPI
-          dotnet ef migrations has-pending-model-changes --project Infrastructure --startup-project WebAPI
+          dotnet ef migrations list --project FoodHub.csproj
+          dotnet ef migrations has-pending-model-changes --project FoodHub.csproj
 
       - name: Check Formatting
         run: dotnet format --verify-no-changes
