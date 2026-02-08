@@ -41,7 +41,7 @@ jobs:
       - name: Check Formatting
         run: dotnet format FoodHub.sln --verify-no-changes
 
-      - name: Kiểm Tra Lỗ Hổng Bảo Mật
+      - name: Check Vulnerabilities
         run: |
           echo "🔍 Kiểm tra dependencies có lỗ hổng bảo mật..."
           dotnet list package --vulnerable --include-transitive || true
@@ -51,9 +51,9 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Chạy Tests Với Coverage
+      - name: Run Tests With Coverage
         run: |
-          echo "🧪 Chạy tests với code coverage..."
+          echo "🧪 Run tests with code coverage..."
           dotnet test --no-build --configuration Release \
             --verbosity normal \
             --collect:"XPlat Code Coverage" \
@@ -64,7 +64,7 @@ jobs:
             /p:ThresholdType=line \
             /p:ThresholdStat=total
 
-      - name: Tạo Báo Cáo Coverage HTML
+      - name: Generate Coverage Report
         if: always()
         run: |
           dotnet tool install --global dotnet-reportgenerator-globaltool
