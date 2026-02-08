@@ -10,6 +10,9 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("categories");
 
+            // Global Query Filter for Soft Delete
+            builder.HasQueryFilter(e => e.DeletedAt == null);
+
             builder.HasKey(e => e.CategoryId);
             builder.Property(e => e.CategoryId).HasColumnName("category_id");
 
@@ -20,11 +23,14 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.HasIndex(e => e.Name).IsUnique();
 
-            builder.Property(e => e.Type).HasColumnName("type");
+            builder.Property(e => e.CategoryType).HasColumnName("type");
+
+            builder.Property(e => e.IsActive).HasColumnName("is_active");
 
             // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
         }
     }
 }

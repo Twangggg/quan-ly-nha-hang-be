@@ -21,27 +21,32 @@ namespace FoodHub.Presentation.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProfile(Guid id)
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetMyProfile()
         {
-            var result = await _mediator.Send(new Query(id));
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim?.Value, out var userId))
+                throw new NotFoundException("User not found");
+
+            var result = await _mediator.Send(new Query(userId));
             return Ok(result);
         }
 
+        [Authorize]
         [HttpPut]
-        public async Task<IActionResult> UpdateProfileAsync(Command command)
+        public async Task<IActionResult> UpdateProfileAsync(UpdateProfileCommand command)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            {
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim?.Value, out var userId))
                 throw new NotFoundException("User not found");
-            }
 
-            var result = await _mediator.Send(new Command(
+            var result = await _mediator.Send(new UpdateProfileCommand(
                 userId,
-                command.FullName.Trim(),
-                command.Email.Trim(),
-                command.Phone.Trim(),
+                command.FullName?.Trim(),
+                command.Email?.Trim(),
+                command.Phone?.Trim(),
                 command.Address?.Trim(),
                 command.DateOfBirth
                 ));

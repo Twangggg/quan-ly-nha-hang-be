@@ -5,6 +5,7 @@ using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
 using FoodHub.Infrastructure.Services;
 using FoodHub.Infrastructure.Services.RateLimiting;
+using FoodHub.Infrastructure.BackgroundJobs;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
@@ -17,6 +18,7 @@ namespace FoodHub.Infrastructure
         {
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+            services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
 
             services.AddDbContext<AppDbContext>(options =>
             {
@@ -55,10 +57,12 @@ namespace FoodHub.Infrastructure
             // Cache Service
             services.AddScoped<ICacheService, RedisCacheService>();
 
+            // Cloudinary Service
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
 
-            // Register Background Email Services
+            // Background Email Services
             services.AddSingleton<BackgroundEmailChannel>();
-            services.AddSingleton<IBackgroundEmailSender>(provider => provider.GetRequiredService<BackgroundEmailChannel>());
+            services.AddSingleton<IBackgroundEmailSender>(sp => sp.GetRequiredService<BackgroundEmailChannel>());
             services.AddHostedService<EmailBackgroundWorker>();
 
             return services;

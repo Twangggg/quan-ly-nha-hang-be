@@ -6,9 +6,11 @@
     public class RedisRateLimiter : IRateLimiter
     {
         private readonly IDatabase _db;
+        private readonly IConnectionMultiplexer _redis;
 
         public RedisRateLimiter(IConnectionMultiplexer redis)
         {
+            _redis = redis;
             _db = redis.GetDatabase();
         }
 
@@ -17,9 +19,17 @@
 
         public async Task<bool> IsBlockedAsync(string key, CancellationToken ct)
         {
-            // StackExchange.Redis không dùng ct trực tiếp cho mọi lệnh,
-            // nhưng vẫn ok về mặt logic.
-            return await _db.KeyExistsAsync(BlockKey(key));
+            if (!_redis.IsConnected)
+                return false;
+
+            try
+            {
+                return await _db.KeyExistsAsync(BlockKey(key));
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<int> RegisterFailAsync(
@@ -29,31 +39,51 @@
             TimeSpan blockFor,
             CancellationToken ct)
         {
-            var failKey = FailKey(key);
+            if (!_redis.IsConnected)
+                return 0;
 
-            // 1) tăng count (atomic)
-            var count = (int)await _db.StringIncrementAsync(failKey);
-
-            // 2) nếu là lần đầu, set TTL cho cửa sổ thời gian
-            if (count == 1)
+            try
             {
-                await _db.KeyExpireAsync(failKey, window);
-            }
+                var failKey = FailKey(key);
 
-            // 3) nếu vượt ngưỡng -> block
-            if (count >= limit)
+                // 1) tăng count (atomic)
+                var count = (int)await _db.StringIncrementAsync(failKey);
+
+                // 2) nếu là lần đầu, set TTL cho cửa sổ thời gian
+                if (count == 1)
+                {
+                    await _db.KeyExpireAsync(failKey, window);
+                }
+
+                // 3) nếu vượt ngưỡng -> block
+                if (count >= limit)
+                {
+                    await _db.StringSetAsync(BlockKey(key), "1", blockFor);
+                }
+
+                return count;
+            }
+            catch
             {
-                await _db.StringSetAsync(BlockKey(key), "1", blockFor);
+                // Nếu Redis có vấn đề, coi như không track được fail
+                return 0;
             }
-
-            return count;
         }
 
         public async Task ResetAsync(string key, CancellationToken ct)
         {
-            await _db.KeyDeleteAsync(FailKey(key));
-            await _db.KeyDeleteAsync(BlockKey(key));
+            if (!_redis.IsConnected)
+                return;
+
+            try
+            {
+                await _db.KeyDeleteAsync(FailKey(key));
+                await _db.KeyDeleteAsync(BlockKey(key));
+            }
+            catch
+            {
+                // Ignore
+            }
         }
     }
-
 }

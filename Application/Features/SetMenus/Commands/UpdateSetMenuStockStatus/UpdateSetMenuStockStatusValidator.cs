@@ -1,13 +1,15 @@
-using FluentValidation;
+﻿using FluentValidation;
+using FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatus;
 
-namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatus
+namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItemStockStatus
 {
     public class UpdateSetMenuStockStatusValidator : AbstractValidator<UpdateSetMenuStockStatusCommand>
     {
         public UpdateSetMenuStockStatusValidator()
         {
             RuleFor(x => x.SetMenuId)
-                .NotEmpty().WithMessage("Set menu ID is required");
+                .NotEmpty().WithMessage("SetMenuId is required.");
         }
     }
+
 }

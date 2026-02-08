@@ -10,6 +10,9 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("option_groups");
 
+            // Global Query Filter for Soft Delete
+            builder.HasQueryFilter(e => e.DeletedAt == null);
+
             builder.HasKey(e => e.OptionGroupId);
             builder.Property(e => e.OptionGroupId).HasColumnName("option_group_id");
 
@@ -20,8 +23,13 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasMaxLength(100)
                 .IsRequired();
 
-            builder.Property(e => e.Type).HasColumnName("type");
+            builder.Property(e => e.OptionType).HasColumnName("type");
             builder.Property(e => e.IsRequired).HasColumnName("is_required");
+
+            // Audit Properties
+            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
+            builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
             // Relationships
             builder.HasOne(e => e.MenuItem)

@@ -10,6 +10,9 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("menu_items");
 
+            // Global Query Filter for Soft Delete
+            builder.HasQueryFilter(e => e.DeletedAt == null);
+
             builder.HasKey(e => e.MenuItemId);
             builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
 
@@ -47,8 +50,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasColumnName("price_take_away")
                 .HasPrecision(12, 2);
 
-            builder.Property(e => e.Cost)
-                .HasColumnName("cost")
+            builder.Property(e => e.CostPrice)
+                .HasColumnName("cost_price")
                 .HasPrecision(12, 2);
 
             builder.Property(e => e.IsOutOfStock).HasColumnName("is_out_of_stock");
@@ -64,8 +67,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
-            builder.Property(e => e.CreatedById).HasColumnName("created_by_id");
-            builder.Property(e => e.UpdatedById).HasColumnName("updated_by_id");
+            builder.Property(e => e.CreatedByEmployeeId).HasColumnName("created_by_employee_id");
+            builder.Property(e => e.UpdatedByEmployeeId).HasColumnName("updated_by_employee_id");
             builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
 
             // Indexes
