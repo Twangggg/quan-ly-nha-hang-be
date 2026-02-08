@@ -39,7 +39,7 @@ jobs:
           dotnet ef migrations has-pending-model-changes --project FoodHub.csproj
 
       - name: Check Formatting
-        run: dotnet format --verify-no-changes
+        run: dotnet format FoodHub.sln --verify-no-changes
 
       - name: Check for Vulnerabilities
         run: dotnet list package --vulnerable
