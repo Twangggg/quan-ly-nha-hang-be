@@ -41,14 +41,44 @@ jobs:
       - name: Check Formatting
         run: dotnet format FoodHub.sln --verify-no-changes
 
-      - name: Check for Vulnerabilities
-        run: dotnet list package --vulnerable
+      - name: Kiểm Tra Lỗ Hổng Bảo Mật
+        run: |
+          echo "🔍 Kiểm tra dependencies có lỗ hổng bảo mật..."
+          dotnet list package --vulnerable --include-transitive || true
+          echo "📦 Kiểm tra packages lỗi thời..."
+          dotnet list package --outdated || true
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Run Tests
-        run: dotnet test --no-build --configuration Release --verbosity normal
+      - name: Chạy Tests Với Coverage
+        run: |
+          echo "🧪 Chạy tests với code coverage..."
+          dotnet test --no-build --configuration Release \
+            --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            /p:Threshold=80 \
+            /p:ThresholdType=line \
+            /p:ThresholdStat=total
+
+      - name: Tạo Báo Cáo Coverage HTML
+        if: always()
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+          reportgenerator \
+            -reports:./coverage/**/coverage.cobertura.xml \
+            -targetdir:./coverage-report \
+            -reporttypes:Html
+
+      - name: Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage-report
 
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -69,5 +99,14 @@ jobs:
           dotnet test --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage.opencover.xml
           dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
-      - name: Build Docker Image
-        run: docker build . -t foodhub-be:latest
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image Với Cache
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: foodhub-be:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
