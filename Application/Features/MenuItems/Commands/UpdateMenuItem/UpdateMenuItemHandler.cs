@@ -1,5 +1,6 @@
 using AutoMapper;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -13,11 +14,14 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
-        public UpdateMenuItemHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService)
+        private readonly IMessageService _messageService;
+
+        public UpdateMenuItemHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
+            _messageService = messageService;
         }
 
         public async Task<Result<UpdateMenuItemResponse>> Handle(UpdateMenuItemCommand request, CancellationToken cancellationToken)
@@ -27,7 +31,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             var menuItem = await repo.Query()
                 .Include(mi => mi.Category)
                 .FirstOrDefaultAsync(mi => mi.MenuItemId == request.MenuItemId, cancellationToken);
-            if (menuItem is null) return Result<UpdateMenuItemResponse>.NotFound("Menu item is not found!");
+            if (menuItem is null) return Result<UpdateMenuItemResponse>.NotFound(_messageService.GetMessage(MessageKeys.MenuItem.NotFound));
 
             var name = request.Name.Trim();
             var imageUrl = request.ImageUrl.Trim();
@@ -42,7 +46,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             var categoryExists = await _unitOfWork.Repository<Category>().Query()
                 .AnyAsync(c => c.CategoryId == categoryId, cancellationToken);
             if (!categoryExists)
-                return Result<UpdateMenuItemResponse>.Failure("Category is not exist!");
+                return Result<UpdateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.NotFound));
 
             menuItem.Name = name;
             menuItem.ImageUrl = imageUrl;
@@ -60,7 +64,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             {
                 if (_currentUserService.Role is EmployeeRole.Manager or EmployeeRole.Cashier)
                     menuItem.CostPrice = costPrice.Value;
-                else return Result<UpdateMenuItemResponse>.Failure("You do not have permission to update the cost of the menu item!", ResultErrorType.Forbidden);
+                else return Result<UpdateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.UpdateCostForbidden), ResultErrorType.Forbidden);
             }
 
             await _unitOfWork.SaveChangeAsync();

@@ -1,5 +1,6 @@
 using AutoMapper;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -13,11 +14,14 @@ namespace FoodHub.Application.Features.MenuItems.Commands.DeleteMenuItem
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
-        public DeleteMenuItemHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService)
+        private readonly IMessageService _messageService;
+
+        public DeleteMenuItemHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
+            _messageService = messageService;
         }
 
         public async Task<Result<DeleteMenuItemResponse>> Handle(DeleteMenuItemCommand request, CancellationToken cancellationToken)
@@ -27,7 +31,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.DeleteMenuItem
             var menuItem = await repo.Query()
                 .Include(mi => mi.Category)
                 .FirstOrDefaultAsync(mi => mi.MenuItemId == request.MenuItemId, cancellationToken);
-            if (menuItem is null) return Result<DeleteMenuItemResponse>.NotFound("Menu item is not found!");
+            if (menuItem is null) return Result<DeleteMenuItemResponse>.NotFound(_messageService.GetMessage(MessageKeys.MenuItem.NotFound));
 
             menuItem.DeletedAt = DateTime.UtcNow;
             menuItem.UpdatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;

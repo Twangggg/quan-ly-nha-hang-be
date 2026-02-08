@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -10,12 +11,14 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IMessageService _messageService;
         //private readonly ICloudinaryService _cloudinaryService;
 
-        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)//, ICloudinaryService cloudinaryService)
+        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)//, ICloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
+            _messageService = messageService;
             //_cloudinaryService = cloudinaryService;
         }
 
@@ -27,7 +30,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             var existingMenuItem = await menuItemRepository.AnyAsync(x => x.Code == request.Code);
             if (existingMenuItem)
             {
-                return Result<CreateMenuItemResponse>.Failure($"Menu item with code '{request.Code}' already exists.", ResultErrorType.Conflict);
+                return Result<CreateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.CodeExists, request.Code), ResultErrorType.Conflict);
             }
 
             // 2. Check if Category exists
@@ -35,7 +38,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             var category = await categoryRepository.GetByIdAsync(request.CategoryId);
             if (category == null)
             {
-                return Result<CreateMenuItemResponse>.Failure($"Category with ID '{request.CategoryId}' not found.", ResultErrorType.NotFound);
+                return Result<CreateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.NotFound, request.CategoryId), ResultErrorType.NotFound);
             }
 
             Guid? auditorId = null;

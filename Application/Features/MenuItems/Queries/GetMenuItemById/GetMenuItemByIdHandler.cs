@@ -1,22 +1,21 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
-using FoodHub.Application.Resources;
+using FoodHub.Application.Constants;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
 
 namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
 {
     public class GetMenuItemByIdHandler : IRequestHandler<GetMenuItemByIdQuery, Result<GetMenuItemByIdResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IStringLocalizer<ErrorMessages> _localizer;
+        private readonly IMessageService _messageService;
 
-        public GetMenuItemByIdHandler(IUnitOfWork unitOfWork, IStringLocalizer<ErrorMessages> localizer)
+        public GetMenuItemByIdHandler(IUnitOfWork unitOfWork, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
-            _localizer = localizer;
+            _messageService = messageService;
         }
 
         public async Task<Result<GetMenuItemByIdResponse>> Handle(GetMenuItemByIdQuery request, CancellationToken cancellationToken)
@@ -29,7 +28,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById
 
             if (menuItem == null)
             {
-                return Result<GetMenuItemByIdResponse>.Failure(_localizer["MenuItem.NotFound", request.Id].Value);
+                return Result<GetMenuItemByIdResponse>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.NotFound, request.Id));
             }
 
             var response = new GetMenuItemByIdResponse
