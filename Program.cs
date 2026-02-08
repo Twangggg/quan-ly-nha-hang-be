@@ -1,13 +1,14 @@
 using FoodHub.Application;
 using FoodHub.Application.Interfaces;
 using FoodHub.Infrastructure;
+using FoodHub.Infrastructure.BackgroundJobs;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Services;
-using FoodHub.Infrastructure.BackgroundJobs;
 using FoodHub.Presentation.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
@@ -29,6 +30,19 @@ var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 if (!string.IsNullOrEmpty(jwtSecret))
 {
     builder.Configuration["Jwt:SecretKey"] = jwtSecret;
+}
+
+var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+
+if (!string.IsNullOrEmpty(jwtIssuer))
+{
+    builder.Configuration["Jwt:Issuer"] = jwtIssuer;
+}
+
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+if (!string.IsNullOrEmpty(jwtAudience))
+{
+    builder.Configuration["Jwt:Audience"] = jwtAudience;
 }
 
 var jwtAccessExpires = Environment.GetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRES_IN_MINUTE");
@@ -84,13 +98,32 @@ if (!string.IsNullOrEmpty(allowedOrigins))
     builder.Configuration["AllowedOrigins"] = allowedOrigins;
 }
 
+var cloudinaryCloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
+if (!string.IsNullOrEmpty(cloudinaryCloudName))
+{
+    builder.Configuration["Cloudinary:CloudName"] = cloudinaryCloudName;
+}
+
+var cloudinaryApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
+if (!string.IsNullOrEmpty(cloudinaryApiKey))
+{
+    builder.Configuration["Cloudinary:ApiKey"] = cloudinaryApiKey;
+}
+
+var cloudinaryApiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
+if (!string.IsNullOrEmpty(cloudinaryApiSecret))
+{
+    builder.Configuration["Cloudinary:ApiSecret"] = cloudinaryApiSecret;
+}
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("Redis")
-                          ?? builder.Configuration["Redis:ConnectionString"]
-                          ?? "localhost:6379";
+                      ?? builder.Configuration["Redis:ConnectionString"]
+                      ?? "localhost:6379";
     options.Configuration = connectionString;
     options.InstanceName = builder.Configuration["Redis:InstanceName"];
+
 });
 
 // Configure Forwarded Headers for Proxy/Load Balancer support
@@ -111,6 +144,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "FoodHub API", Version = "v1" });
+
+    c.CustomSchemaIds(type => type.FullName);
 
     // Config JWT in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

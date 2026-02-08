@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using FoodHub.Application.Constants;
 using FluentValidation;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Extensions.Mappings;
@@ -10,25 +9,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
 {
-    public class Validator : AbstractValidator<Command>
+    public class UpdateProfileValidator : AbstractValidator<UpdateProfileCommand>
     {
-        public Validator(IMessageService messageService)
+        public UpdateProfileValidator()
         {
             RuleFor(x => x.EmployeeId)
-                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.EmployeeIdRequired));
+                .NotEmpty().WithMessage("EmployeeId not empty");
 
             RuleFor(x => x.FullName)
-                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.FullNameRequired))
-                .MaximumLength(100).WithMessage(messageService.GetMessage(MessageKeys.Profile.FullNameMaxLength));
+                .NotEmpty().WithMessage("Full name not empty")
+                .MaximumLength(100).WithMessage("Full name not exceed 100 characters");
 
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.EmailRequired))
-                .EmailAddress().WithMessage(messageService.GetMessage(MessageKeys.Profile.EmailInvalid));
+                .NotEmpty().WithMessage("Email not empty")
+                .EmailAddress().WithMessage("Email invalid");
 
             RuleFor(x => x.Phone)
-                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneRequired))
+                .NotEmpty().WithMessage("Phone number not empty")
                 .Matches(@"^(0|\+84)[3|5|7|8|9][0-9]{8}$")
-                .WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneInvalid));
+                .WithMessage("Phone number invalid");
+
+            RuleFor(x => x.Address)
+                .NotEmpty().WithMessage("Address not empty")
+                .MaximumLength(200).WithMessage("Address not exceed 200 characters");
+
+            RuleFor(x => x.DateOfBirth)
+                .NotEmpty().WithMessage("Date of birth not empty")
+                .LessThan(DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage("Date of birth must be in the past");
         }
     }
 
