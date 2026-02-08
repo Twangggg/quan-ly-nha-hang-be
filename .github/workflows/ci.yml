@@ -57,7 +57,14 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          dotnet sonarscanner begin /k:"foodhub-be" /o:"${{ secrets.SONAR_ORGANIZATION }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
+          dotnet sonarscanner begin `
+            /k:"Twangggg_quan-ly-nha-hang-be" `
+            /o:"twangggg" `
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
+            /d:sonar.host.url="https://sonarcloud.io" `
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" `
+            /d:sonar.exclusions="**/Migrations/**,**/bin/**,**/obj/**" `
+            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs"
           dotnet build --configuration Release --no-restore
           dotnet test --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage.opencover.xml
           dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
