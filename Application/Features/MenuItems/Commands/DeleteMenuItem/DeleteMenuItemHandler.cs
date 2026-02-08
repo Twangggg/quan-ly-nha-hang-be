@@ -30,7 +30,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.DeleteMenuItem
             if (menuItem is null) return Result<DeleteMenuItemResponse>.NotFound("Menu item is not found!");
 
             menuItem.DeletedAt = DateTime.UtcNow;
-            menuItem.UpdatedByEmployeeId = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;
+            menuItem.UpdatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;
 
             await _unitOfWork.SaveChangeAsync();
 

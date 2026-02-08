@@ -1,0 +1,17 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+Application\Resources\ErrorMessages.resx : warning MSB3568: Duplicate resource name "MenuItem.NotFound" is not allowed, ignored. [H:\quan_li_nha_hang\FoodHub_BE\FoodHub.csproj]
+H:\quan_li_nha_hang\FoodHub_BE\Infrastructure\DependencyInjection.cs(8,7): warning CS0105: The using directive for 'FoodHub.Infrastructure.BackgroundJobs' appeared previously in this namespace [H:\quan_li_nha_hang\FoodHub_BE\FoodHub.csproj]
+H:\quan_li_nha_hang\FoodHub_BE\Infrastructure\Services\CurrentUserService.cs(16,34): warning CS8766: Nullability of reference types in return type of 'string? CurrentUserService.UserId.get' doesn't match implicitly implemented member 'string ICurrentUserService.UserId.get' (possibly because of nullability attributes). [H:\quan_li_nha_hang\FoodHub_BE\FoodHub.csproj]
+H:\quan_li_nha_hang\FoodHub_BE\Presentation\Controllers\Orders\OrdersController.cs(52,64): error CS0246: The type or namespace name 'PaginationParams' could not be found (are you missing a using directive or an assembly reference?) [H:\quan_li_nha_hang\FoodHub_BE\FoodHub.csproj]
+
+Build FAILED.
+
+Application\Resources\ErrorMessages.resx : warning MSB3568: Duplicate resource name "MenuItem.NotFound" is not allowed, ignored. [H:\quan_li_nha_hang\FoodHub_BE\FoodHub.csproj]
+H:\quan_li_nha_hang\FoodHub_BE\Infrastructure\DependencyInjection.cs(8,7): warning CS0105: The using directive for 'FoodHub.Infrastructure.BackgroundJobs' appeared previously in this namespace [H:\quan_li_nha_hang\FoodHub_BE\FoodHub.csproj]
+H:\quan_li_nha_hang\FoodHub_BE\Infrastructure\Services\CurrentUserService.cs(16,34): warning CS8766: Nullability of reference types in return type of 'string? CurrentUserService.UserId.get' doesn't match implicitly implemented member 'string ICurrentUserService.UserId.get' (possibly because of nullability attributes). [H:\quan_li_nha_hang\FoodHub_BE\FoodHub.csproj]
+H:\quan_li_nha_hang\FoodHub_BE\Presentation\Controllers\Orders\OrdersController.cs(52,64): error CS0246: The type or namespace name 'PaginationParams' could not be found (are you missing a using directive or an assembly reference?) [H:\quan_li_nha_hang\FoodHub_BE\FoodHub.csproj]
+    3 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.48

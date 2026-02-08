@@ -28,7 +28,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.DeleteMenuItem
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
 
-        public Guid? CreatedByEmployeeId { get; set; }
-        public Guid? UpdatedByEmployeeId { get; set; }
+        public Guid? CreatedBy { get; set; }
+        public Guid? UpdatedBy { get; set; }
     }
 }

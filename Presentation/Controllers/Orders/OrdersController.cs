@@ -1,4 +1,5 @@
 ﻿using FoodHub.Application.Common.Models;
+using FoodHub.Application.Extensions.Pagination;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,9 @@ using FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem;
 using FoodHub.Application.Features.Orders.Commands.CompleteOrder;
 using FoodHub.Application.Features.Orders.Commands.CancelOrder;
 using FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen;
+using FoodHub.Application.Features.Orders.Commands.CreateOrder;
+using FoodHub.Application.Features.Orders.Queries.GetOrders;
+
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -35,6 +39,22 @@ namespace FoodHub.Presentation.Controllers
                 ResultErrorType.Conflict => Conflict(new { message = result.Error }),
                 _ => BadRequest(new { message = result.Error })
             };
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Manager,Waiter")]
+        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Manager,Waiter")]
+        public async Task<IActionResult> GetOrders([FromQuery] PaginationParams pagination)
+        {
+            var result = await _mediator.Send(new GetOrdersQuery { Pagination = pagination });
+            return HandleResult(result);
         }
 
         [HttpPost("submit-to-kitchen")]

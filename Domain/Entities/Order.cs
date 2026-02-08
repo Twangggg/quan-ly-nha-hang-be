@@ -2,7 +2,7 @@
 
 namespace FoodHub.Domain.Entities
 {
-    public class Order
+    public class Order : BaseEntity
     {
         public Guid OrderId { get; set; }
         public string OrderCode { get; set; } = null!; // ORD-YYYYMMDD-XXXX
@@ -16,11 +16,7 @@ namespace FoodHub.Domain.Entities
         public decimal TotalAmount { get; set; }
         public bool IsPriority { get; set; }
 
-        // FK to Employee (CreatedBy)
-        public Guid CreatedBy { get; set; }
         public virtual Employee CreatedByEmployee { get; set; } = null!;
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public DateTime? CancelledAt { get; set; }
 

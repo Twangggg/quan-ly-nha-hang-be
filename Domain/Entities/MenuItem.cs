@@ -4,7 +4,7 @@ using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
 {
-    public class MenuItem
+    public class MenuItem : BaseEntity
     {
         public Guid MenuItemId { get; set; }
         public required string Code { get; set; }
@@ -23,12 +23,6 @@ namespace FoodHub.Domain.Entities
         public decimal CostPrice { get; set; } // Internal cost
 
         public bool IsOutOfStock { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
-        public DateTime? DeletedAt { get; set; }
-
-        public Guid? CreatedByEmployeeId { get; set; }
-        public Guid? UpdatedByEmployeeId { get; set; }
     
         public virtual ICollection<OptionGroup> OptionGroups { get; set; } = new List<OptionGroup>();
         public virtual ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();

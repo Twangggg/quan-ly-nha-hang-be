@@ -18,7 +18,7 @@ namespace FoodHub.Application.Features.Employees.Queries.GetEmployeeById
         public string Status { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public DateTime? DeleteAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
 
         public void Mapping(Profile profile)
         {

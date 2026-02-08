@@ -2,7 +2,7 @@
 
 namespace FoodHub.Domain.Entities
 {
-    public class Employee
+    public class Employee : BaseEntity
     {
         // Khóa chính: Tên gọi rõ ràng, dễ hiểu
         public Guid EmployeeId { get; set; }
@@ -16,9 +16,6 @@ namespace FoodHub.Domain.Entities
         public DateOnly? DateOfBirth { get; set; }
         public EmployeeRole Role { get; set; }
         public EmployeeStatus Status { get; set; } = EmployeeStatus.Active;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
-        public DateTime? DeleteAt { get; set; }
         public virtual ICollection<AuditLog> TargetLogs { get; set; } = new List<AuditLog>();
         public virtual ICollection<AuditLog> PerformedLogs { get; set; } = new List<AuditLog>();
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();

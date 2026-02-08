@@ -39,7 +39,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.ToggleOutOfStock
             // Toggle the out of stock status
             menuItem.IsOutOfStock = request.IsOutOfStock;
             menuItem.UpdatedAt = DateTime.UtcNow;
-            menuItem.UpdatedByEmployeeId = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;
+            menuItem.UpdatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;
 
             await _unitOfWork.SaveChangeAsync();
 

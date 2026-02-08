@@ -54,7 +54,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             menuItem.PriceTakeAway = priceTakeAway;
 
             menuItem.UpdatedAt = DateTime.UtcNow;
-            menuItem.UpdatedByEmployeeId = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;
+            menuItem.UpdatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;
 
             if (costPrice.HasValue)
             {

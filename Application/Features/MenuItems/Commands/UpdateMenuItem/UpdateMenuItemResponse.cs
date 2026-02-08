@@ -23,6 +23,6 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         public decimal PriceTakeAway { get; set; }
         public decimal? CostPrice { get; set; } // Internal cost
         public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdatedByEmployeeId { get; set; }
+        public Guid? UpdatedBy { get; set; }
     }
 }

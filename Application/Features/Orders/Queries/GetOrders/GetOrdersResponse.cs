@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using FoodHub.Application.Extensions.Mappings;
-using FoodHub.Application.Features.Employees.Queries.GetEmployees;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
+using FoodHub.Application.Features.OrderItems.Common;
 
 namespace FoodHub.Application.Features.Orders.Queries.GetOrders
 {
@@ -21,7 +21,7 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
         public DateTime? UpdatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public DateTime? CancelledAt { get; set; }
-        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public ICollection<OrderItemDto> OrderItems { get; set; } = new List<OrderItemDto>();
         public void Mapping(Profile profile)
         {
             profile.CreateMap<Order, GetOrdersResponse>()

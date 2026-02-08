@@ -74,8 +74,8 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 CostPrice = request.Cost ?? 0,
                 IsOutOfStock = false,
                 CreatedAt = DateTime.UtcNow,
-                CreatedByEmployeeId = auditorId,
-                UpdatedByEmployeeId = auditorId
+                CreatedBy = auditorId,
+                UpdatedBy = auditorId
             };
 
 

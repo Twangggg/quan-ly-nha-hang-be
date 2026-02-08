@@ -38,14 +38,14 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                    .HasDefaultValue(EmployeeStatus.Active)
                    .HasSentinel(EmployeeStatus.Inactive);
 
-            builder.Property(x => x.CreatedAt)
-                   .HasDefaultValueSql("now()");
-
-            builder.HasIndex(x => x.Role);
-            builder.HasIndex(x => x.Status);
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
+            builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
+            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
 
             // Global Query Filter: Hide soft-deleted employees
-            builder.HasQueryFilter(x => x.DeleteAt == null);
+            builder.HasQueryFilter(x => x.DeletedAt == null);
         }
     }
 }

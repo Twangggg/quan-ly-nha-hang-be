@@ -45,7 +45,8 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
 
             employee.Status = EmployeeStatus.Inactive;
             employee.UpdatedAt = DateTime.UtcNow;
-            employee.DeleteAt = DateTime.UtcNow;
+            employee.UpdatedBy = auditorId;
+            employee.DeletedAt = DateTime.UtcNow;
 
             employeeRepository.Update(employee);
 
