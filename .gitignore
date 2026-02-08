@@ -52,3 +52,10 @@ appsettings.Development.json
 .DS_Store
 server.log
 out/
+
+# Coverage reports
+coverage/
+coverage-report/
+TestResults/
+*.coverage
+*.coveragexml

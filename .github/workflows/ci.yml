@@ -93,7 +93,7 @@ jobs:
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
-            /d:sonar.exclusions="**/Migrations/**,**/bin/**,**/obj/**" \
+            /d:sonar.exclusions="**/Migrations/**,**/bin/**,**/obj/**,**/coverage-report/**,**/coverage/**" \
             /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs"
           dotnet build --configuration Release --no-restore
           dotnet test --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage.opencover.xml
