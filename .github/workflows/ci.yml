@@ -19,11 +19,40 @@ jobs:
         with:
           dotnet-version: "9.0.x"
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Restore dependencies
         run: dotnet restore
+
+      - name: Check Formatting
+        run: dotnet format --verify-no-changes
+
+      - name: Check for Vulnerabilities
+        run: dotnet list package --vulnerable
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
       - name: Run Tests
         run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: Test with coverage
+        run: |
+          dotnet test \
+          /p:CollectCoverage=true \
+          /p:CoverletOutputFormat=lcov
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: **/coverage.info
+
+      - name: Build Docker Image
+        run: docker build . -t foodhub-be:latest

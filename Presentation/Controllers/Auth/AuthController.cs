@@ -53,35 +53,35 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpPost("refresh-token")]
-public async Task<IActionResult> RefreshToken()
-{
-    var refreshToken = Request.Cookies["refreshToken"];
+        public async Task<IActionResult> RefreshToken()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
 
-    if (string.IsNullOrEmpty(refreshToken))
-    {
-        return Unauthorized(new { message = "Refresh token not found." });
-    }
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return Unauthorized(new { message = "Refresh token not found." });
+            }
 
-    var command = new RefreshTokenCommand
-    {
-        RefreshToken = refreshToken
-    };
+            var command = new RefreshTokenCommand
+            {
+                RefreshToken = refreshToken
+            };
 
-    var result = await _mediator.Send(command);
+            var result = await _mediator.Send(command);
 
-    if (result.IsSuccess && result.Data != null)
-    {
-        SetTokenCookies(result.Data);
-    }
+            if (result.IsSuccess && result.Data != null)
+            {
+                SetTokenCookies(result.Data);
+            }
 
-    return HandleResult(result);
-}
+            return HandleResult(result);
+        }
 
 
         private void SetTokenCookies(LoginResponse response)
         {
             var isDev = _env.IsDevelopment();
-            
+
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
@@ -89,7 +89,7 @@ public async Task<IActionResult> RefreshToken()
                 SameSite = isDev ? SameSiteMode.Unspecified : SameSiteMode.None,
                 Secure = !isDev // False in Dev (allows HTTP), True in Prod
             };
-            
+
             var accessCookieOptions = new CookieOptions
             {
                 HttpOnly = true,

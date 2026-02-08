@@ -20,7 +20,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.Expires).IsRequired();
             builder.Property(x => x.IsRevoked).HasDefaultValue(false);
-            
+
             builder.Property(x => x.CreatedAt)
                    .HasDefaultValueSql("now()");
 

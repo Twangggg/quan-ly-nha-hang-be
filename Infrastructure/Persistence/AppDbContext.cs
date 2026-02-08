@@ -15,7 +15,7 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<OrderItem> OrderItems { get; set; } = null!;
         public DbSet<OrderAuditLog> OrderAuditLogs { get; set; } = null!;
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
-        
+
         // Menu Management
         public DbSet<MenuItem> MenuItems { get; set; } = null!;
         public DbSet<OptionGroup> OptionGroups { get; set; } = null!;

@@ -28,7 +28,7 @@ namespace FoodHub.Application.Features.Categories.Commands.DeleteCategory
             if (category is null) return Result<DeleteCategoryResponse>.NotFound("Category is not found!");
 
             category.DeletedAt = DateTime.UtcNow;
-            
+
             category.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveChangeAsync();

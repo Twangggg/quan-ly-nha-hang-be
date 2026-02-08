@@ -17,11 +17,11 @@ namespace FoodHub.Application.Features.MenuItems.Commands.DeleteMenuItem
         public string CategoryName { get; set; } = null!;
 
         public Station Station { get; set; }
-        public int ExpectedTime { get; set; } 
+        public int ExpectedTime { get; set; }
 
         public decimal PriceDineIn { get; set; }
         public decimal PriceTakeAway { get; set; }
-        public decimal CostPrice { get; set; } 
+        public decimal CostPrice { get; set; }
 
         public bool IsOutOfStock { get; set; }
         public DateTime CreatedAt { get; set; }

@@ -11,8 +11,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasKey(o => o.OrderId);
             builder.Property(o => o.OrderCode).HasMaxLength(30).IsRequired();
             builder.HasIndex(o => o.OrderCode).IsUnique();
-            builder.Property(o => o.OrderType).IsRequired(); 
-            builder.Property(o => o.Status).IsRequired();    
+            builder.Property(o => o.OrderType).IsRequired();
+            builder.Property(o => o.Status).IsRequired();
             builder.Property(o => o.TotalAmount).HasColumnType("decimal(15,2)");
             builder.Property(o => o.Note).HasColumnType("text");
 
@@ -22,7 +22,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                    .HasForeignKey(o => o.CreatedBy);
 
             builder.Property(o => o.CreatedAt).HasDefaultValueSql("now()");
-            
+
             // Audit Properties from BaseEntity
             builder.Property(o => o.CreatedBy).HasColumnName("created_by");
             builder.Property(o => o.UpdatedAt).HasColumnName("updated_at");

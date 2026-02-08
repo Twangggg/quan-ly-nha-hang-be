@@ -31,7 +31,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             var currentIdString = _currentUserService.UserId;
             if (string.IsNullOrEmpty(currentIdString) || !Guid.TryParse(currentIdString, out var userId))
             {
-                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn)); 
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn));
             }
 
             //Validate Table for dine in
@@ -45,7 +45,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 var existingServingOrder = await _unitOfWork.Repository<Order>()
                     .Query()
                     .AnyAsync(o => o.TableId == request.TableId && o.Status == OrderStatus.Serving, cancellationToken);
-                
+
                 if (existingServingOrder)
                 {
                     return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.TableAlreadyOccupied));
@@ -105,9 +105,9 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 
             //Check Out of Stock
             var outOfStockItem = menuItems.Values.Where(x => x.IsOutOfStock).ToList();
-            if(outOfStockItem.Any())
+            if (outOfStockItem.Any())
             {
-                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.OutOfStock) + 
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.OutOfStock) +
                     $"{string.Join(", ", outOfStockItem.Select(m => m.Name))}");
             }
 
@@ -224,7 +224,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                     }
                 }
 
-                order.OrderItems.Add(orderItem);    
+                order.OrderItems.Add(orderItem);
             }
 
             //Calculate total amount

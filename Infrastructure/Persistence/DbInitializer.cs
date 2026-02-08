@@ -108,34 +108,34 @@ namespace FoodHub.Infrastructure.Persistence
 
             if (!_context.Categories.Any() && !_context.MenuItems.Any())
             {
-               var foodCategory = new Category
-               {
-                   CategoryId = Guid.NewGuid(),
-                   Name = "Main Dishes",
-                   CategoryType = CategoryType.Normal,
-                   CreatedAt = DateTime.UtcNow
-               };
+                var foodCategory = new Category
+                {
+                    CategoryId = Guid.NewGuid(),
+                    Name = "Main Dishes",
+                    CategoryType = CategoryType.Normal,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-               var drinkCategory = new Category
-               {
-                   CategoryId = Guid.NewGuid(),
-                   Name = "Drinks",
-                   CategoryType = CategoryType.Normal,
-                   CreatedAt = DateTime.UtcNow
-               };
+                var drinkCategory = new Category
+                {
+                    CategoryId = Guid.NewGuid(),
+                    Name = "Drinks",
+                    CategoryType = CategoryType.Normal,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-               var comboCategory = new Category
-               {
-                   CategoryId = Guid.NewGuid(),
-                   Name = "Combo Sets",
-                   CategoryType = CategoryType.SpecialGroup,
-                   CreatedAt = DateTime.UtcNow
-               };
+                var comboCategory = new Category
+                {
+                    CategoryId = Guid.NewGuid(),
+                    Name = "Combo Sets",
+                    CategoryType = CategoryType.SpecialGroup,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-               _context.Categories.AddRange(foodCategory, drinkCategory, comboCategory);
-               _context.SaveChanges();
+                _context.Categories.AddRange(foodCategory, drinkCategory, comboCategory);
+                _context.SaveChanges();
 
-               var menuItems = new List<MenuItem>
+                var menuItems = new List<MenuItem>
                {
                    new MenuItem
                    {
@@ -199,68 +199,68 @@ namespace FoodHub.Infrastructure.Persistence
                    }
                };
 
-               _context.MenuItems.AddRange(menuItems);
-               _context.SaveChanges();
+                _context.MenuItems.AddRange(menuItems);
+                _context.SaveChanges();
             }
 
             if (!_context.SetMenus.Any())
             {
-               var setMenu = new SetMenu
-               {
-                   SetMenuId = Guid.NewGuid(),
-                   Code = "SET001",
-                   Name = "Lunch Set",
-                   Price = 70000,
-                   IsOutOfStock = false,
-                   CreatedAt = DateTime.UtcNow
-               };
+                var setMenu = new SetMenu
+                {
+                    SetMenuId = Guid.NewGuid(),
+                    Code = "SET001",
+                    Name = "Lunch Set",
+                    Price = 70000,
+                    IsOutOfStock = false,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-               var setMenu2 = new SetMenu
-               {
-                   SetMenuId = Guid.NewGuid(),
-                   Code = "SET002",
-                   Name = "Dinner Set",
-                   Price = 85000,
-                   IsOutOfStock = false,
-                   CreatedAt = DateTime.UtcNow
-               };
+                var setMenu2 = new SetMenu
+                {
+                    SetMenuId = Guid.NewGuid(),
+                    Code = "SET002",
+                    Name = "Dinner Set",
+                    Price = 85000,
+                    IsOutOfStock = false,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-               var setMenuItem21 = new SetMenuItem
-               {
-                   SetMenuItemId = Guid.NewGuid(),
-                   SetMenuId = setMenu2.SetMenuId,
-                   MenuItemId = _context.MenuItems.First(mi => mi.Code == "FOOD002").MenuItemId,
-                   Quantity = 1
-               };
+                var setMenuItem21 = new SetMenuItem
+                {
+                    SetMenuItemId = Guid.NewGuid(),
+                    SetMenuId = setMenu2.SetMenuId,
+                    MenuItemId = _context.MenuItems.First(mi => mi.Code == "FOOD002").MenuItemId,
+                    Quantity = 1
+                };
 
-               var setMenuItem22 = new SetMenuItem
-               {
-                   SetMenuItemId = Guid.NewGuid(),
-                   SetMenuId = setMenu2.SetMenuId,
-                   MenuItemId = _context.MenuItems.First(mi => mi.Code == "DRINK001").MenuItemId,
-                   Quantity = 1
-               };
+                var setMenuItem22 = new SetMenuItem
+                {
+                    SetMenuItemId = Guid.NewGuid(),
+                    SetMenuId = setMenu2.SetMenuId,
+                    MenuItemId = _context.MenuItems.First(mi => mi.Code == "DRINK001").MenuItemId,
+                    Quantity = 1
+                };
 
-               var setMenu3 = new SetMenu
-               {
-                   SetMenuId = Guid.NewGuid(),
-                   Code = "SET003",
-                   Name = "Family Set",
-                   Price = 150000,
-                   IsOutOfStock = false,
-                   CreatedAt = DateTime.UtcNow
-               };
+                var setMenu3 = new SetMenu
+                {
+                    SetMenuId = Guid.NewGuid(),
+                    Code = "SET003",
+                    Name = "Family Set",
+                    Price = 150000,
+                    IsOutOfStock = false,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-               var setMenuItem31 = new SetMenuItem
-               {
-                   SetMenuItemId = Guid.NewGuid(),
-                   SetMenuId = setMenu3.SetMenuId,
-                   MenuItemId = _context.MenuItems.First(mi => mi.Code == "FOOD001").MenuItemId,
-                   Quantity = 2
-               };
+                var setMenuItem31 = new SetMenuItem
+                {
+                    SetMenuItemId = Guid.NewGuid(),
+                    SetMenuId = setMenu3.SetMenuId,
+                    MenuItemId = _context.MenuItems.First(mi => mi.Code == "FOOD001").MenuItemId,
+                    Quantity = 2
+                };
 
-               _context.SetMenus.AddRange(setMenu, setMenu2, setMenu3);
-               _context.SaveChanges();
+                _context.SetMenus.AddRange(setMenu, setMenu2, setMenu3);
+                _context.SaveChanges();
             }
 
             _context.SaveChanges();
