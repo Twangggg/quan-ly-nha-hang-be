@@ -30,6 +30,14 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Install EF Core Tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Check Migrations
+        run: |
+          dotnet ef migrations list --project Infrastructure --startup-project WebAPI
+          dotnet ef migrations has-pending-model-changes --project Infrastructure --startup-project WebAPI
+
       - name: Check Formatting
         run: dotnet format --verify-no-changes
 
@@ -42,17 +50,17 @@ jobs:
       - name: Run Tests
         run: dotnet test --no-build --configuration Release --verbosity normal
 
-      - name: Test with coverage
-        run: |
-          dotnet test \
-          /p:CollectCoverage=true \
-          /p:CoverletOutputFormat=lcov
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
 
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: **/coverage.info
+      - name: SonarCloud Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin /k:"foodhub-be" /o:"${{ secrets.SONAR_ORGANIZATION }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
+          dotnet build --configuration Release --no-restore
+          dotnet test --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage.opencover.xml
+          dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
       - name: Build Docker Image
         run: docker build . -t foodhub-be:latest
