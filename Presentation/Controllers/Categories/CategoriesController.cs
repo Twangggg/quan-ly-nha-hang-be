@@ -42,7 +42,6 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryCommand command)
         {
             var result = await _mediator.Send(command);
-            
             if (result.IsSuccess)
             {
                 return CreatedAtAction(nameof(GetCategoryById), new { id = result.Data }, result.Data);

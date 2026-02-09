@@ -26,15 +26,17 @@ namespace FoodHub.Presentation.Controllers
                 return Ok(new { data = result.Data });
             }
 
-            return result.ErrorType switch
+            var statusCode = result.ErrorType switch
             {
-                ResultErrorType.BadRequest => BadRequest(new { message = result.Error }),
-                ResultErrorType.NotFound => NotFound(new { message = result.Error }),
-                ResultErrorType.Unauthorized => Unauthorized(new { message = result.Error }),
-                ResultErrorType.Forbidden => Forbid(),
-                ResultErrorType.Conflict => Conflict(new { message = result.Error }),
-                _ => BadRequest(new { message = result.Error })
+                ResultErrorType.NotFound => 404,
+                ResultErrorType.Unauthorized => 401,
+                ResultErrorType.Forbidden => 403,
+                ResultErrorType.Conflict => 409,
+                _ => 400
             };
+
+            var response = new ErrorResponse(statusCode, result.Error ?? "An error occurred");
+            return StatusCode(statusCode, response);
         }
     }
 }
