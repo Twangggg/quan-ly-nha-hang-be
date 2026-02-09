@@ -23,7 +23,7 @@ namespace FoodHub.Presentation.Controllers
                     });
                 }
 
-                return Ok(result.Data);
+                return Ok(new { data = result.Data });
             }
 
             return result.ErrorType switch
