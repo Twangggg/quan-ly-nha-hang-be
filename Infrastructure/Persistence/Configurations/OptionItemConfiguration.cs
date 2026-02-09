@@ -45,6 +45,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             // Indexes
             builder.HasIndex(e => e.OptionGroupId).HasDatabaseName("idx_option_items_option_group_id");
+            builder.HasIndex(e => e.ExtraPrice);
         }
     }
 }

@@ -21,6 +21,15 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                    .OnDelete(DeleteBehavior.Cascade);
 
             builder.Property(oi => oi.CreatedAt).HasDefaultValueSql("now()");
+            
+            // Indexes for Optimization
+            builder.HasIndex(oi => oi.OrderId);
+            builder.HasIndex(oi => oi.Status);
+            builder.HasIndex(oi => oi.MenuItemId);
+            
+            // Composite indexes for common queries
+            builder.HasIndex(oi => new { oi.OrderId, oi.Status });
+            builder.HasIndex(oi => new { oi.Status, oi.MenuItemId });
         }
     }
 }

@@ -35,6 +35,13 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             // Indexes for Optimization
             builder.HasIndex(o => new { o.Status, o.CreatedAt });
             builder.HasIndex(o => o.OrderCode).IsUnique();
+
+            builder.HasIndex(o => o.OrderType);
+            builder.HasIndex(o => o.IsPriority);
+
+            builder.HasIndex(o => new { o.TableId, o.Status });
+            builder.HasIndex(o => o.Status)
+                .HasFilter("deleted_at IS NULL");
         }
     }
 }
