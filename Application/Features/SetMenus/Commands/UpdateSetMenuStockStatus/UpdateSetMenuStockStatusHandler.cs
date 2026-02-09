@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -10,11 +11,13 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatu
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IMessageService _messageService;
 
-        public UpdateSetMenuStockStatusHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+        public UpdateSetMenuStockStatusHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
+            _messageService = messageService;
         }
 
         public async Task<Result<bool>> Handle(UpdateSetMenuStockStatusCommand request, CancellationToken cancellationToken)
@@ -25,14 +28,14 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatu
             var userRole = _currentUserService.Role;
             if (userRole is not EmployeeRole.Manager)
             {
-                return Result<bool>.Failure("You do not have permission to update set menu stock status!", ResultErrorType.Forbidden);
+                return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.SetMenu.UpdateForbidden), ResultErrorType.Forbidden);
             }
 
             // 1. Get existing SetMenu
             var setMenu = await setMenuRepo.GetByIdAsync(request.SetMenuId);
             if (setMenu == null)
             {
-                return Result<bool>.Failure($"Set Menu with ID '{request.SetMenuId}' not found.", ResultErrorType.NotFound);
+                return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.SetMenu.NotFound), ResultErrorType.NotFound);
             }
 
             // 2. Update stock status

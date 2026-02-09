@@ -50,18 +50,12 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(e => e.IsOutOfStock).HasColumnName("is_out_of_stock");
 
-            builder.Property(e => e.CreatedByEmployeeId)
-                .HasColumnName("created_by_employee_id")
-                .HasMaxLength(50);
-
-            builder.Property(e => e.UpdatedByEmployeeId)
-                .HasColumnName("updated_by_employee_id")
-                .HasMaxLength(50);
-
-            // Audit Properties
+            // Audit Properties from BaseEntity
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
+            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
         }
     }
 }

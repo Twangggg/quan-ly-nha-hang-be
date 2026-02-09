@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Categories.Commands.CreateCategory;
 using FoodHub.Application.Features.Categories.Commands.DeleteCategory;
 using FoodHub.Application.Features.Categories.Commands.UpdateCategory;
@@ -9,11 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/categories")]
-    [ApiController]
-    [Authorize]
+    [Route("api/[controller]")]
     [Tags("Categories")]
-    public class CategoriesController : ControllerBase
+    public class CategoriesController : ApiControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -27,13 +26,7 @@ namespace FoodHub.Presentation.Controllers
         {
             var query = new GetAllCategoriesQuery();
             var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         [HttpGet("{id}")]
@@ -41,13 +34,7 @@ namespace FoodHub.Presentation.Controllers
         {
             var query = new GetCategoryByIdQuery(id);
             var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         [HttpPost]
@@ -55,13 +42,13 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryCommand command)
         {
             var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
+            
+            if (result.IsSuccess)
             {
-                return BadRequest(new { message = result.Error });
+                return CreatedAtAction(nameof(GetCategoryById), new { id = result.Data }, result.Data);
             }
 
-            return CreatedAtAction(nameof(GetCategoryById), new { id = result.Data }, result.Data);
+            return HandleResult(result);
         }
 
         [HttpPut("{id}")]
@@ -74,13 +61,7 @@ namespace FoodHub.Presentation.Controllers
             }
 
             var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         [HttpDelete("{id}")]
@@ -88,13 +69,7 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> DeleteCategory(Guid id)
         {
             var result = await _mediator.Send(new DeleteCategoryCommand(id));
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
     }
 }

@@ -27,10 +27,12 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasColumnName("extra_price")
                 .HasPrecision(12, 2);
 
-            // Audit Properties
+            // Audit Properties from BaseEntity
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
+            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
 
             // Relationships
             builder.HasOne(e => e.OptionGroup)
