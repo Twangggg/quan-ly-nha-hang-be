@@ -14,40 +14,14 @@ using FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword;
 namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Manager")]
     [Tags("Employees")]
-    public class EmployeesController : ControllerBase
+    public class EmployeesController : ApiControllerBase
     {
         private readonly IMediator _mediator;
         public EmployeesController(IMediator mediator)
         {
             _mediator = mediator;
-        }
-
-        private IActionResult HandleResult<T>(Result<T> result)
-        {
-            if (result.IsSuccess)
-            {
-                if (result.HasWarning)
-                {
-                    return Ok(new
-                    {
-                        data = result.Data,
-                        warning = result.Warning
-                    });
-                }
-                return Ok(result.Data);
-            }
-
-            return result.ErrorType switch
-            {
-                ResultErrorType.NotFound => NotFound(new { message = result.Error }),
-                ResultErrorType.Unauthorized => Unauthorized(new { message = result.Error }),
-                ResultErrorType.Forbidden => Forbid(),
-                ResultErrorType.Conflict => Conflict(new { message = result.Error }),
-                _ => BadRequest(new { message = result.Error })
-            };
         }
 
         [HttpGet]

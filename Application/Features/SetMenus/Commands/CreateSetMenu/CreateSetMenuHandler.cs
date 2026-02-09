@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -9,12 +10,14 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IMessageService _messageService;
         //private readonly ICloudinaryService _cloudinaryService;
 
-        public CreateSetMenuHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)//, ICloudinaryService cloudinaryService)
+        public CreateSetMenuHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)//, ICloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
+            _messageService = messageService;
             //_cloudinaryService = cloudinaryService;
         }
 
@@ -28,7 +31,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
             var existingSetMenu = await setMenuRepository.AnyAsync(sm => sm.Code == request.Code);
             if (existingSetMenu)
             {
-                return Result<CreateSetMenuResponse>.Failure($"Set Menu with code '{request.Code}' already exists.", ResultErrorType.Conflict);
+                return Result<CreateSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.SetMenu.CodeExists), ResultErrorType.Conflict);
             }
 
             // 2. Validate if all MenuItems exist
@@ -37,7 +40,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
 
             if (existingMenuItemsCount != menuItemIds.Count)
             {
-                return Result<CreateSetMenuResponse>.Failure("One or more Menu Items do not exist.", ResultErrorType.BadRequest);
+                return Result<CreateSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.NotFound), ResultErrorType.BadRequest);
             }
 
             Guid? auditorId = null;
@@ -73,8 +76,8 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
                 CostPrice = request.CostPrice,
                 IsOutOfStock = false,
                 CreatedAt = DateTime.UtcNow,
-                CreatedByEmployeeId = auditorId,
-                UpdatedByEmployeeId = auditorId,
+                CreatedBy = auditorId,
+                UpdatedBy = auditorId,
                 SetMenuItems = request.Items.Select(itemRequest => new SetMenuItem
                 {
                     SetMenuItemId = Guid.NewGuid(),

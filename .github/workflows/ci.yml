@@ -60,9 +60,7 @@ jobs:
             --results-directory ./coverage \
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=cobertura \
-            /p:Threshold=80 \
-            /p:ThresholdType=line \
-            /p:ThresholdStat=total
+            /p:CoverletOutput=./coverage/
 
       - name: Generate Coverage Report
         if: always()

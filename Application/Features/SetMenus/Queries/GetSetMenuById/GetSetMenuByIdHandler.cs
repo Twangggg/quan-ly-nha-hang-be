@@ -45,7 +45,7 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenuById
                 CostPrice = setMenu.CostPrice,
                 Price = setMenu.Price,
                 UpdatedAt = setMenu.UpdatedAt,
-                UpdatedByEmployeeId = setMenu.UpdatedByEmployeeId,
+                UpdatedByEmployeeId = setMenu.UpdatedBy,
                 Items = menuItemById.Select(item => new GetSetMenuItemByIdResponse
                 {
                     SetMenuItemId = item.SetMenuItemId,

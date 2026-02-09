@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem;
 using FoodHub.Application.Features.MenuItems.Commands.DeleteMenuItem;
@@ -13,10 +14,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    [Authorize]
     [Tags("MenuItems")]
-    public class MenuItemsController : ControllerBase
+    public class MenuItemsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -30,13 +29,7 @@ namespace FoodHub.Presentation.Controllers
         {
             var query = new GetMenuItemsQuery { Pagination = pagination };
             var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         [HttpGet("{id}")]
@@ -44,13 +37,7 @@ namespace FoodHub.Presentation.Controllers
         {
             var query = new GetMenuItemByIdQuery(id);
             var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         [HttpPost]
@@ -59,12 +46,12 @@ namespace FoodHub.Presentation.Controllers
         {
             var result = await _mediator.Send(command);
 
-            if (!result.IsSuccess)
+            if (result.IsSuccess)
             {
-                return BadRequest(new { message = result.Error });
+                return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data.MenuItemId }, result.Data);
             }
 
-            return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data.MenuItemId }, result.Data);
+            return HandleResult(result);
         }
 
         [Authorize]
@@ -72,7 +59,7 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> UpdateMenuItem(Guid id, UpdateMenuItemCommand command)
         {
             var result = await _mediator.Send(command with { MenuItemId = id });
-            return Ok(result);
+            return HandleResult(result);
         }
 
         [Authorize(Roles = nameof(EmployeeRole.Manager))]
@@ -80,7 +67,7 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> UpdateMenuItemStockStatus(Guid id, UpdateMenuItemStockStatusCommand command)
         {
             var result = await _mediator.Send(command with { MenuItemId = id });
-            return Ok(result);
+            return HandleResult(result);
         }
 
         [Authorize]
@@ -88,7 +75,7 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> DeleteMenuItem(Guid id)
         {
             var result = await _mediator.Send(new DeleteMenuItemCommand(id));
-            return Ok(result);
+            return HandleResult(result);
         }
     }
 }

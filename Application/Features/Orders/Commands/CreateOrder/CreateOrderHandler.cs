@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -11,11 +12,13 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IMessageService _messageService;
 
-        public CreateOrderHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+        public CreateOrderHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
+            _messageService = messageService;
         }
 
         public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -23,7 +26,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             // 1. Validate Basic Logic
             if (request.OrderType == OrderType.DineIn && request.TableId == null)
             {
-                return Result<Guid>.Failure("Dine-in orders require a TableId.", ResultErrorType.BadRequest);
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.SelectTable), ResultErrorType.BadRequest);
             }
 
             // 2. Generate Order Code: ORD-yyyyMMdd-XXXX

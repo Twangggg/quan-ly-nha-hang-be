@@ -16,29 +16,13 @@ using FoodHub.Application.Features.Orders.Queries.GetOrders;
 namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
     [Tags("Orders")]
-    public class OrdersController : ControllerBase
+    public class OrdersController : ApiControllerBase
     {
         private readonly IMediator _mediator;
         public OrdersController(IMediator mediator)
         {
             _mediator = mediator;
-        }
-
-        private IActionResult HandleResult<T>(Result<T> result)
-        {
-            if (result.IsSuccess)
-                return Ok(result.Data);
-
-            return result.ErrorType switch
-            {
-                ResultErrorType.NotFound => NotFound(new { message = result.Error }),
-                ResultErrorType.Unauthorized => Unauthorized(new { message = result.Error }),
-                ResultErrorType.Forbidden => Forbid(),
-                ResultErrorType.Conflict => Conflict(new { message = result.Error }),
-                _ => BadRequest(new { message = result.Error })
-            };
         }
 
         [HttpPost]

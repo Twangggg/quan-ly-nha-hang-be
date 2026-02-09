@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using FoodHub.Application.Common.Exceptions;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Employees.Commands.UpdateMyProfile;
 using FoodHub.Application.Features.Employees.Queries.GetMyProfile;
 using MediatR;
@@ -10,10 +11,9 @@ namespace FoodHub.Presentation.Controllers
 {
 
     [Route("api/[controller]")]
-    [ApiController]
     [Authorize]
     [Tags("Profile")]
-    public class ProfileController : ControllerBase
+    public class ProfileController : ApiControllerBase
     {
         private readonly IMediator _mediator;
         public ProfileController(IMediator mediator)
@@ -28,10 +28,10 @@ namespace FoodHub.Presentation.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
             if (userIdClaim == null || !Guid.TryParse(userIdClaim?.Value, out var userId))
-                throw new NotFoundException("User not found");
+                return Unauthorized(new { message = "User not found" });
 
             var result = await _mediator.Send(new Query(userId));
-            return Ok(result);
+            return HandleResult(result);
         }
 
         [Authorize]
@@ -40,7 +40,7 @@ namespace FoodHub.Presentation.Controllers
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim?.Value, out var userId))
-                throw new NotFoundException("User not found");
+                return Unauthorized(new { message = "User not found" });
 
             var result = await _mediator.Send(new UpdateProfileCommand(
                 userId,
@@ -51,7 +51,7 @@ namespace FoodHub.Presentation.Controllers
                 command.DateOfBirth
                 ));
 
-            return Ok(result);
+            return HandleResult(result);
         }
     }
 }

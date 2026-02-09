@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Options.Commands.CreateOptionGroup;
 using FoodHub.Application.Features.Options.Commands.CreateOptionItem;
 using FoodHub.Application.Features.Options.Commands.DeleteOptionGroup;
@@ -12,10 +13,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace FoodHub.Presentation.Controllers
 {
     [Route("api/options")]
-    [ApiController]
-    [Authorize]
     [Tags("Options")]
-    public class OptionsController : ControllerBase
+    public class OptionsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -31,13 +30,7 @@ namespace FoodHub.Presentation.Controllers
         {
             var query = new GetOptionGroupsByMenuItemQuery(menuItemId);
             var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         [HttpPost("group")]
@@ -45,13 +38,7 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> CreateOptionGroup([FromBody] CreateOptionGroupCommand command)
         {
             var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         [HttpPut("group/{id}")]
@@ -64,13 +51,7 @@ namespace FoodHub.Presentation.Controllers
             }
 
             var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         [HttpDelete("group/{id}")]
@@ -78,13 +59,7 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> DeleteOptionGroup(Guid id)
         {
             var result = await _mediator.Send(new DeleteOptionGroupCommand(id));
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         #endregion
@@ -96,13 +71,7 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> CreateOptionItem([FromBody] CreateOptionItemCommand command)
         {
             var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         [HttpPut("item/{id}")]
@@ -115,13 +84,7 @@ namespace FoodHub.Presentation.Controllers
             }
 
             var result = await _mediator.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         [HttpDelete("item/{id}")]
@@ -129,13 +92,7 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> DeleteOptionItem(Guid id)
         {
             var result = await _mediator.Send(new DeleteOptionItemCommand(id));
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new { message = result.Error });
-            }
-
-            return Ok(result.Data);
+            return HandleResult(result);
         }
 
         #endregion

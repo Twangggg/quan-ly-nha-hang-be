@@ -132,7 +132,15 @@ namespace FoodHub.Application.Constants
 
         public static class OptionItem
         {
-            public const String NotFound = "OptionItem.NotFound";
+            public const string NotFound = "OptionItem.NotFound";
+        }
+
+        public static class SetMenu
+        {
+            public const string NotFound = "SetMenu.NotFound";
+            public const string CodeExists = "SetMenu.CodeExists";
+            public const string UpdateForbidden = "SetMenu.UpdateForbidden";
+            public const string DeleteForbidden = "SetMenu.DeleteForbidden";
         }
     }
 }

@@ -12,9 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
     [Tags("Auth")]
-    public class AuthController : ControllerBase
+    public class AuthController : ApiControllerBase
     {
         private readonly IMediator _mediator;
         private readonly IWebHostEnvironment _env;
@@ -23,20 +22,6 @@ namespace FoodHub.Presentation.Controllers
         {
             _mediator = mediator;
             _env = env;
-        }
-
-        private IActionResult HandleResult<T>(Result<T> result)
-        {
-            if (result.IsSuccess)
-                return Ok(result.Data);
-
-            return result.ErrorType switch
-            {
-                ResultErrorType.NotFound => NotFound(new { message = result.Error }),
-                ResultErrorType.Unauthorized => Unauthorized(new { message = result.Error }),
-                ResultErrorType.Forbidden => Forbid(),
-                _ => BadRequest(new { message = result.Error })
-            };
         }
 
         [HttpPost("login")]
