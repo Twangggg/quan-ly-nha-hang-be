@@ -1,4 +1,5 @@
 using AutoMapper;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
@@ -14,13 +15,15 @@ namespace FoodHub.Application.Features.Categories.Commands.DeleteCategory
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
 
-        public DeleteCategoryHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService)
+        public DeleteCategoryHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<DeleteCategoryResponse>> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
@@ -37,6 +40,11 @@ namespace FoodHub.Application.Features.Categories.Commands.DeleteCategory
             category.UpdatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;
 
             await _unitOfWork.SaveChangeAsync();
+
+            // Invalidate cache
+            await _cacheService.RemoveAsync(CacheKey.CategoryList, cancellationToken);
+            await _cacheService.RemoveAsync(string.Format(CacheKey.CategoryById, request.CategoryId), cancellationToken);
+            await _cacheService.RemoveByPatternAsync("category:list:type:", cancellationToken);
 
             return Result<DeleteCategoryResponse>.Success(new DeleteCategoryResponse(category.CategoryId, category.DeletedAt));
         }
