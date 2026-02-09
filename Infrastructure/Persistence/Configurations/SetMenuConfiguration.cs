@@ -56,16 +56,16 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
             builder.Property(e => e.CreatedBy).HasColumnName("created_by");
             builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
-            
+
             // Indexes for Optimization
             builder.HasIndex(e => e.SetType);
             builder.HasIndex(e => e.IsOutOfStock);
             builder.HasIndex(e => e.Price);
             builder.HasIndex(e => e.CreatedAt);
-            
+
             // Composite indexes
             builder.HasIndex(e => new { e.SetType, e.IsOutOfStock });
-            
+
             // Filtered index for available sets
             builder.HasIndex(e => e.IsOutOfStock)
                 .HasFilter("deleted_at IS NULL");

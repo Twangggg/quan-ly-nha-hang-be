@@ -78,11 +78,11 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(e => e.Name);
             builder.HasIndex(e => e.PriceDineIn);
             builder.HasIndex(e => e.CreatedAt);
-            
+
             // Composite indexes for common query patterns
             builder.HasIndex(e => new { e.CategoryId, e.IsOutOfStock });
             builder.HasIndex(e => new { e.IsOutOfStock, e.CategoryId });
-            
+
             // Filtered index for active items only
             builder.HasIndex(e => e.CategoryId)
                 .HasFilter("deleted_at IS NULL");

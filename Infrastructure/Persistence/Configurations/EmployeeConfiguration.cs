@@ -46,16 +46,16 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             // Global Query Filter: Hide soft-deleted employees
             builder.HasQueryFilter(x => x.DeletedAt == null);
-            
+
             // Indexes for Optimization
             builder.HasIndex(e => e.Status);
             builder.HasIndex(e => e.Role);
             builder.HasIndex(e => e.CreatedAt);
-            
+
             // Composite indexes for common queries
             builder.HasIndex(e => new { e.Status, e.Role });
             builder.HasIndex(e => new { e.Role, e.Status });
-            
+
             // Filtered index for active employees
             builder.HasIndex(e => e.Status)
                 .HasFilter("deleted_at IS NULL");

@@ -33,12 +33,12 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
             builder.Property(e => e.CreatedBy).HasColumnName("created_by");
             builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
-            
+
             // Indexes for Optimization
             builder.HasIndex(e => e.CategoryType);
             builder.HasIndex(e => e.IsActive);
             builder.HasIndex(e => new { e.CategoryType, e.IsActive });
-            
+
             // Filtered index for active categories
             builder.HasIndex(e => e.IsActive)
                 .HasFilter("deleted_at IS NULL");

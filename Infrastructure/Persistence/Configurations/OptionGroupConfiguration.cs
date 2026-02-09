@@ -46,7 +46,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(e => e.MenuItemId).HasDatabaseName("idx_option_groups_menu_item_id");
             builder.HasIndex(e => e.OptionType);
             builder.HasIndex(e => e.IsRequired);
-            
+
             // Composite index for common queries
             builder.HasIndex(e => new { e.MenuItemId, e.OptionType });
         }
