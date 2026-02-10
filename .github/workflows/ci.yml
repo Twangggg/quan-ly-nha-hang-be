@@ -35,17 +35,15 @@ jobs:
 
       - name: Check Migrations
         run: |
-          dotnet ef migrations list --project FoodHub.csproj
-          dotnet ef migrations has-pending-model-changes --project FoodHub.csproj
+          dotnet ef migrations list --project FoodHub.Infrastructure --startup-project FoodHub.WebAPI
+          dotnet ef migrations has-pending-model-changes --project FoodHub.Infrastructure --startup-project FoodHub.WebAPI
 
       - name: Check Formatting
         run: dotnet format FoodHub.sln --verify-no-changes
 
       - name: Check Vulnerabilities
         run: |
-          echo "🔍 Kiểm tra dependencies có lỗ hổng bảo mật..."
           dotnet list package --vulnerable --include-transitive || true
-          echo "📦 Kiểm tra packages lỗi thời..."
           dotnet list package --outdated || true
 
       - name: Build
@@ -53,22 +51,18 @@ jobs:
 
       - name: Run Tests With Coverage
         run: |
-          echo "🧪 Run tests with code coverage..."
           dotnet test --no-build --configuration Release \
             --verbosity normal \
             --collect:"XPlat Code Coverage" \
-            --results-directory ./coverage \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=./coverage/
+            --results-directory ./coverage
 
       - name: Generate Coverage Report
         if: always()
         run: |
           dotnet tool install --global dotnet-reportgenerator-globaltool
           reportgenerator \
-            -reports:./coverage/**/coverage.cobertura.xml \
-            -targetdir:./coverage-report \
+            -reports:"./coverage/**/coverage.cobertura.xml" \
+            -targetdir:"./coverage-report" \
             -reporttypes:Html
 
       - name: Upload Coverage Report

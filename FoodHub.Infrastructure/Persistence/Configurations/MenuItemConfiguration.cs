@@ -1,0 +1,91 @@
+using FoodHub.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace FoodHub.Infrastructure.Persistence.Configurations
+{
+    public class MenuItemConfiguration : IEntityTypeConfiguration<MenuItem>
+    {
+        public void Configure(EntityTypeBuilder<MenuItem> builder)
+        {
+            builder.ToTable("menu_items");
+
+            // Global Query Filter for Soft Delete
+            builder.HasQueryFilter(e => e.DeletedAt == null);
+
+            builder.HasKey(e => e.MenuItemId);
+            builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
+
+            builder.Property(e => e.Code)
+                .HasColumnName("code")
+                .HasMaxLength(50)
+                .IsRequired();
+
+            builder.HasIndex(e => e.Code).IsUnique();
+
+            builder.Property(e => e.Name)
+                .HasColumnName("name")
+                .HasMaxLength(150)
+                .IsRequired();
+
+            builder.Property(e => e.ImageUrl)
+                .HasColumnName("image_url")
+                .HasMaxLength(255)
+                .IsRequired();
+
+            builder.Property(e => e.Description)
+                .HasColumnName("description")
+                .HasMaxLength(500);
+
+            builder.Property(e => e.CategoryId).HasColumnName("category_id");
+
+            builder.Property(e => e.Station).HasColumnName("station");
+            builder.Property(e => e.ExpectedTime).HasColumnName("expected_time");
+
+            builder.Property(e => e.PriceDineIn)
+                .HasColumnName("price_dine_in")
+                .HasPrecision(12, 2);
+
+            builder.Property(e => e.PriceTakeAway)
+                .HasColumnName("price_take_away")
+                .HasPrecision(12, 2);
+
+            builder.Property(e => e.CostPrice)
+                .HasColumnName("cost_price")
+                .HasPrecision(12, 2);
+
+            builder.Property(e => e.IsOutOfStock).HasColumnName("is_out_of_stock");
+
+            // Relationships
+            builder.HasOne(e => e.Category)
+                .WithMany(c => c.MenuItems)
+                .HasForeignKey(e => e.CategoryId)
+                .HasConstraintName("fk_menu_items_category_id")
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Audit Properties
+            builder.Property(e => e.CreatedAt).HasColumnName("created_at");
+            builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            builder.Property(e => e.CreatedBy).HasColumnName("created_by");
+            builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+            builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
+
+            // Indexes for Optimization
+            // Single column indexes
+            builder.HasIndex(e => e.CategoryId).HasDatabaseName("idx_menu_items_category_id");
+            builder.HasIndex(e => e.Station);
+            builder.HasIndex(e => e.IsOutOfStock);
+            builder.HasIndex(e => e.Name);
+            builder.HasIndex(e => e.PriceDineIn);
+            builder.HasIndex(e => e.CreatedAt);
+
+            // Composite indexes for common query patterns
+            builder.HasIndex(e => new { e.CategoryId, e.IsOutOfStock });
+            builder.HasIndex(e => new { e.IsOutOfStock, e.CategoryId });
+
+            // Filtered index for active items only
+            builder.HasIndex(e => e.CategoryId)
+                .HasFilter("deleted_at IS NULL");
+        }
+    }
+}
