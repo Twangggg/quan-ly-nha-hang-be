@@ -10,16 +10,16 @@ namespace FoodHub.Infrastructure.Persistence
         public AppDbContext CreateDbContext(string[] args)
         {
             string envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
-            
+
             if (!File.Exists(envPath))
             {
-               var currentBreak = Directory.GetCurrentDirectory();
-               
-               while (!File.Exists(Path.Combine(currentBreak, ".env")) && Directory.GetParent(currentBreak) != null)
-               {
-                   currentBreak = Directory.GetParent(currentBreak).FullName;
-               }
-               envPath = Path.Combine(currentBreak, ".env");
+                var currentBreak = Directory.GetCurrentDirectory();
+
+                while (!File.Exists(Path.Combine(currentBreak, ".env")) && Directory.GetParent(currentBreak) != null)
+                {
+                    currentBreak = Directory.GetParent(currentBreak).FullName;
+                }
+                envPath = Path.Combine(currentBreak, ".env");
             }
 
             if (File.Exists(envPath))

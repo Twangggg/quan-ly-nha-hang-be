@@ -43,12 +43,12 @@ namespace FoodHub.Tests.Features.Categories
             // Arrange
             var categoryId = Guid.NewGuid();
             var command = new DeleteCategoryCommand(categoryId);
-            
+
             var categories = new List<Category>().AsQueryable().BuildMock();
             var repo = new Mock<IGenericRepository<Category>>();
             repo.Setup(r => r.Query()).Returns(categories);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(repo.Object);
-            
+
             _mockMessage.Setup(m => m.GetMessage(It.IsAny<string>())).Returns("Category not found");
 
             // Act
