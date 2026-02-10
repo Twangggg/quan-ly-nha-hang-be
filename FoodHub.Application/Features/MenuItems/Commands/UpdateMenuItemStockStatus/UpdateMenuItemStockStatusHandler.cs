@@ -1,4 +1,5 @@
 using AutoMapper;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
@@ -16,13 +17,15 @@ namespace FoodHub.Application.Features.MenuItems.Commands.ToggleOutOfStock
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
 
-        public UpdateMenuItemStockStatusHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService)
+        public UpdateMenuItemStockStatusHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<bool>> Handle(UpdateMenuItemStockStatusCommand request, CancellationToken cancellationToken)
@@ -46,6 +49,9 @@ namespace FoodHub.Application.Features.MenuItems.Commands.ToggleOutOfStock
             menuItem.UpdatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;
 
             await _unitOfWork.SaveChangeAsync();
+
+            await _cacheService.RemoveByPatternAsync("menuitem:list", cancellationToken);
+            await _cacheService.RemoveAsync(string.Format(CacheKey.MenuItemById, request.MenuItemId), cancellationToken);
 
             return Result<bool>.Success(true);
         }

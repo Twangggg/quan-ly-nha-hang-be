@@ -1,9 +1,10 @@
 using Moq;
+using AutoMapper;
 using FluentAssertions;
 using FoodHub.Application.Features.Categories.Commands.DeleteCategory;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-using FoodHub.Application.Constants;
+using FoodHub.Application.Common.Constants;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using FoodHub.Application.Common.Models;
@@ -31,7 +32,7 @@ namespace FoodHub.Tests.Features.Categories
 
             _handler = new DeleteCategoryHandler(
                 _mockUow.Object,
-                null!, // IMapper not used in this logic
+                Mock.Of<AutoMapper.IMapper>(), // IMapper not used in this logic
                 _mockUser.Object,
                 _mockMessage.Object,
                 _mockCache.Object);

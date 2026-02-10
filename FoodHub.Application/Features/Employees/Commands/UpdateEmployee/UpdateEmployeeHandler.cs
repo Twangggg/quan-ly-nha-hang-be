@@ -1,4 +1,5 @@
 using AutoMapper;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
@@ -16,6 +17,7 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<UpdateEmployeeHandler> _logger;
 
         public UpdateEmployeeHandler(
@@ -23,12 +25,14 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
             IMapper mapper,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ICacheService cacheService,
             ILogger<UpdateEmployeeHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -99,6 +103,8 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
             try
             {
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync("employee:list", cancellationToken);
+                await _cacheService.RemoveAsync(string.Format(CacheKey.EmployeeById, request.EmployeeId), cancellationToken);
             }
             catch (DbUpdateException ex)
             {

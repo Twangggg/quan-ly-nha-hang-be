@@ -1,5 +1,6 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
@@ -7,6 +8,7 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
 using System.Linq.Expressions;
+using System.Text.Json;
 
 namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
 {
@@ -14,15 +16,26 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cacheService;
 
-        public GetSetMenusHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetSetMenusHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<PagedResult<GetSetMenusResponse>>> Handle(GetSetMenusQuery request, CancellationToken cancellationToken)
         {
+            var queryJson = JsonSerializer.Serialize(new { request.Search, request.Filters, request.OrderBy, request.PageNumber, request.PageSize });
+            var cacheKey = $"{CacheKey.SetMenuList}:{queryJson.GetHashCode()}";
+
+            var cachedResult = await _cacheService.GetAsync<PagedResult<GetSetMenusResponse>>(cacheKey, cancellationToken);
+            if (cachedResult != null)
+            {
+                return Result<PagedResult<GetSetMenusResponse>>.Success(cachedResult);
+            }
+
             var query = _unitOfWork.Repository<SetMenu>().Query();
 
             // 1. Apply Global Search (search by Code, Name, Description)
@@ -81,6 +94,7 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
                 .ProjectTo<GetSetMenusResponse>(_mapper.ConfigurationProvider)
                 .ToPagedResultAsync(request.PageNumber, request.PageSize);
 
+            await _cacheService.SetAsync(cacheKey, pagedResult, CacheTTL.SetMenus, cancellationToken);
             return Result<PagedResult<GetSetMenusResponse>>.Success(pagedResult);
         }
     }

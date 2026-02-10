@@ -1,4 +1,5 @@
 using AutoMapper;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
@@ -15,13 +16,15 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
 
-        public UpdateMenuItemHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService)
+        public UpdateMenuItemHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<UpdateMenuItemResponse>> Handle(UpdateMenuItemCommand request, CancellationToken cancellationToken)
@@ -68,6 +71,9 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             }
 
             await _unitOfWork.SaveChangeAsync();
+
+            await _cacheService.RemoveByPatternAsync("menuitem:list", cancellationToken);
+            await _cacheService.RemoveAsync(string.Format(CacheKey.MenuItemById, request.MenuItemId), cancellationToken);
 
             var response = _mapper.Map<UpdateMenuItemResponse>(menuItem);
             return Result<UpdateMenuItemResponse>.Success(response);

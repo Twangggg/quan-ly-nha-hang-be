@@ -2,11 +2,14 @@ using FoodHub.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using FoodHub.WebAPI.Presentation.Attributes;
+
 namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Manager")]
+    [RateLimit(maxRequests: 10, windowMinutes: 5, blockMinutes: 15)]
     public class ImageController : ControllerBase
     {
         private readonly ICloudinaryService _cloudinaryService;

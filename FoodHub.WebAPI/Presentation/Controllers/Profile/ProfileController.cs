@@ -7,12 +7,15 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using FoodHub.WebAPI.Presentation.Attributes;
+
 namespace FoodHub.Presentation.Controllers
 {
 
     [Route("api/[controller]")]
     [Authorize]
     [Tags("Profile")]
+    [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
     public class ProfileController : ApiControllerBase
     {
         private readonly IMediator _mediator;
@@ -36,6 +39,7 @@ namespace FoodHub.Presentation.Controllers
 
         [Authorize]
         [HttpPut]
+        [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 10)]
         public async Task<IActionResult> UpdateProfileAsync(UpdateProfileCommand command)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

@@ -11,10 +11,13 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using FoodHub.WebAPI.Presentation.Attributes;
+
 namespace FoodHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [Tags("MenuItems")]
+    [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class MenuItemsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
@@ -42,6 +45,7 @@ namespace FoodHub.Presentation.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Manager")]
+        [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         public async Task<IActionResult> CreateMenuItem([FromForm] CreateMenuItemCommand command)
         {
             var result = await _mediator.Send(command);
@@ -56,6 +60,7 @@ namespace FoodHub.Presentation.Controllers
 
         [Authorize]
         [HttpPut("{id}")]
+        [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         public async Task<IActionResult> UpdateMenuItem(Guid id, UpdateMenuItemCommand command)
         {
             var result = await _mediator.Send(command with { MenuItemId = id });
@@ -64,6 +69,7 @@ namespace FoodHub.Presentation.Controllers
 
         [Authorize(Roles = nameof(EmployeeRole.Manager))]
         [HttpPut("{id}/stock")]
+        [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
         public async Task<IActionResult> UpdateMenuItemStockStatus(Guid id, UpdateMenuItemStockStatusCommand command)
         {
             var result = await _mediator.Send(command with { MenuItemId = id });
@@ -72,6 +78,7 @@ namespace FoodHub.Presentation.Controllers
 
         [Authorize]
         [HttpDelete("{id}")]
+        [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 15)]
         public async Task<IActionResult> DeleteMenuItem(Guid id)
         {
             var result = await _mediator.Send(new DeleteMenuItemCommand(id));
