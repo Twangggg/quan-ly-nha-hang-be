@@ -12,7 +12,6 @@ using FoodHub.WebAPI.Presentation.Attributes;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
     [Tags("Auth")]
     public class AuthController : ApiControllerBase
     {

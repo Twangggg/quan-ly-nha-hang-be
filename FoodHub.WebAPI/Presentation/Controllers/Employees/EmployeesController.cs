@@ -16,7 +16,6 @@ using FoodHub.WebAPI.Presentation.Extensions;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
     [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Manager")]
     [Tags("Employees")]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
@@ -33,12 +32,10 @@ namespace FoodHub.Presentation.Controllers
         {
             var query = new GetEmployeesQuery(pagination);
             var result = await _mediator.Send(query);
-            
             if (result.IsSuccess && result.Data != null)
             {
                 Response.AddPaginationHeaders(result.Data);
             }
-            
             return HandleResult<PagedResult<GetEmployeesResponse>>(result);
         }
 
@@ -57,7 +54,6 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(command);
             if (!result.IsSuccess)
                 return HandleResult(result);
-
             return CreatedAtAction(nameof(GetEmployeeById), new { id = result.Data!.EmployeeId }, result.Data);
         }
 

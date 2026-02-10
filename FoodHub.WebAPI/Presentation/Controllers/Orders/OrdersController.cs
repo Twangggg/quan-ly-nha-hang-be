@@ -18,7 +18,6 @@ using FoodHub.WebAPI.Presentation.Extensions;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
     [Tags("Orders")]
     [RateLimit(maxRequests: 200, windowMinutes: 1, blockMinutes: 5)]
     public class OrdersController : ApiControllerBase
@@ -43,12 +42,10 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> GetOrders([FromQuery] PaginationParams pagination)
         {
             var result = await _mediator.Send(new GetOrdersQuery { Pagination = pagination });
-            
             if (result.IsSuccess && result.Data != null)
             {
                 Response.AddPaginationHeaders(result.Data);
             }
-            
             return HandleResult(result);
         }
 

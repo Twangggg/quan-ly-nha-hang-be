@@ -14,7 +14,6 @@ using FoodHub.WebAPI.Presentation.Attributes;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/options")]
     [Tags("Options")]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class OptionsController : ApiControllerBase

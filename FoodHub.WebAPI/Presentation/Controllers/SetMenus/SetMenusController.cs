@@ -15,7 +15,6 @@ using FoodHub.WebAPI.Presentation.Extensions;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
     [Tags("SetMenus")]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class SetMenusController : ApiControllerBase

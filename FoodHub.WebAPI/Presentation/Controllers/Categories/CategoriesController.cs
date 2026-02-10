@@ -12,7 +12,6 @@ using FoodHub.WebAPI.Presentation.Attributes;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
     [Tags("Categories")]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class CategoriesController : ApiControllerBase

@@ -16,9 +16,8 @@ namespace FoodHub.WebAPI.Presentation.Extensions
                 pagedResult.HasPrevious,
                 pagedResult.HasNext
             };
-
-            response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
-            response.Headers.Add("Access-Control-Expose-Headers", "X-Pagination");
+            response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+            response.Headers.Append("Access-Control-Expose-Headers", "X-Pagination");
         }
     }
 }

@@ -6,11 +6,9 @@ using FoodHub.WebAPI.Presentation.Attributes;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
     [Authorize(Roles = "Manager")]
     [RateLimit(maxRequests: 10, windowMinutes: 5, blockMinutes: 15)]
-    public class ImageController : ControllerBase
+    public class ImageController : ApiControllerBase
     {
         private readonly ICloudinaryService _cloudinaryService;
         private readonly ILogger<ImageController> _logger;

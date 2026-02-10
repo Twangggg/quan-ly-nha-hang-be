@@ -43,10 +43,8 @@ namespace FoodHub.WebAPI.Presentation.Attributes
                 })
                 {
                     StatusCode = 429
-                };
-                context.HttpContext.Response.Headers.Add("Retry-After", (_blockMinutes * 60).ToString());
+                context.HttpContext.Response.Headers.Append("Retry-After", (_blockMinutes * 60).ToString());
                 return;
-
             }
 
             var executedContext = await next();

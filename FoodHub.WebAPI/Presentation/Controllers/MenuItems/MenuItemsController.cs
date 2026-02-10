@@ -16,7 +16,6 @@ using FoodHub.WebAPI.Presentation.Extensions;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
     [Tags("MenuItems")]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class MenuItemsController : ApiControllerBase
@@ -33,12 +32,10 @@ namespace FoodHub.Presentation.Controllers
         {
             var query = new GetMenuItemsQuery { Pagination = pagination };
             var result = await _mediator.Send(query);
-            
             if (result.IsSuccess && result.Data != null)
             {
                 Response.AddPaginationHeaders(result.Data);
             }
-            
             return HandleResult(result);
         }
 

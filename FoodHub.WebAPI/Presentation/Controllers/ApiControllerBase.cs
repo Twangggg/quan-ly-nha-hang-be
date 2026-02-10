@@ -1,9 +1,12 @@
 using FoodHub.Application.Common.Models;
 using Microsoft.AspNetCore.Mvc;
+using Asp.Versioning;
 
 namespace FoodHub.Presentation.Controllers
 {
     [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public abstract class ApiControllerBase : ControllerBase
     {
         protected IActionResult HandleResult<T>(Result<T> result)

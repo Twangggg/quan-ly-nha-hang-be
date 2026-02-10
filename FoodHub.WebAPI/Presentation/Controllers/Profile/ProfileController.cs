@@ -12,7 +12,6 @@ using FoodHub.WebAPI.Presentation.Attributes;
 namespace FoodHub.Presentation.Controllers
 {
 
-    [Route("api/[controller]")]
     [Authorize]
     [Tags("Profile")]
     [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]

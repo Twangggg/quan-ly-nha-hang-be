@@ -65,7 +65,6 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
             };
             await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
-            
             await _cacheService.RemoveByPatternAsync("employee:list", cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.EmployeeById, request.EmployeeId), cancellationToken);
 
