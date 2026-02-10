@@ -27,16 +27,16 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
             var employee = await repo.Query()
                 .FirstOrDefaultAsync(emp => emp.EmployeeId == request.EmployeeId, cancellationToken);
 
-            var fullName = request.FullName.Trim();
-            var email = request.Email.Trim().ToLower();
-            var phone = request.Phone.Trim();
-            var address = request.Address.Trim();
-            var dateOfBirth = request.DateOfBirth;
-
             if (employee == null)
             {
                 return Result<UpdateProfileResponse>.NotFound(_messageService.GetMessage(MessageKeys.Employee.NotFound));
             }
+
+            var fullName = request.FullName?.Trim() ?? string.Empty;
+            var email = request.Email?.Trim().ToLower() ?? string.Empty;
+            var phone = request.Phone?.Trim() ?? string.Empty;
+            var address = request.Address?.Trim() ?? string.Empty;
+            var dateOfBirth = request.DateOfBirth ?? default;
 
             // Check duplicate phone number
             var phoneExists = await repo.Query().AnyAsync(e => e.EmployeeId != request.EmployeeId && e.Phone == phone, cancellationToken);

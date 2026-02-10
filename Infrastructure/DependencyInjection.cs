@@ -5,7 +5,6 @@ using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
 using FoodHub.Infrastructure.Services;
 using FoodHub.Infrastructure.Services.RateLimiting;
-using FoodHub.Infrastructure.BackgroundJobs;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 

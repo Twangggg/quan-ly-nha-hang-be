@@ -52,7 +52,7 @@ namespace FoodHub.Presentation.Controllers
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetSetMenuById), new { id = result.Data.SetMenuId }, result.Data);
+                return CreatedAtAction(nameof(GetSetMenuById), new { id = result.Data!.SetMenuId }, result.Data);
             }
 
             return HandleResult(result);

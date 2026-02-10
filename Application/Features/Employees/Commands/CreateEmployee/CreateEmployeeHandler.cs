@@ -6,6 +6,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using FoodHub.Application.Common.Constants;
 
 namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
 {
@@ -18,6 +19,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
         private readonly IBackgroundEmailSender _emailSender;
         private readonly IEmployeeServices _employeeServices;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
 
         public CreateEmployeeHandler(
             IUnitOfWork unitOfWork,
@@ -26,7 +28,8 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             ICurrentUserService currentUserService,
             IBackgroundEmailSender emailSender,
             IEmployeeServices employeeServices,
-            IMessageService messageService)
+            IMessageService messageService,
+            ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -35,6 +38,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             _emailSender = emailSender;
             _employeeServices = employeeServices;
             _messageService = messageService;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<CreateEmployeeResponse>> Handle(CreateEmployeeCommand request, CancellationToken cancellationToken)
@@ -93,6 +97,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
                     cancellationToken);
 
                 await _unitOfWork.CommitTransactionAsync();
+                await _cacheService.RemoveByPatternAsync("employee:list", cancellationToken);
 
                 var response = _mapper.Map<CreateEmployeeResponse>(employee);
                 return Result<CreateEmployeeResponse>.Success(response);

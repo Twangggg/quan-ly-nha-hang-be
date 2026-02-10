@@ -48,7 +48,7 @@ namespace FoodHub.Presentation.Controllers
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data.MenuItemId }, result.Data);
+                return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data!.MenuItemId }, result.Data);
             }
 
             return HandleResult(result);
