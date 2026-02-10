@@ -14,6 +14,7 @@ using FoodHub.Application.Features.Orders.Queries.GetOrders;
 
 
 using FoodHub.WebAPI.Presentation.Attributes;
+using FoodHub.WebAPI.Presentation.Extensions;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -42,6 +43,12 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> GetOrders([FromQuery] PaginationParams pagination)
         {
             var result = await _mediator.Send(new GetOrdersQuery { Pagination = pagination });
+            
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
+            
             return HandleResult(result);
         }
 

@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Extensions.Pagination
@@ -6,13 +7,21 @@ namespace FoodHub.Application.Extensions.Pagination
     {
         public static async Task<PagedResult<T>> ToPagedResultAsync<T>(
             this IQueryable<T> query,
+            PaginationParams pagination,
+            CancellationToken cancellationToken = default)
+        {
+            return await query.ToPagedResultAsync(pagination.PageNumber, pagination.PageSize, cancellationToken);
+        }
+
+        public static async Task<PagedResult<T>> ToPagedResultAsync<T>(
+            this IQueryable<T> query,
             int pageNumber,
             int pageSize,
             CancellationToken cancellationToken = default)
         {
             var pagination = new PaginationParams
             {
-                PageIndex = pageNumber,
+                PageNumber = pageNumber,
                 PageSize = pageSize
             };
 

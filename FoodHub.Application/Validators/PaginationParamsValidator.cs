@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using FoodHub.Application.Extensions.Pagination;
+using FoodHub.Application.Common.Models;
 
 namespace FoodHub.Application.Validators
 {
@@ -7,8 +7,8 @@ namespace FoodHub.Application.Validators
     {
         public PaginationParamsValidator()
         {
-            RuleFor(x => x.PageIndex).GreaterThan(0);
-            RuleFor(x => x.PageSize).InclusiveBetween(5, 50);
+            RuleFor(x => x.PageNumber).GreaterThan(0);
+            RuleFor(x => x.PageSize).InclusiveBetween(1, 100);
         }
     }
 }

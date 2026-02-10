@@ -27,7 +27,14 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
 
         public async Task<Result<PagedResult<GetSetMenusResponse>>> Handle(GetSetMenusQuery request, CancellationToken cancellationToken)
         {
-            var queryJson = JsonSerializer.Serialize(new { request.Search, request.Filters, request.OrderBy, request.PageNumber, request.PageSize });
+            var queryJson = JsonSerializer.Serialize(new
+            {
+                request.Pagination.Search,
+                request.Pagination.Filters,
+                request.Pagination.OrderBy,
+                request.Pagination.PageNumber,
+                request.Pagination.PageSize
+            });
             var cacheKey = $"{CacheKey.SetMenuList}:{queryJson.GetHashCode()}";
 
             var cachedResult = await _cacheService.GetAsync<PagedResult<GetSetMenusResponse>>(cacheKey, cancellationToken);
@@ -45,19 +52,19 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
                 s => s.Name,
                 s => s.Description
             };
-            query = query.ApplyGlobalSearch(request.Search, searchableFields);
+            query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
 
             // 2. Apply Filters
             var filterMapping = new Dictionary<string, Expression<Func<SetMenu, object?>>>
             {
                 { "isOutOfStock", s => s.IsOutOfStock }
             };
-            query = query.ApplyFilters(request.Filters, filterMapping);
+            query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
             // Apply Price Range Filter
-            if (request.Filters != null)
+            if (request.Pagination.Filters != null)
             {
-                foreach (var filter in request.Filters)
+                foreach (var filter in request.Pagination.Filters)
                 {
                     var parts = filter.Split(':');
                     if (parts.Length < 2) continue;
@@ -86,13 +93,13 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
             };
 
             query = query.ApplySorting(
-                request.OrderBy,
+                request.Pagination.OrderBy,
                 sortMapping,
                 s => s.Name);
 
             var pagedResult = await query
                 .ProjectTo<GetSetMenusResponse>(_mapper.ConfigurationProvider)
-                .ToPagedResultAsync(request.PageNumber, request.PageSize);
+                .ToPagedResultAsync(request.Pagination);
 
             await _cacheService.SetAsync(cacheKey, pagedResult, CacheTTL.SetMenus, cancellationToken);
             return Result<PagedResult<GetSetMenusResponse>>.Success(pagedResult);

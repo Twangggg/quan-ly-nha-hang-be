@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using FoodHub.WebAPI.Presentation.Attributes;
+using FoodHub.WebAPI.Presentation.Extensions;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -32,6 +33,12 @@ namespace FoodHub.Presentation.Controllers
         {
             var query = new GetMenuItemsQuery { Pagination = pagination };
             var result = await _mediator.Send(query);
+            
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
+            
             return HandleResult(result);
         }
 

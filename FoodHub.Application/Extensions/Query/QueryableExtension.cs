@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Extensions.Pagination;
+﻿using FoodHub.Application.Common.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -6,20 +6,6 @@ namespace FoodHub.Application.Extensions.Query
 {
     public static class QueryableExtension
     {
-        public static async Task<PagedResult<T>> ToPagedResultAsync<T>(
-            this IQueryable<T> query,
-            PaginationParams pagination)
-        {
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((pagination.PageIndex - 1) * pagination.PageSize)
-                .Take(pagination.PageSize)
-                .ToListAsync();
-
-            return new PagedResult<T>(items, pagination, totalCount);
-        }
-
         public static IQueryable<T> ApplyGlobalSearch<T>(
             this IQueryable<T> query,
             string? search,

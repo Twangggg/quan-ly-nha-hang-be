@@ -12,6 +12,7 @@ using FoodHub.Application.Features.Employees.Commands.ChangeRole;
 using FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword;
 
 using FoodHub.WebAPI.Presentation.Attributes;
+using FoodHub.WebAPI.Presentation.Extensions;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -32,6 +33,12 @@ namespace FoodHub.Presentation.Controllers
         {
             var query = new GetEmployeesQuery(pagination);
             var result = await _mediator.Send(query);
+            
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
+            
             return HandleResult<PagedResult<GetEmployeesResponse>>(result);
         }
 
@@ -80,6 +87,12 @@ namespace FoodHub.Presentation.Controllers
         {
             var query = new GetAuditLogsQuery(id, pagination);
             var result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
+
             return HandleResult<PagedResult<GetAuditLogsResponse>>(result);
         }
 

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using FoodHub.WebAPI.Presentation.Attributes;
+using FoodHub.WebAPI.Presentation.Extensions;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -27,15 +28,16 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSetMenus(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string? search = null,
-            [FromQuery] List<string>? filters = null,
-            [FromQuery] string? orderBy = null)
+        public async Task<IActionResult> GetSetMenus([FromQuery] PaginationParams pagination)
         {
-            var query = new GetSetMenusQuery(pageNumber, pageSize, search, filters, orderBy);
+            var query = new GetSetMenusQuery { Pagination = pagination };
             var result = await _mediator.Send(query);
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
+
             return HandleResult(result);
         }
 
