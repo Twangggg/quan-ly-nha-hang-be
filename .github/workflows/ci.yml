@@ -43,9 +43,7 @@ jobs:
 
       - name: Check Vulnerabilities
         run: |
-          echo "🔍 Kiểm tra dependencies có lỗ hổng bảo mật..."
           dotnet list package --vulnerable --include-transitive || true
-          echo "📦 Kiểm tra packages lỗi thời..."
           dotnet list package --outdated || true
 
       - name: Build
@@ -53,7 +51,6 @@ jobs:
 
       - name: Run Tests With Coverage
         run: |
-          echo "🧪 Run tests with code coverage..."
           dotnet test --no-build --configuration Release \
             --verbosity normal \
             --collect:"XPlat Code Coverage" \
