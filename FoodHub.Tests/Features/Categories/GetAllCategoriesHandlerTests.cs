@@ -76,7 +76,7 @@ namespace FoodHub.Tests.Features.Categories
             };
 
 
-            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg => 
+            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
                 cfg.CreateMap<Category, GetCategoriesResponse>()));
 
             _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetCategoriesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
@@ -107,7 +107,7 @@ namespace FoodHub.Tests.Features.Categories
             repo.Setup(r => r.Query()).Returns(categories);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(repo.Object);
 
-            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg => 
+            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
                 cfg.CreateMap<Category, GetCategoriesResponse>()));
 
             _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetCategoriesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))

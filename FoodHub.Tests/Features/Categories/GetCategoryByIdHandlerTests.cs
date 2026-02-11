@@ -39,9 +39,9 @@ namespace FoodHub.Tests.Features.Categories
             // Arrange
             var categoryId = Guid.NewGuid();
             var query = new GetCategoryByIdQuery(categoryId);
-            var cachedResponse = new GetCategoryByIdResponse 
-            { 
-                CategoryId = categoryId, 
+            var cachedResponse = new GetCategoryByIdResponse
+            {
+                CategoryId = categoryId,
                 Name = "Cached Category",
                 Type = (int)CategoryType.Normal
             };
@@ -64,15 +64,15 @@ namespace FoodHub.Tests.Features.Categories
             // Arrange
             var categoryId = Guid.NewGuid();
             var query = new GetCategoryByIdQuery(categoryId);
-            var category = new Category 
-            { 
-                CategoryId = categoryId, 
+            var category = new Category
+            {
+                CategoryId = categoryId,
                 Name = "Test Category",
                 CategoryType = CategoryType.Normal
             };
-            var mappedResponse = new GetCategoryByIdResponse 
-            { 
-                CategoryId = categoryId, 
+            var mappedResponse = new GetCategoryByIdResponse
+            {
+                CategoryId = categoryId,
                 Name = "Test Category",
                 Type = (int)CategoryType.Normal
             };

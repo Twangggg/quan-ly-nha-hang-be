@@ -36,14 +36,14 @@ namespace FoodHub.Tests.Features.Employees
             // Arrange
             var pagination = new PaginationParams();
             var query = new GetEmployeesQuery(pagination);
-            var items = new List<GetEmployeesResponse> 
-            { 
-                new GetEmployeesResponse 
-                { 
-                    EmployeeId = Guid.NewGuid(), 
+            var items = new List<GetEmployeesResponse>
+            {
+                new GetEmployeesResponse
+                {
+                    EmployeeId = Guid.NewGuid(),
                     FullName = "John Doe",
                     EmployeeCode = "EMP001"
-                } 
+                }
             };
             var cachedPagedResult = new PagedResult<GetEmployeesResponse>(items, pagination, 1);
 
@@ -71,9 +71,9 @@ namespace FoodHub.Tests.Features.Employees
 
             var employees = new List<Employee>
             {
-                new Employee 
-                { 
-                    EmployeeId = Guid.NewGuid(), 
+                new Employee
+                {
+                    EmployeeId = Guid.NewGuid(),
                     FullName = "John Doe",
                     EmployeeCode = "EMP001",
                     Email = "john@example.com",
@@ -86,7 +86,7 @@ namespace FoodHub.Tests.Features.Employees
             repo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
-            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg => 
+            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
                 cfg.CreateMap<Employee, GetEmployeesResponse>()));
 
             _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetEmployeesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
@@ -117,7 +117,7 @@ namespace FoodHub.Tests.Features.Employees
             repo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
-            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg => 
+            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
                 cfg.CreateMap<Employee, GetEmployeesResponse>()));
 
             _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetEmployeesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))

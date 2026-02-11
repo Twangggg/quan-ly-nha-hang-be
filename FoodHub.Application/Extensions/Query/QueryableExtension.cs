@@ -28,10 +28,10 @@ namespace FoodHub.Application.Extensions.Query
             {
                 // Truy c?p vào thu?c tính c?a object (ví d?: x => x.FullName)
                 var memberAccess = Expression.Invoke(field, parameter);
-                
+
                 // Chuy?n v? ch? thu?ng d? tìm ki?m không phân bi?t hoa thu?ng (Case-insensitive)
                 var toLowerCall = Expression.Call(memberAccess, typeof(string).GetMethod("ToLower", Type.EmptyTypes)!);
-                
+
                 // T?o l?nh .Contains() tuong ?ng v?i SQL LIKE '%search%'
                 var containsCall = Expression.Call(toLowerCall, containsMethod!, Expression.Constant(searchLower));
 

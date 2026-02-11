@@ -36,7 +36,7 @@ namespace FoodHub.Application.Extensions.Pagination
 
             // 1. Đếm tổng số bản ghi thỏa mãn điều kiện (Search/Filter) trước khi phân trang
             var totalCount = await query.CountAsync(cancellationToken);
-            
+
             // 2. Lấy dữ liệu của trang hiện tại bằng cách Skip (bỏ qua các trang trước) và Take (lấy đủ số lượng của trang này)
             // Ví dụ: Trang 2, cỡ 10 bản ghi => Skip = (2-1)*10 = 10 bản ghi đầu, Take = 10 bản ghi tiếp theo.
             var items = await query

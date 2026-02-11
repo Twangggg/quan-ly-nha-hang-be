@@ -81,10 +81,10 @@ namespace FoodHub.Infrastructure.BackgroundJobs
                 {
                     lastException = ex;
                     _logger.LogWarning("Attempt {Attempt} failed to send email to {Email}: {Message}", i + 1, message.To, ex.Message);
-                    
+
                     // Chờ trước khi thử lại - Exponential Backoff (1s -> 2s -> 4s)
                     await Task.Delay(delay, stoppingToken);
-                    delay *= 2; 
+                    delay *= 2;
                 }
             }
 
