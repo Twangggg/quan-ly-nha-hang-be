@@ -31,10 +31,11 @@ namespace FoodHub.Application.Features.SetMenus.Commands.DeleteSetMenu
             var setMenuItemRepository = _unitOfWork.Repository<SetMenuItem>();
 
             var userRole = _currentUserService.Role;
-            if (userRole is not EmployeeRole.Manager)
+            if (userRole is not "Manager")
             {
                 return Result<DeleteSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.SetMenu.DeleteForbidden), ResultErrorType.Forbidden);
             }
+
 
             // 1. Get existing SetMenu
             var setMenu = await setMenuRepository.GetByIdAsync(request.SetMenuId);

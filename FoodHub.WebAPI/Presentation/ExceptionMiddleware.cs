@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using FluentValidation;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;

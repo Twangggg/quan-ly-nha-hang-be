@@ -3,31 +3,32 @@ using FoodHub.Application.Resources;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Features.Authentication.Queries.GetCurrentUser
 {
     public class GetCurrentUserHandler : IRequestHandler<GetCurrentUserQuery, Result<CurrentUserResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserService _currentUserService;
+        private readonly IMessageService _messageService;
 
-        public GetCurrentUserHandler(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public GetCurrentUserHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
+            _messageService = messageService;
         }
 
         public async Task<Result<CurrentUserResponse>> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
         {
-            // Get EmployeeCode from JWT claims
-            var employeeCode = _httpContextAccessor.HttpContext?.User.FindFirst("EmployeeCode")?.Value;
+            // Get EmployeeCode from current user service
+            var employeeCode = _currentUserService.EmployeeCode;
 
             if (string.IsNullOrEmpty(employeeCode))
             {
-                return Result<CurrentUserResponse>.Failure(ErrorMessages.Unauthorized);
+                return Result<CurrentUserResponse>.Failure(_messageService.GetMessage(MessageKeys.Common.Unauthorized), ResultErrorType.Unauthorized);
             }
 
             // Fetch employee from database
@@ -38,7 +39,7 @@ namespace FoodHub.Application.Features.Authentication.Queries.GetCurrentUser
 
             if (employee == null)
             {
-                return Result<CurrentUserResponse>.Failure(Messages.EmployeeNotFound);
+                return Result<CurrentUserResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.NotFound), ResultErrorType.NotFound);
             }
 
             var response = new CurrentUserResponse

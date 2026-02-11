@@ -27,14 +27,7 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
 
         public async Task<Result<PagedResult<GetSetMenusResponse>>> Handle(GetSetMenusQuery request, CancellationToken cancellationToken)
         {
-            var queryJson = JsonSerializer.Serialize(new
-            {
-                request.Pagination.Search,
-                request.Pagination.Filters,
-                request.Pagination.OrderBy,
-                request.Pagination.PageNumber,
-                request.Pagination.PageSize
-            });
+            var queryJson = JsonSerializer.Serialize(request.Pagination);
             var cacheKey = $"{CacheKey.SetMenuList}:{queryJson.GetHashCode()}";
 
             var cachedResult = await _cacheService.GetAsync<PagedResult<GetSetMenusResponse>>(cacheKey, cancellationToken);
@@ -57,31 +50,10 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
             // 2. Apply Filters
             var filterMapping = new Dictionary<string, Expression<Func<SetMenu, object?>>>
             {
-                { "isOutOfStock", s => s.IsOutOfStock }
+                { "isOutOfStock", s => s.IsOutOfStock },
+                { "price", s => s.Price }
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
-
-            // Apply Price Range Filter
-            if (request.Pagination.Filters != null)
-            {
-                foreach (var filter in request.Pagination.Filters)
-                {
-                    var parts = filter.Split(':');
-                    if (parts.Length < 2) continue;
-
-                    var key = parts[0].Trim();
-                    var value = parts[1].Trim();
-
-                    if (key.Equals("minPrice", StringComparison.OrdinalIgnoreCase) && decimal.TryParse(value, out var minPrice))
-                    {
-                        query = query.Where(s => s.Price >= minPrice);
-                    }
-                    else if (key.Equals("maxPrice", StringComparison.OrdinalIgnoreCase) && decimal.TryParse(value, out var maxPrice))
-                    {
-                        query = query.Where(s => s.Price <= maxPrice);
-                    }
-                }
-            }
 
             // 3. Apply Multi-Sorting
             var sortMapping = new Dictionary<string, Expression<Func<SetMenu, object?>>>

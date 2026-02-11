@@ -48,5 +48,29 @@ namespace FoodHub.Tests.Features.Categories
             _mockCache.Verify(c => c.RemoveAsync(CacheKey.CategoryList, It.IsAny<CancellationToken>()), Times.Once);
             _mockCache.Verify(c => c.RemoveByPatternAsync("category:list:type:", It.IsAny<CancellationToken>()), Times.Once);
         }
+
+        [Fact]
+        public async Task Handle_Should_CreateCategory_WithSpecialGroupType()
+        {
+            // Arrange
+            var command = new CreateCategoryCommand("Combo đặc biệt", CategoryType.SpecialGroup);
+
+            var mockRepo = new Mock<IGenericRepository<Category>>();
+            _mockUow.Setup(u => u.Repository<Category>()).Returns(mockRepo.Object);
+            _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+            _mockCache.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _mockCache.Setup(c => c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data.Name.Should().Be("Combo đặc biệt");
+            result.Data.Type.Should().Be((int)CategoryType.SpecialGroup);
+        }
+
+
     }
 }

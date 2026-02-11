@@ -53,31 +53,10 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
             {
                 { "categoryId", m => m.CategoryId },
                 { "station", m => m.Station },
-                { "isOutOfStock", m => m.IsOutOfStock }
+                { "isOutOfStock", m => m.IsOutOfStock },
+                { "priceDineIn", m => m.PriceDineIn }
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
-
-            // Apply Price Range Filter
-            if (request.Pagination.Filters != null)
-            {
-                foreach (var filter in request.Pagination.Filters)
-                {
-                    var parts = filter.Split(':');
-                    if (parts.Length < 2) continue;
-
-                    var key = parts[0].Trim();
-                    var value = parts[1].Trim();
-
-                    if (key.Equals("minPrice", StringComparison.OrdinalIgnoreCase) && decimal.TryParse(value, out var minPrice))
-                    {
-                        query = query.Where(m => m.PriceDineIn >= minPrice);
-                    }
-                    else if (key.Equals("maxPrice", StringComparison.OrdinalIgnoreCase) && decimal.TryParse(value, out var maxPrice))
-                    {
-                        query = query.Where(m => m.PriceDineIn <= maxPrice);
-                    }
-                }
-            }
 
             // 3. Apply Multi-Sorting
             var sortMapping = new Dictionary<string, Expression<Func<MenuItem, object?>>>

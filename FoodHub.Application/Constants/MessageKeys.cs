@@ -12,6 +12,9 @@ namespace FoodHub.Application.Constants
             public const string Unauthorized = "Unauthorized";
             public const string InvalidFormat = "Common.InvalidFormat";
             public const string InvalidDate = "Common.InvalidDate";
+            public const string InvalidFile = "Common.InvalidFile";
+            public const string FileSizeExceeded = "Common.FileSizeExceeded";
+            public const string UploadFailed = "Common.UploadFailed";
         }
 
         public static class Password

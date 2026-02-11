@@ -29,10 +29,11 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatu
 
             // Authorization: Only Managers can update stock status
             var userRole = _currentUserService.Role;
-            if (userRole is not EmployeeRole.Manager)
+            if (userRole is not "Manager")
             {
                 return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.SetMenu.UpdateForbidden), ResultErrorType.Forbidden);
             }
+
 
             // 1. Get existing SetMenu
             var setMenu = await setMenuRepo.GetByIdAsync(request.SetMenuId);
@@ -56,4 +57,3 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatu
         }
     }
 }
-

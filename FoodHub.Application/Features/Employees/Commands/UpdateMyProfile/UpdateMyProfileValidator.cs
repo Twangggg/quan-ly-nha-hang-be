@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FluentValidation;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Extensions.Mappings;

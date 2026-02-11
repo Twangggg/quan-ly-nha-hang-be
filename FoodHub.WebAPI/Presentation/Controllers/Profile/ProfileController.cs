@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Employees.Commands.UpdateMyProfile;

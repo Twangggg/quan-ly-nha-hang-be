@@ -67,6 +67,10 @@ public static class CacheKey
     /// Example: string.Format(OptionGroupsByMenuItem, "456") → "option:menuitem:456"
     /// </summary>
     public const string OptionGroupsByMenuItem = "option:menuitem:{0}";
+
+    // ==================== ORDERS ====================
+    public const string OrderList = "order:list";
+    public const string OrderById = "order:{0}";
 }
 
 public static class CacheTTL
@@ -76,4 +80,5 @@ public static class CacheTTL
     public static readonly TimeSpan Employees = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan SetMenus = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Options = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan Orders = TimeSpan.FromMinutes(5);
 }

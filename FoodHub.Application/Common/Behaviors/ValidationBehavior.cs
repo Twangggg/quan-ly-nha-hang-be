@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using MediatR;
 namespace FoodHub.Application.Common.Behaviors
 {
@@ -16,24 +16,24 @@ namespace FoodHub.Application.Common.Behaviors
             RequestHandlerDelegate<TResponse> next,
             CancellationToken cancellationToken)
         {
-            // Nếu có validators cho request này
+            // N?u c� validators cho request n�y
             if (_validators.Any())
             {
                 var context = new ValidationContext<TRequest>(request);
-                // Chạy tất cả validators
+                // Ch?y t?t c? validators
                 var validationResults = await Task.WhenAll(
                     _validators.Select(v =>
                         v.ValidateAsync(context, cancellationToken)));
-                // Lấy tất cả lỗi
+                // L?y t?t c? l?i
                 var failures = validationResults
                     .SelectMany(r => r.Errors)
                     .Where(f => f != null)
                     .ToList();
-                // Nếu có lỗi, throw exception
+                // N?u c� l?i, throw exception
                 if (failures.Count != 0)
                     throw new ValidationException(failures);
             }
-            // Nếu validation pass, tiếp tục đến Handler
+            // N?u validation pass, ti?p t?c d?n Handler
             return await next();
         }
     }

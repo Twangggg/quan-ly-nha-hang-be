@@ -59,8 +59,6 @@ if (!string.IsNullOrEmpty(jwtRefreshExpires))
     builder.Configuration["Jwt:RefreshTokenExpiresInDays"] = jwtRefreshExpires;
 }
 
-
-
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
 var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
 var dbName = Environment.GetEnvironmentVariable("DB_NAME");

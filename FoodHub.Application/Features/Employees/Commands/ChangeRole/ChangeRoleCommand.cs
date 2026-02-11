@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Models;
 using FoodHub.Domain.Enums;
 using MediatR;
 

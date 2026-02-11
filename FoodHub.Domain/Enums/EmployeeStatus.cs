@@ -1,4 +1,4 @@
-﻿namespace FoodHub.Domain.Enums
+namespace FoodHub.Domain.Enums
 {
     public enum EmployeeStatus : short
     {

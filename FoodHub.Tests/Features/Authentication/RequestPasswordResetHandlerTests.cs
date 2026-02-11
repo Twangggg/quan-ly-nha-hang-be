@@ -8,7 +8,6 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
 namespace FoodHub.Tests.Features.Authentication
@@ -19,7 +18,7 @@ namespace FoodHub.Tests.Features.Authentication
         private readonly Mock<IBackgroundEmailSender> _mockEmailSender;
         private readonly Mock<IRateLimiter> _mockRateLimiter;
         private readonly Mock<IConfiguration> _mockConfiguration;
-        private readonly Mock<IHttpContextAccessor> _mockHttpContextAccessor;
+        private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly RequestPasswordResetHandler _handler;
 
@@ -29,7 +28,7 @@ namespace FoodHub.Tests.Features.Authentication
             _mockEmailSender = new Mock<IBackgroundEmailSender>();
             _mockRateLimiter = new Mock<IRateLimiter>();
             _mockConfiguration = new Mock<IConfiguration>();
-            _mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
 
             _handler = new RequestPasswordResetHandler(
@@ -37,7 +36,7 @@ namespace FoodHub.Tests.Features.Authentication
                 _mockEmailSender.Object,
                 _mockRateLimiter.Object,
                 _mockConfiguration.Object,
-                _mockHttpContextAccessor.Object,
+                _mockCurrentUserService.Object,
                 _mockMessageService.Object);
         }
 
@@ -70,9 +69,7 @@ namespace FoodHub.Tests.Features.Authentication
             _mockEmailSender.Setup(e => e.EnqueuePasswordResetEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>(), null, It.IsAny<CancellationToken>())).Returns(ValueTask.CompletedTask);
             _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Auth.PasswordResetGenericMessage)).Returns("Password reset email sent");
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("127.0.0.1");
-            _mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(httpContext);
+            _mockCurrentUserService.Setup(c => c.IpAddress).Returns("127.0.0.1");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -98,9 +95,7 @@ namespace FoodHub.Tests.Features.Authentication
             _mockRateLimiter.Setup(r => r.RegisterFailAsync(It.IsAny<string>(), 3, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10), It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Auth.PasswordResetGenericMessage)).Returns("Password reset email sent");
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("127.0.0.1");
-            _mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(httpContext);
+            _mockCurrentUserService.Setup(c => c.IpAddress).Returns("127.0.0.1");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -132,9 +127,7 @@ namespace FoodHub.Tests.Features.Authentication
             _mockRateLimiter.Setup(r => r.RegisterFailAsync(It.IsAny<string>(), 3, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10), It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Auth.PasswordResetGenericMessage)).Returns("Password reset email sent");
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("127.0.0.1");
-            _mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(httpContext);
+            _mockCurrentUserService.Setup(c => c.IpAddress).Returns("127.0.0.1");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -154,9 +147,7 @@ namespace FoodHub.Tests.Features.Authentication
             _mockRateLimiter.Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
             _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Auth.ResetRequestLimit)).Returns("Too many reset requests");
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("127.0.0.1");
-            _mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(httpContext);
+            _mockCurrentUserService.Setup(c => c.IpAddress).Returns("127.0.0.1");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);

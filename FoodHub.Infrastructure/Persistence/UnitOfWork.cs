@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces;
 using FoodHub.Infrastructure.Persistence.Repositories;
 
 namespace FoodHub.Infrastructure.Persistence

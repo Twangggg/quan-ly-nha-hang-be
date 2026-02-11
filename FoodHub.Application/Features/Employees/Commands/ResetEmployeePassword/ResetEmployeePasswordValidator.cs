@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword

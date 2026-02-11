@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Authentication.Commands.Login;
 using FoodHub.Application.Features.Authentication.Commands.RefreshToken;
 using FoodHub.Application.Features.Authentication.Commands.ChangePassword;

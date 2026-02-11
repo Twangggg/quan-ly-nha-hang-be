@@ -65,10 +65,11 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
 
             if (costPrice.HasValue)
             {
-                if (_currentUserService.Role is EmployeeRole.Manager or EmployeeRole.Cashier)
+                if (_currentUserService.Role is "Manager" or "Cashier")
                     menuItem.CostPrice = costPrice.Value;
                 else return Result<UpdateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.UpdateCostForbidden), ResultErrorType.Forbidden);
             }
+
 
             await _unitOfWork.SaveChangeAsync();
 

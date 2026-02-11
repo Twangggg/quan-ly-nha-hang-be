@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +41,7 @@ namespace FoodHub.Application.Services
                 }
             }
 
-            // Format "D6" sẽ biến số 1 thành "000001"
+            // Format "D6" s? bi?n s? 1 th�nh "000001"
             return $"{prefix}{nextNumber.ToString("D6")}";
         }
     }

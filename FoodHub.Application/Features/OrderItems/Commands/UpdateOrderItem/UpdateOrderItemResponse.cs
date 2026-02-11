@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Extensions.Mappings;
+using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem

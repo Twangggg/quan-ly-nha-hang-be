@@ -24,9 +24,9 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllCategories()
+        public async Task<IActionResult> GetAllCategories([FromQuery] PaginationParams pagination)
         {
-            var query = new GetAllCategoriesQuery();
+            var query = new GetAllCategoriesQuery(pagination);
             var result = await _mediator.Send(query);
             return HandleResult(result);
         }

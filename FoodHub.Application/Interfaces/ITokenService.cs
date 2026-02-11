@@ -1,4 +1,4 @@
-﻿using FoodHub.Domain.Entities;
+using FoodHub.Domain.Entities;
 
 namespace FoodHub.Application.Interfaces
 {

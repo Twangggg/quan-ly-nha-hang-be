@@ -6,8 +6,8 @@ using Microsoft.Extensions.Logging;
 namespace FoodHub.Infrastructure.Services
 {
     /// <summary>
-    /// Implements a simple in-memory queue for emails using System.Threading.Channels.
-    /// This allows the application to fire-and-forget email sending tasks.
+    /// Triển khai một hàng đợi trong bộ nhớ (In-memory Queue) cho Email sử dụng System.Threading.Channels.
+    /// Cho phép ứng dụng đẩy email vào hàng đợi và tiếp tục xử lý các việc khác mà không cần đợi gửi mail xong.
     /// </summary>
     public class BackgroundEmailChannel : IBackgroundEmailSender
     {
@@ -17,14 +17,17 @@ namespace FoodHub.Infrastructure.Services
         public BackgroundEmailChannel(ILogger<BackgroundEmailChannel> logger)
         {
             _logger = logger;
-            // Bounded channel to prevent memory overflow if email sending is very slow
+            // Tạo một kênh (Channel) có giới hạn 100 thông báo để tránh tràn bộ nhớ nếu email gửi quá chậm
             var options = new BoundedChannelOptions(100)
             {
-                FullMode = BoundedChannelFullMode.Wait
+                FullMode = BoundedChannelFullMode.Wait // Nếu hàng đợi đầy, lệnh ghi vào sẽ phải đợi (Wait)
             };
             _channel = Channel.CreateBounded<EmailMessage>(options);
         }
 
+        /// <summary>
+        /// Đẩy một yêu cầu gửi email vào hàng đợi
+        /// </summary>
         public async ValueTask EnqueueEmailAsync(string recipientEmail, string subject, string body, Guid? auditTargetId, Guid? performedByEmployeeId, CancellationToken cancellationToken)
         {
             var message = new EmailMessage
@@ -36,10 +39,12 @@ namespace FoodHub.Infrastructure.Services
                 PerformedByEmployeeId = performedByEmployeeId
             };
 
+            // Ghi message vào Channel, sau đó EmailBackgroundWorker sẽ đọc và xử lý sau
             await _channel.Writer.WriteAsync(message, cancellationToken);
             _logger.LogInformation("Email to {Email} queued for background delivery.", recipientEmail);
         }
 
+        // Cung cấp Reader cho Worker sử dụng
         public ChannelReader<EmailMessage> Reader => _channel.Reader;
 
         public async ValueTask EnqueueAccountCreationEmailAsync(string email, string employeeName, string employeeCode, string role, string password, Guid? auditTargetId, Guid? performedByEmployeeId, CancellationToken cancellationToken = default)

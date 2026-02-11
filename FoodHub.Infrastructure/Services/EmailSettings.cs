@@ -1,4 +1,4 @@
-﻿namespace FoodHub.Infrastructure.Services
+namespace FoodHub.Infrastructure.Services
 {
     public class EmailSettings
     {

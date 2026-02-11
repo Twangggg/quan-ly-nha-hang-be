@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;

@@ -3,5 +3,5 @@ using MediatR;
 
 namespace FoodHub.Application.Features.Categories.Queries.GetAllCategories
 {
-    public record GetAllCategoriesQuery() : IRequest<Result<List<GetCategoriesResponse>>>;
+    public record GetAllCategoriesQuery(PaginationParams Pagination) : IRequest<Result<PagedResult<GetCategoriesResponse>>>;
 }

@@ -1,10 +1,10 @@
-ï»¿using FoodHub.Domain.Enums;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
 {
     public class Employee : BaseEntity
     {
-        // KhÃ³a chÃ­nh: TÃªn gá»i rÃµ rÃ ng, dá»… hiá»ƒu
+        // Khóa chính: Tên g?i rõ ràng, d? hi?u
         public Guid EmployeeId { get; set; }
         public string EmployeeCode { get; set; } = null!;
         public string? Username { get; set; }

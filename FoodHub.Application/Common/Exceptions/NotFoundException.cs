@@ -1,4 +1,4 @@
-﻿namespace FoodHub.Application.Common.Exceptions
+namespace FoodHub.Application.Common.Exceptions
 {
     public class NotFoundException : Exception
     {

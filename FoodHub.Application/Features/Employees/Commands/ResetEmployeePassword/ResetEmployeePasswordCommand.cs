@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Models;
 using MediatR;
 
 namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword

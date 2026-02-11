@@ -1,4 +1,4 @@
-﻿namespace FoodHub.Infrastructure.Services.RateLimiting
+namespace FoodHub.Infrastructure.Services.RateLimiting
 {
     using FoodHub.Application.Interfaces;
     using StackExchange.Redis;
@@ -46,16 +46,16 @@
             {
                 var failKey = FailKey(key);
 
-                // 1) tăng count (atomic)
+                // 1) tang count (atomic)
                 var count = (int)await _db.StringIncrementAsync(failKey);
 
-                // 2) nếu là lần đầu, set TTL cho cửa sổ thời gian
+                // 2) n?u l� l?n d?u, set TTL cho c?a s? th?i gian
                 if (count == 1)
                 {
                     await _db.KeyExpireAsync(failKey, window);
                 }
 
-                // 3) nếu vượt ngưỡng -> block
+                // 3) n?u vu?t ngu?ng -> block
                 if (count >= limit)
                 {
                     await _db.StringSetAsync(BlockKey(key), "1", blockFor);
@@ -65,7 +65,7 @@
             }
             catch
             {
-                // Nếu Redis có vấn đề, coi như không track được fail
+                // N?u Redis c� v?n d?, coi nhu kh�ng track du?c fail
                 return 0;
             }
         }

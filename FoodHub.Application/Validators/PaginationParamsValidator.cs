@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FoodHub.Application.Common.Models;
 
 namespace FoodHub.Application.Validators

@@ -1,4 +1,4 @@
-﻿namespace FoodHub.Infrastructure.Security
+namespace FoodHub.Infrastructure.Security
 {
     public class JwtSettings
     {
