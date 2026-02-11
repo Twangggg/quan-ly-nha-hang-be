@@ -71,17 +71,19 @@ namespace FoodHub.Presentation.Controllers
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
+                Secure = !isDev,
+                SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddSeconds(response.RefreshTokenExpiresIn),
-                SameSite = isDev ? SameSiteMode.Unspecified : SameSiteMode.None,
-                Secure = !isDev // False in Dev (allows HTTP), True in Prod
+                Path = "/"
             };
 
             var accessCookieOptions = new CookieOptions
             {
                 HttpOnly = true,
+                Secure = !isDev,
+                SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddSeconds(response.ExpiresIn),
-                SameSite = isDev ? SameSiteMode.Unspecified : SameSiteMode.None,
-                Secure = !isDev
+                Path = "/"
             };
 
             Response.Cookies.Append("accessToken", response.AccessToken, accessCookieOptions);
