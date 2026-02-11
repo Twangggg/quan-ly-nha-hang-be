@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
@@ -13,12 +14,14 @@ namespace FoodHub.Application.Features.SetMenus.Commands.DeleteSetMenu
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
 
-        public DeleteSetMenuHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)
+        public DeleteSetMenuHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<DeleteSetMenuResponse>> Handle(DeleteSetMenuCommand request, CancellationToken cancellationToken)
@@ -28,10 +31,11 @@ namespace FoodHub.Application.Features.SetMenus.Commands.DeleteSetMenu
             var setMenuItemRepository = _unitOfWork.Repository<SetMenuItem>();
 
             var userRole = _currentUserService.Role;
-            if (userRole is not EmployeeRole.Manager)
+            if (userRole is not "Manager")
             {
                 return Result<DeleteSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.SetMenu.DeleteForbidden), ResultErrorType.Forbidden);
             }
+
 
             // 1. Get existing SetMenu
             var setMenu = await setMenuRepository.GetByIdAsync(request.SetMenuId);
@@ -46,6 +50,9 @@ namespace FoodHub.Application.Features.SetMenus.Commands.DeleteSetMenu
 
             // 3. Soft delete associated SetMenuItems
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            await _cacheService.RemoveByPatternAsync("setmenu:list", cancellationToken);
+            await _cacheService.RemoveAsync(string.Format(CacheKey.SetMenuById, request.SetMenuId), cancellationToken);
 
             // 6. Return Response
             var updatedItems = await setMenuItemRepository.Query()

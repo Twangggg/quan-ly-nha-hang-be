@@ -1,4 +1,4 @@
-﻿namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
+namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
 {
     public class ResetEmployeePasswordResponse
     {

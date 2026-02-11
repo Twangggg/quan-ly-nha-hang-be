@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +13,13 @@ using FoodHub.Application.Features.Orders.Commands.CreateOrder;
 using FoodHub.Application.Features.Orders.Queries.GetOrders;
 
 
+using FoodHub.WebAPI.Presentation.Attributes;
+using FoodHub.WebAPI.Presentation.Extensions;
+
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
     [Tags("Orders")]
+    [RateLimit(maxRequests: 200, windowMinutes: 1, blockMinutes: 5)]
     public class OrdersController : ApiControllerBase
     {
         private readonly IMediator _mediator;
@@ -27,6 +30,7 @@ namespace FoodHub.Presentation.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Manager,Waiter")]
+        [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand command)
         {
             var result = await _mediator.Send(command);
@@ -38,6 +42,10 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> GetOrders([FromQuery] PaginationParams pagination)
         {
             var result = await _mediator.Send(new GetOrdersQuery { Pagination = pagination });
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
             return HandleResult(result);
         }
 
@@ -51,6 +59,7 @@ namespace FoodHub.Presentation.Controllers
 
         [HttpPatch("{id}/items")]
         [Authorize(Roles = "Manager,Waiter")]
+        [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
         public async Task<IActionResult> UpdateOrderItem(Guid id, [FromBody] UpdateOrderItemCommand command)
         {
             if (id != command.OrderId) return BadRequest(new { message = "Order ID mismatch" });
@@ -80,6 +89,7 @@ namespace FoodHub.Presentation.Controllers
 
         [HttpPost("{id}/items")]
         [Authorize(Roles = "Manager,Waiter")]
+        [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
         public async Task<IActionResult> AddOrderItem(Guid id, [FromBody] AddOrderItemCommand command)
         {
             if (id != command.OrderId) return BadRequest(new { message = "ID mismatch" });

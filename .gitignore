@@ -56,6 +56,8 @@ out/
 # Coverage reports
 coverage/
 coverage-report/
+coverage-local/
 TestResults/
 *.coverage
 *.coveragexml
+*.cobertura.xml

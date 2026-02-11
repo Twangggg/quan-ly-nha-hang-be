@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -244,7 +244,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 LogId = Guid.NewGuid(),
                 OrderId = order.OrderId,
                 EmployeeId = userId,
-                Action = AuditLogActions.SubmitOrder, // ✅ Only one action: SUBMIT (no CREATE or ADD_ITEM)
+                Action = AuditLogActions.SubmitOrder, // ? Only one action: SUBMIT (no CREATE or ADD_ITEM)
                 CreatedAt = DateTime.UtcNow
             };
 

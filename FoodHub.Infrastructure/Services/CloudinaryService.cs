@@ -1,5 +1,6 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -10,10 +11,12 @@ namespace FoodHub.Infrastructure.Services
     {
         private readonly Cloudinary _cloudinary;
         private readonly CloudinarySettings _settings;
+        private readonly IMessageService _messageService;
 
-        public CloudinaryService(IOptions<CloudinarySettings> settings)
+        public CloudinaryService(IOptions<CloudinarySettings> settings, IMessageService messageService)
         {
             _settings = settings.Value;
+            _messageService = messageService;
 
             var account = new Account(
                 _settings.CloudName,
@@ -28,7 +31,7 @@ namespace FoodHub.Infrastructure.Services
         {
             if (file == null || file.Length == 0)
             {
-                throw new ArgumentException("File is empty or null");
+                throw new ArgumentException(_messageService.GetMessage(MessageKeys.Common.InvalidFile));
             }
 
             // Validate file type
@@ -37,14 +40,14 @@ namespace FoodHub.Infrastructure.Services
 
             if (!allowedExtensions.Contains(extension))
             {
-                throw new ArgumentException($"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}");
+                throw new ArgumentException(_messageService.GetMessage(MessageKeys.Common.InvalidFormat));
             }
 
             // Validate file size (max 5MB)
             const int maxFileSize = 5 * 1024 * 1024; // 5MB
             if (file.Length > maxFileSize)
             {
-                throw new ArgumentException("File size exceeds 5MB limit");
+                throw new ArgumentException(_messageService.GetMessage(MessageKeys.Common.FileSizeExceeded));
             }
 
             using var stream = file.OpenReadStream();
@@ -68,7 +71,7 @@ namespace FoodHub.Infrastructure.Services
 
             if (uploadResult.Error != null)
             {
-                throw new Exception($"Cloudinary upload failed: {uploadResult.Error.Message}");
+                throw new Exception(_messageService.GetMessage(MessageKeys.Common.UploadFailed));
             }
 
             return uploadResult.SecureUrl.ToString();

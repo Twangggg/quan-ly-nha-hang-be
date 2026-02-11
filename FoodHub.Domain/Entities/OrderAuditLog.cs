@@ -1,4 +1,4 @@
-﻿namespace FoodHub.Domain.Entities
+namespace FoodHub.Domain.Entities
 {
     public class OrderAuditLog
     {

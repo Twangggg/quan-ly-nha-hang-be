@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Authentication.Commands.Login;
 using FoodHub.Application.Features.Authentication.Commands.RefreshToken;
 using FoodHub.Application.Features.Authentication.Commands.ChangePassword;
@@ -8,10 +8,10 @@ using FoodHub.Application.Features.Authentication.Commands.ResetPassword;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using FoodHub.WebAPI.Presentation.Attributes;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
     [Tags("Auth")]
     public class AuthController : ApiControllerBase
     {
@@ -25,6 +25,7 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpPost("login")]
+        [RateLimit(maxRequests: 5, windowMinutes: 10, blockMinutes: 5)]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
         {
             var result = await _mediator.Send(command);
@@ -70,17 +71,19 @@ namespace FoodHub.Presentation.Controllers
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
+                Secure = !isDev,
+                SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddSeconds(response.RefreshTokenExpiresIn),
-                SameSite = isDev ? SameSiteMode.Unspecified : SameSiteMode.None,
-                Secure = !isDev // False in Dev (allows HTTP), True in Prod
+                Path = "/"
             };
 
             var accessCookieOptions = new CookieOptions
             {
                 HttpOnly = true,
+                Secure = !isDev,
+                SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddSeconds(response.ExpiresIn),
-                SameSite = isDev ? SameSiteMode.Unspecified : SameSiteMode.None,
-                Secure = !isDev
+                Path = "/"
             };
 
             Response.Cookies.Append("accessToken", response.AccessToken, accessCookieOptions);
@@ -90,10 +93,8 @@ namespace FoodHub.Presentation.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] RevokeTokenCommand command)
         {
-            // 1. Try to get token from Body or Cookie
             var refreshToken = command.RefreshToken ?? Request.Cookies["refreshToken"];
 
-            // 2. Clear Cookies to ensure client-side logout
             Response.Cookies.Delete("accessToken");
             Response.Cookies.Delete("refreshToken");
 
@@ -102,8 +103,6 @@ namespace FoodHub.Presentation.Controllers
                 return NoContent();
             }
 
-            // 3. Revoke token in DB
-            // Create a new command with the found token if the original one was empty
             var revokeCommand = new RevokeTokenCommand { RefreshToken = refreshToken };
             await _mediator.Send(revokeCommand);
 
@@ -119,6 +118,7 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpPost("request-password-reset")]
+        [RateLimit(maxRequests: 3, windowMinutes: 10, blockMinutes: 10)]
         public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetCommand command)
         {
             var result = await _mediator.Send(command);

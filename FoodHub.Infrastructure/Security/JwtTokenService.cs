@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;

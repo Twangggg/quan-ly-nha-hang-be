@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
@@ -12,12 +13,14 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatu
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
 
-        public UpdateSetMenuStockStatusHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)
+        public UpdateSetMenuStockStatusHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<bool>> Handle(UpdateSetMenuStockStatusCommand request, CancellationToken cancellationToken)
@@ -26,10 +29,11 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatu
 
             // Authorization: Only Managers can update stock status
             var userRole = _currentUserService.Role;
-            if (userRole is not EmployeeRole.Manager)
+            if (userRole is not "Manager")
             {
                 return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.SetMenu.UpdateForbidden), ResultErrorType.Forbidden);
             }
+
 
             // 1. Get existing SetMenu
             var setMenu = await setMenuRepo.GetByIdAsync(request.SetMenuId);
@@ -45,9 +49,11 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatu
             // 3. Save changes
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
+            await _cacheService.RemoveByPatternAsync("setmenu:list", cancellationToken);
+            await _cacheService.RemoveAsync(string.Format(CacheKey.SetMenuById, request.SetMenuId), cancellationToken);
+
             // 4. Return Response
             return Result<bool>.Success(true);
         }
     }
 }
-

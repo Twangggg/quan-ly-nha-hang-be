@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Extensions.Mappings;
+using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 

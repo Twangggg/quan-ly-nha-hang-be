@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenuStockStatus;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItemStockStatus

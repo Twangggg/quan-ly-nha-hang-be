@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FoodHub.Application.Features.MenuItems.Commands.ToggleOutOfStock;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItemStockStatus

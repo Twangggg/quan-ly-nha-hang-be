@@ -4,7 +4,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using FoodHub.Application.Constants;
 using System.Security.Cryptography;
@@ -18,7 +18,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
         private readonly IBackgroundEmailSender _emailSender;
         private readonly IRateLimiter _rateLimiter;
         private readonly IConfiguration _configuration;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
 
         public RequestPasswordResetHandler(
@@ -26,21 +26,21 @@ namespace FoodHub.Application.Features.Authentication.Commands.RequestPasswordRe
             IBackgroundEmailSender emailSender,
             IRateLimiter rateLimiter,
             IConfiguration configuration,
-            IHttpContextAccessor httpContextAccessor,
+            ICurrentUserService currentUserService,
             IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _emailSender = emailSender;
             _rateLimiter = rateLimiter;
             _configuration = configuration;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
             _messageService = messageService;
         }
 
         public async Task<Result<string>> Handle(RequestPasswordResetCommand request, CancellationToken cancellationToken)
         {
-            // Get IP address for rate limiting
-            var ipAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
+            // Get IP address from current user service for rate limiting
+            var ipAddress = _currentUserService.IpAddress ?? "unknown";
             var rateLimitKey = $"pr:{ipAddress}:{request.EmployeeCode}";
 
             // Check rate limiting (3 requests per 10 minutes)

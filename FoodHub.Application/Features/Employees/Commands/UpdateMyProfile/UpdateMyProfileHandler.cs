@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
@@ -13,12 +13,15 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
 
-        public UpdateProfileHandler(IUnitOfWork unitOfWork, IMapper mapper, IMessageService messageService)
+        public UpdateProfileHandler(IUnitOfWork unitOfWork, IMapper mapper,
+            IMessageService messageService, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _messageService = messageService;
+            _cacheService = cacheService;
         }
         public async Task<Result<UpdateProfileResponse>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
         {
@@ -61,6 +64,7 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
             employee.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+            await _cacheService.RemoveByPatternAsync("employee:list", cancellationToken);
 
             var response = _mapper.Map<UpdateProfileResponse>(employee);
             return Result<UpdateProfileResponse>.Success(response);

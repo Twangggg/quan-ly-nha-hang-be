@@ -1,12 +1,10 @@
-﻿using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
-using System.Security.Claims;
 using FoodHub.Application.Constants;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
@@ -16,20 +14,20 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordService _passwordService;
         private readonly IBackgroundEmailSender _emailSender;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
 
         public ResetEmployeePasswordHandler(
             IUnitOfWork unitOfWork,
             IPasswordService passwordService,
             IBackgroundEmailSender emailSender,
-            IHttpContextAccessor httpContextAccessor,
+            ICurrentUserService currentUserService,
             IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
             _emailSender = emailSender;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
             _messageService = messageService;
         }
 
@@ -37,8 +35,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
             ResetEmployeePasswordCommand request,
             CancellationToken cancellationToken)
         {
-            var managerId = _httpContextAccessor.HttpContext?.User
-                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var managerId = _currentUserService.UserId;
 
             if (string.IsNullOrEmpty(managerId) || !Guid.TryParse(managerId, out var managerGuid))
             {

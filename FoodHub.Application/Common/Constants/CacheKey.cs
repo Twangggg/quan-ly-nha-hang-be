@@ -45,6 +45,32 @@ public static class CacheKey
     public const string EmployeeList = "employee:list";
     public const string EmployeeById = "employee:{0}";
     public const string EmployeeByEmail = "employee:email:{0}";
+
+    // ==================== SET MENUS ====================
+
+    /// <summary>
+    /// Key cho danh sách set menus (base key)
+    /// Sẽ kết hợp với filters/pagination
+    /// </summary>
+    public const string SetMenuList = "setmenu:list";
+
+    /// <summary>
+    /// Key cho một set menu cụ thể
+    /// Example: string.Format(SetMenuById, "789") → "setmenu:789"
+    /// </summary>
+    public const string SetMenuById = "setmenu:{0}";
+
+    // ==================== OPTIONS ====================
+
+    /// <summary>
+    /// Key cho option groups theo menu item
+    /// Example: string.Format(OptionGroupsByMenuItem, "456") → "option:menuitem:456"
+    /// </summary>
+    public const string OptionGroupsByMenuItem = "option:menuitem:{0}";
+
+    // ==================== ORDERS ====================
+    public const string OrderList = "order:list";
+    public const string OrderById = "order:{0}";
 }
 
 public static class CacheTTL
@@ -52,4 +78,7 @@ public static class CacheTTL
     public static readonly TimeSpan Categories = TimeSpan.FromHours(2);
     public static readonly TimeSpan MenuItems = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Employees = TimeSpan.FromMinutes(15);
+    public static readonly TimeSpan SetMenus = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan Options = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan Orders = TimeSpan.FromMinutes(5);
 }

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
 using FoodHub.Application.Common.Behaviors;
@@ -14,7 +14,7 @@ namespace FoodHub.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            // Tự động quét và đăng ký tất cả các Profile của AutoMapper trong Assembly này
+            // T? d?ng qu�t v� dang k� t?t c? c�c Profile c?a AutoMapper trong Assembly n�y
             services.AddAutoMapper(config =>
             {
                 config.AddProfile<MappingProfile>();
@@ -22,17 +22,17 @@ namespace FoodHub.Application
 
 
 
-            // Đăng ký MediatR
+            // �ang k� MediatR
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
                 cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             });
 
-            // Đăng ký FluentValidation
+            // �ang k� FluentValidation
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            // Đăng ký Application Services
+            // �ang k� Application Services
             services.AddScoped<IEmployeeServices, EmployeeServices>();
             services.AddScoped<IMessageService, MessageService>();
 

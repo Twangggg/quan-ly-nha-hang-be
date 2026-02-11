@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 

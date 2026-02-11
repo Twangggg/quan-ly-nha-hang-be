@@ -1,7 +1,6 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 using FoodHub.Application.Interfaces;
-using FoodHub.Domain.Enums;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace FoodHub.Infrastructure.Services
 {
@@ -16,8 +15,12 @@ namespace FoodHub.Infrastructure.Services
 
         public string? UserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        public EmployeeRole Role => (EmployeeRole)Enum.Parse(typeof(EmployeeRole), _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty);
-
         public string? EmployeeCode => _httpContextAccessor.HttpContext?.User?.FindFirstValue("EmployeeCode");
+
+        public string? Role => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Role);
+
+        public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
+
+        public string? IpAddress => _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
     }
 }

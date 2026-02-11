@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
@@ -12,13 +13,15 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
         //private readonly ICloudinaryService _cloudinaryService;
 
-        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)//, ICloudinaryService cloudinaryService)
+        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService)//, ICloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
             //_cloudinaryService = cloudinaryService;
         }
 
@@ -85,6 +88,8 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             // 4. Save to database
             await menuItemRepository.AddAsync(menuItem);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            await _cacheService.RemoveByPatternAsync("menuitem:list", cancellationToken);
 
             // 5. Return Response
             var response = new CreateMenuItemResponse

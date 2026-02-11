@@ -29,7 +29,9 @@ namespace FoodHub.Application.Features.Authentication.Commands.RevokeToken
                 return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Auth.InvalidToken));
             }
 
-            _unitOfWork.Repository<FoodHub.Domain.Entities.RefreshToken>().Delete(token);
+            token.IsRevoked = true;
+            token.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.Repository<FoodHub.Domain.Entities.RefreshToken>().Update(token);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             return Result<bool>.Success(true);

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem;
@@ -77,13 +77,13 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
                     oi.Status == OrderItemStatus.Rejected);
                 if (allItemsFinished)
                 {
-                    // Nếu phục vụ xong hết rồi mới thanh toán -> Giải phóng bàn ngay
+                    // N?u ph?c v? xong h?t r?i m?i thanh to�n -> Gi?i ph�ng b�n ngay
                     order.TableId = null;
                 }
                 else
                 {
-                    // Nếu vẫn còn món đang nấu/chưa xong -> Giữ nguyên TableId 
-                    // Bàn sẽ được giải phóng tự động khi món cuối cùng được chuyển sang Completed ở luồng phục vụ.
+                    // N?u v?n c�n m�n dang n?u/chua xong -> Gi? nguy�n TableId 
+                    // B�n s? du?c gi?i ph�ng t? d?ng khi m�n cu?i c�ng du?c chuy?n sang Completed ? lu?ng ph?c v?.
                 }
             }
 

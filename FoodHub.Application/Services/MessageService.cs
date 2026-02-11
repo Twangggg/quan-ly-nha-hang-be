@@ -1,4 +1,4 @@
-﻿using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces;
 using System.Globalization;
 
 namespace FoodHub.Application.Services

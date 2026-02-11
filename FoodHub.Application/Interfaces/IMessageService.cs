@@ -1,4 +1,4 @@
-﻿namespace FoodHub.Application.Interfaces
+namespace FoodHub.Application.Interfaces
 {
     public interface IMessageService
     {

@@ -8,10 +8,12 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using FoodHub.WebAPI.Presentation.Attributes;
+
 namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
     [Tags("Categories")]
+    [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class CategoriesController : ApiControllerBase
     {
         private readonly IMediator _mediator;
@@ -22,9 +24,9 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllCategories()
+        public async Task<IActionResult> GetAllCategories([FromQuery] PaginationParams pagination)
         {
-            var query = new GetAllCategoriesQuery();
+            var query = new GetAllCategoriesQuery(pagination);
             var result = await _mediator.Send(query);
             return HandleResult(result);
         }
@@ -39,6 +41,7 @@ namespace FoodHub.Presentation.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Manager")]
+        [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryCommand command)
         {
             var result = await _mediator.Send(command);
@@ -52,6 +55,7 @@ namespace FoodHub.Presentation.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Manager")]
+        [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] UpdateCategoryCommand command)
         {
             if (id != command.CategoryId)
@@ -65,6 +69,7 @@ namespace FoodHub.Presentation.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Manager")]
+        [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 15)]
         public async Task<IActionResult> DeleteCategory(Guid id)
         {
             var result = await _mediator.Send(new DeleteCategoryCommand(id));

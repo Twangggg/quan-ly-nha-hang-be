@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 
 namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenuById
 {

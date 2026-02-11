@@ -1,5 +1,5 @@
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -11,13 +11,26 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenuById
     public class GetSetMenuByIdHandler : IRequestHandler<GetSetMenuByIdQuery, Result<GetSetMenuByIdResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        public GetSetMenuByIdHandler(IUnitOfWork unitOfWork)
+        private readonly ICacheService _cacheService;
+
+        public GetSetMenuByIdHandler(IUnitOfWork unitOfWork, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<GetSetMenuByIdResponse>> Handle(GetSetMenuByIdQuery request, CancellationToken cancellationToken)
         {
+            var cacheKey = string.Format(CacheKey.SetMenuById, request.SetMenuId);
+
+            var cachedSetMenu = await _cacheService.GetAsync<GetSetMenuByIdResponse>(
+                cacheKey,
+                cancellationToken);
+            if (cachedSetMenu != null)
+            {
+                return Result<GetSetMenuByIdResponse>.Success(cachedSetMenu);
+            }
+
             var setMenuRepository = _unitOfWork.Repository<SetMenu>();
             var menuItemRepository = _unitOfWork.Repository<MenuItem>();
             var setMenuItemRepository = _unitOfWork.Repository<SetMenuItem>();
@@ -53,6 +66,7 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenuById
                 }).ToList()
             };
 
+            await _cacheService.SetAsync(cacheKey, response, CacheTTL.SetMenus, cancellationToken);
             return Result<GetSetMenuByIdResponse>.Success(response);
         }
     }
