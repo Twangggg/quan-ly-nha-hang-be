@@ -1,14 +1,15 @@
-using Moq;
 using AutoMapper;
 using FluentAssertions;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Employees.Commands.CreateEmployee;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-using FoodHub.Application.Common.Models;
-using FoodHub.Application.Common.Constants;
-using FoodHub.Application.Constants;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
+using Moq;
 
 namespace FoodHub.Tests.Features.Employees
 {
@@ -22,6 +23,7 @@ namespace FoodHub.Tests.Features.Employees
         private readonly Mock<IEmployeeServices> _mockEmployeeServices;
         private readonly Mock<IMessageService> _mockMessage;
         private readonly Mock<ICacheService> _mockCache;
+        private readonly Mock<ILogger<CreateEmployeeHandler>> _mockLogger;
         private readonly CreateEmployeeHandler _handler;
 
         public CreateEmployeeHandlerTests()
@@ -34,6 +36,7 @@ namespace FoodHub.Tests.Features.Employees
             _mockEmployeeServices = new Mock<IEmployeeServices>();
             _mockMessage = new Mock<IMessageService>();
             _mockCache = new Mock<ICacheService>();
+            _mockLogger = new Mock<ILogger<CreateEmployeeHandler>>();
 
             _handler = new CreateEmployeeHandler(
                 _mockUow.Object,
@@ -43,7 +46,9 @@ namespace FoodHub.Tests.Features.Employees
                 _mockEmailSender.Object,
                 _mockEmployeeServices.Object,
                 _mockMessage.Object,
-                _mockCache.Object);
+                _mockCache.Object,
+                _mockLogger.Object
+            );
         }
 
         [Fact]
@@ -55,7 +60,7 @@ namespace FoodHub.Tests.Features.Employees
             {
                 FullName = "John Doe",
                 Email = "john@example.com",
-                Role = EmployeeRole.Manager
+                Role = EmployeeRole.Manager,
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
@@ -65,9 +70,13 @@ namespace FoodHub.Tests.Features.Employees
             repo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
-            _mockEmployeeServices.Setup(s => s.GenerateEmployeeCodeAsync(EmployeeRole.Manager)).ReturnsAsync("EMP001");
+            _mockEmployeeServices
+                .Setup(s => s.GenerateEmployeeCodeAsync(EmployeeRole.Manager))
+                .ReturnsAsync("EMP001");
             _mockPasswordService.Setup(p => p.GenerateRandomPassword()).Returns("randompass123");
-            _mockPasswordService.Setup(p => p.HashPassword("randompass123")).Returns("hashedpassword");
+            _mockPasswordService
+                .Setup(p => p.HashPassword("randompass123"))
+                .Returns("hashedpassword");
 
             var mappedEmployee = new Employee
             {
@@ -75,7 +84,7 @@ namespace FoodHub.Tests.Features.Employees
                 FullName = "John Doe",
                 Email = "john@example.com",
                 Role = EmployeeRole.Manager,
-                EmployeeCode = "EMP001"
+                EmployeeCode = "EMP001",
             };
             _mockMapper.Setup(m => m.Map<Employee>(command)).Returns(mappedEmployee);
 
@@ -86,27 +95,34 @@ namespace FoodHub.Tests.Features.Employees
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockUow.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
 
+            _mockEmailSender
+                .Setup(e =>
+                    e.EnqueueAccountCreationEmailAsync(
+                        It.IsAny<string>(),
+                        It.IsAny<string>(),
+                        It.IsAny<string>(),
+                        It.IsAny<string>(),
+                        It.IsAny<string>(),
+                        It.IsAny<Guid>(),
+                        It.IsAny<Guid>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
+                .Returns(ValueTask.CompletedTask);
 
-            _mockEmailSender.Setup(e => e.EnqueueAccountCreationEmailAsync(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<Guid>(),
-                It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>())).Returns(ValueTask.CompletedTask);
-
-
-            _mockCache.Setup(c => c.RemoveByPatternAsync("employee:list", It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _mockCache
+                .Setup(c => c.RemoveByPatternAsync("employee:list", It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             var response = new CreateEmployeeResponse
             {
                 EmployeeId = mappedEmployee.EmployeeId,
                 FullName = "John Doe",
-                EmployeeCode = "EMP001"
+                EmployeeCode = "EMP001",
             };
-            _mockMapper.Setup(m => m.Map<CreateEmployeeResponse>(It.IsAny<Employee>())).Returns(response);
+            _mockMapper
+                .Setup(m => m.Map<CreateEmployeeResponse>(It.IsAny<Employee>()))
+                .Returns(response);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -117,7 +133,10 @@ namespace FoodHub.Tests.Features.Employees
             result.Data.EmployeeCode.Should().Be("EMP001");
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
             _mockUow.Verify(u => u.CommitTransactionAsync(), Times.Once);
-            _mockCache.Verify(c => c.RemoveByPatternAsync("employee:list", It.IsAny<CancellationToken>()), Times.Once);
+            _mockCache.Verify(
+                c => c.RemoveByPatternAsync("employee:list", It.IsAny<CancellationToken>()),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -129,7 +148,7 @@ namespace FoodHub.Tests.Features.Employees
             {
                 FullName = "John Doe",
                 Email = "john@example.com",
-                Role = EmployeeRole.Manager
+                Role = EmployeeRole.Manager,
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
@@ -138,15 +157,18 @@ namespace FoodHub.Tests.Features.Employees
             {
                 EmployeeId = Guid.NewGuid(),
                 Email = "john@example.com",
-                EmployeeCode = "EMP001"
+                EmployeeCode = "EMP001",
             };
-            var employees = new List<Employee> { existingEmployee }.AsQueryable().BuildMock();
+            var employees = new List<Employee> { existingEmployee }
+                .AsQueryable()
+                .BuildMock();
             var repo = new Mock<IGenericRepository<Employee>>();
             repo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
-            _mockMessage.Setup(m => m.GetMessage(It.IsAny<string>())).Returns("Email already exists");
-
+            _mockMessage
+                .Setup(m => m.GetMessage(It.IsAny<string>()))
+                .Returns("Email already exists");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -164,12 +186,13 @@ namespace FoodHub.Tests.Features.Employees
             {
                 FullName = "John Doe",
                 Email = "john@example.com",
-                Role = EmployeeRole.Manager
+                Role = EmployeeRole.Manager,
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns("invalid-guid");
-            _mockMessage.Setup(m => m.GetMessage(It.IsAny<string>())).Returns("Cannot identify user");
-
+            _mockMessage
+                .Setup(m => m.GetMessage(It.IsAny<string>()))
+                .Returns("Cannot identify user");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);

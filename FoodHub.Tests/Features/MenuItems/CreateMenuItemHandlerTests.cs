@@ -1,12 +1,13 @@
-using Moq;
 using FluentAssertions;
+using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-using FoodHub.Application.Common.Models;
-using FoodHub.Application.Constants;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
+using Moq;
 
 namespace FoodHub.Tests.Features.MenuItems
 {
@@ -16,6 +17,7 @@ namespace FoodHub.Tests.Features.MenuItems
         private readonly Mock<ICurrentUserService> _mockCurrentUser;
         private readonly Mock<IMessageService> _mockMessage;
         private readonly Mock<ICacheService> _mockCache;
+        private readonly Mock<ILogger<CreateMenuItemHandler>> _mockLogger;
         private readonly CreateMenuItemHandler _handler;
 
         public CreateMenuItemHandlerTests()
@@ -24,12 +26,15 @@ namespace FoodHub.Tests.Features.MenuItems
             _mockCurrentUser = new Mock<ICurrentUserService>();
             _mockMessage = new Mock<IMessageService>();
             _mockCache = new Mock<ICacheService>();
+            _mockLogger = new Mock<ILogger<CreateMenuItemHandler>>();
 
             _handler = new CreateMenuItemHandler(
                 _mockUow.Object,
                 _mockCurrentUser.Object,
                 _mockMessage.Object,
-                _mockCache.Object);
+                _mockCache.Object,
+                _mockLogger.Object
+            );
         }
 
         [Fact]
@@ -56,7 +61,10 @@ namespace FoodHub.Tests.Features.MenuItems
             var menuItems = new List<MenuItem>().AsQueryable().BuildMock();
             var menuItemRepo = new Mock<IGenericRepository<MenuItem>>();
             menuItemRepo.Setup(r => r.Query()).Returns(menuItems);
-            menuItemRepo.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<MenuItem, bool>>>()))
+            menuItemRepo
+                .Setup(r =>
+                    r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<MenuItem, bool>>>())
+                )
                 .ReturnsAsync(false);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(menuItemRepo.Object);
 
@@ -66,7 +74,9 @@ namespace FoodHub.Tests.Features.MenuItems
             _mockUow.Setup(u => u.Repository<Category>()).Returns(categoryRepo.Object);
 
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
-            _mockCache.Setup(c => c.RemoveByPatternAsync("menuitem:list", It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _mockCache
+                .Setup(c => c.RemoveByPatternAsync("menuitem:list", It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -78,9 +88,15 @@ namespace FoodHub.Tests.Features.MenuItems
             result.Data.Name.Should().Be("Phở Bò");
             result.Data.CategoryId.Should().Be(categoryId);
             result.Data.CategoryName.Should().Be("Món chính");
-            _mockUow.Verify(u => u.Repository<MenuItem>().AddAsync(It.IsAny<MenuItem>()), Times.Once);
+            _mockUow.Verify(
+                u => u.Repository<MenuItem>().AddAsync(It.IsAny<MenuItem>()),
+                Times.Once
+            );
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
-            _mockCache.Verify(c => c.RemoveByPatternAsync("menuitem:list", It.IsAny<CancellationToken>()), Times.Once);
+            _mockCache.Verify(
+                c => c.RemoveByPatternAsync("menuitem:list", It.IsAny<CancellationToken>()),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -101,14 +117,29 @@ namespace FoodHub.Tests.Features.MenuItems
                 null
             );
 
-            var existingMenuItems = new List<MenuItem> { new MenuItem { Code = "MI001", Name = "Existing", ImageUrl = "" } }.AsQueryable().BuildMock();
+            var existingMenuItems = new List<MenuItem>
+            {
+                new MenuItem
+                {
+                    Code = "MI001",
+                    Name = "Existing",
+                    ImageUrl = "",
+                },
+            }
+                .AsQueryable()
+                .BuildMock();
             var menuItemRepo = new Mock<IGenericRepository<MenuItem>>();
             menuItemRepo.Setup(r => r.Query()).Returns(existingMenuItems);
-            menuItemRepo.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<MenuItem, bool>>>()))
+            menuItemRepo
+                .Setup(r =>
+                    r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<MenuItem, bool>>>())
+                )
                 .ReturnsAsync(true);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(menuItemRepo.Object);
 
-            _mockMessage.Setup(m => m.GetMessage(MessageKeys.MenuItem.CodeExists, "MI001")).Returns("Menu item code MI001 already exists");
+            _mockMessage
+                .Setup(m => m.GetMessage(MessageKeys.MenuItem.CodeExists, "MI001"))
+                .Returns("Menu item code MI001 already exists");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -140,7 +171,10 @@ namespace FoodHub.Tests.Features.MenuItems
             var menuItems = new List<MenuItem>().AsQueryable().BuildMock();
             var menuItemRepo = new Mock<IGenericRepository<MenuItem>>();
             menuItemRepo.Setup(r => r.Query()).Returns(menuItems);
-            menuItemRepo.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<MenuItem, bool>>>()))
+            menuItemRepo
+                .Setup(r =>
+                    r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<MenuItem, bool>>>())
+                )
                 .ReturnsAsync(false);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(menuItemRepo.Object);
 
@@ -148,7 +182,9 @@ namespace FoodHub.Tests.Features.MenuItems
             categoryRepo.Setup(r => r.GetByIdAsync(categoryId)).ReturnsAsync((Category?)null);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(categoryRepo.Object);
 
-            _mockMessage.Setup(m => m.GetMessage(MessageKeys.Category.NotFound, categoryId)).Returns($"Category {categoryId} not found");
+            _mockMessage
+                .Setup(m => m.GetMessage(MessageKeys.Category.NotFound, categoryId))
+                .Returns($"Category {categoryId} not found");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
