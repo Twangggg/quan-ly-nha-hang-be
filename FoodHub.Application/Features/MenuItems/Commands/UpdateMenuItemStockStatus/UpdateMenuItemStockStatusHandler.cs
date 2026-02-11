@@ -30,14 +30,13 @@ namespace FoodHub.Application.Features.MenuItems.Commands.ToggleOutOfStock
 
         public async Task<Result<bool>> Handle(UpdateMenuItemStockStatusCommand request, CancellationToken cancellationToken)
         {
-            // Get the repository for MenuItem
-            var repo = _unitOfWork.Repository<MenuItem>();
-
             if (_currentUserService.Role is not "Manager")
             {
                 return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.UpdateStockForbidden), ResultErrorType.Forbidden);
             }
 
+            // Get the repository for MenuItem
+            var repo = _unitOfWork.Repository<MenuItem>();
 
             // Check if the menu item exists
             var menuItem = await repo.Query()
