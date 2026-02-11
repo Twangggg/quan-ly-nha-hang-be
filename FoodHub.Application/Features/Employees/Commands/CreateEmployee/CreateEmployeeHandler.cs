@@ -1,16 +1,18 @@
 using AutoMapper;
-using FoodHub.Application.Constants;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using FoodHub.Application.Common.Constants;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
 {
-    public class CreateEmployeeHandler : IRequestHandler<CreateEmployeeCommand, Result<CreateEmployeeResponse>>
+    public class CreateEmployeeHandler
+        : IRequestHandler<CreateEmployeeCommand, Result<CreateEmployeeResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -20,6 +22,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
         private readonly IEmployeeServices _employeeServices;
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
+        private readonly ILogger<CreateEmployeeHandler> _logger;
 
         public CreateEmployeeHandler(
             IUnitOfWork unitOfWork,
@@ -29,7 +32,9 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             IBackgroundEmailSender emailSender,
             IEmployeeServices employeeServices,
             IMessageService messageService,
-            ICacheService cacheService)
+            ICacheService cacheService,
+            ILogger<CreateEmployeeHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -39,22 +44,38 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             _employeeServices = employeeServices;
             _messageService = messageService;
             _cacheService = cacheService;
+            _logger = logger;
         }
 
-        public async Task<Result<CreateEmployeeResponse>> Handle(CreateEmployeeCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CreateEmployeeResponse>> Handle(
+            CreateEmployeeCommand request,
+            CancellationToken cancellationToken
+        )
         {
+            _logger.LogInformation(
+                "Creating new employee with email: {Email}, role: {Role}",
+                request.Email,
+                request.Role
+            );
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                return Result<CreateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
+                _logger.LogWarning("Failed to identify auditor for employee creation.");
+                return Result<CreateEmployeeResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser),
+                    ResultErrorType.Unauthorized
+                );
             }
 
-            var employeeExists = await _unitOfWork.Repository<Employee>()
+            var employeeExists = await _unitOfWork
+                .Repository<Employee>()
                 .Query()
                 .AnyAsync(e => e.Email == request.Email, cancellationToken);
 
             if (employeeExists)
             {
-                return Result<CreateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Common.DatabaseConflict));
+                return Result<CreateEmployeeResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Common.DatabaseConflict)
+                );
             }
 
             await _unitOfWork.BeginTransactionAsync();
@@ -64,14 +85,19 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
                 employee.EmployeeId = Guid.NewGuid();
                 employee.Status = EmployeeStatus.Active;
                 employee.CreatedAt = DateTime.UtcNow;
-                employee.EmployeeCode = await _employeeServices.GenerateEmployeeCodeAsync(request.Role);
+                employee.EmployeeCode = await _employeeServices.GenerateEmployeeCodeAsync(
+                    request.Role
+                );
+
+                _logger.LogInformation(
+                    "Generated Employee Code: {EmployeeCode}",
+                    employee.EmployeeCode
+                );
 
                 var randomPassword = _passwordService.GenerateRandomPassword();
                 employee.PasswordHash = _passwordService.HashPassword(randomPassword);
 
                 await _unitOfWork.Repository<Employee>().AddAsync(employee);
-
-
 
                 var auditLog = new AuditLog
                 {
@@ -80,7 +106,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
                     TargetId = employee.EmployeeId,
                     PerformedByEmployeeId = auditorId,
                     CreatedAt = DateTimeOffset.UtcNow,
-                    Reason = "Create new employee"
+                    Reason = "Create new employee",
                 };
                 await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -94,7 +120,8 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
                     randomPassword,
                     employee.EmployeeId, // TargetId
                     auditorId, // PerformedBy
-                    cancellationToken);
+                    cancellationToken
+                );
 
                 await _unitOfWork.CommitTransactionAsync();
                 await _cacheService.RemoveByPatternAsync("employee:list", cancellationToken);
@@ -105,7 +132,10 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                return Result<CreateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.AccountCreationEmailFailed) + $" ({ex.Message})");
+                return Result<CreateEmployeeResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.AccountCreationEmailFailed)
+                        + $" ({ex.Message})"
+                );
             }
         }
     }

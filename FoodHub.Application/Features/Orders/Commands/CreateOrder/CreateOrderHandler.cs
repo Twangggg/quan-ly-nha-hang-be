@@ -5,6 +5,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
 {
@@ -13,20 +14,38 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ILogger<CreateOrderHandler> _logger;
 
-        public CreateOrderHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService)
+        public CreateOrderHandler(
+            IUnitOfWork unitOfWork,
+            ICurrentUserService currentUserService,
+            IMessageService messageService,
+            ILogger<CreateOrderHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _logger = logger;
         }
 
-        public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(
+            CreateOrderCommand request,
+            CancellationToken cancellationToken
+        )
         {
+            _logger.LogInformation(
+                "Creating new order. Type: {OrderType}, Table: {TableId}",
+                request.OrderType,
+                request.TableId
+            );
             // 1. Validate Basic Logic
             if (request.OrderType == OrderType.DineIn && request.TableId == null)
             {
-                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.SelectTable), ResultErrorType.BadRequest);
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.SelectTable),
+                    ResultErrorType.BadRequest
+                );
             }
 
             // 2. Generate Order Code: ORD-yyyyMMdd-XXXX
@@ -36,9 +55,11 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
 
             // Find max code for today
             // Note: This needs to be carefully handled for concurrency in high-load systems.
-            // For now, using standard approach with transaction isolation or lock logic 
+            // For now, using standard approach with transaction isolation or lock logic
             // inside SaveChanges is ideal, but here we query max.
-            var lastOrder = await _unitOfWork.Repository<Order>().Query()
+            var lastOrder = await _unitOfWork
+                .Repository<Order>()
+                .Query()
                 .Where(o => o.OrderCode.StartsWith(prefix))
                 .OrderByDescending(o => o.OrderCode)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -68,7 +89,9 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 TotalAmount = 0, // Initial amount is 0
                 IsPriority = false,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : Guid.Empty
+                CreatedBy = Guid.TryParse(_currentUserService.UserId, out var userId)
+                    ? userId
+                    : Guid.Empty,
             };
 
             // If TableId provided, we might want to check if table exists or is occupied?

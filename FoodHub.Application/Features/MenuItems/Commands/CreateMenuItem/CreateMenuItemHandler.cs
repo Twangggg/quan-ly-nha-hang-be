@@ -5,35 +5,61 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
 {
-    public class CreateMenuItemHandler : IRequestHandler<CreateMenuItemCommand, Result<CreateMenuItemResponse>>
+    public class CreateMenuItemHandler
+        : IRequestHandler<CreateMenuItemCommand, Result<CreateMenuItemResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
+        private readonly ILogger<CreateMenuItemHandler> _logger;
+
         //private readonly ICloudinaryService _cloudinaryService;
 
-        public CreateMenuItemHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService)//, ICloudinaryService cloudinaryService)
+        public CreateMenuItemHandler(
+            IUnitOfWork unitOfWork,
+            ICurrentUserService currentUserService,
+            IMessageService messageService,
+            ICacheService cacheService,
+            ILogger<CreateMenuItemHandler> logger
+        ) //, ICloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
             _cacheService = cacheService;
+            _logger = logger;
             //_cloudinaryService = cloudinaryService;
         }
 
-        public async Task<Result<CreateMenuItemResponse>> Handle(CreateMenuItemCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CreateMenuItemResponse>> Handle(
+            CreateMenuItemCommand request,
+            CancellationToken cancellationToken
+        )
         {
+            _logger.LogInformation(
+                "Creating new menu item: {Name} (Code: {Code})",
+                request.Name,
+                request.Code
+            );
             var menuItemRepository = _unitOfWork.Repository<MenuItem>();
 
             // 1. Check if Code already exists
             var existingMenuItem = await menuItemRepository.AnyAsync(x => x.Code == request.Code);
             if (existingMenuItem)
             {
-                return Result<CreateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.CodeExists, request.Code), ResultErrorType.Conflict);
+                _logger.LogWarning(
+                    "Failed to create menu item. Code {Code} already exists.",
+                    request.Code
+                );
+                return Result<CreateMenuItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.MenuItem.CodeExists, request.Code),
+                    ResultErrorType.Conflict
+                );
             }
 
             // 2. Check if Category exists
@@ -41,7 +67,10 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             var category = await categoryRepository.GetByIdAsync(request.CategoryId);
             if (category == null)
             {
-                return Result<CreateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.NotFound, request.CategoryId), ResultErrorType.NotFound);
+                return Result<CreateMenuItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Category.NotFound, request.CategoryId),
+                    ResultErrorType.NotFound
+                );
             }
 
             Guid? auditorId = null;
@@ -81,9 +110,8 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 IsOutOfStock = false,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = auditorId,
-                UpdatedBy = auditorId
+                UpdatedBy = auditorId,
             };
-
 
             // 4. Save to database
             await menuItemRepository.AddAsync(menuItem);
@@ -108,7 +136,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 Cost = menuItem.CostPrice,
                 IsOutOfStock = menuItem.IsOutOfStock,
                 CreatedAt = menuItem.CreatedAt,
-                UpdatedAt = menuItem.UpdatedAt
+                UpdatedAt = menuItem.UpdatedAt,
             };
 
             return Result<CreateMenuItemResponse>.Success(response);
