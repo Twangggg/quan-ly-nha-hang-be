@@ -1,3 +1,6 @@
+using System.Linq;
+using FoodHub.Domain.Common;
+using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
@@ -23,6 +26,59 @@ namespace FoodHub.Domain.Entities
         public Guid? TransactionId { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
+
+        public bool CanCancel() => Status == OrderStatus.Serving;
+
+        public DomainResult Cancel()
+        {
+            if (!CanCancel())
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidStatusForCancel);
+            }
+
+            Status = OrderStatus.Cancelled;
+            CancelledAt = DateTime.UtcNow;
+
+            if (OrderType == OrderType.DineIn)
+            {
+                TableId = null;
+            }
+
+            foreach (var item in OrderItems)
+            {
+                item.Cancel();
+            }
+
+            UpdatedAt = DateTime.UtcNow;
+            return DomainResult.Success();
+        }
+
+        public bool CanComplete() =>
+            Status == OrderStatus.Serving && OrderItems.All(oi => oi.IsFinished());
+
+        public DomainResult Complete()
+        {
+            if (Status != OrderStatus.Serving)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidStatusForCancel);
+            }
+
+            Status = OrderStatus.Completed;
+            TotalAmount = OrderItems
+                .Where(oi =>
+                    oi.Status != OrderItemStatus.Cancelled && oi.Status != OrderItemStatus.Rejected
+                )
+                .Sum(oi => oi.GetTotalPrice());
+
+            CompletedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+
+            if (OrderType == OrderType.DineIn && OrderItems.All(oi => oi.IsFinished()))
+            {
+                TableId = null;
+            }
+
+            return DomainResult.Success();
+        }
     }
 }
-
