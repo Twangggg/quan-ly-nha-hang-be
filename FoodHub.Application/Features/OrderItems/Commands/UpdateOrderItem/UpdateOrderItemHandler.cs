@@ -6,12 +6,13 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
 {
-    public class UpdateOrderItemHandler : IRequestHandler<UpdateOrderItemCommand, Result<UpdateOrderItemResponse>>
+    public class UpdateOrderItemHandler
+        : IRequestHandler<UpdateOrderItemCommand, Result<UpdateOrderItemResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
@@ -19,13 +20,13 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<UpdateOrderItemCommand> _logger;
 
-
         public UpdateOrderItemHandler(
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
             IMapper mapper,
-            ILogger<UpdateOrderItemCommand> logger)
+            ILogger<UpdateOrderItemCommand> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;
@@ -33,14 +34,22 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
             _mapper = mapper;
             _logger = logger;
         }
-        public async Task<Result<UpdateOrderItemResponse>> Handle(UpdateOrderItemCommand request, CancellationToken cancellationToken)
+
+        public async Task<Result<UpdateOrderItemResponse>> Handle(
+            UpdateOrderItemCommand request,
+            CancellationToken cancellationToken
+        )
         {
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                return Result<UpdateOrderItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn), ResultErrorType.Unauthorized);
+                return Result<UpdateOrderItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
             }
 
-            var order = await _unitOfWork.Repository<Domain.Entities.Order>()
+            var order = await _unitOfWork
+                .Repository<Domain.Entities.Order>()
                 .Query()
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.OptionGroups)
@@ -49,14 +58,19 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
 
             if (order == null)
             {
-                return Result<UpdateOrderItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Order.NotFound), ResultErrorType.NotFound);
+                return Result<UpdateOrderItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.NotFound),
+                    ResultErrorType.NotFound
+                );
             }
 
             var incomingItems = request.Items ?? new List<UpdateOrderItemDto>();
 
-            var itemsToRemove = order.OrderItems
-                .Where(oi => oi.Status != OrderItemStatus.Cancelled &&
-                !incomingItems.Any(ii => ii.OrderItemId == oi.OrderItemId))
+            var itemsToRemove = order
+                .OrderItems.Where(oi =>
+                    oi.Status != OrderItemStatus.Cancelled
+                    && !incomingItems.Any(ii => ii.OrderItemId == oi.OrderItemId)
+                )
                 .ToList();
 
             foreach (var item in itemsToRemove)
@@ -67,7 +81,9 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
 
             foreach (var incomingItem in incomingItems)
             {
-                var existingItem = order.OrderItems.FirstOrDefault(i => i.OrderItemId == incomingItem.OrderItemId);
+                var existingItem = order.OrderItems.FirstOrDefault(i =>
+                    i.OrderItemId == incomingItem.OrderItemId
+                );
 
                 if (existingItem != null)
                 {
@@ -76,20 +92,29 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                     existingItem.ItemNote = incomingItem.ItemNote;
                     existingItem.UpdatedAt = DateTime.UtcNow;
 
-                    await ProcessOptionsAsync(existingItem, incomingItem.SelectedOptions, cancellationToken);
+                    await ProcessOptionsAsync(
+                        existingItem,
+                        incomingItem.SelectedOptions,
+                        cancellationToken
+                    );
                 }
                 else
                 {
                     // Add new item
-                    var menuItem = await _unitOfWork.Repository<MenuItem>().GetByIdAsync(incomingItem.MenuItemId);
+                    var menuItem = await _unitOfWork
+                        .Repository<MenuItem>()
+                        .GetByIdAsync(incomingItem.MenuItemId);
                     if (menuItem == null)
                     {
-                        return Result<UpdateOrderItemResponse>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.NotFound));
+                        return Result<UpdateOrderItemResponse>.Failure(
+                            _messageService.GetMessage(MessageKeys.MenuItem.NotFound)
+                        );
                     }
 
-                    var price = order.OrderType == Domain.Enums.OrderType.Takeaway
-                        ? menuItem.PriceTakeAway
-                        : menuItem.PriceDineIn;
+                    var price =
+                        order.OrderType == Domain.Enums.OrderType.Takeaway
+                            ? menuItem.PriceTakeAway
+                            : menuItem.PriceDineIn;
 
                     var newItem = new OrderItem
                     {
@@ -103,22 +128,29 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                         ItemNameSnapshot = menuItem.Name,
                         ItemCodeSnapshot = menuItem.Code,
                         UnitPriceSnapshot = price,
-                        StationSnapshot = menuItem.Station.ToString()
+                        StationSnapshot = menuItem.Station.ToString(),
                     };
 
-                    await ProcessOptionsAsync(newItem, incomingItem.SelectedOptions, cancellationToken);
+                    await ProcessOptionsAsync(
+                        newItem,
+                        incomingItem.SelectedOptions,
+                        cancellationToken
+                    );
                     order.OrderItems.Add(newItem);
                 }
             }
 
-            order.TotalAmount = order.OrderItems
-                .Where(x => x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected)
+            order.TotalAmount = order
+                .OrderItems.Where(x =>
+                    x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected
+                )
                 .Sum(item =>
                 {
                     var itemTotal = item.Quantity * item.UnitPriceSnapshot;
-                    var optionsTotal = item.OptionGroups?
-                        .SelectMany(og => og.OptionValues)
-                        .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity) ?? 0;
+                    var optionsTotal =
+                        item.OptionGroups?.SelectMany(og => og.OptionValues)
+                            .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity)
+                        ?? 0;
                     return itemTotal + (optionsTotal * item.Quantity);
                 });
             order.UpdatedAt = DateTime.UtcNow;
@@ -131,7 +163,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                 Action = AuditLogActions.UpdateOrderItem,
                 CreatedAt = DateTime.UtcNow,
                 ChangeReason = request.Reason,
-                NewValue = "{\"action\": \"Updated Order Items Sync\"}"
+                NewValue = "{\"action\": \"Updated Order Items Sync\"}",
             };
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
@@ -143,30 +175,46 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, "Database error occurred while updating order items for OrderId {OrderId}", request.OrderId);
-                return Result<UpdateOrderItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError));
+                _logger.LogError(
+                    ex,
+                    "Database error occurred while updating order items for OrderId {OrderId}",
+                    request.OrderId
+                );
+                return Result<UpdateOrderItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError)
+                );
             }
 
             var response = _mapper.Map<UpdateOrderItemResponse>(order);
             return Result<UpdateOrderItemResponse>.Success(response);
         }
 
-        private async Task ProcessOptionsAsync(OrderItem item, List<OrderItemOptionGroupDto>? selectedOptions, CancellationToken cancellationToken)
+        private async Task ProcessOptionsAsync(
+            OrderItem item,
+            List<OrderItemOptionGroupDto>? selectedOptions,
+            CancellationToken cancellationToken
+        )
         {
             // Clear existing options
             item.OptionGroups.Clear();
 
-            if (selectedOptions == null || !selectedOptions.Any()) return;
+            if (selectedOptions == null || !selectedOptions.Any())
+                return;
 
             var optionGroupIds = selectedOptions.Select(og => og.OptionGroupId).ToList();
-            var optionItemIds = selectedOptions.SelectMany(og => og.SelectedValues).Select(v => v.OptionItemId).ToList();
+            var optionItemIds = selectedOptions
+                .SelectMany(og => og.SelectedValues)
+                .Select(v => v.OptionItemId)
+                .ToList();
 
-            var optionGroups = await _unitOfWork.Repository<OptionGroup>()
+            var optionGroups = await _unitOfWork
+                .Repository<OptionGroup>()
                 .Query()
                 .Where(og => optionGroupIds.Contains(og.OptionGroupId))
                 .ToDictionaryAsync(og => og.OptionGroupId, cancellationToken);
 
-            var optionItems = await _unitOfWork.Repository<OptionItem>()
+            var optionItems = await _unitOfWork
+                .Repository<OptionItem>()
                 .Query()
                 .Where(oi => optionItemIds.Contains(oi.OptionItemId))
                 .ToDictionaryAsync(oi => oi.OptionItemId, cancellationToken);
@@ -182,7 +230,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                         GroupNameSnapshot = ogDef.Name,
                         GroupTypeSnapshot = ogDef.OptionType.ToString(),
                         IsRequiredSnapshot = ogDef.IsRequired,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.UtcNow,
                     };
 
                     foreach (var valueDto in optionGroupDto.SelectedValues)
@@ -192,13 +240,14 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                             var orderItemOptionValue = new OrderItemOptionValue
                             {
                                 OrderItemOptionValueId = Guid.NewGuid(),
-                                OrderItemOptionGroupId = orderItemOptionGroup.OrderItemOptionGroupId,
+                                OrderItemOptionGroupId =
+                                    orderItemOptionGroup.OrderItemOptionGroupId,
                                 OptionItemId = valueDto.OptionItemId,
                                 LabelSnapshot = oiDef.Label,
                                 ExtraPriceSnapshot = oiDef.ExtraPrice,
                                 Quantity = valueDto.Quantity,
                                 Note = valueDto.Note,
-                                CreatedAt = DateTime.UtcNow
+                                CreatedAt = DateTime.UtcNow,
                             };
                             orderItemOptionGroup.OptionValues.Add(orderItemOptionValue);
                         }

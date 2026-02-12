@@ -1,27 +1,28 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions.Pagination;
+using FoodHub.Application.Features.Employees.Commands.ChangeRole;
 using FoodHub.Application.Features.Employees.Commands.CreateEmployee;
 using FoodHub.Application.Features.Employees.Commands.DeleteEmployee;
+using FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword;
 using FoodHub.Application.Features.Employees.Commands.UpdateEmployee;
+using FoodHub.Application.Features.Employees.Queries.GetAuditLogs;
 using FoodHub.Application.Features.Employees.Queries.GetEmployeeById;
 using FoodHub.Application.Features.Employees.Queries.GetEmployees;
-using FoodHub.Application.Features.Employees.Queries.GetAuditLogs;
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using FoodHub.Application.Features.Employees.Commands.ChangeRole;
-using FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword;
-
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Manager")]
+    [HasPermission(Permissions.Employees.View)]
     [Tags("Employees")]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class EmployeesController : ApiControllerBase
     {
         private readonly IMediator _mediator;
+
         public EmployeesController(IMediator mediator)
         {
             _mediator = mediator;
@@ -48,18 +49,29 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpPost]
+        [HasPermission(Permissions.Employees.Create)]
         [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 10)]
-        public async Task<IActionResult> CreateEmployeeAsync([FromBody] CreateEmployeeCommand command)
+        public async Task<IActionResult> CreateEmployeeAsync(
+            [FromBody] CreateEmployeeCommand command
+        )
         {
             var result = await _mediator.Send(command);
             if (!result.IsSuccess)
                 return HandleResult(result);
-            return CreatedAtAction(nameof(GetEmployeeById), new { id = result.Data!.EmployeeId }, result.Data);
+            return CreatedAtAction(
+                nameof(GetEmployeeById),
+                new { id = result.Data!.EmployeeId },
+                result.Data
+            );
         }
 
         [HttpPut("{id}")]
+        [HasPermission(Permissions.Employees.Update)]
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
-        public async Task<IActionResult> UpdateEmployeeAsync(Guid id, [FromBody] UpdateEmployeeCommand command)
+        public async Task<IActionResult> UpdateEmployeeAsync(
+            Guid id,
+            [FromBody] UpdateEmployeeCommand command
+        )
         {
             if (id != command.EmployeeId)
             {
@@ -70,6 +82,7 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [HasPermission(Permissions.Employees.Delete)]
         [RateLimit(maxRequests: 10, windowMinutes: 1, blockMinutes: 10)]
         public async Task<IActionResult> DeleteEmployeeAsync(Guid id)
         {
@@ -78,8 +91,12 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpGet("{id}/audit-logs")]
+        [HasPermission(Permissions.Employees.ViewAuditLogs)]
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
-        public async Task<IActionResult> GetAuditLogs(Guid id, [FromQuery] PaginationParams pagination)
+        public async Task<IActionResult> GetAuditLogs(
+            Guid id,
+            [FromQuery] PaginationParams pagination
+        )
         {
             var query = new GetAuditLogsQuery(id, pagination);
             var result = await _mediator.Send(query);
@@ -93,6 +110,7 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpPost("change-role")]
+        [HasPermission(Permissions.Employees.ChangeRole)]
         [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 10)]
         public async Task<IActionResult> ChangeRole([FromBody] ChangeRoleCommand command)
         {
@@ -101,8 +119,11 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpPost("reset-password")]
+        [HasPermission(Permissions.Employees.Update)]
         [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 10)]
-        public async Task<IActionResult> ResetEmployeePassword([FromBody] ResetEmployeePasswordCommand command)
+        public async Task<IActionResult> ResetEmployeePassword(
+            [FromBody] ResetEmployeePasswordCommand command
+        )
         {
             var result = await _mediator.Send(command);
             return HandleResult(result);

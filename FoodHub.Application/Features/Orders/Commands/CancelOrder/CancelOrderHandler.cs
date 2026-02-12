@@ -5,10 +5,10 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
 {
@@ -25,7 +25,8 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             ICurrentUserService currentUserService,
             IMessageService messageService,
             IMapper mapper,
-            ILogger<CancelOrderCommand> logger)
+            ILogger<CancelOrderCommand> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
@@ -34,42 +35,44 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             _logger = logger;
         }
 
-        public async Task<Result<bool>> Handle(CancelOrderCommand request, CancellationToken cancellationToken)
+        public async Task<Result<bool>> Handle(
+            CancelOrderCommand request,
+            CancellationToken cancellationToken
+        )
         {
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
-                    ResultErrorType.Unauthorized);
+                return Result<bool>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
             }
 
-            var order = await _unitOfWork.Repository<Domain.Entities.Order>()
+            var order = await _unitOfWork
+                .Repository<Domain.Entities.Order>()
                 .Query()
                 .Include(o => o.OrderItems)
-                .FirstOrDefaultAsync(o => o.OrderId == request.OrderId && o.Status == OrderStatus.Serving);
+                .FirstOrDefaultAsync(o =>
+                    o.OrderId == request.OrderId && o.Status == OrderStatus.Serving
+                );
 
             if (order == null)
             {
-                return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Order.NotFound),
-                    ResultErrorType.NotFound);
+                return Result<bool>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.NotFound),
+                    ResultErrorType.NotFound
+                );
             }
 
-            // Cancel order -> Cancel all items not completed/rejected
-            foreach (var item in order.OrderItems)
+            var domainResult = order.Cancel();
+            if (!domainResult.IsSuccess)
             {
-                if (item.Status == OrderItemStatus.Preparing || item.Status == OrderItemStatus.Cooking || item.Status == OrderItemStatus.Ready)
-                {
-                    item.Status = OrderItemStatus.Cancelled;
-                    item.CanceledAt = DateTime.UtcNow;
-                    item.UpdatedAt = DateTime.UtcNow;
-                }
-            }
-
-
-            order.Status = OrderStatus.Cancelled;
-
-            if (order.OrderType == OrderType.DineIn)
-            {
-                order.TableId = null;
+                // Map Domain Error to Application Message
+                return Result<bool>.Failure(
+                    _messageService.GetMessage(
+                        domainResult.ErrorCode ?? MessageKeys.Order.InvalidAction
+                    )
+                );
             }
 
             var auditLog = new OrderAuditLog
@@ -80,7 +83,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
                 Action = AuditLogActions.CancelOrder,
                 CreatedAt = DateTime.UtcNow,
                 ChangeReason = request.Reason,
-                NewValue = "{\"status\": \"Cancelled\"}"
+                NewValue = "{\"status\": \"Cancelled\"}",
             };
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
@@ -92,8 +95,14 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, "Database error occurred while updating order items for OrderId {OrderId}", request.OrderId);
-                return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError));
+                _logger.LogError(
+                    ex,
+                    "Database error occurred while updating order items for OrderId {OrderId}",
+                    request.OrderId
+                );
+                return Result<bool>.Failure(
+                    _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError)
+                );
             }
 
             return Result<bool>.Success(true);

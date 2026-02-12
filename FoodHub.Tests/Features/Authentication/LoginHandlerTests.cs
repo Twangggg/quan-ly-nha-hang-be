@@ -1,13 +1,13 @@
-using Moq;
 using FluentAssertions;
+using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Authentication.Commands.Login;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-using FoodHub.Application.Common.Models;
-using FoodHub.Application.Constants;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
+using Moq;
 
 namespace FoodHub.Tests.Features.Authentication
 {
@@ -18,6 +18,7 @@ namespace FoodHub.Tests.Features.Authentication
         private readonly Mock<ITokenService> _mockTokenService;
         private readonly Mock<IRateLimiter> _mockRateLimiter;
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ILogger<LoginHandler>> _mockLogger;
         private readonly LoginHandler _handler;
 
         public LoginHandlerTests()
@@ -27,13 +28,16 @@ namespace FoodHub.Tests.Features.Authentication
             _mockTokenService = new Mock<ITokenService>();
             _mockRateLimiter = new Mock<IRateLimiter>();
             _mockMessageService = new Mock<IMessageService>();
+            _mockLogger = new Mock<ILogger<LoginHandler>>();
 
             _handler = new LoginHandler(
                 _mockUow.Object,
                 _mockPasswordService.Object,
                 _mockTokenService.Object,
                 _mockRateLimiter.Object,
-                _mockMessageService.Object);
+                _mockMessageService.Object,
+                _mockLogger.Object
+            );
         }
 
         [Fact]
@@ -47,18 +51,26 @@ namespace FoodHub.Tests.Features.Authentication
                 PasswordHash = "hashedpassword",
                 Email = "test@example.com",
                 Role = EmployeeRole.Manager,
-                Status = EmployeeStatus.Active
+                Status = EmployeeStatus.Active,
             };
             var command = new LoginCommand("EMP001", "password", false);
 
-            var employees = new List<Employee> { employee }.AsQueryable().BuildMock();
+            var employees = new List<Employee> { employee }
+                .AsQueryable()
+                .BuildMock();
             var repo = new Mock<IGenericRepository<Employee>>();
             repo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
-            _mockPasswordService.Setup(p => p.VerifyPassword("password", "hashedpassword")).Returns(true);
-            _mockRateLimiter.Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
-            _mockRateLimiter.Setup(r => r.ResetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _mockPasswordService
+                .Setup(p => p.VerifyPassword("password", "hashedpassword"))
+                .Returns(true);
+            _mockRateLimiter
+                .Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+            _mockRateLimiter
+                .Setup(r => r.ResetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
             _mockTokenService.Setup(t => t.GenerateAccessToken(employee)).Returns("access_token");
             _mockTokenService.Setup(t => t.GetTokenExpirationSeconds()).Returns(3600);
             _mockTokenService.Setup(t => t.GenerateRefreshToken()).Returns("refresh_token");
@@ -93,8 +105,12 @@ namespace FoodHub.Tests.Features.Authentication
             repo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
-            _mockRateLimiter.Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Auth.InvalidCredentials)).Returns("Invalid credentials");
+            _mockRateLimiter
+                .Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Auth.InvalidCredentials))
+                .Returns("Invalid credentials");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -113,19 +129,37 @@ namespace FoodHub.Tests.Features.Authentication
                 EmployeeId = Guid.NewGuid(),
                 EmployeeCode = "EMP001",
                 PasswordHash = "hashedpassword",
-                Status = EmployeeStatus.Active
+                Status = EmployeeStatus.Active,
             };
             var command = new LoginCommand("EMP001", "wrongpassword", false);
 
-            var employees = new List<Employee> { employee }.AsQueryable().BuildMock();
+            var employees = new List<Employee> { employee }
+                .AsQueryable()
+                .BuildMock();
             var repo = new Mock<IGenericRepository<Employee>>();
             repo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
-            _mockPasswordService.Setup(p => p.VerifyPassword("wrongpassword", "hashedpassword")).Returns(false);
-            _mockRateLimiter.Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
-            _mockRateLimiter.Setup(r => r.RegisterFailAsync(It.IsAny<string>(), 5, TimeSpan.FromMinutes(15), TimeSpan.FromMinutes(15), It.IsAny<CancellationToken>())).ReturnsAsync(1);
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Auth.InvalidCredentials)).Returns("Invalid credentials");
+            _mockPasswordService
+                .Setup(p => p.VerifyPassword("wrongpassword", "hashedpassword"))
+                .Returns(false);
+            _mockRateLimiter
+                .Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+            _mockRateLimiter
+                .Setup(r =>
+                    r.RegisterFailAsync(
+                        It.IsAny<string>(),
+                        5,
+                        TimeSpan.FromMinutes(15),
+                        TimeSpan.FromMinutes(15),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
+                .ReturnsAsync(1);
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Auth.InvalidCredentials))
+                .Returns("Invalid credentials");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -133,7 +167,17 @@ namespace FoodHub.Tests.Features.Authentication
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Invalid credentials");
-            _mockRateLimiter.Verify(r => r.RegisterFailAsync(It.IsAny<string>(), 5, TimeSpan.FromMinutes(15), TimeSpan.FromMinutes(15), It.IsAny<CancellationToken>()), Times.Once);
+            _mockRateLimiter.Verify(
+                r =>
+                    r.RegisterFailAsync(
+                        It.IsAny<string>(),
+                        5,
+                        TimeSpan.FromMinutes(15),
+                        TimeSpan.FromMinutes(15),
+                        It.IsAny<CancellationToken>()
+                    ),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -142,8 +186,12 @@ namespace FoodHub.Tests.Features.Authentication
             // Arrange
             var command = new LoginCommand("EMP001", "password", false);
 
-            _mockRateLimiter.Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Auth.AccountBlocked)).Returns("Account blocked");
+            _mockRateLimiter
+                .Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Auth.AccountBlocked))
+                .Returns("Account blocked");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -162,19 +210,29 @@ namespace FoodHub.Tests.Features.Authentication
                 EmployeeId = Guid.NewGuid(),
                 EmployeeCode = "EMP001",
                 PasswordHash = "hashedpassword",
-                Status = EmployeeStatus.Inactive
+                Status = EmployeeStatus.Inactive,
             };
             var command = new LoginCommand("EMP001", "password", false);
 
-            var employees = new List<Employee> { employee }.AsQueryable().BuildMock();
+            var employees = new List<Employee> { employee }
+                .AsQueryable()
+                .BuildMock();
             var repo = new Mock<IGenericRepository<Employee>>();
             repo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
-            _mockPasswordService.Setup(p => p.VerifyPassword("password", "hashedpassword")).Returns(true);
-            _mockRateLimiter.Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
-            _mockRateLimiter.Setup(r => r.ResetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Auth.AccountInactive)).Returns("Account inactive");
+            _mockPasswordService
+                .Setup(p => p.VerifyPassword("password", "hashedpassword"))
+                .Returns(true);
+            _mockRateLimiter
+                .Setup(r => r.IsBlockedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+            _mockRateLimiter
+                .Setup(r => r.ResetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Auth.AccountInactive))
+                .Returns("Account inactive");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);

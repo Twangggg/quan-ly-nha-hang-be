@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 {
-    public class SubmitOrderToKitchenHandler : IRequestHandler<SubmitOrderToKitchenCommand, Result<Guid>>
+    public class SubmitOrderToKitchenHandler
+        : IRequestHandler<SubmitOrderToKitchenCommand, Result<Guid>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
@@ -18,20 +19,30 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
         public SubmitOrderToKitchenHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
-            IMessageService messageService)
+            IMessageService messageService
+        )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
         }
 
-        public async Task<Result<Guid>> Handle(SubmitOrderToKitchenCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Guid>> Handle(
+            SubmitOrderToKitchenCommand request,
+            CancellationToken cancellationToken
+        )
         {
             //Get current user
             var currentIdString = _currentUserService.UserId;
-            if (string.IsNullOrEmpty(currentIdString) || !Guid.TryParse(currentIdString, out var userId))
+            if (
+                string.IsNullOrEmpty(currentIdString)
+                || !Guid.TryParse(currentIdString, out var userId)
+            )
             {
-                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn));
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
             }
 
             //Validate Table for dine in
@@ -39,40 +50,51 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             {
                 if (!request.TableId.HasValue)
                 {
-                    return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.SelectTable));
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.SelectTable)
+                    );
                 }
 
-                var existingServingOrder = await _unitOfWork.Repository<Order>()
+                var existingServingOrder = await _unitOfWork
+                    .Repository<Order>()
                     .Query()
-                    .AnyAsync(o => o.TableId == request.TableId && o.Status == OrderStatus.Serving, cancellationToken);
+                    .AnyAsync(
+                        o => o.TableId == request.TableId && o.Status == OrderStatus.Serving,
+                        cancellationToken
+                    );
 
                 if (existingServingOrder)
                 {
-                    return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.TableAlreadyOccupied));
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.TableAlreadyOccupied)
+                    );
                 }
             }
 
-            //Validate All Menu Items Exist 
+            //Validate All Menu Items Exist
             var menuItemIds = request.Items.Select(i => i.MenuItemId).Distinct().ToList();
-            var menuItems = await _unitOfWork.Repository<MenuItem>()
+            var menuItems = await _unitOfWork
+                .Repository<MenuItem>()
                 .Query()
                 .Where(m => menuItemIds.Contains(m.MenuItemId))
                 .ToDictionaryAsync(m => m.MenuItemId, cancellationToken);
             if (menuItems.Count != menuItemIds.Count)
             {
                 var missingIds = menuItemIds.Except(menuItems.Keys);
-                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.NotFound));
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.MenuItem.NotFound)
+                );
             }
 
             // Validate Options Exist (if provided)
-            var allOptionGroupIds = request.Items
-                .Where(i => i.SelectedOptions != null)
+            var allOptionGroupIds = request
+                .Items.Where(i => i.SelectedOptions != null)
                 .SelectMany(i => i.SelectedOptions!)
                 .Select(og => og.OptionGroupId)
                 .Distinct()
                 .ToList();
-            var allOptionItemIds = request.Items
-                .Where(i => i.SelectedOptions != null)
+            var allOptionItemIds = request
+                .Items.Where(i => i.SelectedOptions != null)
                 .SelectMany(i => i.SelectedOptions!)
                 .SelectMany(og => og.SelectedValues)
                 .Select(v => v.OptionItemId)
@@ -82,24 +104,30 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             Dictionary<Guid, OptionItem> optionItems = new();
             if (allOptionGroupIds.Any())
             {
-                optionGroups = await _unitOfWork.Repository<OptionGroup>()
+                optionGroups = await _unitOfWork
+                    .Repository<OptionGroup>()
                     .Query()
                     .Where(og => allOptionGroupIds.Contains(og.OptionGroupId))
                     .ToDictionaryAsync(og => og.OptionGroupId, cancellationToken);
                 if (optionGroups.Count != allOptionGroupIds.Count)
                 {
-                    return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.OptionGroup.NotFound));
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(MessageKeys.OptionGroup.NotFound)
+                    );
                 }
             }
             if (allOptionItemIds.Any())
             {
-                optionItems = await _unitOfWork.Repository<OptionItem>()
+                optionItems = await _unitOfWork
+                    .Repository<OptionItem>()
                     .Query()
                     .Where(oi => allOptionItemIds.Contains(oi.OptionItemId))
                     .ToDictionaryAsync(oi => oi.OptionItemId, cancellationToken);
                 if (optionItems.Count != allOptionItemIds.Count)
                 {
-                    return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.OptionItem.NotFound));
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(MessageKeys.OptionItem.NotFound)
+                    );
                 }
             }
 
@@ -107,8 +135,10 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             var outOfStockItem = menuItems.Values.Where(x => x.IsOutOfStock).ToList();
             if (outOfStockItem.Any())
             {
-                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.OutOfStock) +
-                    $"{string.Join(", ", outOfStockItem.Select(m => m.Name))}");
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.MenuItem.OutOfStock)
+                        + $"{string.Join(", ", outOfStockItem.Select(m => m.Name))}"
+                );
             }
 
             //Gen Order code
@@ -128,46 +158,51 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 CreatedBy = userId,
                 CreatedAt = DateTime.UtcNow,
                 OrderItems = new List<OrderItem>(),
-                OrderAuditLogs = new List<OrderAuditLog>()
+                OrderAuditLogs = new List<OrderAuditLog>(),
             };
 
-            //Merge Duplicate Items and Create Order Items 
+            //Merge Duplicate Items and Create Order Items
             // Group by MenuItemId + Note + Options to merge duplicates
-            var groupedItems = request.Items
-                .Select(i => new
+            var groupedItems = request
+                .Items.Select(i => new
                 {
                     Item = i,
                     // Create option signature for grouping
-                    OptionSignature = i.SelectedOptions == null ? string.Empty :
-                        string.Join("|", i.SelectedOptions
-                            .OrderBy(og => og.OptionGroupId)
-                            .Select(og => $"{og.OptionGroupId}:{string.Join(",",
+                    OptionSignature = i.SelectedOptions == null
+                        ? string.Empty
+                        : string.Join(
+                            "|",
+                            i.SelectedOptions.OrderBy(og => og.OptionGroupId)
+                                .Select(og =>
+                                    $"{og.OptionGroupId}:{string.Join(",",
                                 og.SelectedValues
                                     .OrderBy(v => v.OptionItemId)
-                                    .Select(v => $"{v.OptionItemId}x{v.Quantity}"))}")
-                        )
+                                    .Select(v => $"{v.OptionItemId}x{v.Quantity}"))}"
+                                )
+                        ),
                 })
                 .GroupBy(x => new
                 {
                     x.Item.MenuItemId,
                     Note = x.Item.Note ?? string.Empty,
-                    x.OptionSignature
+                    x.OptionSignature,
                 })
                 .Select(g => new
                 {
                     g.Key.MenuItemId,
                     Note = string.IsNullOrEmpty(g.Key.Note) ? null : g.Key.Note,
                     TotalQuantity = g.Sum(x => x.Item.Quantity),
-                    SelectedOptions = g.First().Item.SelectedOptions // Use first item's options
+                    SelectedOptions = g.First().Item.SelectedOptions, // Use first item's options
                 })
                 .ToList();
             foreach (var group in groupedItems)
             {
                 var menuItem = menuItems[group.MenuItemId];
                 // Select price based on order type
-                var price = request.OrderType == OrderType.Takeaway
-                    ? menuItem.PriceTakeAway
-                    : menuItem.PriceDineIn;
+                var price =
+                    request.OrderType == OrderType.Takeaway
+                        ? menuItem.PriceTakeAway
+                        : menuItem.PriceDineIn;
                 var orderItem = new OrderItem
                 {
                     OrderItemId = Guid.NewGuid(),
@@ -181,7 +216,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                     ItemCodeSnapshot = menuItem.Code,
                     ItemNameSnapshot = menuItem.Name,
                     UnitPriceSnapshot = price,
-                    StationSnapshot = menuItem.Station.ToString()
+                    StationSnapshot = menuItem.Station.ToString(),
                 };
 
                 // NEW: Add option snapshots
@@ -198,7 +233,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                             GroupNameSnapshot = optionGroup.Name,
                             GroupTypeSnapshot = optionGroup.OptionType.ToString(),
                             IsRequiredSnapshot = optionGroup.IsRequired,
-                            CreatedAt = DateTime.UtcNow
+                            CreatedAt = DateTime.UtcNow,
                         };
 
                         foreach (var valueDto in optionGroupDto.SelectedValues)
@@ -208,13 +243,14 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                             var orderItemOptionValue = new OrderItemOptionValue
                             {
                                 OrderItemOptionValueId = Guid.NewGuid(),
-                                OrderItemOptionGroupId = orderItemOptionGroup.OrderItemOptionGroupId,
+                                OrderItemOptionGroupId =
+                                    orderItemOptionGroup.OrderItemOptionGroupId,
                                 OptionItemId = valueDto.OptionItemId, // Trace back
                                 LabelSnapshot = optionItem.Label,
                                 ExtraPriceSnapshot = optionItem.ExtraPrice,
                                 Quantity = valueDto.Quantity,
                                 Note = valueDto.Note,
-                                CreatedAt = DateTime.UtcNow
+                                CreatedAt = DateTime.UtcNow,
                             };
 
                             orderItemOptionGroup.OptionValues.Add(orderItemOptionValue);
@@ -232,8 +268,8 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             order.TotalAmount = order.OrderItems.Sum(item =>
             {
                 var itemTotal = item.Quantity * item.UnitPriceSnapshot;
-                var optionsTotal = item.OptionGroups
-                    .SelectMany(og => og.OptionValues)
+                var optionsTotal = item
+                    .OptionGroups.SelectMany(og => og.OptionValues)
                     .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity);
                 return itemTotal + (optionsTotal * item.Quantity); // Option price x item quantity
             });
@@ -245,7 +281,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 OrderId = order.OrderId,
                 EmployeeId = userId,
                 Action = AuditLogActions.SubmitOrder, // ? Only one action: SUBMIT (no CREATE or ADD_ITEM)
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
             };
 
             await _unitOfWork.Repository<Order>().AddAsync(order);
@@ -264,7 +300,8 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             var dateString = today.ToString("yyyyMMdd");
             var prefix = $"ORD-{dateString}-";
             // Get last order code for today
-            var lastOrder = await _unitOfWork.Repository<Order>()
+            var lastOrder = await _unitOfWork
+                .Repository<Order>()
                 .Query()
                 .Where(o => o.OrderCode.StartsWith(prefix))
                 .OrderByDescending(o => o.OrderCode)

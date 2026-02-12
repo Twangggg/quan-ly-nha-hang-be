@@ -1,18 +1,18 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem;
 using FoodHub.Application.Features.MenuItems.Commands.DeleteMenuItem;
-using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
 using FoodHub.Application.Features.MenuItems.Commands.ToggleOutOfStock; // Kept this as it was in original, but verified UpdateMenuItemStockStatusCommand usage in added methods
+using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
 using FoodHub.Application.Features.MenuItems.Queries.GetMenuItemById;
 using FoodHub.Application.Features.MenuItems.Queries.GetMenuItems;
 using FoodHub.Domain.Enums;
+using FoodHub.WebAPI.Presentation.Attributes;
+using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-using FoodHub.WebAPI.Presentation.Attributes;
-using FoodHub.WebAPI.Presentation.Extensions;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -48,7 +48,7 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Manager")]
+        [HasPermission(Permissions.MenuItems.Create)]
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         public async Task<IActionResult> CreateMenuItem([FromForm] CreateMenuItemCommand command)
         {
@@ -56,14 +56,18 @@ namespace FoodHub.Presentation.Controllers
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetMenuItemById), new { id = result.Data!.MenuItemId }, result.Data);
+                return CreatedAtAction(
+                    nameof(GetMenuItemById),
+                    new { id = result.Data!.MenuItemId },
+                    result.Data
+                );
             }
 
             return HandleResult(result);
         }
 
-        [Authorize]
         [HttpPut("{id}")]
+        [HasPermission(Permissions.MenuItems.Update)]
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         public async Task<IActionResult> UpdateMenuItem(Guid id, UpdateMenuItemCommand command)
         {
@@ -71,17 +75,20 @@ namespace FoodHub.Presentation.Controllers
             return HandleResult(result);
         }
 
-        [Authorize(Roles = nameof(EmployeeRole.Manager))]
         [HttpPut("{id}/stock")]
+        [HasPermission(Permissions.MenuItems.UpdateStock)]
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
-        public async Task<IActionResult> UpdateMenuItemStockStatus(Guid id, UpdateMenuItemStockStatusCommand command)
+        public async Task<IActionResult> UpdateMenuItemStockStatus(
+            Guid id,
+            UpdateMenuItemStockStatusCommand command
+        )
         {
             var result = await _mediator.Send(command with { MenuItemId = id });
             return HandleResult(result);
         }
 
-        [Authorize]
         [HttpDelete("{id}")]
+        [HasPermission(Permissions.MenuItems.Delete)]
         [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 15)]
         public async Task<IActionResult> DeleteMenuItem(Guid id)
         {

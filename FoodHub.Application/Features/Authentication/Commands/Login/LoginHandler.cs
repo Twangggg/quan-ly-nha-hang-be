@@ -1,10 +1,11 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using FoodHub.Application.Constants;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Authentication.Commands.Login
 {
@@ -15,53 +16,87 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
         private readonly ITokenService _tokenService;
         private readonly IRateLimiter _rateLimiter;
         private readonly IMessageService _messageService;
+        private readonly ILogger<LoginHandler> _logger;
 
         public LoginHandler(
             IUnitOfWork unitOfWork,
             IPasswordService passwordService,
             ITokenService tokenService,
             IRateLimiter rateLimiter,
-            IMessageService messageService)
+            IMessageService messageService,
+            ILogger<LoginHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
             _tokenService = tokenService;
             _rateLimiter = rateLimiter;
             _messageService = messageService;
+            _logger = logger;
         }
 
-        public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<Result<LoginResponse>> Handle(
+            LoginCommand request,
+            CancellationToken cancellationToken
+        )
         {
+            _logger.LogInformation(
+                "Login attempt for employee code: {EmployeeCode}",
+                request.EmployeeCode
+            );
             var rateLimitKey = $"login_attempt:{request.EmployeeCode}";
 
             // Check if user is currently blocked
             if (await _rateLimiter.IsBlockedAsync(rateLimitKey, cancellationToken))
             {
-                return Result<LoginResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.AccountBlocked));
+                _logger.LogWarning(
+                    "Login blocked for employee code: {EmployeeCode} due to rate limiting",
+                    request.EmployeeCode
+                );
+                return Result<LoginResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.AccountBlocked)
+                );
             }
 
             // Tìm employee chỉ bằng EmployeeCode
-            var employee = await _unitOfWork.Repository<Employee>()
+            var employee = await _unitOfWork
+                .Repository<Employee>()
                 .Query()
-                .FirstOrDefaultAsync(e => e.EmployeeCode == request.EmployeeCode, cancellationToken);
+                .FirstOrDefaultAsync(
+                    e => e.EmployeeCode == request.EmployeeCode,
+                    cancellationToken
+                );
 
             if (employee == null)
             {
-                return Result<LoginResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.InvalidCredentials));
+                _logger.LogWarning(
+                    "Login failed for employee code: {EmployeeCode}. Employee not found.",
+                    request.EmployeeCode
+                );
+                return Result<LoginResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.InvalidCredentials)
+                );
             }
 
             // Kiểm tra mật khẩu
             if (!_passwordService.VerifyPassword(request.Password, employee.PasswordHash))
             {
+                _logger.LogWarning(
+                    "Login failed for employee code: {EmployeeCode}. Invalid password.",
+                    request.EmployeeCode
+                );
                 // Register failed attempt (block after 5 attempts in 15 mins)
                 await _rateLimiter.RegisterFailAsync(
                     rateLimitKey,
                     limit: 5,
                     window: TimeSpan.FromMinutes(15),
                     blockFor: TimeSpan.FromMinutes(15),
-                    cancellationToken);
+                    cancellationToken
+                );
 
-                return Result<LoginResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.InvalidCredentials));
+                return Result<LoginResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.InvalidCredentials)
+                );
             }
 
             // All good - reset failure count
@@ -70,12 +105,23 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
             // Kiểm tra trạng thái account
             if (employee.Status == EmployeeStatus.Inactive)
             {
-                return Result<LoginResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.AccountInactive));
+                _logger.LogWarning(
+                    "Login failed for employee code: {EmployeeCode}. Account is inactive.",
+                    request.EmployeeCode
+                );
+                return Result<LoginResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.AccountInactive)
+                );
             }
 
             // Tạo access token
             var accessToken = _tokenService.GenerateAccessToken(employee);
             var expiresIn = _tokenService.GetTokenExpirationSeconds();
+
+            _logger.LogInformation(
+                "Successfully authenticated employee code: {EmployeeCode}. Generating tokens.",
+                request.EmployeeCode
+            );
 
             // Tạo refresh token
             var refreshToken = _tokenService.GenerateRefreshToken();
@@ -90,10 +136,12 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 Token = refreshToken,
                 Expires = expirationDate,
 
-                EmployeeId = employee.EmployeeId
+                EmployeeId = employee.EmployeeId,
             };
 
-            await _unitOfWork.Repository<FoodHub.Domain.Entities.RefreshToken>().AddAsync(refreshTokenEntity);
+            await _unitOfWork
+                .Repository<FoodHub.Domain.Entities.RefreshToken>()
+                .AddAsync(refreshTokenEntity);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             var response = new LoginResponse
@@ -104,7 +152,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 EmployeeCode = employee.EmployeeCode,
                 Email = employee.Email,
                 Role = employee.Role.ToString(),
-                ExpiresIn = expiresIn
+                ExpiresIn = expiresIn,
             };
 
             return Result<LoginResponse>.Success(response);

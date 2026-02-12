@@ -1,24 +1,31 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace FoodHub.Infrastructure.Security
 {
     public class JwtTokenService : ITokenService
     {
         private readonly JwtSettings _jwtSettings;
+        private readonly IPermissionProvider _permissionProvider;
 
-        public JwtTokenService(IOptions<JwtSettings> options)
+        public JwtTokenService(
+            IOptions<JwtSettings> options,
+            IPermissionProvider permissionProvider
+        )
         {
             _jwtSettings = options.Value;
+            _permissionProvider = permissionProvider;
         }
 
         public string GenerateAccessToken(Employee employee)
         {
+            var permissions = _permissionProvider.GetPermissionsByRole(employee.Role);
+
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, employee.EmployeeId.ToString()),
@@ -26,16 +33,21 @@ namespace FoodHub.Infrastructure.Security
                 new(ClaimTypes.Name, employee.FullName),
                 new(ClaimTypes.Email, employee.Email),
                 new(ClaimTypes.Role, employee.Role.ToString()),
-                new("EmployeeCode", employee.EmployeeCode)
+                new("EmployeeCode", employee.EmployeeCode),
             };
+
+            // Thêm các quyền cụ thể vào Token
+            foreach (var permission in permissions)
+            {
+                claims.Add(new Claim("Permission", permission));
+            }
 
             if (!string.IsNullOrEmpty(employee.Username))
             {
                 claims.Add(new Claim(JwtRegisteredClaimNames.UniqueName, employee.Username));
             }
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -58,7 +70,8 @@ namespace FoodHub.Infrastructure.Security
         public string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
-            using var randomNumberGenerator = System.Security.Cryptography.RandomNumberGenerator.Create();
+            using var randomNumberGenerator =
+                System.Security.Cryptography.RandomNumberGenerator.Create();
             randomNumberGenerator.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }

@@ -1,14 +1,14 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Categories.Commands.CreateCategory;
 using FoodHub.Application.Features.Categories.Commands.DeleteCategory;
 using FoodHub.Application.Features.Categories.Commands.UpdateCategory;
 using FoodHub.Application.Features.Categories.Queries.GetAllCategories;
 using FoodHub.Application.Features.Categories.Queries.GetCategoryById;
+using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-using FoodHub.WebAPI.Presentation.Attributes;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -40,23 +40,30 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Manager")]
+        [HasPermission(Permissions.Categories.Create)]
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryCommand command)
         {
             var result = await _mediator.Send(command);
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetCategoryById), new { id = result.Data }, result.Data);
+                return CreatedAtAction(
+                    nameof(GetCategoryById),
+                    new { id = result.Data },
+                    result.Data
+                );
             }
 
             return HandleResult(result);
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Manager")]
+        [HasPermission(Permissions.Categories.Update)]
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
-        public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] UpdateCategoryCommand command)
+        public async Task<IActionResult> UpdateCategory(
+            Guid id,
+            [FromBody] UpdateCategoryCommand command
+        )
         {
             if (id != command.CategoryId)
             {
@@ -68,7 +75,7 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Manager")]
+        [HasPermission(Permissions.Categories.Delete)]
         [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 15)]
         public async Task<IActionResult> DeleteCategory(Guid id)
         {
