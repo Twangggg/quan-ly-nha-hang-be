@@ -28,17 +28,35 @@ namespace FoodHub.Presentation.Controllers
             _mediator = mediator;
         }
 
+        /// <summary>
+        /// Tạo một đơn hàng mới.
+        /// </summary>
+        /// <param name="command">Thông tin đơn hàng cần tạo.</param>
+        /// <returns>Thông tin đơn hàng vừa được tạo.</returns>
+        /// <response code="200">Thành công.</response>
+        /// <response code="401">Chưa đăng nhập.</response>
+        /// <response code="403">Không có quyền.</response>
         [HttpPost]
         [HasPermission(Permissions.Orders.Create)]
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
+        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand command)
         {
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
 
+        /// <summary>
+        /// Lấy danh sách đơn hàng có phân trang.
+        /// </summary>
+        /// <param name="pagination">Tham số phân trang.</param>
+        /// <returns>Danh sách đơn hàng.</returns>
         [HttpGet]
         [HasPermission(Permissions.Orders.View)]
+        [ProducesResponseType(
+            typeof(Result<PagedResult<GetOrdersResponse>>),
+            StatusCodes.Status200OK
+        )]
         public async Task<IActionResult> GetOrders([FromQuery] PaginationParams pagination)
         {
             var result = await _mediator.Send(new GetOrdersQuery { Pagination = pagination });

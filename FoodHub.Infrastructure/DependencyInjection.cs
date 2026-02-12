@@ -3,7 +3,6 @@ using FoodHub.Infrastructure.BackgroundJobs;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
-using FoodHub.Infrastructure.Security;
 using FoodHub.Infrastructure.Services;
 using FoodHub.Infrastructure.Services.RateLimiting;
 using Microsoft.AspNetCore.Authorization;

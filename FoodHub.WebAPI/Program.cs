@@ -17,6 +17,7 @@ using Microsoft.OpenApi.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
@@ -38,10 +39,15 @@ try
     // ========================================
     // Load Environment Variables from .env file
     // ========================================
-    var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
-    if (File.Exists(envPath))
+    var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+    while (dir != null && !File.Exists(Path.Combine(dir.FullName, ".env")))
     {
-        DotNetEnv.Env.Load(envPath);
+        dir = dir.Parent;
+    }
+
+    if (dir != null)
+    {
+        DotNetEnv.Env.Load(Path.Combine(dir.FullName, ".env"));
     }
 
     var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
@@ -164,16 +170,23 @@ try
         .Services.AddOpenTelemetry()
         .ConfigureResource(resource => resource.AddService(serviceName)) // Định nghĩa tên Service trong hệ thống giám sát
         .WithTracing(tracing =>
+        {
             tracing
                 .AddAspNetCoreInstrumentation() // Theo dõi các Request vào Controller
                 .AddHttpClientInstrumentation() // Theo dõi các Request ra ngoài bằng HttpClient
-                .AddEntityFrameworkCoreInstrumentation() // Theo dõi các câu lệnh SQL (EF Core)
-                .AddRedisInstrumentation(builder.Configuration.GetConnectionString("Redis")) // Theo dõi Redis
-                .AddOtlpExporter(options => // Xuất data Tracing về Collector (Jaeger)
-                {
-                    options.Endpoint = new Uri(otlpEndpoint);
-                })
-        )
+                .AddEntityFrameworkCoreInstrumentation(); // Theo dõi các câu lệnh SQL (EF Core)
+
+            var redisConn = builder.Configuration.GetConnectionString("Redis");
+            if (!string.IsNullOrEmpty(redisConn))
+            {
+                tracing.AddRedisInstrumentation(redisConn); // Theo dõi Redis
+            }
+
+            tracing.AddOtlpExporter(options => // Xuất data Tracing về Collector (Jaeger)
+            {
+                options.Endpoint = new Uri(otlpEndpoint);
+            });
+        })
         .WithMetrics(metrics =>
             metrics
                 .AddAspNetCoreInstrumentation() // Thu thập metrics cơ bản (Request/sec, Duration...)
@@ -387,7 +400,6 @@ try
                 options.SwaggerEndpoint(url, name);
             }
         });
-
         // Auto Migrate & Seed Data
         using (var scope = app.Services.CreateScope())
         {

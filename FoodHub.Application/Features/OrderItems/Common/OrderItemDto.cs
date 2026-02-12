@@ -26,7 +26,8 @@ namespace FoodHub.Application.Features.OrderItems.Common
 
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<OrderItem, OrderItemDto>()
+            profile
+                .CreateMap<OrderItem, OrderItemDto>()
                 .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()));
         }
     }
