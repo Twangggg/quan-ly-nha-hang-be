@@ -271,6 +271,120 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
+            if (!_context.Orders.Any())
+            {
+                var admin = _context.Employees.First(e => e.EmployeeCode == "M001001");
+                var chickenRice = _context.MenuItems.First(mi => mi.Code == "FOOD001");
+                var beefNoodle = _context.MenuItems.First(mi => mi.Code == "FOOD002");
+                var lemonTea = _context.MenuItems.First(mi => mi.Code == "DRINK001");
+
+                // Table IDs that match FE expectation (ending with 01, 02)
+                var table01Id = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                var table02Id = Guid.Parse("00000000-0000-0000-0000-000000000002");
+
+                var order1 = new Order
+                {
+                    OrderId = Guid.NewGuid(),
+                    OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0001",
+                    OrderType = OrderType.DineIn,
+                    Status = OrderStatus.Serving,
+                    TableId = table02Id,
+                    TotalAmount = 70000,
+                    CreatedByEmployee = admin,
+                    CreatedAt = DateTime.UtcNow.AddHours(-1),
+                };
+
+                order1.OrderItems.Add(
+                    new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order1.OrderId,
+                        MenuItemId = chickenRice.MenuItemId,
+                        ItemCodeSnapshot = chickenRice.Code,
+                        ItemNameSnapshot = chickenRice.Name,
+                        StationSnapshot = chickenRice.Station.ToString(),
+                        Status = OrderItemStatus.Ready,
+                        Quantity = 1,
+                        UnitPriceSnapshot = chickenRice.PriceDineIn,
+                        CreatedAt = order1.CreatedAt,
+                    }
+                );
+
+                order1.OrderItems.Add(
+                    new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order1.OrderId,
+                        MenuItemId = lemonTea.MenuItemId,
+                        ItemCodeSnapshot = lemonTea.Code,
+                        ItemNameSnapshot = lemonTea.Name,
+                        StationSnapshot = lemonTea.Station.ToString(),
+                        Status = OrderItemStatus.Completed,
+                        Quantity = 1,
+                        UnitPriceSnapshot = lemonTea.PriceDineIn,
+                        CreatedAt = order1.CreatedAt,
+                    }
+                );
+
+                var order2 = new Order
+                {
+                    OrderId = Guid.NewGuid(),
+                    OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0002",
+                    OrderType = OrderType.DineIn,
+                    Status = OrderStatus.Serving,
+                    TableId = table01Id,
+                    TotalAmount = 45000,
+                    CreatedByEmployee = admin,
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-30),
+                };
+
+                order2.OrderItems.Add(
+                    new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order2.OrderId,
+                        MenuItemId = beefNoodle.MenuItemId,
+                        ItemCodeSnapshot = beefNoodle.Code,
+                        ItemNameSnapshot = beefNoodle.Name,
+                        StationSnapshot = beefNoodle.Station.ToString(),
+                        Status = OrderItemStatus.Preparing,
+                        Quantity = 1,
+                        UnitPriceSnapshot = beefNoodle.PriceDineIn,
+                        CreatedAt = order2.CreatedAt,
+                    }
+                );
+
+                var order3 = new Order
+                {
+                    OrderId = Guid.NewGuid(),
+                    OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0003",
+                    OrderType = OrderType.Takeaway,
+                    Status = OrderStatus.Serving,
+                    TotalAmount = 20000,
+                    CreatedByEmployee = admin,
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-10),
+                };
+
+                order3.OrderItems.Add(
+                    new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order3.OrderId,
+                        MenuItemId = lemonTea.MenuItemId,
+                        ItemCodeSnapshot = lemonTea.Code,
+                        ItemNameSnapshot = lemonTea.Name,
+                        StationSnapshot = lemonTea.Station.ToString(),
+                        Status = OrderItemStatus.Ready,
+                        Quantity = 1,
+                        UnitPriceSnapshot = lemonTea.PriceDineIn,
+                        CreatedAt = order3.CreatedAt,
+                    }
+                );
+
+                _context.Orders.AddRange(order1, order2, order3);
+                _context.SaveChanges();
+            }
+
             _context.SaveChanges();
         }
     }
