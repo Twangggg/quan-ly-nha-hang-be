@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 
 using FoodHub.WebAPI.Presentation.Attributes;
 
-namespace FoodHub.Presentation.Controllers
-{
+    /// <summary>
+    /// Quản lý hình ảnh và upload lên Cloudinary.
+    /// </summary>
     [Authorize(Roles = "Manager")]
+    [Tags("Hình ảnh (Images)")]
     [RateLimit(maxRequests: 10, windowMinutes: 5, blockMinutes: 15)]
     public class ImageController : ApiControllerBase
     {
@@ -20,12 +22,19 @@ namespace FoodHub.Presentation.Controllers
         }
 
         /// <summary>
-        /// Upload an image to Cloudinary
+        /// Tải hình ảnh lên Cloudinary.
         /// </summary>
-        /// <param name="file">The image file (jpg, jpeg, png, webp - max 5MB)</param>
-        /// <param name="folder">Optional folder name in Cloudinary (default: menu-items)</param>
-        /// <returns>The URL of the uploaded image</returns>
+        /// <remarks>
+        /// Định dạng hỗ trợ: jpg, jpeg, png, webp. 
+        /// Dung lượng tối đa: 5MB.
+        /// </remarks>
+        /// <param name="file">File hình ảnh cần upload.</param>
+        /// <param name="folder">Thư mục lưu trữ trên Cloudinary (mặc định: menu-items).</param>
+        /// <response code="200">Upload thành công, trả về URL hình ảnh.</response>
+        /// <response code="400">File không hợp lệ hoặc quá lớn.</response>
         [HttpPost("upload")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UploadImage(IFormFile file, [FromQuery] string folder = "menu-items")
         {
             try
@@ -57,11 +66,14 @@ namespace FoodHub.Presentation.Controllers
         }
 
         /// <summary>
-        /// Delete an image from Cloudinary
+        /// Xóa hình ảnh khỏi Cloudinary.
         /// </summary>
-        /// <param name="publicId">The public ID of the image to delete</param>
-        /// <returns>Success status</returns>
+        /// <param name="publicId">Mã định danh (Public ID) của ảnh trên Cloudinary.</param>
+        /// <response code="200">Xóa thành công.</response>
+        /// <response code="404">Không tìm thấy ảnh.</response>
         [HttpDelete("delete")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteImage([FromQuery] string publicId)
         {
             try

@@ -1,0 +1,72 @@
+# File .editorconfig cho dự án FoodHub - Restaurant Management System
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+charset = utf-8
+end_of_line = crlf
+
+[*.cs]
+#### QUY TẮC NGÔN NGỮ (Language Conventions) ####
+
+# Ưu tiên dùng 'var' khi kiểu dữ liệu đã rõ ràng
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+
+# Quy tắc sử dụng 'this.'
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+
+# Modifier (Bắt buộc phải có public/private/...)
+dotnet_style_require_accessibility_modifiers = always:suggestion
+
+# Namespace (Sử dụng block-scoped namespace như hiện tại)
+csharp_style_namespace_declarations = block_scoped:suggestion
+
+#### QUY TẮC ĐẶT TÊN (Naming Conventions) ####
+
+# Các biến private field phải bắt đầu bằng dấu gạch dưới (_)
+dotnet_naming_rule.private_fields_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_with_underscore.style = prefix_underscore
+dotnet_naming_rule.private_fields_with_underscore.severity = warning
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_style.prefix_underscore.capitalization = camel_case
+dotnet_naming_style.prefix_underscore.required_prefix = _
+
+# Interface phải bắt đầu bằng chữ I
+dotnet_naming_rule.interfaces_start_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_start_with_i.style = prefix_i
+dotnet_naming_rule.interfaces_start_with_i.severity = warning
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_style.prefix_i.capitalization = pascal_case
+dotnet_naming_style.prefix_i.required_prefix = I
+
+#### QUY TẮC ĐỊNH DẠNG (Formatting Rules) ####
+
+# Xuống dòng cho dấu ngoặc nhọn (Allman style - chuẩn C#)
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+
+# QUAN TRỌNG: Quy tắc xuống dòng cho tham số (Lỗi bạn vừa gặp)
+# Ép buộc xuống dòng nếu danh sách tham số quá dài hoặc phức tạp
+dotnet_style_param_list_on_separate_lines = true:warning
+csharp_style_allow_blank_lines_between_consecutive_methods = true:suggestion
+
+# Khoảng trắng
+csharp_space_after_comma = true
+csharp_space_around_binary_operators = before_and_after
+csharp_space_before_colon_in_inheritance_clause = true
+csharp_space_after_keywords_in_control_flow_statements = true
+
+#### QUY TẮC SẮP XẾP (Using Directives) ####
+dotnet_separate_import_directive_groups = false
+dotnet_sort_system_directives_first = true
