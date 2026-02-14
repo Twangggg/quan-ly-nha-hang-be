@@ -35,12 +35,22 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
         public async Task Handle_Should_ReturnFromCache_When_Cached()
         {
             // Arrange
-            var pagination = new PaginationParams { PageIndex = 1, PageSize = 10 };
-            var query = new GetSetMenusQuery(pagination);
+            var pagination = new PaginationParams { PageNumber = 1, PageSize = 10 };
+            var query = new GetSetMenusQuery { Pagination = pagination };
 
-            var cachedResult = new PagedResult<GetSetMenusResponse>(new List<GetSetMenusResponse>(), 0, 1, 10);
+            var cachedResult = new PagedResult<GetSetMenusResponse>(
+                new List<GetSetMenusResponse>(),
+                pagination,
+                0
+            );
 
-            _mockCacheService.Setup(c => c.GetAsync<PagedResult<GetSetMenusResponse>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            _mockCacheService
+                .Setup(c =>
+                    c.GetAsync<PagedResult<GetSetMenusResponse>>(
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
                 .ReturnsAsync(cachedResult);
 
             // Act
@@ -56,8 +66,8 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
         public async Task Handle_Should_ReturnSuccess_When_SetMenusFound()
         {
             // Arrange
-            var pagination = new PaginationParams { PageIndex = 1, PageSize = 10 };
-            var query = new GetSetMenusQuery(pagination);
+            var pagination = new PaginationParams { PageNumber = 1, PageSize = 10 };
+            var query = new GetSetMenusQuery { Pagination = pagination };
 
             var setMenus = new List<SetMenu>
             {
@@ -66,38 +76,55 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
                     SetMenuId = Guid.NewGuid(),
                     Code = "SET001",
                     Name = "Combo 1",
-                    SetType = SetType.Lunch,
+                    SetType = SetType.SET_LUNCH,
                     Price = 15.00m,
-                    IsOutOfStock = false
+                    IsOutOfStock = false,
                 },
                 new SetMenu
                 {
                     SetMenuId = Guid.NewGuid(),
                     Code = "SET002",
                     Name = "Combo 2",
-                    SetType = SetType.Dinner,
+                    SetType = SetType.SET_MORNING,
                     Price = 25.00m,
-                    IsOutOfStock = false
-                }
+                    IsOutOfStock = false,
+                },
             };
 
-            _mockCacheService.Setup(c => c.GetAsync<PagedResult<GetSetMenusResponse>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            _mockCacheService
+                .Setup(c =>
+                    c.GetAsync<PagedResult<GetSetMenusResponse>>(
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
                 .ReturnsAsync((PagedResult<GetSetMenusResponse>?)null);
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
-            mockSetMenuRepo
-                .Setup(r => r.Query())
-                .Returns(setMenus.AsQueryable().BuildMock());
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(setMenus.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
 
-            var pagedResult = new PagedResult<GetSetMenusResponse>(new List<GetSetMenusResponse>(), 2, 1, 10);
-            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new AutoMapper.MapperConfiguration(cfg => cfg.CreateMap<SetMenu, GetSetMenusResponse>()));
+            var pagedResult = new PagedResult<GetSetMenusResponse>(
+                new List<GetSetMenusResponse>(),
+                pagination,
+                2
+            );
+            _mockMapper
+                .Setup(m => m.ConfigurationProvider)
+                .Returns(
+                    new AutoMapper.MapperConfiguration(cfg =>
+                        cfg.CreateMap<SetMenu, GetSetMenusResponse>()
+                    )
+                );
 
-            // Since this handler is very complex with AutoMapper, pagination, etc., 
+            // Since this handler is very complex with AutoMapper, pagination, etc.,
             // we'll just verify that it tries to get from cache and then from database
             // A full test would require extensive mocking of all the extension methods
 
-            // Act & Assert - simplified test
+            // Act
+            var result = await _handler.Handle(query, CancellationToken.None);
+
+            // Assert
             result.IsSuccess.Should().BeTrue();
         }
     }

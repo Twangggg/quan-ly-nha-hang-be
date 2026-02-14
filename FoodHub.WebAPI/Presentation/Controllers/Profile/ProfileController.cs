@@ -32,7 +32,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="401">Chưa đăng nhập.</response>
         [Authorize]
         [HttpGet]
-        [ProducesResponseType(typeof(Result<MyProfileResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<Response>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMyProfile()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

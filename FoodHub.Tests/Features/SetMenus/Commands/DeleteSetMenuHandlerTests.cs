@@ -41,7 +41,9 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var command = new DeleteSetMenuCommand(setMenuId);
 
             _mockCurrentUserService.Setup(s => s.Role).Returns("Staff");
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.SetMenu.DeleteForbidden)).Returns("Delete forbidden");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.SetMenu.DeleteForbidden))
+                .Returns("Delete forbidden");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -64,7 +66,9 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             mockSetMenuRepo.Setup(r => r.GetByIdAsync(setMenuId)).ReturnsAsync((SetMenu?)null);
             _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
 
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.SetMenu.NotFound)).Returns("Set menu not found");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.SetMenu.NotFound))
+                .Returns("Set menu not found");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -87,11 +91,11 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 SetMenuId = setMenuId,
                 Code = "SET001",
                 Name = "Combo 1",
-                SetType = SetType.Lunch,
+                SetType = SetType.SET_LUNCH,
                 Price = 15.00m,
                 CostPrice = 10.00m,
                 Description = "Test combo",
-                ImageUrl = "https://example.com/image.jpg"
+                ImageUrl = "https://example.com/image.jpg",
             };
 
             _mockCurrentUserService.Setup(s => s.Role).Returns("Manager");
@@ -107,8 +111,14 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 .Returns(new List<SetMenuItem>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<SetMenuItem>()).Returns(mockSetMenuItemRepo.Object);
 
-            _mockCacheService.Setup(c => c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            _mockCacheService.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _mockCacheService
+                .Setup(c =>
+                    c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())
+                )
+                .Returns(Task.CompletedTask);
+            _mockCacheService
+                .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             // Act

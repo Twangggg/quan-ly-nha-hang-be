@@ -4,7 +4,7 @@ using FoodHub.Domain.Entities;
 
 namespace FoodHub.Application.Features.Categories.Queries.GetAllCategories
 {
-    public class GetCategoriesResponse : IMapFrom<Category>
+    public class GetAllCategoriesResponse : IMapFrom<Category>
     {
         public Guid CategoryId { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -14,7 +14,7 @@ namespace FoodHub.Application.Features.Categories.Queries.GetAllCategories
 
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<Category, GetCategoriesResponse>()
+            profile.CreateMap<Category, GetAllCategoriesResponse>()
                 .ForMember(d => d.CategoryId, opt => opt.MapFrom(s => s.CategoryId))
                 .ForMember(d => d.Type, opt => opt.MapFrom(s => (int)s.CategoryType));
         }

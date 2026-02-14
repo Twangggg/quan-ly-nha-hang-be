@@ -1,9 +1,11 @@
 using FoodHub.Application.Interfaces;
+using FoodHub.Presentation.Controllers;
+using FoodHub.WebAPI.Presentation.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using FoodHub.WebAPI.Presentation.Attributes;
-
+namespace FoodHub.Presentation.Controllers
+{
     /// <summary>
     /// Quản lý hình ảnh và upload lên Cloudinary.
     /// </summary>
@@ -15,7 +17,10 @@ using FoodHub.WebAPI.Presentation.Attributes;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly ILogger<ImageController> _logger;
 
-        public ImageController(ICloudinaryService cloudinaryService, ILogger<ImageController> logger)
+        public ImageController(
+            ICloudinaryService cloudinaryService,
+            ILogger<ImageController> logger
+        )
         {
             _cloudinaryService = cloudinaryService;
             _logger = logger;
@@ -25,7 +30,7 @@ using FoodHub.WebAPI.Presentation.Attributes;
         /// Tải hình ảnh lên Cloudinary.
         /// </summary>
         /// <remarks>
-        /// Định dạng hỗ trợ: jpg, jpeg, png, webp. 
+        /// Định dạng hỗ trợ: jpg, jpeg, png, webp.
         /// Dung lượng tối đa: 5MB.
         /// </remarks>
         /// <param name="file">File hình ảnh cần upload.</param>
@@ -35,7 +40,10 @@ using FoodHub.WebAPI.Presentation.Attributes;
         [HttpPost("upload")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UploadImage(IFormFile file, [FromQuery] string folder = "menu-items")
+        public async Task<IActionResult> UploadImage(
+            IFormFile file,
+            [FromQuery] string folder = "menu-items"
+        )
         {
             try
             {
@@ -46,12 +54,14 @@ using FoodHub.WebAPI.Presentation.Attributes;
 
                 var imageUrl = await _cloudinaryService.UploadImageAsync(file, folder);
 
-                return Ok(new
-                {
-                    success = true,
-                    imageUrl = imageUrl,
-                    message = "Image uploaded successfully"
-                });
+                return Ok(
+                    new
+                    {
+                        success = true,
+                        imageUrl = imageUrl,
+                        message = "Image uploaded successfully",
+                    }
+                );
             }
             catch (ArgumentException ex)
             {
@@ -61,7 +71,10 @@ using FoodHub.WebAPI.Presentation.Attributes;
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error uploading image to Cloudinary");
-                return StatusCode(500, new { message = "An error occurred while uploading the image" });
+                return StatusCode(
+                    500,
+                    new { message = "An error occurred while uploading the image" }
+                );
             }
         }
 
@@ -95,7 +108,10 @@ using FoodHub.WebAPI.Presentation.Attributes;
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting image from Cloudinary");
-                return StatusCode(500, new { message = "An error occurred while deleting the image" });
+                return StatusCode(
+                    500,
+                    new { message = "An error occurred while deleting the image" }
+                );
             }
         }
     }

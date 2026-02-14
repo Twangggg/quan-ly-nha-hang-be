@@ -33,7 +33,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Trả về danh sách danh mục.</response>
         [HttpGet]
         [ProducesResponseType(
-            typeof(Result<PagedResult<CategoryResponse>>),
+            typeof(Result<PagedResult<GetAllCategoriesResponse>>),
             StatusCodes.Status200OK
         )]
         public async Task<IActionResult> GetAllCategories([FromQuery] PaginationParams pagination)
@@ -50,7 +50,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Trả về thông tin danh mục.</response>
         /// <response code="404">Không tìm thấy danh mục.</response>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(Result<CategoryResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<GetCategoryByIdResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetCategoryById(Guid id)
         {

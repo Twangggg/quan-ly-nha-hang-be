@@ -43,7 +43,9 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             );
 
             _mockCurrentUserService.Setup(s => s.Role).Returns("Staff");
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.SetMenu.UpdateForbidden)).Returns("Update forbidden");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.SetMenu.UpdateForbidden))
+                .Returns("Update forbidden");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -69,7 +71,9 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             mockSetMenuRepo.Setup(r => r.GetByIdAsync(setMenuId)).ReturnsAsync((SetMenu?)null);
             _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
 
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.SetMenu.NotFound)).Returns("Set menu not found");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.SetMenu.NotFound))
+                .Returns("Set menu not found");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -94,7 +98,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 SetMenuId = setMenuId,
                 Code = "SET001",
                 Name = "Combo 1",
-                IsOutOfStock: false
+                IsOutOfStock = false,
             };
 
             _mockCurrentUserService.Setup(s => s.Role).Returns("Manager");
@@ -103,8 +107,14 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             mockSetMenuRepo.Setup(r => r.GetByIdAsync(setMenuId)).ReturnsAsync(existingSetMenu);
             _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
 
-            _mockCacheService.Setup(c => c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            _mockCacheService.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _mockCacheService
+                .Setup(c =>
+                    c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())
+                )
+                .Returns(Task.CompletedTask);
+            _mockCacheService
+                .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             // Act
@@ -131,7 +141,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 SetMenuId = setMenuId,
                 Code = "SET001",
                 Name = "Combo 1",
-                IsOutOfStock: true
+                IsOutOfStock = true,
             };
 
             _mockCurrentUserService.Setup(s => s.Role).Returns("Manager");
@@ -140,8 +150,14 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             mockSetMenuRepo.Setup(r => r.GetByIdAsync(setMenuId)).ReturnsAsync(existingSetMenu);
             _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
 
-            _mockCacheService.Setup(c => c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            _mockCacheService.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _mockCacheService
+                .Setup(c =>
+                    c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())
+                )
+                .Returns(Task.CompletedTask);
+            _mockCacheService
+                .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             // Act
@@ -149,8 +165,14 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            _mockCacheService.Verify(c => c.RemoveByPatternAsync("setmenu:list", It.IsAny<CancellationToken>()), Times.Once);
-            _mockCacheService.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mockCacheService.Verify(
+                c => c.RemoveByPatternAsync("setmenu:list", It.IsAny<CancellationToken>()),
+                Times.Once
+            );
+            _mockCacheService.Verify(
+                c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+                Times.Once
+            );
         }
     }
 }

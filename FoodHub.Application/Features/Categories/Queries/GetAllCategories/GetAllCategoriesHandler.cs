@@ -12,7 +12,7 @@ using System.Text.Json;
 
 namespace FoodHub.Application.Features.Categories.Queries.GetAllCategories
 {
-    public class GetAllCategoriesHandler : IRequestHandler<GetAllCategoriesQuery, Result<PagedResult<GetCategoriesResponse>>>
+    public class GetAllCategoriesHandler : IRequestHandler<GetAllCategoriesQuery, Result<PagedResult<GetAllCategoriesResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -25,15 +25,15 @@ namespace FoodHub.Application.Features.Categories.Queries.GetAllCategories
             _cacheService = cacheService;
         }
 
-        public async Task<Result<PagedResult<GetCategoriesResponse>>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<GetAllCategoriesResponse>>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken)
         {
             var queryJson = JsonSerializer.Serialize(request.Pagination);
             var cacheKey = $"{CacheKey.CategoryList}:{queryJson.GetHashCode()}";
 
-            var cachedResult = await _cacheService.GetAsync<PagedResult<GetCategoriesResponse>>(cacheKey, cancellationToken);
+            var cachedResult = await _cacheService.GetAsync<PagedResult<GetAllCategoriesResponse>>(cacheKey, cancellationToken);
             if (cachedResult != null)
             {
-                return Result<PagedResult<GetCategoriesResponse>>.Success(cachedResult);
+                return Result<PagedResult<GetAllCategoriesResponse>>.Success(cachedResult);
             }
 
             var query = _unitOfWork.Repository<Category>().Query();
@@ -66,11 +66,11 @@ namespace FoodHub.Application.Features.Categories.Queries.GetAllCategories
                 c => c.Name);
 
             var pagedResult = await query
-                .ProjectTo<GetCategoriesResponse>(_mapper.ConfigurationProvider)
+                .ProjectTo<GetAllCategoriesResponse>(_mapper.ConfigurationProvider)
                 .ToPagedResultAsync(request.Pagination);
 
             await _cacheService.SetAsync(cacheKey, pagedResult, CacheTTL.Categories, cancellationToken);
-            return Result<PagedResult<GetCategoriesResponse>>.Success(pagedResult);
+            return Result<PagedResult<GetAllCategoriesResponse>>.Success(pagedResult);
         }
     }
 }

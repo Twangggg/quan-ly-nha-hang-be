@@ -5,6 +5,7 @@ using FoodHub.Application.Features.Authentication.Commands.RefreshToken;
 using FoodHub.Application.Features.Authentication.Commands.RequestPasswordReset;
 using FoodHub.Application.Features.Authentication.Commands.ResetPassword;
 using FoodHub.Application.Features.Authentication.Commands.RevokeToken;
+using FoodHub.Application.Features.Employees.Queries.GetMyProfile;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -187,7 +188,7 @@ namespace FoodHub.Presentation.Controllers
         [HttpGet("me")]
         [Authorize]
         [ProducesResponseType(
-            typeof(Result<FoodHub.Application.Features.Employees.Queries.GetMyProfile.MyProfileResponse>),
+            typeof(Result<Response>),
             StatusCodes.Status200OK
         )]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -200,7 +201,7 @@ namespace FoodHub.Presentation.Controllers
             }
 
             var result = await _mediator.Send(
-                new FoodHub.Application.Features.Employees.Queries.GetMyProfile.Query(userId)
+                new Query(userId)
             );
             return HandleResult(result);
         }

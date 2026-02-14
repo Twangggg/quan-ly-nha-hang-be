@@ -34,10 +34,10 @@ namespace FoodHub.Tests.Features.Categories
             // Arrange
             var pagination = new PaginationParams();
             var query = new GetAllCategoriesQuery(pagination);
-            var items = new List<GetCategoriesResponse> { new GetCategoriesResponse { CategoryId = Guid.NewGuid(), Name = "Cached Category" } };
-            var cachedPagedResult = new PagedResult<GetCategoriesResponse>(items, pagination, 1);
+            var items = new List<GetAllCategoriesResponse> { new GetAllCategoriesResponse { CategoryId = Guid.NewGuid(), Name = "Cached Category" } };
+            var cachedPagedResult = new PagedResult<GetAllCategoriesResponse>(items, pagination, 1);
 
-            _mockCache.Setup(c => c.GetAsync<PagedResult<GetCategoriesResponse>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            _mockCache.Setup(c => c.GetAsync<PagedResult<GetAllCategoriesResponse>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(cachedPagedResult);
 
             // Act
@@ -56,8 +56,8 @@ namespace FoodHub.Tests.Features.Categories
             var pagination = new PaginationParams();
             var query = new GetAllCategoriesQuery(pagination);
 
-            _mockCache.Setup(c => c.GetAsync<PagedResult<GetCategoriesResponse>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((PagedResult<GetCategoriesResponse>)null!);
+            _mockCache.Setup(c => c.GetAsync<PagedResult<GetAllCategoriesResponse>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((PagedResult<GetAllCategoriesResponse>)null!);
 
             var categories = new List<Category>
             {
@@ -69,17 +69,17 @@ namespace FoodHub.Tests.Features.Categories
             repo.Setup(r => r.Query()).Returns(categories);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(repo.Object);
 
-            var mappedItems = new List<GetCategoriesResponse>
+            var mappedItems = new List<GetAllCategoriesResponse>
             {
-                new GetCategoriesResponse { CategoryId = categories.ElementAt(0).CategoryId, Name = "Category 1", Type = (int)CategoryType.Normal },
-                new GetCategoriesResponse { CategoryId = categories.ElementAt(1).CategoryId, Name = "Category 2", Type = (int)CategoryType.SpecialGroup }
+                new GetAllCategoriesResponse { CategoryId = categories.ElementAt(0).CategoryId, Name = "Category 1", Type = (int)CategoryType.Normal },
+                new GetAllCategoriesResponse { CategoryId = categories.ElementAt(1).CategoryId, Name = "Category 2", Type = (int)CategoryType.SpecialGroup }
             };
 
 
             _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
-                cfg.CreateMap<Category, GetCategoriesResponse>()));
+                cfg.CreateMap<Category, GetAllCategoriesResponse>()));
 
-            _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetCategoriesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetAllCategoriesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -89,7 +89,7 @@ namespace FoodHub.Tests.Features.Categories
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             _mockUow.Verify(u => u.Repository<Category>(), Times.AtLeastOnce);
-            _mockCache.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetCategoriesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mockCache.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetAllCategoriesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -99,8 +99,8 @@ namespace FoodHub.Tests.Features.Categories
             var pagination = new PaginationParams();
             var query = new GetAllCategoriesQuery(pagination);
 
-            _mockCache.Setup(c => c.GetAsync<PagedResult<GetCategoriesResponse>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((PagedResult<GetCategoriesResponse>)null!);
+            _mockCache.Setup(c => c.GetAsync<PagedResult<GetAllCategoriesResponse>>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((PagedResult<GetAllCategoriesResponse>)null!);
 
             var categories = new List<Category>().AsQueryable().BuildMock();
             var repo = new Mock<IGenericRepository<Category>>();
@@ -108,9 +108,9 @@ namespace FoodHub.Tests.Features.Categories
             _mockUow.Setup(u => u.Repository<Category>()).Returns(repo.Object);
 
             _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
-                cfg.CreateMap<Category, GetCategoriesResponse>()));
+                cfg.CreateMap<Category, GetAllCategoriesResponse>()));
 
-            _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetCategoriesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetAllCategoriesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             // Act

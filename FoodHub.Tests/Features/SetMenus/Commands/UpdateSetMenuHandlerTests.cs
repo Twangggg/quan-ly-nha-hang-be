@@ -41,16 +41,18 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
-                SetType: SetType.Lunch,
+                SetType: SetType.SET_LUNCH,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
                 ImageUrl: "https://example.com/updated.jpg",
-                Items: new List<UpdateSetMenuItemRequest>()
+                Items: new List<SetMenuItemCommand>()
             );
 
             _mockCurrentUserService.Setup(s => s.Role).Returns("Staff");
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.SetMenu.UpdateForbidden)).Returns("Update forbidden");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.SetMenu.UpdateForbidden))
+                .Returns("Update forbidden");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -68,12 +70,12 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
-                SetType: SetType.Lunch,
+                SetType: SetType.SET_LUNCH,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
                 ImageUrl: "https://example.com/updated.jpg",
-                Items: new List<UpdateSetMenuItemRequest>()
+                Items: new List<SetMenuItemCommand>()
             );
 
             _mockCurrentUserService.Setup(s => s.Role).Returns("Manager");
@@ -82,7 +84,9 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             mockSetMenuRepo.Setup(r => r.GetByIdAsync(setMenuId)).ReturnsAsync((SetMenu?)null);
             _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
 
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.SetMenu.NotFound)).Returns("Set menu not found");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.SetMenu.NotFound))
+                .Returns("Set menu not found");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -101,22 +105,19 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
-                SetType: SetType.Lunch,
+                SetType: SetType.SET_LUNCH,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
                 ImageUrl: "https://example.com/updated.jpg",
-                Items: new List<UpdateSetMenuItemRequest>
-                {
-                    new UpdateSetMenuItemRequest { MenuItemId = menuItemId, Quantity = 1 }
-                }
+                Items: new List<SetMenuItemCommand> { new SetMenuItemCommand(menuItemId, 1) }
             );
 
             var existingSetMenu = new SetMenu
             {
                 SetMenuId = setMenuId,
                 Code = "SET001",
-                Name = "Combo 1"
+                Name = "Combo 1",
             };
 
             _mockCurrentUserService.Setup(s => s.Role).Returns("Manager");
@@ -126,10 +127,18 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
 
             var mockMenuItemRepo = new Mock<IGenericRepository<MenuItem>>();
-            mockMenuItemRepo.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<MenuItem, bool>>>())).ReturnsAsync(0);
+            mockMenuItemRepo
+                .Setup(r =>
+                    r.CountAsync(
+                        It.IsAny<System.Linq.Expressions.Expression<System.Func<MenuItem, bool>>>()
+                    )
+                )
+                .ReturnsAsync(0);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuItemRepo.Object);
 
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.MenuItem.NotFound)).Returns("Menu item not found");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.MenuItem.NotFound))
+                .Returns("Menu item not found");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -149,15 +158,12 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
-                SetType: SetType.Lunch,
+                SetType: SetType.SET_LUNCH,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
                 ImageUrl: "https://example.com/updated.jpg",
-                Items: new List<UpdateSetMenuItemRequest>
-                {
-                    new UpdateSetMenuItemRequest { MenuItemId = menuItemId, Quantity = 2 }
-                }
+                Items: new List<SetMenuItemCommand> { new SetMenuItemCommand(menuItemId, 2) }
             );
 
             var existingSetMenu = new SetMenu
@@ -165,9 +171,9 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 SetMenuId = setMenuId,
                 Code = "SET001",
                 Name = "Combo 1",
-                SetType = SetType.Dinner,
+                SetType = SetType.SET_MORNING,
                 Price = 15.00m,
-                CostPrice = 10.00m
+                CostPrice = 10.00m,
             };
 
             _mockCurrentUserService.Setup(s => s.Role).Returns("Manager");
@@ -179,20 +185,34 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
 
             var mockMenuItemRepo = new Mock<IGenericRepository<MenuItem>>();
-            mockMenuItemRepo.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<MenuItem, bool>>>())).ReturnsAsync(1);
+            mockMenuItemRepo
+                .Setup(r =>
+                    r.CountAsync(
+                        It.IsAny<System.Linq.Expressions.Expression<System.Func<MenuItem, bool>>>()
+                    )
+                )
+                .ReturnsAsync(1);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuItemRepo.Object);
 
             var mockSetMenuItemRepo = new Mock<IGenericRepository<SetMenuItem>>();
-            mockSetMenuItemRepo.Setup(r => r.Query()).Returns(new List<SetMenuItem>().AsQueryable().BuildMock());
+            mockSetMenuItemRepo
+                .Setup(r => r.Query())
+                .Returns(new List<SetMenuItem>().AsQueryable().BuildMock());
             mockSetMenuItemRepo.Setup(r => r.AddAsync(It.IsAny<SetMenuItem>()));
             _mockUow.Setup(u => u.Repository<SetMenuItem>()).Returns(mockSetMenuItemRepo.Object);
 
-            _mockUow.Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _mockUow.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-            _mockCacheService.Setup(c => c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            _mockCacheService.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _mockCacheService
+                .Setup(c =>
+                    c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())
+                )
+                .Returns(Task.CompletedTask);
+            _mockCacheService
+                .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);

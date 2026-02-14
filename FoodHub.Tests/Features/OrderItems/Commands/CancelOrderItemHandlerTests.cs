@@ -40,12 +40,16 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
             // Arrange
             var orderItemId = Guid.NewGuid();
             var command = new CancelOrderItemCommand(
+                OrderId: Guid.NewGuid(),
                 OrderItemId: orderItemId,
-                Reason: "Customer requested"
+                Reason: "Customer requested",
+                order: new Domain.Entities.Order()
             );
 
             _mockCurrentUserService.Setup(s => s.UserId).Returns(string.Empty);
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Employee.CannotIdentifyUser)).Returns("Cannot identify user");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Employee.CannotIdentifyUser))
+                .Returns("Cannot identify user");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -60,10 +64,13 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var orderId = Guid.NewGuid();
             var orderItemId = Guid.NewGuid();
             var command = new CancelOrderItemCommand(
+                OrderId: orderId,
                 OrderItemId: orderItemId,
-                Reason: "Customer requested"
+                Reason: "Customer requested",
+                order: new Domain.Entities.Order()
             );
 
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
@@ -74,7 +81,9 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
                 .Returns(new List<OrderItem>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockOrderItemRepo.Object);
 
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Order.NotFound)).Returns("Order not found");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Order.NotFound))
+                .Returns("Order not found");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -89,20 +98,22 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var orderItemId = Guid.NewGuid();
             var orderId = Guid.NewGuid();
+            var orderItemId = Guid.NewGuid();
             var command = new CancelOrderItemCommand(
+                OrderId: orderId,
                 OrderItemId: orderItemId,
-                Reason: "Customer requested"
+                Reason: "Customer requested",
+                order: new Domain.Entities.Order()
             );
 
             var existingOrderItem = new OrderItem
             {
                 OrderItemId = orderItemId,
                 OrderId = orderId,
-                Status = OrderItemStatus.Served, // Not Preparing
+                Status = OrderItemStatus.Completed, // Not Preparing
                 Quantity = 1,
-                UnitPriceSnapshot = 10.00m
+                UnitPriceSnapshot = 10.00m,
             };
 
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
@@ -110,10 +121,16 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
             var mockOrderItemRepo = new Mock<IGenericRepository<OrderItem>>();
             mockOrderItemRepo
                 .Setup(r => r.Query())
-                .Returns(new List<OrderItem> { existingOrderItem }.AsQueryable().BuildMock());
+                .Returns(
+                    new List<OrderItem> { existingOrderItem }
+                        .AsQueryable()
+                        .BuildMock()
+                );
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockOrderItemRepo.Object);
 
-            _mockMessageService.Setup(m => m.GetMessage(MessageKeys.Order.InvalidActionWithStatus)).Returns("Invalid action with current status");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Order.InvalidActionWithStatus))
+                .Returns("Invalid action with current status");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -128,11 +145,13 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var orderItemId = Guid.NewGuid();
             var orderId = Guid.NewGuid();
+            var orderItemId = Guid.NewGuid();
             var command = new CancelOrderItemCommand(
+                OrderId: orderId,
                 OrderItemId: orderItemId,
-                Reason: "Customer requested"
+                Reason: "Customer requested",
+                order: new Domain.Entities.Order()
             );
 
             var existingOrderItem = new OrderItem
@@ -142,14 +161,14 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
                 Status = OrderItemStatus.Preparing,
                 Quantity = 2,
                 UnitPriceSnapshot = 10.00m,
-                OptionGroups = new List<OrderItemOptionGroup>()
+                OptionGroups = new List<OrderItemOptionGroup>(),
             };
 
             var existingOrder = new Domain.Entities.Order
             {
                 OrderId = orderId,
                 TotalAmount = 20.00m,
-                OrderItems = new List<OrderItem> { existingOrderItem }
+                OrderItems = new List<OrderItem> { existingOrderItem },
             };
 
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
@@ -157,14 +176,24 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
             var mockOrderItemRepo = new Mock<IGenericRepository<OrderItem>>();
             mockOrderItemRepo
                 .Setup(r => r.Query())
-                .Returns(new List<OrderItem> { existingOrderItem }.AsQueryable().BuildMock());
+                .Returns(
+                    new List<OrderItem> { existingOrderItem }
+                        .AsQueryable()
+                        .BuildMock()
+                );
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockOrderItemRepo.Object);
 
             var mockOrderRepo = new Mock<IGenericRepository<Domain.Entities.Order>>();
             mockOrderRepo
                 .Setup(r => r.Query())
-                .Returns(new List<Domain.Entities.Order> { existingOrder }.AsQueryable().BuildMock());
-            _mockUow.Setup(u => u.Repository<Domain.Entities.Order>()).Returns(mockOrderRepo.Object);
+                .Returns(
+                    new List<Domain.Entities.Order> { existingOrder }
+                        .AsQueryable()
+                        .BuildMock()
+                );
+            _mockUow
+                .Setup(u => u.Repository<Domain.Entities.Order>())
+                .Returns(mockOrderRepo.Object);
 
             var mockAuditLogRepo = new Mock<IGenericRepository<OrderAuditLog>>();
             mockAuditLogRepo.Setup(r => r.AddAsync(It.IsAny<OrderAuditLog>()));

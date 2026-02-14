@@ -36,7 +36,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Trả về danh sách Set ăn.</response>
         [HttpGet]
         [ProducesResponseType(
-            typeof(Result<PagedResult<SetMenuResponse>>),
+            typeof(Result<PagedResult<GetSetMenusResponse>>),
             StatusCodes.Status200OK
         )]
         public async Task<IActionResult> GetSetMenus([FromQuery] PaginationParams pagination)
@@ -59,7 +59,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Trả về thông tin Set ăn.</response>
         /// <response code="404">Không tìm thấy Set ăn.</response>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(Result<SetMenuResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<GetSetMenuByIdResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetSetMenuById(Guid id)
         {
@@ -78,7 +78,7 @@ namespace FoodHub.Presentation.Controllers
         [HttpPost]
         [HasPermission(Permissions.SetMenus.Create)]
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
-        [ProducesResponseType(typeof(Result<SetMenuResponse>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Result<CreateSetMenuResponse>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateSetMenu([FromBody] CreateSetMenuCommand command)
         {

@@ -35,12 +35,18 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
                 SetMenuId = setMenuId,
                 Code = "SET001",
                 Name = "Combo 1",
-                SetType = SetType.Lunch,
+                SetType = SetType.SET_LUNCH,
                 Price = 15.00m,
-                Items = new List<GetSetMenuItemByIdResponse>()
+                Items = new List<GetSetMenuItemByIdResponse>(),
             };
 
-            _mockCacheService.Setup(c => c.GetAsync<GetSetMenuByIdResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            _mockCacheService
+                .Setup(c =>
+                    c.GetAsync<GetSetMenuByIdResponse>(
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
                 .ReturnsAsync(cachedResponse);
 
             // Act
@@ -59,7 +65,13 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
             var setMenuId = Guid.NewGuid();
             var query = new GetSetMenuByIdQuery(setMenuId);
 
-            _mockCacheService.Setup(c => c.GetAsync<GetSetMenuByIdResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            _mockCacheService
+                .Setup(c =>
+                    c.GetAsync<GetSetMenuByIdResponse>(
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
                 .ReturnsAsync((GetSetMenuByIdResponse?)null);
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
@@ -86,14 +98,20 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
                 SetMenuId = setMenuId,
                 Code = "SET001",
                 Name = "Combo 1",
-                SetType = SetType.Lunch,
+                SetType = SetType.SET_LUNCH,
                 Price = 15.00m,
                 CostPrice = 10.00m,
                 Description = "Test combo",
-                ImageUrl = "https://example.com/image.jpg"
+                ImageUrl = "https://example.com/image.jpg",
             };
 
-            _mockCacheService.Setup(c => c.GetAsync<GetSetMenuByIdResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            _mockCacheService
+                .Setup(c =>
+                    c.GetAsync<GetSetMenuByIdResponse>(
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
                 .ReturnsAsync((GetSetMenuByIdResponse?)null);
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
@@ -106,7 +124,15 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
                 .Returns(new List<SetMenuItem>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<SetMenuItem>()).Returns(mockSetMenuItemRepo.Object);
 
-            _mockCacheService.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<GetSetMenuByIdResponse>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            _mockCacheService
+                .Setup(c =>
+                    c.SetAsync(
+                        It.IsAny<string>(),
+                        It.IsAny<GetSetMenuByIdResponse>(),
+                        It.IsAny<TimeSpan?>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -132,11 +158,17 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
                 SetMenuId = setMenuId,
                 Code = "SET001",
                 Name = "Combo 1",
-                SetType = SetType.Lunch,
-                Price = 15.00m
+                SetType = SetType.SET_LUNCH,
+                Price = 15.00m,
             };
 
-            _mockCacheService.Setup(c => c.GetAsync<GetSetMenuByIdResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            _mockCacheService
+                .Setup(c =>
+                    c.GetAsync<GetSetMenuByIdResponse>(
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
                 .ReturnsAsync((GetSetMenuByIdResponse?)null);
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
@@ -154,7 +186,16 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            _mockCacheService.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<GetSetMenuByIdResponse>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mockCacheService.Verify(
+                c =>
+                    c.SetAsync(
+                        It.IsAny<string>(),
+                        It.IsAny<GetSetMenuByIdResponse>(),
+                        It.IsAny<TimeSpan?>(),
+                        It.IsAny<CancellationToken>()
+                    ),
+                Times.Once
+            );
         }
     }
 }
