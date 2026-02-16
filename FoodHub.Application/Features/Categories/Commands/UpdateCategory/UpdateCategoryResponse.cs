@@ -1,5 +1,5 @@
-using FoodHub.Domain.Enums;
 using System;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.Categories.Commands.UpdateCategory
 {

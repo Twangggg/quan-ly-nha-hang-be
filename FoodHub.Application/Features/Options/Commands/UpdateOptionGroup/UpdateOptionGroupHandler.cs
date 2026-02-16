@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
 {
-    public class UpdateOptionGroupHandler : IRequestHandler<UpdateOptionGroupCommand, Result<UpdateOptionGroupResponse>>
+    public class UpdateOptionGroupHandler
+        : IRequestHandler<UpdateOptionGroupCommand, Result<UpdateOptionGroupResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -16,16 +17,26 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<UpdateOptionGroupResponse>> Handle(UpdateOptionGroupCommand request, CancellationToken cancellationToken)
+        public async Task<Result<UpdateOptionGroupResponse>> Handle(
+            UpdateOptionGroupCommand request,
+            CancellationToken cancellationToken
+        )
         {
-            var optionGroup = await _unitOfWork.Repository<OptionGroup>()
+            var optionGroup = await _unitOfWork
+                .Repository<OptionGroup>()
                 .Query()
                 .Include(og => og.OptionItems)
-                .FirstOrDefaultAsync(og => og.OptionGroupId == request.OptionGroupId, cancellationToken);
+                .FirstOrDefaultAsync(
+                    og => og.OptionGroupId == request.OptionGroupId,
+                    cancellationToken
+                );
 
             if (optionGroup == null)
             {
-                return Result<UpdateOptionGroupResponse>.Failure($"Option group with ID {request.OptionGroupId} not found.", ResultErrorType.NotFound);
+                return Result<UpdateOptionGroupResponse>.Failure(
+                    $"Option group with ID {request.OptionGroupId} not found.",
+                    ResultErrorType.NotFound
+                );
             }
 
             optionGroup.Name = request.Name;
@@ -41,7 +52,7 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
                 MenuItemId = optionGroup.MenuItemId,
                 Name = optionGroup.Name,
                 Type = (int)optionGroup.OptionType,
-                IsRequired = optionGroup.IsRequired
+                IsRequired = optionGroup.IsRequired,
             };
 
             return Result<UpdateOptionGroupResponse>.Success(response);

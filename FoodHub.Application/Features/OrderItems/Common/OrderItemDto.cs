@@ -23,6 +23,8 @@ namespace FoodHub.Application.Features.OrderItems.Common
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? CanceledAt { get; set; }
+        public ICollection<OrderItemOptionGroupDto> OptionGroups { get; set; } =
+            new List<OrderItemOptionGroupDto>();
 
         public void Mapping(Profile profile)
         {

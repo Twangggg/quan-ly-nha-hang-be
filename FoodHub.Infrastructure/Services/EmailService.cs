@@ -1,8 +1,8 @@
+using System.Net;
+using System.Net.Mail;
 using FoodHub.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Net;
-using System.Net.Mail;
 
 namespace FoodHub.Infrastructure.Services
 {

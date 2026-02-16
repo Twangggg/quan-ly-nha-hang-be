@@ -1,14 +1,14 @@
+using System.Linq.Expressions;
 using FoodHub.Application.Common.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace FoodHub.Application.Extensions.Query
 {
     public static class QueryableExtension
     {
         /// <summary>
-        /// ¡p d?ng tÏm ki?m to‡n c?c (Global Search) trÍn nhi?u tru?ng d? li?u
-        /// S? d?ng Expression Trees d? t?o c‚u l?nh SQL LIKE d?ng
+        /// √Åp d?ng t√¨m ki?m to√†n c?c (Global Search) tr√™n nhi?u tru?ng d? li?u
+        /// S? d?ng Expression Trees d? t?o c√¢u l?nh SQL LIKE d?ng
         /// </summary>
         public static IQueryable<T> ApplyGlobalSearch<T>(
             this IQueryable<T> query,
@@ -26,17 +26,17 @@ namespace FoodHub.Application.Extensions.Query
 
             foreach (var field in searchableFields)
             {
-                // Truy c?p v‡o thu?c tÌnh c?a object (vÌ d?: x => x.FullName)
+                // Truy c?p v√†o thu?c t√≠nh c?a object (v√≠ d?: x => x.FullName)
                 var memberAccess = Expression.Invoke(field, parameter);
 
-                // Chuy?n v? ch? thu?ng d? tÏm ki?m khÙng ph‚n bi?t hoa thu?ng (Case-insensitive)
+                // Chuy?n v? ch? thu?ng d? t√¨m ki?m kh√¥ng ph√¢n bi?t hoa thu?ng (Case-insensitive)
                 var toLowerCall = Expression.Call(memberAccess, typeof(string).GetMethod("ToLower", Type.EmptyTypes)!);
 
                 // T?o l?nh .Contains() tuong ?ng v?i SQL LIKE '%search%'
                 var containsCall = Expression.Call(toLowerCall, containsMethod!, Expression.Constant(searchLower));
 
-                // K?t h?p c·c di?u ki?n tÏm ki?m b?ng to·n t? OR (OrElse)
-                // VÌ d?: FullName.Contains(...) OR Email.Contains(...)
+                // K?t h?p c√°c di?u ki?n t√¨m ki?m b?ng to√°n t? OR (OrElse)
+                // V√≠ d?: FullName.Contains(...) OR Email.Contains(...)
                 combinedExpression = combinedExpression == null
                     ? containsCall
                     : Expression.OrElse(combinedExpression, containsCall);
@@ -52,8 +52,8 @@ namespace FoodHub.Application.Extensions.Query
         }
 
         /// <summary>
-        /// ¡p d?ng b? l?c d?ng (Filtering) t? danh s·ch chu?i "key:value"
-        /// H? tr? l?c theo kho?ng (minPrice, maxPrice) v‡ t? d?ng Èp ki?u d? li?u
+        /// √Åp d?ng b? l?c d?ng (Filtering) t? danh s√°ch chu?i "key:value"
+        /// H? tr? l?c theo kho?ng (minPrice, maxPrice) v√† t? d?ng √©p ki?u d? li?u
         /// </summary>
         public static IQueryable<T> ApplyFilters<T>(
             this IQueryable<T> query,
@@ -65,7 +65,7 @@ namespace FoodHub.Application.Extensions.Query
 
             foreach (var filter in filters)
             {
-                // T·ch chu?i filter theo d?nh d?ng "key:value" (vÌ d?: "status:1", "minPrice:100000")
+                // T√°ch chu?i filter theo d?nh d?ng "key:value" (v√≠ d?: "status:1", "minPrice:100000")
                 var parts = filter.Split(':', 2);
                 if (parts.Length != 2) continue;
 
@@ -75,7 +75,7 @@ namespace FoodHub.Application.Extensions.Query
                 string key;
                 ExpressionType filterType;
 
-                // 1. Ph‚n tÌch lo?i to·n t? so s·nh (Equal, >=, <=) d?a v‡o ti?n t? min/max
+                // 1. Ph√¢n t√≠ch lo?i to√°n t? so s√°nh (Equal, >=, <=) d?a v√†o ti?n t? min/max
                 if (rawKey.StartsWith("min", StringComparison.OrdinalIgnoreCase))
                 {
                     key = rawKey.Substring(3).ToLower();
@@ -96,14 +96,14 @@ namespace FoodHub.Application.Extensions.Query
                 {
                     var parameter = Expression.Parameter(typeof(T), "x");
 
-                    // TrÌch xu?t thu?c tÌnh th?c t? t? propertySelector (lo?i b? chuy?n d?i ki?u 'object' c?a AutoMapper)
+                    // Tr√≠ch xu?t thu?c t√≠nh th?c t? t? propertySelector (lo?i b? chuy?n d?i ki?u 'object' c?a AutoMapper)
                     Expression memberExpression = propertySelector.Body;
                     if (memberExpression is UnaryExpression unary && unary.NodeType == ExpressionType.Convert)
                     {
                         memberExpression = unary.Operand;
                     }
 
-                    // G·n l?i tham s? truy c?p d? li?u d? d?m b?o c‚u l?nh SQL h?p l?
+                    // G√°n l?i tham s? truy c?p d? li?u d? d?m b?o c√¢u l?nh SQL h?p l?
                     var visitor = new ParameterRebinder(propertySelector.Parameters[0], parameter);
                     memberExpression = visitor.Visit(memberExpression);
 
@@ -111,7 +111,7 @@ namespace FoodHub.Application.Extensions.Query
 
                     try
                     {
-                        // 2. T? d?ng Èp ki?u chu?i "value" sang ki?u d? li?u c?a thu?c tÌnh (int, decimal, bool, DateTime, ...)
+                        // 2. T? d?ng √©p ki?u chu?i "value" sang ki?u d? li?u c?a thu?c t√≠nh (int, decimal, bool, DateTime, ...)
                         object? convertedValue;
                         if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
                         {
@@ -123,7 +123,7 @@ namespace FoodHub.Application.Extensions.Query
                             convertedValue = Convert.ChangeType(value, propertyType);
                         }
 
-                        // 3. T?o bi?u th?c nh? ph‚n (Binary Expression) v‡ thÍm v‡o c‚u l?nh .Where()
+                        // 3. T?o bi?u th?c nh? ph√¢n (Binary Expression) v√† th√™m v√†o c√¢u l?nh .Where()
                         var constant = Expression.Constant(convertedValue, propertyType);
                         Expression body = Expression.MakeBinary(filterType, memberExpression, constant);
 
@@ -132,7 +132,7 @@ namespace FoodHub.Application.Extensions.Query
                     }
                     catch
                     {
-                        // N?u Èp ki?u th?t b?i (vÌ d? nh?p ch? v‡o tru?ng gi·), b? qua filter dÛ.
+                        // N?u √©p ki?u th?t b?i (v√≠ d? nh?p ch? v√†o tru?ng gi√°), b? qua filter d√≥.
                         continue;
                     }
                 }
@@ -143,7 +143,7 @@ namespace FoodHub.Application.Extensions.Query
 
         /// <summary>
         /// L?p h? tr? d? "bu?c" l?i tham s? trong Expression Tree
-        /// –?m b?o t?t c? c·c bi?u th?c con d?u d˘ng chung 1 bi?n tham s? 'x'
+        /// √ê?m b?o t?t c? c√°c bi?u th?c con d?u d√πng chung 1 bi?n tham s? 'x'
         /// </summary>
         private class ParameterRebinder : ExpressionVisitor
         {
@@ -163,7 +163,7 @@ namespace FoodHub.Application.Extensions.Query
         }
 
         /// <summary>
-        /// ¡p d?ng s?p x?p da t?ng (Multi-Sorting)
+        /// √Åp d?ng s?p x?p da t?ng (Multi-Sorting)
         /// H? tr? d?nh d?ng "+property" ho?c "-property" (gi?m d?n)
         /// </summary>
         public static IQueryable<T> ApplySorting<T>(
@@ -172,13 +172,13 @@ namespace FoodHub.Application.Extensions.Query
             Dictionary<string, Expression<Func<T, object?>>> mapping,
             Expression<Func<T, object?>> defaultSort)
         {
-            // N?u khÙng cÛ yÍu c?u s?p x?p, d˘ng m?c d?nh (thu?ng l‡ s?p x?p theo ID ho?c ng‡y t?o)
+            // N?u kh√¥ng c√≥ y√™u c?u s?p x?p, d√πng m?c d?nh (thu?ng l√† s?p x?p theo ID ho?c ng√†y t?o)
             if (string.IsNullOrWhiteSpace(orderBy))
             {
                 return query.OrderBy(defaultSort);
             }
 
-            // T·ch danh s·ch s?p x?p (vÌ d?: "price,-createdAt" => s?p x?p gi· tang d?n, sau dÛ ng‡y t?o gi?m d?n)
+            // T√°ch danh s√°ch s?p x?p (v√≠ d?: "price,-createdAt" => s?p x?p gi√° tang d?n, sau d√≥ ng√†y t?o gi?m d?n)
             var sortItems = orderBy.Split(',', StringSplitOptions.RemoveEmptyEntries);
             IOrderedQueryable<T>? orderedQuery = null;
 
@@ -192,14 +192,14 @@ namespace FoodHub.Application.Extensions.Query
                 {
                     if (orderedQuery == null)
                     {
-                        // L?n d?u tiÍn: D˘ng OrderBy
+                        // L?n d?u ti√™n: D√πng OrderBy
                         orderedQuery = isDescending
                             ? query.OrderByDescending(selectedSort)
                             : query.OrderBy(selectedSort);
                     }
                     else
                     {
-                        // C·c l?n sau: D˘ng ThenBy d? gi? nguyÍn th? t? c?a c·c l?n tru?c dÛ
+                        // C√°c l?n sau: D√πng ThenBy d? gi? nguy√™n th? t? c?a c√°c l?n tru?c d√≥
                         orderedQuery = isDescending
                             ? orderedQuery.ThenByDescending(selectedSort)
                             : orderedQuery.ThenBy(selectedSort);

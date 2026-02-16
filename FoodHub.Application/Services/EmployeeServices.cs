@@ -1,8 +1,8 @@
+using System.Text;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
 
 namespace FoodHub.Application.Services
 {
@@ -41,7 +41,7 @@ namespace FoodHub.Application.Services
                 }
             }
 
-            // Format "D6" s? bi?n s? 1 th‡nh "000001"
+            // Format "D6" s? bi?n s? 1 th√†nh "000001"
             return $"{prefix}{nextNumber.ToString("D6")}";
         }
     }

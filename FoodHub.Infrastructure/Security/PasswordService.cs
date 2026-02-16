@@ -1,12 +1,13 @@
-using FoodHub.Application.Interfaces;
 using System.Security.Cryptography;
+using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Infrastructure.Security
 {
     public class PasswordService : IPasswordService
     {
-        private static readonly char[] AlphanumericChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
-        private static readonly char[] SpecialChars = "!@#$%^&*()_-+=".ToCharArray();
+        private static readonly char[] _alphanumericChars =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
+        private static readonly char[] _specialChars = "!@#$%^&*()_-+=".ToCharArray();
 
         public string GenerateRandomPassword()
         {
@@ -19,13 +20,17 @@ namespace FoodHub.Infrastructure.Security
             // Generate 8 alphanumeric characters
             for (int i = 0; i < alphaLength; i++)
             {
-                password[index++] = AlphanumericChars[RandomNumberGenerator.GetInt32(AlphanumericChars.Length)];
+                password[index++] = _alphanumericChars[
+                    RandomNumberGenerator.GetInt32(_alphanumericChars.Length)
+                ];
             }
 
             // Generate 1 special character
             for (int i = 0; i < specialLength; i++)
             {
-                password[index++] = SpecialChars[RandomNumberGenerator.GetInt32(SpecialChars.Length)];
+                password[index++] = _specialChars[
+                    RandomNumberGenerator.GetInt32(_specialChars.Length)
+                ];
             }
 
             // Shuffle the result using Fisher-Yates algorithm to mix the special char

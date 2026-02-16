@@ -36,5 +36,4 @@
     <ProjectReference Include="..\FoodHub.Domain\FoodHub.Domain.csproj" />
   </ItemGroup>
  
-
 </Project>

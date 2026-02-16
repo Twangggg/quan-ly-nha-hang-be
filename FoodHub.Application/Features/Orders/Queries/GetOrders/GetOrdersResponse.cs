@@ -1,8 +1,8 @@
 using AutoMapper;
 using FoodHub.Application.Extensions.Mappings;
+using FoodHub.Application.Features.OrderItems.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-using FoodHub.Application.Features.OrderItems.Common;
 
 namespace FoodHub.Application.Features.Orders.Queries.GetOrders
 {
@@ -13,7 +13,6 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
         public string OrderType { get; set; } = null!;
         public string Status { get; set; } = null!;
         public Guid? TableId { get; set; }
-
         public string? Note { get; set; }
         public decimal TotalAmount { get; set; }
         public bool IsPriority { get; set; }

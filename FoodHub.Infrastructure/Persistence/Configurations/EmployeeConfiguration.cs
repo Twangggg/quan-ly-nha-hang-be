@@ -1,7 +1,7 @@
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using FoodHub.Domain.Enums;
 
 namespace FoodHub.Infrastructure.Persistence.Configurations
 {
@@ -28,7 +28,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Address).HasMaxLength(255);
             builder.Property(e => e.PasswordHash).IsRequired();
 
-            // C?u hình Enum: Luu du?i d?ng s? (SmallInt) trong Postgres d? t?i uu
+            // C?u hÃ¬nh Enum: Luu du?i d?ng s? (SmallInt) trong Postgres d? t?i uu
             builder.Property(x => x.Role)
                    .HasConversion<short>()
                    .IsRequired();

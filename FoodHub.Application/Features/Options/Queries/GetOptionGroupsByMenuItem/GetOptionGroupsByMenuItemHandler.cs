@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem
 {
-    public class GetOptionGroupsByMenuItemHandler : IRequestHandler<GetOptionGroupsByMenuItemQuery, Result<List<OptionGroupResponse>>>
+    public class GetOptionGroupsByMenuItemHandler
+        : IRequestHandler<GetOptionGroupsByMenuItemQuery, Result<List<OptionGroupResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -15,29 +16,37 @@ namespace FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<List<OptionGroupResponse>>> Handle(GetOptionGroupsByMenuItemQuery request, CancellationToken cancellationToken)
+        public async Task<Result<List<OptionGroupResponse>>> Handle(
+            GetOptionGroupsByMenuItemQuery request,
+            CancellationToken cancellationToken
+        )
         {
-            var groups = await _unitOfWork.Repository<OptionGroup>()
+            var groups = await _unitOfWork
+                .Repository<OptionGroup>()
                 .Query()
                 .Where(og => og.MenuItemId == request.MenuItemId)
                 .Include(og => og.OptionItems)
                 .ToListAsync(cancellationToken);
 
-            var responses = groups.Select(og => new OptionGroupResponse
-            {
-                OptionGroupId = og.OptionGroupId,
-                MenuItemId = og.MenuItemId,
-                Name = og.Name,
-                Type = (int)og.OptionType,
-                IsRequired = og.IsRequired,
-                OptionItems = og.OptionItems.Select(oi => new OptionItemResponse
+            var responses = groups
+                .Select(og => new OptionGroupResponse
                 {
-                    OptionItemId = oi.OptionItemId,
-                    OptionGroupId = oi.OptionGroupId,
-                    Label = oi.Label,
-                    ExtraPrice = oi.ExtraPrice
-                }).ToList()
-            }).ToList();
+                    OptionGroupId = og.OptionGroupId,
+                    MenuItemId = og.MenuItemId,
+                    Name = og.Name,
+                    Type = (int)og.OptionType,
+                    IsRequired = og.IsRequired,
+                    OptionItems = og
+                        .OptionItems.Select(oi => new OptionItemResponse
+                        {
+                            OptionItemId = oi.OptionItemId,
+                            OptionGroupId = oi.OptionGroupId,
+                            Label = oi.Label,
+                            ExtraPrice = oi.ExtraPrice,
+                        })
+                        .ToList(),
+                })
+                .ToList();
 
             return Result<List<OptionGroupResponse>>.Success(responses);
         }

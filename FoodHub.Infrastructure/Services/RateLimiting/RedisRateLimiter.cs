@@ -49,7 +49,7 @@ namespace FoodHub.Infrastructure.Services.RateLimiting
                 // 1) tang count (atomic)
                 var count = (int)await _db.StringIncrementAsync(failKey);
 
-                // 2) n?u l‡ l?n d?u, set TTL cho c?a s? th?i gian
+                // 2) n?u l√† l?n d?u, set TTL cho c?a s? th?i gian
                 if (count == 1)
                 {
                     await _db.KeyExpireAsync(failKey, window);
@@ -65,7 +65,7 @@ namespace FoodHub.Infrastructure.Services.RateLimiting
             }
             catch
             {
-                // N?u Redis cÛ v?n d?, coi nhu khÙng track du?c fail
+                // N?u Redis c√≥ v?n d?, coi nhu kh√¥ng track du?c fail
                 return 0;
             }
         }
