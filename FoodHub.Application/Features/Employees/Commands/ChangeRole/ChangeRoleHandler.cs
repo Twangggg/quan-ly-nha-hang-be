@@ -45,38 +45,41 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
         {
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                return Result<ChangeRoleResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
+                return Result<ChangeRoleResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser),
+                    ResultErrorType.Unauthorized);
             }
 
-            if (request.NewRole == EmployeeRole.Manager)
+            if (Employee.IsManagerRole(request.NewRole))
             {
-                return Result<ChangeRoleResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotPromoteToManager), ResultErrorType.BadRequest);
-
+                return Result<ChangeRoleResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.CannotPromoteToManager),
+                    ResultErrorType.BadRequest);
             }
-            if (request.CurrentRole == request.NewRole)
+            if (Employee.IsDifferentRole(request.CurrentRole, request.NewRole))
             {
-                return Result<ChangeRoleResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.NewRoleMustBeDifferent), ResultErrorType.BadRequest);
+                return Result<ChangeRoleResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.NewRoleMustBeDifferent),
+                    ResultErrorType.BadRequest);
             }
             var oldEmployee = await _unitOfWork.Repository<Employee>()
                 .Query()
-                .FirstOrDefaultAsync(e => e.EmployeeCode == request.EmployeeCode && e.Role == request.CurrentRole, cancellationToken);
+                .FirstOrDefaultAsync(e => e.EmployeeCode == request.EmployeeCode &&
+                e.Role == request.CurrentRole, cancellationToken);
 
             if (oldEmployee == null)
             {
-                return Result<ChangeRoleResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.NotFound), ResultErrorType.NotFound);
+                return Result<ChangeRoleResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.NotFound),
+                    ResultErrorType.NotFound);
             }
 
-            if (oldEmployee.Status != EmployeeStatus.Active)
+            if (oldEmployee.IsActive())
             {
-                return Result<ChangeRoleResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.NotActive), ResultErrorType.BadRequest);
+                return Result<ChangeRoleResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.NotActive),
+                    ResultErrorType.BadRequest);
             }
-
-            var timestamp = DateTime.UtcNow.Ticks;
-            var originalEmail = oldEmployee.Email;
-            var originalUsername = oldEmployee.Username;
-            var originalPhone = oldEmployee.Phone;
-
-            oldEmployee.Status = EmployeeStatus.Inactive;
 
             // Revoke all existing refresh tokens for the old account
             var refreshTokens = await _unitOfWork.Repository<RefreshToken>()
@@ -90,36 +93,8 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
                 token.UpdatedAt = DateTime.UtcNow;
             }
 
-            var suffix = $"_old_{timestamp}";
-            if (originalEmail.Length + suffix.Length > 150)
-            {
-                oldEmployee.Email = originalEmail.Substring(0, 150 - suffix.Length) + suffix;
-            }
-            else
-            {
-                oldEmployee.Email = originalEmail + suffix;
-            }
-
-            oldEmployee.Username = null;
-            oldEmployee.Phone = null;
-
-            oldEmployee.UpdatedAt = DateTime.UtcNow;
-
-            var newEmployee = new Employee
-            {
-                EmployeeId = Guid.NewGuid(),
-                FullName = oldEmployee.FullName,
-                Email = originalEmail,
-                Username = originalUsername,
-                PasswordHash = oldEmployee.PasswordHash,
-                Phone = originalPhone,
-                Address = oldEmployee.Address,
-                DateOfBirth = oldEmployee.DateOfBirth,
-                Role = request.NewRole,
-                Status = EmployeeStatus.Active,
-                CreatedAt = DateTime.UtcNow,
-                EmployeeCode = await _employeeServices.GenerateEmployeeCodeAsync(request.NewRole)
-            };
+            var newEmployee = oldEmployee.ChangeRole(request.NewRole);
+            newEmployee.EmployeeCode = await _employeeServices.GenerateEmployeeCodeAsync(request.NewRole);
 
             await _unitOfWork.Repository<Employee>().AddAsync(newEmployee);
 
@@ -152,7 +127,10 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, "Database error occurred while changing role for {EmployeeCode}", request.EmployeeCode);
+                _logger.LogError(
+                    ex,
+                    "Database error occurred while changing role for {EmployeeCode}",
+                    request.EmployeeCode);
 
                 // Check for specific constraint violations
                 var innerException = ex.InnerException?.Message ?? ex.Message;
@@ -193,8 +171,6 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
 
             var response = _mapper.Map<ChangeRoleResponse>(newEmployee);
             return Result<ChangeRoleResponse>.Success(response);
-
-
         }
     }
 }

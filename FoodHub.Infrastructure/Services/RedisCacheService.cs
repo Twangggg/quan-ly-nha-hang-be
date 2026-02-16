@@ -15,16 +15,17 @@ public class RedisCacheService : ICacheService
     private readonly IConnectionMultiplexer _connectionMultiplexer;
     private readonly ILogger<RedisCacheService> _logger;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false
+        WriteIndented = false,
     };
 
     public RedisCacheService(
         IDistributedCache distributedCache,
         IConnectionMultiplexer connectionMultiplexer,
-        ILogger<RedisCacheService> logger)
+        ILogger<RedisCacheService> logger
+    )
     {
         _distributedCache = distributedCache;
         _connectionMultiplexer = connectionMultiplexer;
@@ -40,7 +41,7 @@ public class RedisCacheService : ICacheService
             if (string.IsNullOrEmpty(cachedValue))
                 return default;
 
-            return JsonSerializer.Deserialize<T>(cachedValue, JsonOptions);
+            return JsonSerializer.Deserialize<T>(cachedValue, _jsonOptions);
         }
         catch (Exception ex)
         {
@@ -49,17 +50,27 @@ public class RedisCacheService : ICacheService
         }
     }
 
-    public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
+    public async Task SetAsync<T>(
+        string key,
+        T value,
+        TimeSpan? expiration = null,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
             var options = new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromMinutes(30)
+                AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromMinutes(30),
             };
 
-            var serializedValue = JsonSerializer.Serialize(value, JsonOptions);
-            await _distributedCache.SetStringAsync(key, serializedValue, options, cancellationToken);
+            var serializedValue = JsonSerializer.Serialize(value, _jsonOptions);
+            await _distributedCache.SetStringAsync(
+                key,
+                serializedValue,
+                options,
+                cancellationToken
+            );
         }
         catch (Exception ex)
         {
@@ -93,11 +104,16 @@ public class RedisCacheService : ICacheService
         }
     }
 
-    public async Task RemoveByPatternAsync(string pattern, CancellationToken cancellationToken = default)
+    public async Task RemoveByPatternAsync(
+        string pattern,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var server = _connectionMultiplexer.GetServer(_connectionMultiplexer.GetEndPoints().First());
+            var server = _connectionMultiplexer.GetServer(
+                _connectionMultiplexer.GetEndPoints().First()
+            );
             var db = _connectionMultiplexer.GetDatabase();
 
             var keys = server.Keys(pattern: $"*{pattern}*").ToArray();
@@ -105,7 +121,11 @@ public class RedisCacheService : ICacheService
             if (keys.Length > 0)
             {
                 await db.KeyDeleteAsync(keys);
-                _logger.LogInformation("Removed {Count} keys matching pattern: {Pattern}", keys.Length, pattern);
+                _logger.LogInformation(
+                    "Removed {Count} keys matching pattern: {Pattern}",
+                    keys.Length,
+                    pattern
+                );
             }
         }
         catch (Exception ex)
