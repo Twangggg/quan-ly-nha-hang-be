@@ -1,6 +1,6 @@
+using System.Security.Claims;
 using FoodHub.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 
 namespace FoodHub.Infrastructure.Services
 {

@@ -1,12 +1,12 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
-using FoodHub.Application.Extensions.Pagination;
-using System.Linq.Expressions;
 
 namespace FoodHub.Application.Features.Employees.Queries.GetAuditLogs
 {
@@ -32,14 +32,16 @@ namespace FoodHub.Application.Features.Employees.Queries.GetAuditLogs
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
-            query = query.ApplySorting(
-                request.Pagination.OrderBy,
-                new Dictionary<string, Expression<Func<AuditLog, object?>>>
-                {
+            var sortMappping = new Dictionary<string, Expression<Func<AuditLog, object?>>>
+            {
                     { "action", x => x.Action },
                     { "time", x => x.CreatedAt },
                     { "actor", x => x.PerformedBy.FullName }
-                },
+            };
+
+            query = query.ApplySorting(
+                request.Pagination.OrderBy,
+                sortMappping,
                 x => x.LogId
             );
 

@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+using System.Text.Json;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Constants;
@@ -7,8 +9,6 @@ using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
-using System.Linq.Expressions;
-using System.Text.Json;
 
 namespace FoodHub.Application.Features.Categories.Queries.GetAllCategories
 {

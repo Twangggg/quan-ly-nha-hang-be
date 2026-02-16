@@ -1,6 +1,6 @@
+using Asp.Versioning;
 using FoodHub.Application.Common.Models;
 using Microsoft.AspNetCore.Mvc;
-using Asp.Versioning;
 
 namespace FoodHub.Presentation.Controllers
 {

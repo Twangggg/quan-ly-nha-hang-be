@@ -1,11 +1,11 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Authentication.Commands.Login;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Features.Authentication.Commands.RefreshToken
 {

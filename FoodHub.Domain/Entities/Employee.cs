@@ -4,7 +4,7 @@ namespace FoodHub.Domain.Entities
 {
     public class Employee : BaseEntity
     {
-        // Khóa chính: Tên g?i rõ ràng, d? hi?u
+        // KhÃ³a chÃ­nh: TÃªn g?i rÃµ rÃ ng, d? hi?u
         public Guid EmployeeId { get; set; }
         public string EmployeeCode { get; set; } = null!;
         public string? Username { get; set; }

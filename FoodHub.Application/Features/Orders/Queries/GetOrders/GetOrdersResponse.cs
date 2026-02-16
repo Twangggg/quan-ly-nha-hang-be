@@ -1,8 +1,8 @@
 using AutoMapper;
 using FoodHub.Application.Extensions.Mappings;
+using FoodHub.Application.Features.OrderItems.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-using FoodHub.Application.Features.OrderItems.Common;
 
 namespace FoodHub.Application.Features.Orders.Queries.GetOrders
 {

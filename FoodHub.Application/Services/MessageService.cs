@@ -1,5 +1,5 @@
-using FoodHub.Application.Interfaces;
 using System.Globalization;
+using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Application.Services
 {

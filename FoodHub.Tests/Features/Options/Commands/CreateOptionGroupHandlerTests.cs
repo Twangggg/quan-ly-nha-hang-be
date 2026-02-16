@@ -33,8 +33,8 @@ namespace FoodHub.Tests.Features.Options.Commands
                 IsRequired: true
             );
 
-            var menuItem = new MenuItem 
-            { 
+            var menuItem = new MenuItem
+            {
                 MenuItemId = menuItemId,
                 Code = "MI001",
                 Name = "Test Item",
@@ -106,8 +106,8 @@ namespace FoodHub.Tests.Features.Options.Commands
                 IsRequired: false
             );
 
-            var menuItem = new MenuItem 
-            { 
+            var menuItem = new MenuItem
+            {
                 MenuItemId = menuItemId,
                 Code = "MI002",
                 Name = "Test Item 2",

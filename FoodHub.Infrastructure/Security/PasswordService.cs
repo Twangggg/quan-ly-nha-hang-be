@@ -1,5 +1,5 @@
-using FoodHub.Application.Interfaces;
 using System.Security.Cryptography;
+using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Infrastructure.Security
 {

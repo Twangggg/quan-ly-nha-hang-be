@@ -1,10 +1,10 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.Resources;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Resources;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Features.Authentication.Queries.GetCurrentUser
 {
