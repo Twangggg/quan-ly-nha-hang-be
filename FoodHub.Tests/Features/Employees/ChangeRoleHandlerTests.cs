@@ -45,7 +45,8 @@ namespace FoodHub.Tests.Features.Employees
                 _mockMapper.Object,
                 _mockPasswordService.Object,
                 _mockMessage.Object,
-                _mockLogger.Object);
+                _mockLogger.Object
+            );
         }
 
         [Fact]
@@ -59,7 +60,7 @@ namespace FoodHub.Tests.Features.Employees
             {
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
-                NewRole = EmployeeRole.ChefBar
+                NewRole = EmployeeRole.ChefBar,
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
@@ -76,20 +77,26 @@ namespace FoodHub.Tests.Features.Employees
                 DateOfBirth = DateOnly.Parse("1990-01-01"),
                 Role = EmployeeRole.Waiter,
                 Status = EmployeeStatus.Active,
-                PasswordHash = "hashedpassword"
+                PasswordHash = "hashedpassword",
             };
 
-            var employees = new List<Employee> { oldEmployee }.AsQueryable().BuildMock();
+            var employees = new List<Employee> { oldEmployee }
+                .AsQueryable()
+                .BuildMock();
             var employeeRepo = new Mock<IGenericRepository<Employee>>();
             employeeRepo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(employeeRepo.Object);
 
-            _mockEmployeeServices.Setup(s => s.GenerateEmployeeCodeAsync(EmployeeRole.ChefBar)).ReturnsAsync("EMP002");
+            _mockEmployeeServices
+                .Setup(s => s.GenerateEmployeeCodeAsync(EmployeeRole.ChefBar))
+                .ReturnsAsync("EMP002");
 
             var refreshTokens = new List<RefreshToken>
             {
-                new RefreshToken { EmployeeId = oldEmployeeId, IsRevoked = false }
-            }.AsQueryable().BuildMock();
+                new RefreshToken { EmployeeId = oldEmployeeId, IsRevoked = false },
+            }
+                .AsQueryable()
+                .BuildMock();
             var tokenRepo = new Mock<IGenericRepository<RefreshToken>>();
             tokenRepo.Setup(r => r.Query()).Returns(refreshTokens);
             _mockUow.Setup(u => u.Repository<RefreshToken>()).Returns(tokenRepo.Object);
@@ -99,24 +106,31 @@ namespace FoodHub.Tests.Features.Employees
 
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-            _mockEmailSender.Setup(e => e.EnqueueRoleChangeEmailAsync(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<Guid>(),
-                It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>())).Returns(ValueTask.CompletedTask);
+            _mockEmailSender
+                .Setup(e =>
+                    e.EnqueueRoleChangeEmailAsync(
+                        It.IsAny<string>(),
+                        It.IsAny<string>(),
+                        It.IsAny<string>(),
+                        It.IsAny<string>(),
+                        It.IsAny<string>(),
+                        It.IsAny<string>(),
+                        It.IsAny<Guid>(),
+                        It.IsAny<Guid>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
+                .Returns(ValueTask.CompletedTask);
 
             var response = new ChangeRoleResponse
             {
                 EmployeeId = newEmployeeId,
                 FullName = "John Doe",
-                EmployeeCode = "EMP002"
+                EmployeeCode = "EMP002",
             };
-            _mockMapper.Setup(m => m.Map<ChangeRoleResponse>(It.IsAny<Employee>())).Returns(response);
+            _mockMapper
+                .Setup(m => m.Map<ChangeRoleResponse>(It.IsAny<Employee>()))
+                .Returns(response);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -140,11 +154,13 @@ namespace FoodHub.Tests.Features.Employees
             {
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
-                NewRole = EmployeeRole.Manager
+                NewRole = EmployeeRole.Manager,
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
-            _mockMessage.Setup(m => m.GetMessage(MessageKeys.Employee.CannotPromoteToManager)).Returns("Cannot promote to Manager");
+            _mockMessage
+                .Setup(m => m.GetMessage(MessageKeys.Employee.CannotPromoteToManager))
+                .Returns("Cannot promote to Manager");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -164,11 +180,13 @@ namespace FoodHub.Tests.Features.Employees
             {
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
-                NewRole = EmployeeRole.Waiter
+                NewRole = EmployeeRole.Waiter,
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
-            _mockMessage.Setup(m => m.GetMessage(MessageKeys.Employee.NewRoleMustBeDifferent)).Returns("New role must be different");
+            _mockMessage
+                .Setup(m => m.GetMessage(MessageKeys.Employee.NewRoleMustBeDifferent))
+                .Returns("New role must be different");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -188,7 +206,7 @@ namespace FoodHub.Tests.Features.Employees
             {
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
-                NewRole = EmployeeRole.ChefBar
+                NewRole = EmployeeRole.ChefBar,
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
@@ -198,7 +216,9 @@ namespace FoodHub.Tests.Features.Employees
             employeeRepo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(employeeRepo.Object);
 
-            _mockMessage.Setup(m => m.GetMessage(MessageKeys.Employee.NotFound)).Returns("Employee not found");
+            _mockMessage
+                .Setup(m => m.GetMessage(MessageKeys.Employee.NotFound))
+                .Returns("Employee not found");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -219,7 +239,7 @@ namespace FoodHub.Tests.Features.Employees
             {
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
-                NewRole = EmployeeRole.ChefBar
+                NewRole = EmployeeRole.ChefBar,
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
@@ -229,15 +249,19 @@ namespace FoodHub.Tests.Features.Employees
                 EmployeeId = oldEmployeeId,
                 EmployeeCode = "EMP001",
                 Role = EmployeeRole.Waiter,
-                Status = EmployeeStatus.Inactive
+                Status = EmployeeStatus.Inactive,
             };
 
-            var employees = new List<Employee> { oldEmployee }.AsQueryable().BuildMock();
+            var employees = new List<Employee> { oldEmployee }
+                .AsQueryable()
+                .BuildMock();
             var employeeRepo = new Mock<IGenericRepository<Employee>>();
             employeeRepo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(employeeRepo.Object);
 
-            _mockMessage.Setup(m => m.GetMessage(MessageKeys.Employee.NotActive)).Returns("Employee not active");
+            _mockMessage
+                .Setup(m => m.GetMessage(MessageKeys.Employee.NotActive))
+                .Returns("Employee not active");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -256,11 +280,13 @@ namespace FoodHub.Tests.Features.Employees
             {
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
-                NewRole = EmployeeRole.ChefBar
+                NewRole = EmployeeRole.ChefBar,
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns("invalid-guid");
-            _mockMessage.Setup(m => m.GetMessage(MessageKeys.Employee.CannotIdentifyUser)).Returns("Cannot identify user");
+            _mockMessage
+                .Setup(m => m.GetMessage(MessageKeys.Employee.CannotIdentifyUser))
+                .Returns("Cannot identify user");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);

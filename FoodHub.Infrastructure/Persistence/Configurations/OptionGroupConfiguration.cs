@@ -18,10 +18,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
 
-            builder.Property(e => e.Name)
-                .HasColumnName("name")
-                .HasMaxLength(100)
-                .IsRequired();
+            builder.Property(e => e.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
 
             builder.Property(e => e.OptionType).HasColumnName("type");
             builder.Property(e => e.IsRequired).HasColumnName("is_required");
@@ -34,13 +31,12 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
 
             // Relationships
-            builder.HasOne(e => e.MenuItem)
+            builder
+                .HasOne(e => e.MenuItem)
                 .WithMany(m => m.OptionGroups)
                 .HasForeignKey(e => e.MenuItemId)
                 .HasConstraintName("fk_option_groups_menu_item_id")
                 .OnDelete(DeleteBehavior.Cascade);
-
-
 
             // Indexes
             builder.HasIndex(e => e.MenuItemId).HasDatabaseName("idx_option_groups_menu_item_id");

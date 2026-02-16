@@ -6,7 +6,8 @@ using MediatR;
 
 namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
 {
-    public class CreateOptionGroupHandler : IRequestHandler<CreateOptionGroupCommand, Result<CreateOptionGroupResponse>>
+    public class CreateOptionGroupHandler
+        : IRequestHandler<CreateOptionGroupCommand, Result<CreateOptionGroupResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -15,13 +16,19 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<CreateOptionGroupResponse>> Handle(CreateOptionGroupCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CreateOptionGroupResponse>> Handle(
+            CreateOptionGroupCommand request,
+            CancellationToken cancellationToken
+        )
         {
             var menuItemRepository = _unitOfWork.Repository<MenuItem>();
             var menuItem = await menuItemRepository.GetByIdAsync(request.MenuItemId);
             if (menuItem == null)
             {
-                return Result<CreateOptionGroupResponse>.Failure($"Menu item with ID {request.MenuItemId} not found.", ResultErrorType.NotFound);
+                return Result<CreateOptionGroupResponse>.Failure(
+                    $"Menu item with ID {request.MenuItemId} not found.",
+                    ResultErrorType.NotFound
+                );
             }
 
             var optionGroup = new OptionGroup
@@ -30,7 +37,7 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
                 MenuItemId = request.MenuItemId,
                 Name = request.Name,
                 OptionType = (OptionGroupType)request.Type,
-                IsRequired = request.IsRequired
+                IsRequired = request.IsRequired,
             };
 
             await _unitOfWork.Repository<OptionGroup>().AddAsync(optionGroup);
@@ -43,7 +50,7 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
                 Name = optionGroup.Name,
                 Type = (int)optionGroup.OptionType,
                 IsRequired = optionGroup.IsRequired,
-                OptionItems = new List<OptionItemResponse>()
+                OptionItems = new List<OptionItemResponse>(),
             };
 
             return Result<CreateOptionGroupResponse>.Success(response);
