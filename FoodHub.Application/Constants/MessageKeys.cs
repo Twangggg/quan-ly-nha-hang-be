@@ -113,6 +113,7 @@ namespace FoodHub.Application.Constants
         public static class OrderItem
         {
             public const string InvalidQuantity = "OrderItem.InvalidQuantity";
+            public const string NotFound = "OrderItem.NotFound";
         }
 
         public static class MenuItem
@@ -132,7 +133,7 @@ namespace FoodHub.Application.Constants
 
         public static class OptionGroup
         {
-            public const String NotFound = "OptionGroup.NotFound";
+            public const string NotFound = "OptionGroup.NotFound";
         }
 
         public static class OptionItem

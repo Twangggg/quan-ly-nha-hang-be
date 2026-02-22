@@ -18,14 +18,14 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly IMapper _mapper;
-        private readonly ILogger<CancelOrderCommand> _logger;
+        private readonly ILogger<CancelOrderHandler> _logger;
 
         public CancelOrderHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
             IMapper mapper,
-            ILogger<CancelOrderCommand> logger
+            ILogger<CancelOrderHandler> logger
         )
         {
             _unitOfWork = unitOfWork;

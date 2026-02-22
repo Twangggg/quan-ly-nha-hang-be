@@ -24,7 +24,7 @@ namespace FoodHub.Domain.Entities
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public DateTime? CanceledAt { get; set; }
+        public DateTime? CancelledAt { get; set; }
 
         public decimal GetTotalPrice()
         {
@@ -58,7 +58,7 @@ namespace FoodHub.Domain.Entities
             }
 
             Status = OrderItemStatus.Cancelled;
-            CanceledAt = DateTime.UtcNow;
+            CancelledAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }

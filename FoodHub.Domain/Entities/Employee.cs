@@ -4,7 +4,7 @@ namespace FoodHub.Domain.Entities
 {
     public class Employee : BaseEntity
     {
-        // Khóa chính: Tên g?i rõ ràng, d? hi?u
+        // Khóa chính: Tên gọi rõ ràng, dễ hiểu
         public Guid EmployeeId { get; set; }
         public string EmployeeCode { get; set; } = null!;
         public string? Username { get; set; }
@@ -18,24 +18,26 @@ namespace FoodHub.Domain.Entities
         public EmployeeStatus Status { get; set; } = EmployeeStatus.Active;
         public virtual ICollection<AuditLog> TargetLogs { get; set; } = new List<AuditLog>();
         public virtual ICollection<AuditLog> PerformedLogs { get; set; } = new List<AuditLog>();
-        public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+        public virtual ICollection<RefreshToken> RefreshTokens { get; set; } =
+            new List<RefreshToken>();
+
         public Employee() { }
+
         public static bool IsManagerRole(EmployeeRole role)
         {
             return role == EmployeeRole.Manager;
         }
+
         public static bool IsDifferentRole(EmployeeRole CurrentRole, EmployeeRole NewRole)
         {
             return CurrentRole != NewRole;
         }
-        public bool CheckFound()
-        {
-            return this != null;
-        }
+
         public bool IsActive()
         {
             return Status == EmployeeStatus.Active;
         }
+
         public Employee ChangeRole(EmployeeRole newRole)
         {
             var timestamp = DateTime.UtcNow.Ticks;

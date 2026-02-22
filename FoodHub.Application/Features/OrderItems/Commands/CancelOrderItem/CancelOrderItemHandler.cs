@@ -50,7 +50,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
             if (orderItem == null)
             {
                 return Result<bool>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.NotFound),
+                    _messageService.GetMessage(MessageKeys.OrderItem.NotFound),
                     ResultErrorType.NotFound
                 );
             }

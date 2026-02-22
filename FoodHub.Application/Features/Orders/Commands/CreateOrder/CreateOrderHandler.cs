@@ -99,7 +99,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
 
             // 4. Save
             await _unitOfWork.Repository<Order>().AddAsync(newOrder);
-            await _unitOfWork.SaveChangeAsync();
+            await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             return Result<Guid>.Success(newOrder.OrderId);
         }
