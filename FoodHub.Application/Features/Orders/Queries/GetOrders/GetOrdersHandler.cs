@@ -1,8 +1,6 @@
 using System.Linq.Expressions;
-using System.Text.Json;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
@@ -17,30 +15,17 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ICacheService _cacheService;
-        private readonly ILogger<GetOrdersQuery> _logger;
+        private readonly ILogger<GetOrdersHandler> _logger;
 
-        public GetOrdersHandler(IUnitOfWork unitOfWork, IMapper mapper,
-            ICacheService cacheService, ILogger<GetOrdersQuery> logger)
+        public GetOrdersHandler(IUnitOfWork unitOfWork, IMapper mapper, ILogger<GetOrdersHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _cacheService = cacheService;
             _logger = logger;
         }
 
         public async Task<Result<PagedResult<GetOrdersResponse>>> Handle(GetOrdersQuery request, CancellationToken cancellationToken)
         {
-            // Normalize caching across handlers
-            var queryJson = JsonSerializer.Serialize(request.Pagination);
-            var cacheKey = $"{CacheKey.OrderList}:{queryJson.GetHashCode()}";
-
-            var cachedResult = await _cacheService.GetAsync<PagedResult<GetOrdersResponse>>(cacheKey, cancellationToken);
-            if (cachedResult != null)
-            {
-                return Result<PagedResult<GetOrdersResponse>>.Success(cachedResult);
-            }
-
             var query = _unitOfWork.Repository<Order>().Query();
 
             var searchableFields = new List<Expression<Func<Order, string?>>>
@@ -69,7 +54,6 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
                 .ProjectTo<GetOrdersResponse>(_mapper.ConfigurationProvider)
                 .ToPagedResultAsync(request.Pagination);
 
-            await _cacheService.SetAsync(cacheKey, pagedResult, CacheTTL.Orders, cancellationToken);
             return Result<PagedResult<GetOrdersResponse>>.Success(pagedResult);
         }
     }
