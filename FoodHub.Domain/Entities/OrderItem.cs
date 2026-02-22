@@ -1,5 +1,6 @@
 using System.Linq;
 using FoodHub.Domain.Common;
+using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
@@ -44,18 +45,21 @@ namespace FoodHub.Domain.Entities
             || Status == OrderItemStatus.Cancelled
             || Status == OrderItemStatus.Rejected;
 
+        public bool CanCancel() =>
+            Status == OrderItemStatus.Preparing
+            || Status == OrderItemStatus.Cooking
+            || Status == OrderItemStatus.Ready;
+
         public DomainResult Cancel()
         {
-            if (
-                Status == OrderItemStatus.Preparing
-                || Status == OrderItemStatus.Cooking
-                || Status == OrderItemStatus.Ready
-            )
+            if (!CanCancel())
             {
-                Status = OrderItemStatus.Cancelled;
-                CanceledAt = DateTime.UtcNow;
-                UpdatedAt = DateTime.UtcNow;
+                return DomainResult.Failure(DomainErrors.OrderItem.InvalidStatusForCancel);
             }
+
+            Status = OrderItemStatus.Cancelled;
+            CanceledAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }
 

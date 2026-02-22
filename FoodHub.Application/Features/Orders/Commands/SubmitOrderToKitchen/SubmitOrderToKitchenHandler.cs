@@ -161,7 +161,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 OrderAuditLogs = new List<OrderAuditLog>(),
             };
 
-            //Merge Duplicate Items and Create Order Items
+            // Merge Duplicate Items and Create Order Items
             // Group by MenuItemId + Note + Options to merge duplicates
             var groupedItems = request
                 .Items.Select(i => new
@@ -199,10 +199,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             {
                 var menuItem = menuItems[group.MenuItemId];
                 // Select price based on order type
-                var price =
-                    request.OrderType == OrderType.Takeaway
-                        ? menuItem.PriceTakeAway
-                        : menuItem.PriceDineIn;
+                var price = menuItem.GetPriceFor(order.OrderType);
                 var orderItem = new OrderItem
                 {
                     OrderItemId = Guid.NewGuid(),
@@ -263,16 +260,8 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 order.OrderItems.Add(orderItem);
             }
 
-            //Calculate total amount
             //Calculate total amount including option extra prices
-            order.TotalAmount = order.OrderItems.Sum(item =>
-            {
-                var itemTotal = item.Quantity * item.UnitPriceSnapshot;
-                var optionsTotal = item
-                    .OptionGroups.SelectMany(og => og.OptionValues)
-                    .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity);
-                return itemTotal + (optionsTotal * item.Quantity); // Option price x item quantity
-            });
+            order.RecalculateTotalAmount();
 
             //Audit Log
             var auditLog = new OrderAuditLog

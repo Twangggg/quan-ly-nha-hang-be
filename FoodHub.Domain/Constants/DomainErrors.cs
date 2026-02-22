@@ -8,5 +8,10 @@ namespace FoodHub.Domain.Constants
             public const string OrderNotReadyForCompletion = "Order.OrderNotReadyForCompletion";
             public const string NotFound = "Order.NotFound";
         }
+
+        public static class OrderItem
+        {
+            public const string InvalidStatusForCancel = "OrderItem.InvalidStatusForCancel";
+        }
     }
 }

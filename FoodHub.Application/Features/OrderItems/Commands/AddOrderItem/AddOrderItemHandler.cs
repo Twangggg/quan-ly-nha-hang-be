@@ -114,10 +114,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             }
             else
             {
-                var price =
-                    order.OrderType == OrderType.Takeaway
-                        ? menuItem.PriceTakeAway
-                        : menuItem.PriceDineIn;
+                var price = menuItem.GetPriceFor(order.OrderType);
 
                 var newItem = new OrderItem
                 {
@@ -140,19 +137,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             }
 
             // Recalculate Total including options
-            order.TotalAmount = order
-                .OrderItems.Where(x =>
-                    x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected
-                )
-                .Sum(item =>
-                {
-                    var itemTotal = item.Quantity * item.UnitPriceSnapshot;
-                    var optionsTotal =
-                        item.OptionGroups?.SelectMany(og => og.OptionValues)
-                            .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity)
-                        ?? 0;
-                    return itemTotal + (optionsTotal * item.Quantity);
-                });
+            order.RecalculateTotalAmount();
 
             // Audit Log
             var auditLog = new OrderAuditLog

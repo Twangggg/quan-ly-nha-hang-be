@@ -123,24 +123,18 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 request.EmployeeCode
             );
 
-            // Tạo refresh token
             var refreshToken = _tokenService.GenerateRefreshToken();
             var configDays = _tokenService.GetRefreshTokenExpirationDays();
 
-            // Logic: If RememberMe -> 30 Days (or config * 4). If not -> Config (7 days).
-            var expirationDays = request.RememberMe ? 30 : configDays;
-            var expirationDate = DateTime.UtcNow.AddDays(expirationDays);
-
-            var refreshTokenEntity = new Domain.Entities.RefreshToken
-            {
-                Token = refreshToken,
-                Expires = expirationDate,
-
-                EmployeeId = employee.EmployeeId,
-            };
+            var refreshTokenEntity = Domain.Entities.RefreshToken.Create(
+                employee.EmployeeId,
+                refreshToken,
+                request.RememberMe,
+                configDays
+            );
 
             await _unitOfWork
-                .Repository<FoodHub.Domain.Entities.RefreshToken>()
+                .Repository<Domain.Entities.RefreshToken>()
                 .AddAsync(refreshTokenEntity);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
@@ -148,7 +142,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
-                RefreshTokenExpiresIn = (expirationDate - DateTime.UtcNow).TotalSeconds,
+                RefreshTokenExpiresIn = (refreshTokenEntity.Expires - DateTime.UtcNow).TotalSeconds,
                 EmployeeCode = employee.EmployeeCode,
                 Email = employee.Email,
                 Role = employee.Role.ToString(),

@@ -20,7 +20,8 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
-            ILogger<CancelOrderItemHandler> logger)
+            ILogger<CancelOrderItemHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;
@@ -28,11 +29,17 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
             _logger = logger;
         }
 
-        public async Task<Result<bool>> Handle(CancelOrderItemCommand request, CancellationToken cancellationToken)
+        public async Task<Result<bool>> Handle(
+            CancelOrderItemCommand request,
+            CancellationToken cancellationToken
+        )
         {
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
+                return Result<bool>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser),
+                    ResultErrorType.Unauthorized
+                );
             }
 
             var orderItemRepository = _unitOfWork.Repository<OrderItem>();
@@ -42,21 +49,27 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
 
             if (orderItem == null)
             {
-                return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Order.NotFound), ResultErrorType.NotFound);
+                return Result<bool>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.NotFound),
+                    ResultErrorType.NotFound
+                );
             }
 
-            if (orderItem.Status != OrderItemStatus.Preparing)
+            var domainResult = orderItem.Cancel();
+            if (!domainResult.IsSuccess)
             {
-                return Result<bool>.Failure(_messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus), ResultErrorType.BadRequest);
+                return Result<bool>.Failure(
+                    _messageService.GetMessage(
+                        domainResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
+                    ),
+                    ResultErrorType.BadRequest
+                );
             }
-
-            orderItem.Status = OrderItemStatus.Cancelled;
-            orderItem.UpdatedAt = DateTime.UtcNow;
-            orderItem.CanceledAt = DateTime.UtcNow;
 
             orderItemRepository.Update(orderItem);
 
-            var order = await _unitOfWork.Repository<Domain.Entities.Order>()
+            var order = await _unitOfWork
+                .Repository<Domain.Entities.Order>()
                 .Query()
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.OptionGroups)
@@ -65,16 +78,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
 
             if (order != null)
             {
-                order.TotalAmount = order.OrderItems
-                    .Where(x => x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected)
-                    .Sum(item =>
-                    {
-                        var itemTotal = item.Quantity * item.UnitPriceSnapshot;
-                        var optionsTotal = item.OptionGroups?
-                            .SelectMany(og => og.OptionValues)
-                            .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity) ?? 0;
-                        return itemTotal + (optionsTotal * item.Quantity);
-                    });
+                order.RecalculateTotalAmount();
                 order.UpdatedAt = DateTime.UtcNow;
                 _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
             }
@@ -87,7 +91,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                 Action = AuditLogActions.CancelOrderItem,
                 CreatedAt = DateTime.UtcNow,
                 ChangeReason = request.Reason,
-                NewValue = "{\"status\": \"Cancelled\"}"
+                NewValue = "{\"status\": \"Cancelled\"}",
             };
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);

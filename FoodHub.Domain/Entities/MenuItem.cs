@@ -24,7 +24,14 @@ namespace FoodHub.Domain.Entities
 
         public bool IsOutOfStock { get; set; }
 
-        public virtual ICollection<OptionGroup> OptionGroups { get; set; } = new List<OptionGroup>();
-        public virtual ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();
+        public ICollection<OptionGroup> OptionGroups { get; set; } = new List<OptionGroup>();
+        public ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();
+
+        public decimal GetPriceFor(OrderType orderType)
+        {
+            return orderType == OrderType.Takeaway
+                       ? PriceTakeAway
+                       : PriceDineIn;
+        }
     }
 }
