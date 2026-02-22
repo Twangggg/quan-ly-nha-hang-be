@@ -37,8 +37,10 @@ FoodHub Backend cung cấp RESTful API cho hệ thống quản lý nhà hàng, b
 - **Media management**: Cloudinary integration cho upload hình ảnh
 - **Localization**: Hỗ trợ đa ngôn ngữ (Tiếng Việt, Tiếng Anh)
 - **API Versioning**: Versioning cho API compatibility
-- **Rate Limiting**: Bảo vệ API khỏi abuse
-- **Audit Logging**: Ghi log các thao tác quan trọng
+- **Rate Limiting**: Bảo vệ API khỏi abuse (Global & Endpoint level)
+- **Security**: Chống tấn công CSRF (Double Submit Cookie) và XSS (HttpOnly)
+- **Health Checks**: Tự động giám sát trạng thái DB & Redis qua endpoint `/health`
+- **Observability**: Tích hợp OpenTelemetry cho Tracing và Metrics
 
 ## 🏗️ Kiến trúc
 
@@ -85,7 +87,8 @@ FoodHub.Infrastructure (Infrastructure Layer)
 
 - **JWT Bearer Authentication** - Token-based auth
 - **BCrypt** - Password hashing
-- **Rate Limiting** - API protection
+- **Rate Limiting** - API protection (Global Limiter)
+- **Anti-CSRF** - Double Submit Cookie protection
 
 ### External Services
 
@@ -96,7 +99,9 @@ FoodHub.Infrastructure (Infrastructure Layer)
 
 - **Swagger/OpenAPI** - API documentation
 - **Docker & Docker Compose** - Containerization
-- **Serilog** - Structured logging
+- **Serilog** - Structured logging (Console & File)
+- **OpenTelemetry** - Tracing & Metrics (Observability)
+- **Health Checks** - System diagnostics for PostgreSQL & Redis
 - **xUnit** - Unit testing
 - **AutoMapper** - Object mapping
 
@@ -222,6 +227,11 @@ Khi ứng dụng đang chạy, truy cập:
 
 - **Swagger UI**: http://localhost:5000/swagger
 - **API Version v1.0**: http://localhost:5000/swagger/v1.0/swagger.json
+
+### Health Check Endpoints
+
+- **Simple Health Check**: http://localhost:5000/health
+- **Detailed Health Check (JSON)**: http://localhost:5000/health/detail
 
 ### API Endpoints
 
