@@ -35,6 +35,7 @@ try
     builder.Services.AddSecurityServices(builder.Configuration); // JWT, CORS
     builder.Services.AddSwaggerDocumentation(); // Tài liệu API Swagger
     builder.Services.AddWebServices(builder.Configuration); // Redis, Rate Limiting, Versioning...
+    builder.Services.AddHealthCheckServices(builder.Configuration); // Health Check (DB, Cache)
 
     var app = builder.Build();
 
@@ -102,6 +103,7 @@ try
     app.UseAuthorization(); // Phân quyền người dùng
 
     app.MapControllers(); // Map các API Controller
+    app.MapHealthCheckEndpoints(); // GET /health & /health/detail
 
     app.Run();
 }

@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Builder;
 using Serilog;
-using Serilog.Events;
 using Serilog.Formatting.Compact;
 
 namespace FoodHub.WebAPI.Presentation.Extensions;

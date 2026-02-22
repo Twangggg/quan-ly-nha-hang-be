@@ -1,6 +1,8 @@
 using System.Threading.RateLimiting;
 using Asp.Versioning;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
@@ -141,6 +143,31 @@ public static class WebExtensions
 
         app.UseForwardedHeaders(); // Xử lý proxy header
         app.UseResponseCompression(); // Nén dữ liệu trả về
+
+        // --- Cấu hình Anti-CSRF Token cho Frontend ---
+        app.UseAntiforgery();
+        app.Use(
+            (context, next) =>
+            {
+                var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+                var tokens = antiforgery.GetAndStoreTokens(context);
+
+                // Gửi Token vào Cookie (XSRF-TOKEN) để React có thể đọc và gửi ngược lại trong Header (X-XSRF-TOKEN)
+                context.Response.Cookies.Append(
+                    "XSRF-TOKEN",
+                    tokens.RequestToken!,
+                    new CookieOptions
+                    {
+                        HttpOnly = false,
+                        SameSite = SameSiteMode.Lax,
+                        Secure = true,
+                    }
+                );
+
+                return next(context);
+            }
+        );
+
         app.UseRateLimiter(); // Giới hạn tần suất gọi API
 
         return app;
