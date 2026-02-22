@@ -60,7 +60,7 @@ namespace FoodHub.Domain.Entities
         {
             if (Status != OrderStatus.Serving)
             {
-                return DomainResult.Failure(DomainErrors.Order.InvalidStatusForCancel);
+                return DomainResult.Failure(DomainErrors.Order.OrderNotReadyForCompletion);
             }
 
             Status = OrderStatus.Completed;
@@ -79,6 +79,23 @@ namespace FoodHub.Domain.Entities
             }
 
             return DomainResult.Success();
+        }
+
+        public void RecalculateTotalAmount()
+        {
+            TotalAmount = OrderItems
+                .Where(x =>
+                    x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected
+                )
+                .Sum(item =>
+                {
+                    var itemTotal = item.Quantity * item.UnitPriceSnapshot;
+                    var optionsTotal =
+                        item.OptionGroups?.SelectMany(og => og.OptionValues)
+                            .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity)
+                        ?? 0;
+                    return itemTotal + (optionsTotal * item.Quantity);
+                });
         }
     }
 }

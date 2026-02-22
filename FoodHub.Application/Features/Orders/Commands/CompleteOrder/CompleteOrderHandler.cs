@@ -17,14 +17,14 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
         private readonly IMessageService _messageService;
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
-        private readonly ILogger<CompleteOrderCommand> _logger;
+        private readonly ILogger<CompleteOrderHandler> _logger;
 
         public CompleteOrderHandler(
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             IMapper mapper,
             ICurrentUserService currentUserService,
-            ILogger<CompleteOrderCommand> logger
+            ILogger<CompleteOrderHandler> logger
         )
         {
             _unitOfWork = unitOfWork;

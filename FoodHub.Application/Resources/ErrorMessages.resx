@@ -314,9 +314,6 @@
   <data name="Order.InvalidAction" xml:space="preserve">
     <value>Thao tác không hợp lệ</value>
   </data>
-  <data name="MenuItem.NotFound" xml:space="preserve">
-    <value>Không tìm thấy món ăn trong menu.</value>
-  </data>
   <data name="Order.InvalidActionWithStatus" xml:space="preserve">
     <value>Thao tác không hợp lệ với trạng thái</value>
   </data>
@@ -340,5 +337,77 @@
   </data>
   <data name="OptionItem.NotFound" xml:space="preserve">
     <value>Không tìm thấy lựa chọn này.</value>
+  </data>
+  <data name="OrderItem.NotFound" xml:space="preserve">
+    <value>Không tìm thấy món trong đơn hàng.</value>
+  </data>
+  <data name="Order.ReasonRequired" xml:space="preserve">
+    <value>Vui lòng nhập lý do cho thao tác này.</value>
+  </data>
+  <data name="Order.InvalidStatusForCancel" xml:space="preserve">
+    <value>Đơn hàng không thể huỷ ở trạng thái hiện tại.</value>
+  </data>
+  <data name="Order.OrderNotReadyForCompletion" xml:space="preserve">
+    <value>Đơn hàng chưa sẵn sàng để hoàn tất. Vui lòng kiểm tra các món còn đang xử lý.</value>
+  </data>
+  <data name="Order.TableAlreadyOccupied" xml:space="preserve">
+    <value>Bàn này đang có khách. Vui lòng chọn bàn khác.</value>
+  </data>
+  <data name="SetMenu.NotFound" xml:space="preserve">
+    <value>Không tìm thấy set menu.</value>
+  </data>
+  <data name="SetMenu.CodeExists" xml:space="preserve">
+    <value>Mã set menu đã tồn tại.</value>
+  </data>
+  <data name="SetMenu.UpdateForbidden" xml:space="preserve">
+    <value>Không có quyền cập nhật set menu này.</value>
+  </data>
+  <data name="SetMenu.DeleteForbidden" xml:space="preserve">
+    <value>Không có quyền xóa set menu này.</value>
+  </data>
+  <data name="Auth.PasswordChangedSuccess" xml:space="preserve">
+    <value>Đổi mật khẩu thành công.</value>
+  </data>
+  <data name="Auth.PasswordResetSuccess" xml:space="preserve">
+    <value>Đặt lại mật khẩu thành công.</value>
+  </data>
+  <data name="Auth.PasswordResetGenericMessage" xml:space="preserve">
+    <value>Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.</value>
+  </data>
+  <data name="Auth.TokenRequired" xml:space="preserve">
+    <value>Token không được để trống.</value>
+  </data>
+  <data name="Auth.NewPasswordRequired" xml:space="preserve">
+    <value>Mật khẩu mới không được để trống.</value>
+  </data>
+  <data name="Auth.ConfirmPasswordRequired" xml:space="preserve">
+    <value>Xác nhận mật khẩu không được để trống.</value>
+  </data>
+  <data name="Auth.ConfirmPasswordMismatch" xml:space="preserve">
+    <value>Xác nhận mật khẩu không khớp.</value>
+  </data>
+  <data name="Auth.EmployeeCodeRequired" xml:space="preserve">
+    <value>Mã nhân viên không được để trống.</value>
+  </data>
+  <data name="ResetPassword.SuccessWithEmail" xml:space="preserve">
+    <value>Reset mật khẩu thành công. Email thông báo đã được gửi.</value>
+  </data>
+  <data name="ResetPassword.SuccessNoEmail" xml:space="preserve">
+    <value>Reset mật khẩu thành công. Không có email để thông báo.</value>
+  </data>
+  <data name="ResetPassword.StatusNoEmail" xml:space="preserve">
+    <value>Không có email để thông báo trạng thái.</value>
+  </data>
+  <data name="MenuItem.UpdateCostForbidden" xml:space="preserve">
+    <value>Không có quyền cập nhật giá vốn của món ăn.</value>
+  </data>
+  <data name="MenuItem.UpdateStockForbidden" xml:space="preserve">
+    <value>Không có quyền cập nhật trạng thái tồn kho.</value>
+  </data>
+  <data name="Profile.UsernameExists" xml:space="preserve">
+    <value>Tên đăng nhập đã được sử dụng bởi người khác.</value>
+  </data>
+  <data name="Employee.CodeInvalidFormat" xml:space="preserve">
+    <value>Mã nhân viên không đúng định dạng.</value>
   </data>
 </root>

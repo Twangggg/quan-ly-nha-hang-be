@@ -1,5 +1,3 @@
-using System;
-
 namespace FoodHub.Domain.Entities
 {
     public class RefreshToken
@@ -12,5 +10,25 @@ namespace FoodHub.Domain.Entities
         public DateTime? UpdatedAt { get; set; }
         public Guid EmployeeId { get; set; }
         public virtual Employee Employee { get; set; } = null!;
+
+        /// <summary>
+        /// Policy: RememberMe → 30 ngày, còn lại → theo config (mặc định 7 ngày)
+        /// </summary>
+        public static RefreshToken Create(
+            Guid employeeId,
+            string token,
+            bool rememberMe,
+            int configDays
+        )
+        {
+            var expirationDays = rememberMe ? 30 : configDays;
+
+            return new RefreshToken
+            {
+                Token = token,
+                Expires = DateTime.UtcNow.AddDays(expirationDays),
+                EmployeeId = employeeId,
+            };
+        }
     }
 }

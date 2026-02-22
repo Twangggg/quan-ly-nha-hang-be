@@ -20,7 +20,7 @@ namespace FoodHub.Tests.Features.Order.Commands
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<IMapper> _mockMapper;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
-        private readonly Mock<ILogger<CompleteOrderCommand>> _mockLogger;
+        private readonly Mock<ILogger<CompleteOrderHandler>> _mockLogger;
         private readonly CompleteOrderHandler _handler;
 
         public CompleteOrderTests()
@@ -29,7 +29,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockMessageService = new Mock<IMessageService>();
             _mockMapper = new Mock<IMapper>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
-            _mockLogger = new Mock<ILogger<CompleteOrderCommand>>();
+            _mockLogger = new Mock<ILogger<CompleteOrderHandler>>();
 
             _handler = new CompleteOrderHandler(
                 _mockUow.Object,
