@@ -410,4 +410,34 @@
   <data name="Employee.CodeInvalidFormat" xml:space="preserve">
     <value>Mã nhân viên không đúng định dạng.</value>
   </data>
+  <data name="Common.IdMismatch" xml:space="preserve">
+    <value>Mã định danh không khớp.</value>
+  </data>
+  <data name="Common.IdRequired" xml:space="preserve">
+    <value>Mã định danh là bắt buộc.</value>
+  </data>
+  <data name="Common.NoFileProvided" xml:space="preserve">
+    <value>Vui lòng cung cấp tệp tin.</value>
+  </data>
+  <data name="Common.UploadSuccess" xml:space="preserve">
+    <value>Tải tệp lên thành công.</value>
+  </data>
+  <data name="Common.DeleteSuccess" xml:space="preserve">
+    <value>Xóa tệp thành công.</value>
+  </data>
+  <data name="Common.DeleteFailed" xml:space="preserve">
+    <value>Xóa tệp thất bại.</value>
+  </data>
+  <data name="Common.InternalServerError" xml:space="preserve">
+    <value>Lỗi hệ thống nội bộ.</value>
+  </data>
+  <data name="Common.ValidationFailed" xml:space="preserve">
+    <value>Dữ liệu không hợp lệ.</value>
+  </data>
+  <data name="Common.NotFound" xml:space="preserve">
+    <value>Không tìm thấy tài nguyên.</value>
+  </data>
+  <data name="Auth.InvalidTokenClaims" xml:space="preserve">
+    <value>Token chứa thông tin không hợp lệ.</value>
+  </data>
 </root>

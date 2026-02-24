@@ -32,7 +32,7 @@ try
 
     // --- Bước 3: Đăng ký các dịch vụ mở rộng (Presentation Extensions) ---
     builder.Services.AddMonitoring(builder.Configuration); // OpenTelemetry (Tracing & Metrics)
-    builder.Services.AddSecurityServices(builder.Configuration); // JWT, CORS
+    builder.Services.AddSecurityServices(builder.Configuration, builder.Environment); // JWT, CORS
     builder.Services.AddSwaggerDocumentation(); // Tài liệu API Swagger
     builder.Services.AddWebServices(builder.Configuration); // Redis, Rate Limiting, Versioning...
     builder.Services.AddHealthCheckServices(builder.Configuration); // Health Check (DB, Cache)

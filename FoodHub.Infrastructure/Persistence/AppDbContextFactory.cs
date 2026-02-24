@@ -15,7 +15,10 @@ namespace FoodHub.Infrastructure.Persistence
             {
                 var currentBreak = Directory.GetCurrentDirectory();
 
-                while (!File.Exists(Path.Combine(currentBreak, ".env")) && Directory.GetParent(currentBreak) != null)
+                while (
+                    !File.Exists(Path.Combine(currentBreak, ".env"))
+                    && Directory.GetParent(currentBreak) != null
+                )
                 {
                     currentBreak = Directory.GetParent(currentBreak).FullName;
                 }
@@ -33,16 +36,18 @@ namespace FoodHub.Infrastructure.Persistence
             var dbUser = Environment.GetEnvironmentVariable("DB_USER");
             var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
-            var connectionString = $"Host={dbHost};Port={dbPort ?? "5432"};Database={dbName ?? "FoodHub"};Username={dbUser ?? "postgres"};Password={dbPassword}";
+            var connectionString =
+                $"Host={dbHost};Port={dbPort ?? "5432"};Database={dbName ?? "FoodHub"};Username={dbUser ?? "postgres"};Password={dbPassword}";
 
             if (string.IsNullOrEmpty(dbHost) || string.IsNullOrEmpty(dbPassword))
             {
-                Console.WriteLine($"Warning: .env file not found or incomplete variables at {envPath}");
+                Console.WriteLine(
+                    $"Warning: .env file not found or incomplete variables at {envPath}"
+                );
             }
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseNpgsql(connectionString)
-                          .UseSnakeCaseNamingConvention();
+            optionsBuilder.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
 
             return new AppDbContext(optionsBuilder.Options);
         }

@@ -15,6 +15,15 @@ namespace FoodHub.Application.Constants
             public const string InvalidFile = "Common.InvalidFile";
             public const string FileSizeExceeded = "Common.FileSizeExceeded";
             public const string UploadFailed = "Common.UploadFailed";
+            public const string IdMismatch = "Common.IdMismatch";
+            public const string IdRequired = "Common.IdRequired";
+            public const string NoFileProvided = "Common.NoFileProvided";
+            public const string UploadSuccess = "Common.UploadSuccess";
+            public const string DeleteSuccess = "Common.DeleteSuccess";
+            public const string DeleteFailed = "Common.DeleteFailed";
+            public const string InternalServerError = "Common.InternalServerError";
+            public const string ValidationFailed = "Common.ValidationFailed";
+            public const string NotFound = "Common.NotFound";
         }
 
         public static class Password
@@ -65,6 +74,7 @@ namespace FoodHub.Application.Constants
             public const string ConfirmPasswordRequired = "Auth.ConfirmPasswordRequired";
             public const string ConfirmPasswordMismatch = "Auth.ConfirmPasswordMismatch";
             public const string EmployeeCodeRequired = "Auth.EmployeeCodeRequired";
+            public const string InvalidTokenClaims = "Auth.InvalidTokenClaims";
         }
 
         public static class Employee

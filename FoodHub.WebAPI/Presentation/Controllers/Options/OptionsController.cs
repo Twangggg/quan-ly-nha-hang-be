@@ -7,6 +7,7 @@ using FoodHub.Application.Features.Options.Commands.DeleteOptionItem;
 using FoodHub.Application.Features.Options.Commands.UpdateOptionGroup;
 using FoodHub.Application.Features.Options.Commands.UpdateOptionItem;
 using FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem;
+using FoodHub.Application.Interfaces;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -22,10 +23,12 @@ namespace FoodHub.Presentation.Controllers
     public class OptionsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IMessageService _messageService;
 
-        public OptionsController(IMediator mediator)
+        public OptionsController(IMediator mediator, IMessageService _ms)
         {
             _mediator = mediator;
+            _messageService = _ms;
         }
 
         #region OptionGroup
@@ -78,7 +81,12 @@ namespace FoodHub.Presentation.Controllers
         {
             if (id != command.OptionGroupId)
             {
-                return BadRequest(new { message = "Option group ID mismatch" });
+                return BadRequest(
+                    new ErrorResponse(
+                        StatusCodes.Status400BadRequest,
+                        _messageService.GetMessage(MessageKeys.Common.IdMismatch)
+                    )
+                );
             }
 
             var result = await _mediator.Send(command);
@@ -138,7 +146,12 @@ namespace FoodHub.Presentation.Controllers
         {
             if (id != command.OptionItemId)
             {
-                return BadRequest(new { message = "Option item ID mismatch" });
+                return BadRequest(
+                    new ErrorResponse(
+                        StatusCodes.Status400BadRequest,
+                        _messageService.GetMessage(MessageKeys.Common.IdMismatch)
+                    )
+                );
             }
 
             var result = await _mediator.Send(command);
