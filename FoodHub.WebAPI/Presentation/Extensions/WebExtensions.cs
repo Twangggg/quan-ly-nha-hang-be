@@ -160,7 +160,7 @@ public static class WebExtensions
                     {
                         HttpOnly = false,
                         SameSite = SameSiteMode.Lax,
-                        Secure = true,
+                        Secure = context.Request.IsHttps,
                     }
                 );
 

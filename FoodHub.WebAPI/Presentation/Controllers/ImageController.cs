@@ -1,3 +1,5 @@
+using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
@@ -16,14 +18,17 @@ namespace FoodHub.Presentation.Controllers
     {
         private readonly ICloudinaryService _cloudinaryService;
         private readonly ILogger<ImageController> _logger;
+        private readonly IMessageService _messageService;
 
         public ImageController(
             ICloudinaryService cloudinaryService,
-            ILogger<ImageController> logger
+            ILogger<ImageController> logger,
+            IMessageService messageService
         )
         {
             _cloudinaryService = cloudinaryService;
             _logger = logger;
+            _messageService = messageService;
         }
 
         /// <summary>
@@ -49,7 +54,12 @@ namespace FoodHub.Presentation.Controllers
             {
                 if (file == null || file.Length == 0)
                 {
-                    return BadRequest(new { message = "No file provided" });
+                    return BadRequest(
+                        new ErrorResponse(
+                            StatusCodes.Status400BadRequest,
+                            _messageService.GetMessage(MessageKeys.Common.NoFileProvided)
+                        )
+                    );
                 }
 
                 var imageUrl = await _cloudinaryService.UploadImageAsync(file, folder);
@@ -59,7 +69,7 @@ namespace FoodHub.Presentation.Controllers
                     {
                         success = true,
                         imageUrl = imageUrl,
-                        message = "Image uploaded successfully",
+                        message = _messageService.GetMessage(MessageKeys.Common.UploadSuccess),
                     }
                 );
             }
@@ -73,7 +83,10 @@ namespace FoodHub.Presentation.Controllers
                 _logger.LogError(ex, "Error uploading image to Cloudinary");
                 return StatusCode(
                     500,
-                    new { message = "An error occurred while uploading the image" }
+                    new ErrorResponse(
+                        500,
+                        _messageService.GetMessage(MessageKeys.Common.UploadFailed)
+                    )
                 );
             }
         }
@@ -93,24 +106,43 @@ namespace FoodHub.Presentation.Controllers
             {
                 if (string.IsNullOrWhiteSpace(publicId))
                 {
-                    return BadRequest(new { message = "Public ID is required" });
+                    return BadRequest(
+                        new ErrorResponse(
+                            StatusCodes.Status400BadRequest,
+                            _messageService.GetMessage(MessageKeys.Common.IdRequired)
+                        )
+                    );
                 }
 
                 var success = await _cloudinaryService.DeleteImageAsync(publicId);
 
                 if (success)
                 {
-                    return Ok(new { success = true, message = "Image deleted successfully" });
+                    return Ok(
+                        new
+                        {
+                            success = true,
+                            message = _messageService.GetMessage(MessageKeys.Common.DeleteSuccess),
+                        }
+                    );
                 }
 
-                return NotFound(new { message = "Image not found or already deleted" });
+                return NotFound(
+                    new ErrorResponse(
+                        StatusCodes.Status404NotFound,
+                        _messageService.GetMessage(MessageKeys.Common.NotFound)
+                    )
+                );
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting image from Cloudinary");
                 return StatusCode(
                     500,
-                    new { message = "An error occurred while deleting the image" }
+                    new ErrorResponse(
+                        500,
+                        _messageService.GetMessage(MessageKeys.Common.DeleteFailed)
+                    )
                 );
             }
         }

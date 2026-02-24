@@ -5,6 +5,7 @@ using FoodHub.Application.Features.Categories.Commands.DeleteCategory;
 using FoodHub.Application.Features.Categories.Commands.UpdateCategory;
 using FoodHub.Application.Features.Categories.Queries.GetAllCategories;
 using FoodHub.Application.Features.Categories.Queries.GetCategoryById;
+using FoodHub.Application.Interfaces;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -20,10 +21,12 @@ namespace FoodHub.Presentation.Controllers
     public class CategoriesController : ApiControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IMessageService _messageService;
 
-        public CategoriesController(IMediator mediator)
+        public CategoriesController(IMediator mediator, IMessageService messageService)
         {
             _mediator = mediator;
+            _messageService = messageService;
         }
 
         /// <summary>
@@ -106,7 +109,12 @@ namespace FoodHub.Presentation.Controllers
         {
             if (id != command.CategoryId)
             {
-                return BadRequest(new { message = "Category ID mismatch" });
+                return BadRequest(
+                    new ErrorResponse(
+                        StatusCodes.Status400BadRequest,
+                        _messageService.GetMessage(MessageKeys.Common.IdMismatch)
+                    )
+                );
             }
 
             var result = await _mediator.Send(command);

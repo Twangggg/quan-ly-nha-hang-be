@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Authentication.Commands.ChangePassword;
 using FoodHub.Application.Features.Authentication.Commands.Login;
 using FoodHub.Application.Features.Authentication.Commands.RefreshToken;
@@ -6,6 +7,7 @@ using FoodHub.Application.Features.Authentication.Commands.RequestPasswordReset;
 using FoodHub.Application.Features.Authentication.Commands.ResetPassword;
 using FoodHub.Application.Features.Authentication.Commands.RevokeToken;
 using FoodHub.Application.Features.Employees.Queries.GetMyProfile;
+using FoodHub.Application.Interfaces;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -21,11 +23,17 @@ namespace FoodHub.Presentation.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IWebHostEnvironment _env;
+        private readonly IMessageService _messageService;
 
-        public AuthController(IMediator mediator, IWebHostEnvironment env)
+        public AuthController(
+            IMediator mediator,
+            IWebHostEnvironment env,
+            IMessageService messageService
+        )
         {
             _mediator = mediator;
             _env = env;
+            _messageService = messageService;
         }
 
         /// <summary>
@@ -68,7 +76,12 @@ namespace FoodHub.Presentation.Controllers
 
             if (string.IsNullOrEmpty(refreshToken))
             {
-                return Unauthorized(new { message = "Refresh token not found." });
+                return Unauthorized(
+                    new ErrorResponse(
+                        StatusCodes.Status401Unauthorized,
+                        _messageService.GetMessage(MessageKeys.Auth.RefreshTokenNotFound)
+                    )
+                );
             }
 
             var command = new RefreshTokenCommand { RefreshToken = refreshToken };
@@ -187,22 +200,22 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="401">Chưa đăng nhập.</response>
         [HttpGet("me")]
         [Authorize]
-        [ProducesResponseType(
-            typeof(Result<Response>),
-            StatusCodes.Status200OK
-        )]
+        [ProducesResponseType(typeof(Result<Response>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetCurrentUserInfo()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
             {
-                return Unauthorized(new { message = "Invalid token claims." });
+                return Unauthorized(
+                    new ErrorResponse(
+                        StatusCodes.Status401Unauthorized,
+                        _messageService.GetMessage(MessageKeys.Auth.InvalidTokenClaims)
+                    )
+                );
             }
 
-            var result = await _mediator.Send(
-                new Query(userId)
-            );
+            var result = await _mediator.Send(new Query(userId));
             return HandleResult(result);
         }
     }
