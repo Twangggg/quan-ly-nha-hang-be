@@ -17,14 +17,15 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
         public int? ExpectedTime { get; set; }
         public decimal PriceDineIn { get; set; }
         public decimal? PriceTakeAway { get; set; }
-        public decimal? Cost { get; set; } // Only visible to Manager/Cashier
+        public decimal? CostPrice { get; set; } // Only visible to Manager/Cashier
         public bool IsOutOfStock { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<MenuItem, GetMenuItemsResponse>()
+            profile
+                .CreateMap<MenuItem, GetMenuItemsResponse>()
                 .ForMember(d => d.MenuItemId, opt => opt.MapFrom(s => s.MenuItemId))
                 .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.Category.Name))
                 .ForMember(d => d.Station, opt => opt.MapFrom(s => (int)s.Station))

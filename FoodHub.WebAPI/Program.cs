@@ -63,7 +63,7 @@ try
                     var context = services.GetRequiredService<AppDbContext>();
                     var initializer = services.GetRequiredService<DbInitializer>();
 
-                    context.Database.Migrate();
+                    await context.Database.MigrateAsync();
                     initializer.Initialize();
                     break;
                 }
@@ -105,7 +105,7 @@ try
     app.MapControllers(); // Map các API Controller
     app.MapHealthCheckEndpoints(); // GET /health & /health/detail
 
-    app.Run();
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
@@ -113,5 +113,5 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }
