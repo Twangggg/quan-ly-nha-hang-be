@@ -61,6 +61,7 @@ namespace FoodHub.Tests.Features.Employees
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
                 NewRole = EmployeeRole.ChefBar,
+                Reason = "Test reason",
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
@@ -155,6 +156,7 @@ namespace FoodHub.Tests.Features.Employees
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
                 NewRole = EmployeeRole.Manager,
+                Reason = "Test reason",
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
@@ -181,6 +183,7 @@ namespace FoodHub.Tests.Features.Employees
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
                 NewRole = EmployeeRole.Waiter,
+                Reason = "Test reason",
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
@@ -207,6 +210,7 @@ namespace FoodHub.Tests.Features.Employees
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
                 NewRole = EmployeeRole.ChefBar,
+                Reason = "Test reason",
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
@@ -240,6 +244,7 @@ namespace FoodHub.Tests.Features.Employees
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
                 NewRole = EmployeeRole.ChefBar,
+                Reason = "Test reason",
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
@@ -281,6 +286,7 @@ namespace FoodHub.Tests.Features.Employees
                 EmployeeCode = "EMP001",
                 CurrentRole = EmployeeRole.Waiter,
                 NewRole = EmployeeRole.ChefBar,
+                Reason = "Test reason",
             };
 
             _mockCurrentUser.Setup(c => c.UserId).Returns("invalid-guid");
