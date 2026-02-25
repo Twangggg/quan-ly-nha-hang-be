@@ -58,6 +58,7 @@ public static class HostExtensions
         MapEnv("EMAIL_SENDER_NAME", "EmailSettings:SenderName");
         MapEnv("EMAIL_APP_PASSWORD", "EmailSettings:AppPassword");
         MapEnv("ALLOWED_ORIGINS", "AllowedOrigins");
+        MapEnv("ENABLE_HTTPS_REDIRECTION", "EnableHttpsRedirection");
         MapEnv("CLOUDINARY_CLOUD_NAME", "Cloudinary:CloudName");
         MapEnv("CLOUDINARY_API_KEY", "Cloudinary:ApiKey");
         MapEnv("CLOUDINARY_API_SECRET", "Cloudinary:ApiSecret");
