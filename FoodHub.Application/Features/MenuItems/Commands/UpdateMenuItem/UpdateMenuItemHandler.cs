@@ -42,8 +42,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             var categoryId = request.CategoryId;
             var station = request.Station;
             var expectedTime = request.ExpectedTime;
-            var priceDineIn = request.PriceDineIn;
-            var priceTakeAway = request.PriceTakeAway;
+            var price = request.Price;
             var costPrice = request.CostPrice;
 
             var categoryExists = await _unitOfWork.Repository<Category>().Query()
@@ -57,8 +56,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             menuItem.CategoryId = categoryId;
             menuItem.Station = station;
             menuItem.ExpectedTime = expectedTime;
-            menuItem.PriceDineIn = priceDineIn;
-            menuItem.PriceTakeAway = priceTakeAway;
+            menuItem.Price = price;
 
             menuItem.UpdatedAt = DateTime.UtcNow;
             menuItem.UpdatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;

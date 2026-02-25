@@ -15,8 +15,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
         public string CategoryName { get; set; } = string.Empty;
         public int Station { get; set; }
         public int? ExpectedTime { get; set; }
-        public decimal PriceDineIn { get; set; }
-        public decimal? PriceTakeAway { get; set; }
+        public decimal Price { get; set; }
         public decimal? CostPrice { get; set; } // Only visible to Manager/Cashier
         public bool IsOutOfStock { get; set; }
         public DateTime CreatedAt { get; set; }

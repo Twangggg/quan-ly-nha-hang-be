@@ -19,8 +19,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.DeleteMenuItem
         public Station Station { get; set; }
         public int ExpectedTime { get; set; }
 
-        public decimal PriceDineIn { get; set; }
-        public decimal PriceTakeAway { get; set; }
+        public decimal Price { get; set; }
         public decimal CostPrice { get; set; }
 
         public bool IsOutOfStock { get; set; }

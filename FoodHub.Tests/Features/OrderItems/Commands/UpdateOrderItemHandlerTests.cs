@@ -193,8 +193,7 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
                 MenuItemId = menuItemId,
                 Name = "Pizza",
                 Code = "P001",
-                PriceDineIn = 10.00m,
-                PriceTakeAway = 9.00m,
+                Price = 10.00m,
                 Station = Station.HotKitchen,
                 ImageUrl = "test.jpg",
             };

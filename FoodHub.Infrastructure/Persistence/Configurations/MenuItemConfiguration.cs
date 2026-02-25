@@ -42,12 +42,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Station).HasColumnName("station");
             builder.Property(e => e.ExpectedTime).HasColumnName("expected_time");
 
-            builder.Property(e => e.PriceDineIn)
-                .HasColumnName("price_dine_in")
-                .HasPrecision(12, 2);
-
-            builder.Property(e => e.PriceTakeAway)
-                .HasColumnName("price_take_away")
+            builder.Property(e => e.Price)
+                .HasColumnName("price")
                 .HasPrecision(12, 2);
 
             builder.Property(e => e.CostPrice)
@@ -76,7 +72,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(e => e.Station);
             builder.HasIndex(e => e.IsOutOfStock);
             builder.HasIndex(e => e.Name);
-            builder.HasIndex(e => e.PriceDineIn);
+            builder.HasIndex(e => e.Price);
             builder.HasIndex(e => e.CreatedAt);
 
             // Composite indexes for common query patterns

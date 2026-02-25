@@ -53,7 +53,6 @@ namespace FoodHub.Tests.Features.MenuItems
                 Station.HotKitchen,
                 20,
                 60000m,
-                55000m,
                 30000m
             );
 
@@ -71,8 +70,7 @@ namespace FoodHub.Tests.Features.MenuItems
                 Category = new Category { CategoryId = categoryId, Name = "Món chính" },
                 Station = Station.HotKitchen,
                 ExpectedTime = 15,
-                PriceDineIn = 50000m,
-                PriceTakeAway = 45000m,
+                Price = 50000m,
                 CostPrice = 25000m,
                 CreatedAt = DateTime.UtcNow
             };
@@ -128,7 +126,6 @@ namespace FoodHub.Tests.Features.MenuItems
                 Station.HotKitchen,
                 15,
                 50000m,
-                45000m,
                 null
             );
 
@@ -162,7 +159,6 @@ namespace FoodHub.Tests.Features.MenuItems
                 Station.HotKitchen,
                 15,
                 50000m,
-                45000m,
                 null
             );
 
@@ -210,7 +206,6 @@ namespace FoodHub.Tests.Features.MenuItems
                 Station.HotKitchen,
                 15,
                 50000m,
-                45000m,
                 30000m
             );
 
