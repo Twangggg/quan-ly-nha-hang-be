@@ -63,6 +63,8 @@ public static class WebExtensions
         {
             options.ForwardedHeaders =
                 ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
         });
 
         // 4. Cấu hình URL (Tự động viết thường URL: /api/Values -> /api/values)
