@@ -16,37 +16,21 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasKey(e => e.SetMenuId);
             builder.Property(e => e.SetMenuId).HasColumnName("set_menu_id");
 
-            builder.Property(e => e.Code)
-                .HasColumnName("code")
-                .HasMaxLength(50)
-                .IsRequired();
+            builder.Property(e => e.Code).HasColumnName("code").HasMaxLength(50).IsRequired();
 
-            builder.HasIndex(e => e.Code).IsUnique();
+            builder.HasIndex(e => e.Code).IsUnique().HasFilter("deleted_at IS NULL");
 
-            builder.Property(e => e.Name)
-                .HasColumnName("name")
-                .HasMaxLength(150)
-                .IsRequired();
+            builder.Property(e => e.Name).HasColumnName("name").HasMaxLength(150).IsRequired();
 
-            builder.Property(e => e.SetType)
-                .HasColumnName("set_type")
-                .HasConversion<string>();
+            builder.Property(e => e.SetType).HasColumnName("set_type").HasConversion<string>();
 
-            builder.Property(e => e.ImageUrl)
-                .HasColumnName("image_url")
-                .HasMaxLength(500);
+            builder.Property(e => e.ImageUrl).HasColumnName("image_url").HasMaxLength(500);
 
-            builder.Property(e => e.Description)
-                .HasColumnName("description")
-                .HasMaxLength(500);
+            builder.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
 
-            builder.Property(e => e.Price)
-                .HasColumnName("price")
-                .HasPrecision(12, 2);
+            builder.Property(e => e.Price).HasColumnName("price").HasPrecision(12, 2);
 
-            builder.Property(e => e.CostPrice)
-                .HasColumnName("cost_price")
-                .HasPrecision(12, 2);
+            builder.Property(e => e.CostPrice).HasColumnName("cost_price").HasPrecision(12, 2);
 
             builder.Property(e => e.IsOutOfStock).HasColumnName("is_out_of_stock");
 
@@ -67,8 +51,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(e => new { e.SetType, e.IsOutOfStock });
 
             // Filtered index for available sets
-            builder.HasIndex(e => e.IsOutOfStock)
-                .HasFilter("deleted_at IS NULL");
+            builder.HasIndex(e => e.IsOutOfStock).HasFilter("deleted_at IS NULL");
         }
     }
 }
