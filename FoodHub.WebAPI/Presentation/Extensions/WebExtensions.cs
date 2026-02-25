@@ -127,6 +127,7 @@ public static class WebExtensions
         // Localization
         services.AddLocalization();
 
+        services.AddSignalR();
         return services;
     }
 

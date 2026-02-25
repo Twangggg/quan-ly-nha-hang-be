@@ -120,7 +120,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
                 TargetId = oldEmployee.EmployeeId,
                 PerformedByEmployeeId = auditorId,
                 CreatedAt = DateTimeOffset.UtcNow,
-                Reason = $"Deactivate old account for Role Change to: {request.NewRole}",
+                Reason = $"[Change Role - Deactivate] {request.Reason}",
             };
 
             var logCreate = new AuditLog
@@ -130,8 +130,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
                 TargetId = newEmployee.EmployeeId,
                 PerformedByEmployeeId = auditorId,
                 CreatedAt = DateTimeOffset.UtcNow,
-                Reason =
-                    $"Create new account with Role: {request.NewRole} from old account: {oldEmployee.EmployeeCode}",
+                Reason = $"[Change Role - Create] {request.Reason}",
             };
 
             await _unitOfWork.Repository<AuditLog>().AddAsync(logDeactivate);
