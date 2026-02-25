@@ -55,6 +55,7 @@ namespace FoodHub.Infrastructure.Security
             {
                 Permissions.Orders.View,
                 Permissions.Orders.Complete,
+                Permissions.Orders.Create,
                 Permissions.MenuItems.View,
                 Permissions.Categories.View,
                 Permissions.SetMenus.View,
