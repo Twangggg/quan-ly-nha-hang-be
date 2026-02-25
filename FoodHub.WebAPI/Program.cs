@@ -48,46 +48,46 @@ try
     {
         var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
         app.UseSwaggerDocumentation(provider);
+    }
 
-        // Auto Migrate & Seed Data
-        using (var scope = app.Services.CreateScope())
+    // Auto Migrate & Seed Data (Run in both Dev and Prod)
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var retryCount = 0;
+        var maxRetries = 20;
+
+        while (retryCount < maxRetries)
         {
-            var services = scope.ServiceProvider;
-            var retryCount = 0;
-            var maxRetries = 20;
-
-            while (retryCount < maxRetries)
+            try
             {
-                try
+                var context = services.GetRequiredService<AppDbContext>();
+                var initializer = services.GetRequiredService<DbInitializer>();
+
+                await context.Database.MigrateAsync();
+                initializer.Initialize();
+                break;
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+
+                if (retryCount >= maxRetries)
                 {
-                    var context = services.GetRequiredService<AppDbContext>();
-                    var initializer = services.GetRequiredService<DbInitializer>();
-
-                    await context.Database.MigrateAsync();
-                    initializer.Initialize();
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    retryCount++;
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-
-                    if (retryCount >= maxRetries)
-                    {
-                        logger.LogError(
-                            ex,
-                            "An error occurred while migrating or seeding the database."
-                        );
-                        throw;
-                    }
-
-                    logger.LogWarning(
-                        "Database not ready. Retry {Count}/{Max}...",
-                        retryCount,
-                        maxRetries
+                    logger.LogError(
+                        ex,
+                        "An error occurred while migrating or seeding the database."
                     );
-                    await Task.Delay(3000);
+                    throw;
                 }
+
+                logger.LogWarning(
+                    "Database not ready. Retry {Count}/{Max}...",
+                    retryCount,
+                    maxRetries
+                );
+                await Task.Delay(3000);
             }
         }
     }
