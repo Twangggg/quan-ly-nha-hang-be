@@ -5,6 +5,7 @@ using FoodHub.Application.Features.Authentication.Commands.Login;
 using FoodHub.Application.Features.Authentication.Commands.RefreshToken;
 using FoodHub.Application.Features.Authentication.Commands.RequestPasswordReset;
 using FoodHub.Application.Features.Authentication.Commands.ResetPassword;
+using FoodHub.Application.Features.Authentication.Queries.VerifyResetToken;
 using FoodHub.Application.Features.Authentication.Commands.RevokeToken;
 using FoodHub.Application.Features.Employees.Queries.GetMyProfile;
 using FoodHub.Application.Interfaces;
@@ -177,6 +178,20 @@ namespace FoodHub.Presentation.Controllers
         )
         {
             var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Xác minh token đặt lại mật khẩu có còn hợp lệ không.
+        /// </summary>
+        /// <remarks>Gọi trước khi hiển thị form đổi mật khẩu để kiểm tra token chưa hết hạn và chưa sử dụng.</remarks>
+        /// <param name="token">Token từ link email.</param>
+        /// <response code="200">Trả về true nếu token hợp lệ, false nếu không.</response>
+        [HttpGet("verify-reset-token")]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> VerifyResetToken([FromQuery] string token)
+        {
+            var result = await _mediator.Send(new VerifyResetTokenQuery(token));
             return HandleResult(result);
         }
 
