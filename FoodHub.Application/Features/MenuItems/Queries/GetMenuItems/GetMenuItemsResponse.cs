@@ -29,7 +29,6 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
                 .ForMember(d => d.MenuItemId, opt => opt.MapFrom(s => s.MenuItemId))
                 .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.Category.Name))
                 .ForMember(d => d.Station, opt => opt.MapFrom(s => (int)s.Station))
-                .ForMember(d => d.Cost, opt => opt.MapFrom(s => s.CostPrice))
                 .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(s => s.UpdatedAt ?? s.CreatedAt));
         }
     }

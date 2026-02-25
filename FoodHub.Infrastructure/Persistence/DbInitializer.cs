@@ -36,7 +36,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Username = "admin",
                         PasswordHash = _passwordService.HashPassword("New123!"),
                         FullName = "Admin Manager",
-                        Email = "liem20052012@gmail.com",
+                        Email = "admin@foodhub.com",
                         Phone = "0909000001",
                         Role = EmployeeRole.Manager,
                         Status = EmployeeStatus.Active,
