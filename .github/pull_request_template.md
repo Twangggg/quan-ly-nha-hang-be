@@ -89,4 +89,4 @@
 | FFA-ERR  | 10%              | —              | 15%                 | /100     |
 | FFA-TST  | 10%              | 20%            | —                   | /100     |
 
-> ❌ **Block merge** nếu: throw raw Exception, Handler không có test, log sensitive data, thiếu `[Authorize]` trên write endpoint, ExceptionMiddleware不cover exception type.
+> ❌ **Block merge** nếu: throw raw Exception, Handler không có test, log sensitive data, thiếu `[Authorize]` trên write endpoint, ExceptionMiddleware không cover exception type.
