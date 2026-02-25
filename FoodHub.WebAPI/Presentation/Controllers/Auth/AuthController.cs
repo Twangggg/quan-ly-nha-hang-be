@@ -24,16 +24,19 @@ namespace FoodHub.Presentation.Controllers
         private readonly IMediator _mediator;
         private readonly IWebHostEnvironment _env;
         private readonly IMessageService _messageService;
+        private readonly IConfiguration _configuration;
 
         public AuthController(
             IMediator mediator,
             IWebHostEnvironment env,
-            IMessageService messageService
+            IMessageService messageService,
+            IConfiguration configuration
         )
         {
             _mediator = mediator;
             _env = env;
             _messageService = messageService;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -99,12 +102,14 @@ namespace FoodHub.Presentation.Controllers
         private void SetTokenCookies(LoginResponse response)
         {
             var isDev = _env.IsDevelopment();
+            var enableHttps = _configuration.GetValue<bool>("EnableHttpsRedirection", true);
+            var isSecure = !isDev && enableHttps;
 
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !isDev,
-                SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
+                Secure = isSecure,
+                SameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax,
                 Expires = DateTime.UtcNow.AddSeconds(response.RefreshTokenExpiresIn),
                 Path = "/",
             };
@@ -112,8 +117,8 @@ namespace FoodHub.Presentation.Controllers
             var accessCookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !isDev,
-                SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
+                Secure = isSecure,
+                SameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax,
                 Expires = DateTime.UtcNow.AddSeconds(response.ExpiresIn),
                 Path = "/",
             };
