@@ -59,32 +59,34 @@
 
 ### 🚨 FFA-ERR — Error Handling
 
-- [ ] Dùng **custom exception** (`BusinessException`, `NotFoundException`) — không throw raw `Exception`
-- [ ] Handler **không catch tổng quát** rồi swallow — để ExceptionMiddleware xử lý
-- [ ] Error response format nhất quán qua `ErrorResponse`
+- [ ] Dùng custom exception (`BusinessException`, `NotFoundException`) — **không throw raw `Exception`**
+- [ ] Mọi exception type có mapping trong `ExceptionMiddleware`
+- [ ] Production response **không** chứa stack trace hoặc internal detail
+- [ ] Handler **không** catch-all rồi swallow — để Middleware xử lý tập trung
 
 ### 🧪 FFA-TST — Test Compliance
 
 - [ ] Command Handler có test file tương ứng (`{HandlerName}Tests.cs`)
-- [ ] Test cover **happy path** (success scenario)
-- [ ] Test cover **error path** (validation fail, not found, business rule)
-- [ ] Mock đúng **interface** (`IUnitOfWork`) — không gọi DB thật
+- [ ] Test cover **Happy Path** — ít nhất 1 test success scenario
+- [ ] Test cover **Error Path** — validation fail, not found, business rule
+- [ ] Mock đúng interface (`IUnitOfWork`) — không mock concrete class
+- [ ] Arrange-Act-Assert pattern + assertion có ý nghĩa
 
 ---
 
-### 📊 Self-Assessment Score (FGO)
+### 📊 Self-Assessment Score (FGO v2.1)
 
-| Skill    | Weight | Estimate |
-| -------- | ------ | -------- |
-| FFA-FLW  | 20%    | /100     |
-| FFA-TXG  | 15%    | /100     |
-| FFA-LOG  | 10%    | /100     |
-| FFA-CTL  | 10%    | /100     |
-| FFA-CAG  | 15%    | /100     |
-| FFA-ACV  | 10%    | /100     |
-| FFA-SEC  | 5%     | /100     |
-| FFA-PERF | 5%     | /100     |
-| FFA-ERR  | 5%     | /100     |
-| FFA-TST  | 5%     | /100     |
+| Skill    | Weight (Command) | Weight (Query) | Weight (Controller) | Estimate |
+| -------- | ---------------- | -------------- | ------------------- | -------- |
+| FFA-FLW  | 25%              | 25%            | —                   | /100     |
+| FFA-TXG  | 25%              | —              | —                   | /100     |
+| FFA-LOG  | 15%              | 15%            | —                   | /100     |
+| FFA-CAG  | 15%              | 20%            | —                   | /100     |
+| FFA-CTL  | —                | —              | 35%                 | /100     |
+| FFA-SEC  | —                | —              | 30%                 | /100     |
+| FFA-ACV  | —                | —              | 20%                 | /100     |
+| FFA-PERF | —                | 20%            | —                   | /100     |
+| FFA-ERR  | 10%              | —              | 15%                 | /100     |
+| FFA-TST  | 10%              | 20%            | —                   | /100     |
 
-> ❌ **Block merge** nếu: multi-write không có transaction, Handler gán property Entity trực tiếp, log chứa password/token, throw raw `Exception`, endpoint thiếu `[Authorize]`, Command Handler không có test.
+> ❌ **Block merge** nếu: throw raw Exception, Handler không có test, log sensitive data, thiếu `[Authorize]` trên write endpoint, ExceptionMiddleware không cover exception type.
