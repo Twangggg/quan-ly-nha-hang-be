@@ -94,7 +94,10 @@ try
 
     app.UseCors("AllowReact");
 
-    if (!app.Environment.IsDevelopment())
+    if (
+        !app.Environment.IsDevelopment()
+        && builder.Configuration.GetValue<bool>("EnableHttpsRedirection", true)
+    )
     {
         app.UseHttpsRedirection();
     }
