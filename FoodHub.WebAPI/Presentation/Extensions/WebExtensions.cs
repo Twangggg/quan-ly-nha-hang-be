@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Antiforgery;
@@ -75,10 +76,15 @@ public static class WebExtensions
         });
 
         // Controllers
-        services.AddControllers(opt =>
-        {
-            opt.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
-        });
+        services
+            .AddControllers(opt =>
+            {
+                opt.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+            })
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
         // API Versioning
         services
