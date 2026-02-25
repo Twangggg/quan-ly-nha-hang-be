@@ -1,4 +1,4 @@
-## 🏛️ Governance Checklist (FoodHub Guardian v2.0) — Backend
+## 🏛️ Governance Checklist (FoodHub Guardian v2.1) — Backend
 
 > **Bắt buộc hoàn thành trước khi merge.** Đánh dấu ✅ hoặc ghi N/A nếu không applicable.
 
@@ -57,15 +57,36 @@
 - [ ] Không có N+1 pattern (DB call trong vòng lặp)
 - [ ] Dùng `.Select()` projection thay vì load toàn bộ Entity
 
+### 🚨 FFA-ERR — Error Handling
+
+- [ ] Dùng custom exception (`BusinessException`, `NotFoundException`) — **không throw raw `Exception`**
+- [ ] Mọi exception type có mapping trong `ExceptionMiddleware`
+- [ ] Production response **không** chứa stack trace hoặc internal detail
+- [ ] Handler **không** catch-all rồi swallow — để Middleware xử lý tập trung
+
+### 🧪 FFA-TST — Test Compliance
+
+- [ ] Command Handler có test file tương ứng (`{HandlerName}Tests.cs`)
+- [ ] Test cover **Happy Path** — ít nhất 1 test success scenario
+- [ ] Test cover **Error Path** — validation fail, not found, business rule
+- [ ] Mock đúng interface (`IUnitOfWork`) — không mock concrete class
+- [ ] Arrange-Act-Assert pattern + assertion có ý nghĩa
+
 ---
 
-### 📊 Self-Assessment Score
+### 📊 Self-Assessment Score (FGO v2.1)
 
-| Skill   | Score ảnh hưởng         | Estimate |
-| ------- | ----------------------- | -------- |
-| FFA-FLW | 30% với Command Handler | /100     |
-| FFA-TXG | 30% với Command Handler | /100     |
-| FFA-LOG | 20% với tất cả          | /100     |
-| FFA-CAG | 20% với tất cả          | /100     |
+| Skill    | Weight (Command) | Weight (Query) | Weight (Controller) | Estimate |
+| -------- | ---------------- | -------------- | ------------------- | -------- |
+| FFA-FLW  | 25%              | 25%            | —                   | /100     |
+| FFA-TXG  | 25%              | —              | —                   | /100     |
+| FFA-LOG  | 15%              | 15%            | —                   | /100     |
+| FFA-CAG  | 15%              | 20%            | —                   | /100     |
+| FFA-CTL  | —                | —              | 35%                 | /100     |
+| FFA-SEC  | —                | —              | 30%                 | /100     |
+| FFA-ACV  | —                | —              | 20%                 | /100     |
+| FFA-PERF | —                | 20%            | —                   | /100     |
+| FFA-ERR  | 10%              | —              | 15%                 | /100     |
+| FFA-TST  | 10%              | 20%            | —                   | /100     |
 
-> ❌ **Block merge** nếu: không có Transaction, log sensitive data, thiếu `[Authorize]` trên write endpoint.
+> ❌ **Block merge** nếu: throw raw Exception, Handler không có test, log sensitive data, thiếu `[Authorize]` trên write endpoint, ExceptionMiddleware不cover exception type.
