@@ -77,9 +77,10 @@ public static class SecurityExtensions
             options.Cookie.Name = "XSRF-TOKEN";
             options.Cookie.HttpOnly = false; // Phải để false để Javascript của React đọc được mã
             options.Cookie.SameSite = SameSiteMode.Lax;
-            options.Cookie.SecurePolicy = env.IsDevelopment()
-                ? CookieSecurePolicy.None
-                : CookieSecurePolicy.Always;
+            options.Cookie.SecurePolicy =
+                env.IsDevelopment() || !configuration.GetValue<bool>("EnableHttpsRedirection", true)
+                    ? CookieSecurePolicy.None
+                    : CookieSecurePolicy.Always;
         });
 
         return services;
