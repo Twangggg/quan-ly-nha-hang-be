@@ -1,4 +1,4 @@
-## 🏛️ Governance Checklist (FoodHub Guardian v2.0) — Backend
+## 🏛️ Governance Checklist (FoodHub Guardian v2.1) — Backend
 
 > **Bắt buộc hoàn thành trước khi merge.** Đánh dấu ✅ hoặc ghi N/A nếu không applicable.
 
@@ -57,15 +57,34 @@
 - [ ] Không có N+1 pattern (DB call trong vòng lặp)
 - [ ] Dùng `.Select()` projection thay vì load toàn bộ Entity
 
+### 🚨 FFA-ERR — Error Handling
+
+- [ ] Dùng **custom exception** (`BusinessException`, `NotFoundException`) — không throw raw `Exception`
+- [ ] Handler **không catch tổng quát** rồi swallow — để ExceptionMiddleware xử lý
+- [ ] Error response format nhất quán qua `ErrorResponse`
+
+### 🧪 FFA-TST — Test Compliance
+
+- [ ] Command Handler có test file tương ứng (`{HandlerName}Tests.cs`)
+- [ ] Test cover **happy path** (success scenario)
+- [ ] Test cover **error path** (validation fail, not found, business rule)
+- [ ] Mock đúng **interface** (`IUnitOfWork`) — không gọi DB thật
+
 ---
 
-### 📊 Self-Assessment Score
+### 📊 Self-Assessment Score (FGO)
 
-| Skill   | Score ảnh hưởng         | Estimate |
-| ------- | ----------------------- | -------- |
-| FFA-FLW | 30% với Command Handler | /100     |
-| FFA-TXG | 30% với Command Handler | /100     |
-| FFA-LOG | 20% với tất cả          | /100     |
-| FFA-CAG | 20% với tất cả          | /100     |
+| Skill    | Weight | Estimate |
+| -------- | ------ | -------- |
+| FFA-FLW  | 20%    | /100     |
+| FFA-TXG  | 15%    | /100     |
+| FFA-LOG  | 10%    | /100     |
+| FFA-CTL  | 10%    | /100     |
+| FFA-CAG  | 15%    | /100     |
+| FFA-ACV  | 10%    | /100     |
+| FFA-SEC  | 5%     | /100     |
+| FFA-PERF | 5%     | /100     |
+| FFA-ERR  | 5%     | /100     |
+| FFA-TST  | 5%     | /100     |
 
-> ❌ **Block merge** nếu: không có Transaction, log sensitive data, thiếu `[Authorize]` trên write endpoint.
+> ❌ **Block merge** nếu: multi-write không có transaction, Handler gán property Entity trực tiếp, log chứa password/token, throw raw `Exception`, endpoint thiếu `[Authorize]`, Command Handler không có test.
