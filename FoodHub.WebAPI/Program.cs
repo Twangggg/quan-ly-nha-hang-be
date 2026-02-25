@@ -4,6 +4,7 @@ using FoodHub.Infrastructure;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Presentation.Middleware;
 using FoodHub.WebAPI.Presentation.Extensions;
+using FoodHub.WebAPI.Presentation.Hubs;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
@@ -106,6 +107,8 @@ try
     app.UseAuthorization(); // Phân quyền người dùng
 
     app.MapControllers(); // Map các API Controller
+
+    app.MapHub<KdsHub>("/hubs/kds");
     app.MapHealthCheckEndpoints(); // GET /health & /health/detail
 
     await app.RunAsync();
