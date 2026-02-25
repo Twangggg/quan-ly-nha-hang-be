@@ -16,9 +16,10 @@ public static class SecurityExtensions
     )
     {
         // ... (CORS và Authentication giữ nguyên)
-        // 1. Cấu hình CORS (Cho phép Frontend gọi API từ domain khác)
-        var corsOrigins =
-            configuration["AllowedOrigins"]?.Split(',') ?? new[] { "http://localhost:3000" };
+        // 1. Cấu hình CORS
+        var allowedOrigins = configuration["AllowedOrigins"] ?? "http://localhost:3000";
+        var corsOrigins = allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
         services.AddCors(opt =>
         {
             opt.AddPolicy(
