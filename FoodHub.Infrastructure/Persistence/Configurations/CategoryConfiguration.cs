@@ -16,12 +16,9 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasKey(e => e.CategoryId);
             builder.Property(e => e.CategoryId).HasColumnName("category_id");
 
-            builder.Property(e => e.Name)
-                .HasColumnName("name")
-                .HasMaxLength(100)
-                .IsRequired();
+            builder.Property(e => e.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
 
-            builder.HasIndex(e => e.Name).IsUnique();
+            builder.HasIndex(e => e.Name).IsUnique().HasFilter("deleted_at IS NULL");
 
             builder.Property(e => e.CategoryType).HasColumnName("type");
 
@@ -40,8 +37,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(e => new { e.CategoryType, e.IsActive });
 
             // Filtered index for active categories
-            builder.HasIndex(e => e.IsActive)
-                .HasFilter("deleted_at IS NULL");
+            builder.HasIndex(e => e.IsActive).HasFilter("deleted_at IS NULL");
         }
     }
 }

@@ -12,16 +12,16 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasKey(e => e.EmployeeId);
 
             builder.Property(e => e.EmployeeCode).IsRequired().HasMaxLength(10);
-            builder.HasIndex(e => e.EmployeeCode).IsUnique();
+            builder.HasIndex(e => e.EmployeeCode).IsUnique().HasFilter("deleted_at IS NULL");
 
             builder.Property(e => e.Username).HasMaxLength(50).IsRequired(false);
-            builder.HasIndex(e => e.Username).IsUnique();
+            builder.HasIndex(e => e.Username).IsUnique().HasFilter("deleted_at IS NULL");
 
             builder.Property(e => e.Email).IsRequired().HasMaxLength(150);
-            builder.HasIndex(e => e.Email).IsUnique();
+            builder.HasIndex(e => e.Email).IsUnique().HasFilter("deleted_at IS NULL");
 
             builder.Property(e => e.Phone).IsRequired(false).HasMaxLength(15);
-            builder.HasIndex(e => e.Phone).IsUnique();
+            builder.HasIndex(e => e.Phone).IsUnique().HasFilter("deleted_at IS NULL");
 
             builder.Property(e => e.FullName).IsRequired().HasMaxLength(100);
 
@@ -29,14 +29,13 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.PasswordHash).IsRequired();
 
             // C?u hình Enum: Luu du?i d?ng s? (SmallInt) trong Postgres d? t?i uu
-            builder.Property(x => x.Role)
-                   .HasConversion<short>()
-                   .IsRequired();
+            builder.Property(x => x.Role).HasConversion<short>().IsRequired();
 
-            builder.Property(x => x.Status)
-                   .HasConversion<short>()
-                   .HasDefaultValue(EmployeeStatus.Active)
-                   .HasSentinel(EmployeeStatus.Inactive);
+            builder
+                .Property(x => x.Status)
+                .HasConversion<short>()
+                .HasDefaultValue(EmployeeStatus.Active)
+                .HasSentinel(EmployeeStatus.Inactive);
 
             builder.Property(e => e.DeletedAt).HasColumnName("deleted_at");
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
@@ -57,8 +56,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(e => new { e.Role, e.Status });
 
             // Filtered index for active employees
-            builder.HasIndex(e => e.Status)
-                .HasFilter("deleted_at IS NULL");
+            builder.HasIndex(e => e.Status).HasFilter("deleted_at IS NULL");
         }
     }
 }
