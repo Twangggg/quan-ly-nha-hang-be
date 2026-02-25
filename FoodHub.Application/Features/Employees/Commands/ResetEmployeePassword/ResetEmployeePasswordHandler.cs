@@ -9,7 +9,8 @@ using Microsoft.Extensions.Configuration;
 
 namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
 {
-    public class ResetEmployeePasswordHandler : IRequestHandler<ResetEmployeePasswordCommand, Result<ResetEmployeePasswordResponse>>
+    public class ResetEmployeePasswordHandler
+        : IRequestHandler<ResetEmployeePasswordCommand, Result<ResetEmployeePasswordResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordService _passwordService;
@@ -22,7 +23,8 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
             IPasswordService passwordService,
             IBackgroundEmailSender emailSender,
             ICurrentUserService currentUserService,
-            IMessageService messageService)
+            IMessageService messageService
+        )
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
@@ -33,34 +35,43 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
 
         public async Task<Result<ResetEmployeePasswordResponse>> Handle(
             ResetEmployeePasswordCommand request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             var managerId = _currentUserService.UserId;
 
             if (string.IsNullOrEmpty(managerId) || !Guid.TryParse(managerId, out var managerGuid))
             {
-                return Result<ResetEmployeePasswordResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyManager));
+                return Result<ResetEmployeePasswordResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.CannotIdentifyManager)
+                );
             }
 
-            var manager = await _unitOfWork.Repository<Employee>()
-                .GetByIdAsync(managerGuid);
+            var manager = await _unitOfWork.Repository<Employee>().GetByIdAsync(managerGuid);
 
             if (manager == null || manager.Role != EmployeeRole.Manager)
             {
-                return Result<ResetEmployeePasswordResponse>.Failure(_messageService.GetMessage(MessageKeys.ResetPassword.OnlyManagerCanReset));
+                return Result<ResetEmployeePasswordResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.ResetPassword.OnlyManagerCanReset)
+                );
             }
 
-            var employee = await _unitOfWork.Repository<Employee>()
+            var employee = await _unitOfWork
+                .Repository<Employee>()
                 .GetByIdAsync(request.EmployeeId);
 
             if (employee == null)
             {
-                return Result<ResetEmployeePasswordResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.NotFound));
+                return Result<ResetEmployeePasswordResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.NotFound)
+                );
             }
 
             if (employee.Status != EmployeeStatus.Active)
             {
-                return Result<ResetEmployeePasswordResponse>.Failure(_messageService.GetMessage(MessageKeys.ResetPassword.OnlyActiveEmployeeCanReset));
+                return Result<ResetEmployeePasswordResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.ResetPassword.OnlyActiveEmployeeCanReset)
+                );
             }
 
             var newPassword = string.IsNullOrEmpty(request.NewPassword)
@@ -70,7 +81,8 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
             employee.PasswordHash = _passwordService.HashPassword(newPassword);
             employee.UpdatedAt = DateTime.UtcNow;
 
-            var refreshTokens = await _unitOfWork.Repository<RefreshToken>()
+            var refreshTokens = await _unitOfWork
+                .Repository<RefreshToken>()
                 .Query()
                 .Where(rt => rt.EmployeeId == employee.EmployeeId && !rt.IsRevoked)
                 .ToListAsync(cancellationToken);
@@ -88,8 +100,9 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 TargetId = employee.EmployeeId,
                 PerformedByEmployeeId = managerGuid,
                 Reason = request.Reason,
-                Metadata = $"Reset by Manager: {manager.FullName} ({manager.EmployeeCode})",
-                CreatedAt = DateTimeOffset.UtcNow
+                Metadata =
+                    $"{{\"info\": \"Reset by Manager: {manager.FullName} ({manager.EmployeeCode})\"}}",
+                CreatedAt = DateTimeOffset.UtcNow,
             };
             await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -102,7 +115,8 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 manager.FullName,
                 employee.EmployeeId,
                 managerGuid,
-                cancellationToken);
+                cancellationToken
+            );
 
             var response = new ResetEmployeePasswordResponse
             {
@@ -112,7 +126,10 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 Email = employee.Email,
                 NewPassword = newPassword,
                 ResetAt = DateTime.UtcNow,
-                Message = _messageService.GetMessage(MessageKeys.ResetPassword.SuccessWithEmail, employee.Email)
+                Message = _messageService.GetMessage(
+                    MessageKeys.ResetPassword.SuccessWithEmail,
+                    employee.Email
+                ),
             };
 
             return Result<ResetEmployeePasswordResponse>.Success(response);
