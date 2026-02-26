@@ -3,6 +3,7 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodHub.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260225100508_FixSoftDeleteUniqueConstraints")]
+    partial class FixSoftDeleteUniqueConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -308,10 +311,15 @@ namespace FoodHub.Migrations
                         .HasColumnType("character varying(150)")
                         .HasColumnName("name");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal>("PriceDineIn")
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)")
-                        .HasColumnName("price");
+                        .HasColumnName("price_dine_in");
+
+                    b.Property<decimal>("PriceTakeAway")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("price_take_away");
 
                     b.Property<int>("Station")
                         .HasColumnType("integer")
@@ -346,8 +354,8 @@ namespace FoodHub.Migrations
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_menu_items_name");
 
-                    b.HasIndex("Price")
-                        .HasDatabaseName("ix_menu_items_price");
+                    b.HasIndex("PriceDineIn")
+                        .HasDatabaseName("ix_menu_items_price_dine_in");
 
                     b.HasIndex("Station")
                         .HasDatabaseName("ix_menu_items_station");

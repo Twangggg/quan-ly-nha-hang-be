@@ -16,26 +16,19 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasKey(e => e.MenuItemId);
             builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
 
-            builder.Property(e => e.Code)
-                .HasColumnName("code")
-                .HasMaxLength(50)
-                .IsRequired();
+            builder.Property(e => e.Code).HasColumnName("code").HasMaxLength(50).IsRequired();
 
-            builder.HasIndex(e => e.Code).IsUnique();
+            builder.HasIndex(e => e.Code).IsUnique().HasFilter("deleted_at IS NULL");
 
-            builder.Property(e => e.Name)
-                .HasColumnName("name")
-                .HasMaxLength(150)
-                .IsRequired();
+            builder.Property(e => e.Name).HasColumnName("name").HasMaxLength(150).IsRequired();
 
-            builder.Property(e => e.ImageUrl)
+            builder
+                .Property(e => e.ImageUrl)
                 .HasColumnName("image_url")
                 .HasMaxLength(255)
                 .IsRequired();
 
-            builder.Property(e => e.Description)
-                .HasColumnName("description")
-                .HasMaxLength(500);
+            builder.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
 
             builder.Property(e => e.CategoryId).HasColumnName("category_id");
 
@@ -46,14 +39,13 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasColumnName("price")
                 .HasPrecision(12, 2);
 
-            builder.Property(e => e.CostPrice)
-                .HasColumnName("cost_price")
-                .HasPrecision(12, 2);
+            builder.Property(e => e.CostPrice).HasColumnName("cost_price").HasPrecision(12, 2);
 
             builder.Property(e => e.IsOutOfStock).HasColumnName("is_out_of_stock");
 
             // Relationships
-            builder.HasOne(e => e.Category)
+            builder
+                .HasOne(e => e.Category)
                 .WithMany(c => c.MenuItems)
                 .HasForeignKey(e => e.CategoryId)
                 .HasConstraintName("fk_menu_items_category_id")
@@ -80,8 +72,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(e => new { e.IsOutOfStock, e.CategoryId });
 
             // Filtered index for active items only
-            builder.HasIndex(e => e.CategoryId)
-                .HasFilter("deleted_at IS NULL");
+            builder.HasIndex(e => e.CategoryId).HasFilter("deleted_at IS NULL");
         }
     }
 }

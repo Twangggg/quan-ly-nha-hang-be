@@ -22,33 +22,33 @@ namespace FoodHub.Infrastructure.Services
 <body>
     <div class='container'>
         <div class='header'>
-            <h1>🔐 Reset Your Password</h1>
+            <h1>🔐 Đặt lại mật khẩu</h1>
         </div>
         <div class='content'>
-            <p>Hello <strong>" + employeeName + @"</strong>,</p>
+            <p>Xin chào <strong>" + employeeName + @"</strong>,</p>
             
-            <p>We received a request to reset the password for your FoodHub account.</p>
+            <p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản FoodHub của bạn.</p>
             
-            <p>To reset your password, please click the button below:</p>
+            <p>Để đặt lại mật khẩu, vui lòng nhấn vào nút bên dưới:</p>
             
             <div style='text-align: center;'>
-                <a href='" + resetLink + @"' class='button'>Reset Password</a>
+                <a href='" + resetLink + @"' class='button'>Đặt lại mật khẩu</a>
             </div>
             
             <div class='warning'>
-                <strong>⚠️ Important:</strong>
+                <strong>⚠️ Lưu ý quan trọng:</strong>
                 <ul>
-                    <li>This link is valid for <strong>15 minutes</strong></li>
-                    <li>The link can be used <strong>only once</strong></li>
-                    <li>If you did not request a password reset, please ignore this email</li>
+                    <li>Liên kết này có hiệu lực trong <strong>15 phút</strong></li>
+                    <li>Liên kết chỉ có thể sử dụng <strong>một lần duy nhất</strong></li>
+                    <li>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này</li>
                 </ul>
             </div>
             
-            <p>Best regards,<br><strong>FoodHub System</strong></p>
+            <p>Trân trọng,<br><strong>Hệ thống FoodHub</strong></p>
         </div>
         <div class='footer'>
-            <p>This is an automated email. Please do not reply to this message.</p>
-            <p>&copy; 2026 FoodHub. All rights reserved.</p>
+            <p>Đây là email tự động. Vui lòng không trả lời email này.</p>
+            <p>&copy; 2026 FoodHub. Mọi quyền được bảo lưu.</p>
         </div>
     </div>
 </body>
