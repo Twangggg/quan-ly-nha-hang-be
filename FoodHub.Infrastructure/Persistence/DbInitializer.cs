@@ -381,6 +381,77 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
+            // Ensure the tables and areas exist before seeding orders, since orders reference tables
+            if (!_context.Areas.Any())
+            {
+                var areas = new Area[]
+                {
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        Name = "Indoor",
+                        CodePrefix = "F1",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        Name = "Outdoor",
+                        CodePrefix = "F2",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                        Name = "VIP Room",
+                        CodePrefix = "VIP",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                };
+                _context.Areas.AddRange(areas);
+                _context.SaveChanges();
+            }
+
+            // Seed tables with specific IDs to match FE expectations
+            if (!_context.Tables.Any())
+            {
+                var tables = new Table[]
+                {
+                    new Table
+                    {
+                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        TableCode = "A01",
+                        Capacity = 4,
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        Shape = TableShape.Rectangle,
+                        Status = TableStatus.Available,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Table
+                    {
+                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        TableCode = "B01",
+                        Capacity = 2,
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        Shape = TableShape.Square,
+                        Status = TableStatus.Occupied,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Table
+                    {
+                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                        TableCode = "VIP01",
+                        Capacity = 6,
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                        Shape = TableShape.Rectangle,
+                        Status = TableStatus.Available,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                };
+                _context.Tables.AddRange(tables);
+                _context.SaveChanges();
+            }
+
             _context.SaveChanges();
         }
     }
