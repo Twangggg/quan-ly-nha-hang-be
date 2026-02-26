@@ -78,24 +78,19 @@ namespace FoodHub.Presentation.Controllers
             return HandleResult(result);
         }
 
-
         /// <summary>
         /// Lấy đơn hàng dựa trên id
         /// </summary>
         /// <param name="orderId">Mã đơn hàng.</param>
         /// <response code="200">Trả về đơn hàng kèm thông tin tương ứng.</response>
-        [HttpGet]
+        [HttpGet("{orderId:guid}")]
         [HasPermission(Permissions.Orders.View)]
-        [ProducesResponseType(
-            typeof(Result<GetOrderByIdResponse>),
-            StatusCodes.Status200OK
-        )]
-        public async Task<IActionResult> GetOrderById([FromQuery] Guid orderId)
+        [ProducesResponseType(typeof(Result<GetOrderByIdResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetOrderById(Guid orderId)
         {
             var result = await _mediator.Send(new GetOrderByIdQuery { OrderId = orderId });
             return HandleResult(result);
         }
-
 
         /// <summary>
         /// Gửi toàn bộ yêu cầu của đơn hàng xuống bếp.
