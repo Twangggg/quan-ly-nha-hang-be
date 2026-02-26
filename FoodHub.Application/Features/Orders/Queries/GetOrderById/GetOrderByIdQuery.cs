@@ -14,7 +14,7 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrderById
     public record GetOrderByIdQuery : IRequest<Result<GetOrderByIdResponse>>
     {
         /// <summary>
-        /// Mã định danh của đơn hàng.
+        /// The unique identifier of the order.
         /// </summary>
         public Guid OrderId { get; set; }
     }

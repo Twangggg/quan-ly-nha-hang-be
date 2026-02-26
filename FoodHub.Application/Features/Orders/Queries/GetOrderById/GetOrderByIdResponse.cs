@@ -26,13 +26,13 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrderById
         public DateTime? CompletedAt { get; set; }
         public DateTime? CancelledAt { get; set; }
         public ICollection<OrderItemDto> OrderItems { get; set; } = new List<OrderItemDto>();
+
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<Order, GetOrdersResponse>()
-                .ForMember(d => d.OrderType,
-                    opt => opt.MapFrom(s => s.OrderType.ToString()))
-                .ForMember(d => d.Status,
-                    opt => opt.MapFrom(s => s.Status.ToString()));
+            profile
+                .CreateMap<Order, GetOrderByIdResponse>()
+                .ForMember(d => d.OrderType, opt => opt.MapFrom(s => s.OrderType.ToString()))
+                .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()));
         }
     }
 }
