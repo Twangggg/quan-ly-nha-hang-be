@@ -32,7 +32,7 @@ try
 
     // --- Bước 3: Đăng ký các dịch vụ mở rộng (Presentation Extensions) ---
     builder.Services.AddMonitoring(builder.Configuration); // OpenTelemetry (Tracing & Metrics)
-    builder.Services.AddSecurityServices(builder.Configuration); // JWT, CORS
+    builder.Services.AddSecurityServices(builder.Configuration, builder.Environment); // JWT, CORS
     builder.Services.AddSwaggerDocumentation(); // Tài liệu API Swagger
     builder.Services.AddWebServices(builder.Configuration); // Redis, Rate Limiting, Versioning...
     builder.Services.AddHealthCheckServices(builder.Configuration); // Health Check (DB, Cache)
@@ -48,53 +48,56 @@ try
     {
         var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
         app.UseSwaggerDocumentation(provider);
+    }
 
-        // Auto Migrate & Seed Data
-        using (var scope = app.Services.CreateScope())
+    // Auto Migrate & Seed Data (Run in both Dev and Prod)
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var retryCount = 0;
+        var maxRetries = 20;
+
+        while (retryCount < maxRetries)
         {
-            var services = scope.ServiceProvider;
-            var retryCount = 0;
-            var maxRetries = 20;
-
-            while (retryCount < maxRetries)
+            try
             {
-                try
+                var context = services.GetRequiredService<AppDbContext>();
+                var initializer = services.GetRequiredService<DbInitializer>();
+
+                await context.Database.MigrateAsync();
+                initializer.Initialize();
+                break;
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+
+                if (retryCount >= maxRetries)
                 {
-                    var context = services.GetRequiredService<AppDbContext>();
-                    var initializer = services.GetRequiredService<DbInitializer>();
-
-                    context.Database.Migrate();
-                    initializer.Initialize();
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    retryCount++;
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-
-                    if (retryCount >= maxRetries)
-                    {
-                        logger.LogError(
-                            ex,
-                            "An error occurred while migrating or seeding the database."
-                        );
-                        throw;
-                    }
-
-                    logger.LogWarning(
-                        "Database not ready. Retry {Count}/{Max}...",
-                        retryCount,
-                        maxRetries
+                    logger.LogError(
+                        ex,
+                        "An error occurred while migrating or seeding the database."
                     );
-                    await Task.Delay(3000);
+                    throw;
                 }
+
+                logger.LogWarning(
+                    "Database not ready. Retry {Count}/{Max}...",
+                    retryCount,
+                    maxRetries
+                );
+                await Task.Delay(3000);
             }
         }
     }
 
     app.UseCors("AllowReact");
 
-    if (!app.Environment.IsDevelopment())
+    if (
+        !app.Environment.IsDevelopment()
+        && builder.Configuration.GetValue<bool>("EnableHttpsRedirection", true)
+    )
     {
         app.UseHttpsRedirection();
     }
@@ -105,7 +108,7 @@ try
     app.MapControllers(); // Map các API Controller
     app.MapHealthCheckEndpoints(); // GET /health & /health/detail
 
-    app.Run();
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
@@ -113,5 +116,5 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }

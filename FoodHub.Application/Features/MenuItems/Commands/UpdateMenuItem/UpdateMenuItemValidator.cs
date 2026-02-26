@@ -28,22 +28,9 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
                 .GreaterThan(0)
                 .WithMessage("Expected time must be greater than 0 minutes.");
 
-            RuleFor(x => x.PriceDineIn)
-                .GreaterThanOrEqualTo(0)
-                .WithMessage("Dine-in price cannot be negative.");
-
-            RuleFor(x => x.PriceTakeAway)
-                .GreaterThanOrEqualTo(0)
-                .WithMessage("Take-away price cannot be negative.");
-
-            RuleFor(x => x.CostPrice)
-                .GreaterThanOrEqualTo(0)
-                .When(x => x.CostPrice.HasValue)
-                .WithMessage("Cost cannot be negative.");
-
-            RuleFor(x => x)
-                .Must(x => x.PriceDineIn > 0 || x.PriceTakeAway > 0)
-                .WithMessage("At least one selling price must be greater than 0.");
+            RuleFor(x => x.Price)
+                .GreaterThan(0)
+                .WithMessage("Price must be greater than 0.");
         }
     }
 }

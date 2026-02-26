@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Employees.Commands.UpdateMyProfile;
 using FoodHub.Application.Features.Employees.Queries.GetMyProfile;
+using FoodHub.Application.Interfaces;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -19,10 +21,12 @@ namespace FoodHub.Presentation.Controllers
     public class ProfileController : ApiControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IMessageService _messageService;
 
-        public ProfileController(IMediator mediator)
+        public ProfileController(IMediator mediator, IMessageService messageService)
         {
             _mediator = mediator;
+            _messageService = messageService;
         }
 
         /// <summary>
@@ -38,7 +42,12 @@ namespace FoodHub.Presentation.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
             if (userIdClaim == null || !Guid.TryParse(userIdClaim?.Value, out var userId))
-                return Unauthorized(new { message = "User not found" });
+                return Unauthorized(
+                    new ErrorResponse(
+                        StatusCodes.Status401Unauthorized,
+                        _messageService.GetMessage(MessageKeys.Auth.InvalidTokenClaims)
+                    )
+                );
 
             var result = await _mediator.Send(new Query(userId));
             return HandleResult(result);
@@ -57,7 +66,12 @@ namespace FoodHub.Presentation.Controllers
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim?.Value, out var userId))
-                return Unauthorized(new { message = "User not found" });
+                return Unauthorized(
+                    new ErrorResponse(
+                        StatusCodes.Status401Unauthorized,
+                        _messageService.GetMessage(MessageKeys.Auth.InvalidTokenClaims)
+                    )
+                );
 
             var result = await _mediator.Send(
                 new UpdateProfileCommand(

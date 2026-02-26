@@ -155,8 +155,7 @@ namespace FoodHub.Infrastructure.Persistence
                         CategoryId = foodCategory.CategoryId,
                         Station = Station.HotKitchen,
                         ExpectedTime = 15,
-                        PriceDineIn = 50000,
-                        PriceTakeAway = 48000,
+                        Price = 50000,
                         CostPrice = 30000,
                         CreatedAt = DateTime.UtcNow,
                     },
@@ -170,8 +169,7 @@ namespace FoodHub.Infrastructure.Persistence
                         CategoryId = foodCategory.CategoryId,
                         Station = Station.HotKitchen,
                         ExpectedTime = 12,
-                        PriceDineIn = 45000,
-                        PriceTakeAway = 43000,
+                        Price = 45000,
                         CostPrice = 25000,
                         CreatedAt = DateTime.UtcNow,
                     },
@@ -185,8 +183,7 @@ namespace FoodHub.Infrastructure.Persistence
                         CategoryId = drinkCategory.CategoryId,
                         Station = Station.Bar,
                         ExpectedTime = 3,
-                        PriceDineIn = 20000,
-                        PriceTakeAway = 18000,
+                        Price = 20000,
                         CostPrice = 8000,
                         CreatedAt = DateTime.UtcNow,
                     },
@@ -200,8 +197,7 @@ namespace FoodHub.Infrastructure.Persistence
                         CategoryId = comboCategory.CategoryId,
                         Station = Station.HotKitchen,
                         ExpectedTime = 18,
-                        PriceDineIn = 65000,
-                        PriceTakeAway = 62000,
+                        Price = 65000,
                         CostPrice = 40000,
                         CreatedAt = DateTime.UtcNow,
                     },
@@ -305,7 +301,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = chickenRice.Station.ToString(),
                         Status = OrderItemStatus.Ready,
                         Quantity = 1,
-                        UnitPriceSnapshot = chickenRice.PriceDineIn,
+                        UnitPriceSnapshot = chickenRice.Price,
                         CreatedAt = order1.CreatedAt,
                     }
                 );
@@ -321,7 +317,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = lemonTea.Station.ToString(),
                         Status = OrderItemStatus.Completed,
                         Quantity = 1,
-                        UnitPriceSnapshot = lemonTea.PriceDineIn,
+                        UnitPriceSnapshot = lemonTea.Price,
                         CreatedAt = order1.CreatedAt,
                     }
                 );
@@ -349,7 +345,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = beefNoodle.Station.ToString(),
                         Status = OrderItemStatus.Preparing,
                         Quantity = 1,
-                        UnitPriceSnapshot = beefNoodle.PriceDineIn,
+                        UnitPriceSnapshot = beefNoodle.Price,
                         CreatedAt = order2.CreatedAt,
                     }
                 );
@@ -376,7 +372,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = lemonTea.Station.ToString(),
                         Status = OrderItemStatus.Ready,
                         Quantity = 1,
-                        UnitPriceSnapshot = lemonTea.PriceDineIn,
+                        UnitPriceSnapshot = lemonTea.Price,
                         CreatedAt = order3.CreatedAt,
                     }
                 );

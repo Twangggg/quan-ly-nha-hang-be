@@ -199,7 +199,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             {
                 var menuItem = menuItems[group.MenuItemId];
                 // Select price based on order type
-                var price = menuItem.GetPriceFor(order.OrderType);
+                var price = menuItem.Price;
                 var orderItem = new OrderItem
                 {
                     OrderItemId = Guid.NewGuid(),

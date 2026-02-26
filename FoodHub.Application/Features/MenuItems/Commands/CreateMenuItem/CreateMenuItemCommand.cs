@@ -13,8 +13,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
         Guid CategoryId,
         Station Station,
         int ExpectedTime,
-        decimal PriceDineIn,
-        decimal? PriceTakeAway,
+        decimal Price,
         //IFormFile? ImageFile,
         decimal? Cost
     ) : IRequest<Result<CreateMenuItemResponse>>;

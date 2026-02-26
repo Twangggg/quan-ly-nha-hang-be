@@ -11,12 +11,15 @@ public static class SecurityExtensions
     /// </summary>
     public static IServiceCollection AddSecurityServices(
         this IServiceCollection services,
-        IConfiguration configuration
+        IConfiguration configuration,
+        IWebHostEnvironment env
     )
     {
-        // 1. Cấu hình CORS (Cho phép Frontend gọi API từ domain khác)
-        var corsOrigins =
-            configuration["AllowedOrigins"]?.Split(',') ?? new[] { "http://localhost:3000" };
+        // ... (CORS và Authentication giữ nguyên)
+        // 1. Cấu hình CORS
+        var allowedOrigins = configuration["AllowedOrigins"] ?? "http://localhost:3000";
+        var corsOrigins = allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
         services.AddCors(opt =>
         {
             opt.AddPolicy(
@@ -74,7 +77,10 @@ public static class SecurityExtensions
             options.Cookie.Name = "XSRF-TOKEN";
             options.Cookie.HttpOnly = false; // Phải để false để Javascript của React đọc được mã
             options.Cookie.SameSite = SameSiteMode.Lax;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SecurePolicy =
+                env.IsDevelopment() || !configuration.GetValue<bool>("EnableHttpsRedirection", true)
+                    ? CookieSecurePolicy.None
+                    : CookieSecurePolicy.Always;
         });
 
         return services;

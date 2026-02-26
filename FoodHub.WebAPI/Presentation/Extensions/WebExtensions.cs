@@ -63,6 +63,8 @@ public static class WebExtensions
         {
             options.ForwardedHeaders =
                 ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
         });
 
         // 4. Cấu hình URL (Tự động viết thường URL: /api/Values -> /api/values)
@@ -125,6 +127,7 @@ public static class WebExtensions
         // Localization
         services.AddLocalization();
 
+        services.AddSignalR();
         return services;
     }
 
@@ -160,7 +163,7 @@ public static class WebExtensions
                     {
                         HttpOnly = false,
                         SameSite = SameSiteMode.Lax,
-                        Secure = true,
+                        Secure = context.Request.IsHttps,
                     }
                 );
 

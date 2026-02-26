@@ -9,5 +9,6 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
         public string EmployeeCode { get; set; } = null!;
         public EmployeeRole CurrentRole { get; set; }
         public EmployeeRole NewRole { get; set; }
+        public string Reason { get; set; } = null!;
     }
 }

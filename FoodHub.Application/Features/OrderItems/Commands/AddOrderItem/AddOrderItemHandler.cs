@@ -114,7 +114,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             }
             else
             {
-                var price = menuItem.GetPriceFor(order.OrderType);
+                var price = menuItem.Price;
 
                 var newItem = new OrderItem
                 {

@@ -52,7 +52,6 @@ namespace FoodHub.Tests.Features.MenuItems
                 Station.HotKitchen,
                 15,
                 50000m,
-                45000m,
                 25000m
             );
 
@@ -113,7 +112,6 @@ namespace FoodHub.Tests.Features.MenuItems
                 Station.HotKitchen,
                 15,
                 50000m,
-                null,
                 null
             );
 
@@ -164,7 +162,6 @@ namespace FoodHub.Tests.Features.MenuItems
                 Station.HotKitchen,
                 15,
                 50000m,
-                null,
                 null
             );
 

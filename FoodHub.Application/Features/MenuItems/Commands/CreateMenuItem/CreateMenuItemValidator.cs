@@ -33,12 +33,8 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
             RuleFor(x => x.ExpectedTime)
                 .GreaterThan(0).WithMessage("Expected time must be greater than 0.");
 
-            RuleFor(x => x.PriceDineIn)
-                .GreaterThanOrEqualTo(0).WithMessage("Price (Dine In) must be greater than or equal to 0.");
-
-
-            RuleFor(x => x.PriceTakeAway)
-                .GreaterThanOrEqualTo(0).When(x => x.PriceTakeAway.HasValue).WithMessage("Price (Take Away) must be greater than or equal to 0.");
+            RuleFor(x => x.Price)
+                .GreaterThanOrEqualTo(0).WithMessage("Price must be greater than or equal to 0.");
 
             RuleFor(x => x.Cost)
                 .GreaterThanOrEqualTo(0).When(x => x.Cost.HasValue).WithMessage("Cost must be greater than or equal to 0.");
