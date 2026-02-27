@@ -1,10 +1,12 @@
 using AutoMapper;
 using FoodHub.Application.Extensions.Mappings;
+using FoodHub.Application.Features.Tables.Queries.GetTables;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 
-namespace FoodHub.Application.Features.Tables.Queries.GetTables
+namespace FoodHub.Application.Features.Tables.Queries.GetTableById
 {
-    public class GetTablesResponse : IMapFrom<Table>
+    public class GetTableByIdResponse : IMapFrom<Table>
     {
         public Guid TableId { get; set; }
         public required string TableCode { get; set; }
@@ -20,9 +22,10 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
 
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<Table, GetTablesResponse>()
-                .ForMember(d => d.Area,opt => opt.MapFrom(s => s.Area.Name))
+            profile.CreateMap<Table, GetTableByIdResponse>()
+                .ForMember(d => d.Area, opt => opt.MapFrom(s => s.Area.Name))
                 .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()));
         }
+
     }
 }

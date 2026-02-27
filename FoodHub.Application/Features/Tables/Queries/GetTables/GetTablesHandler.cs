@@ -45,7 +45,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
             var searchableFields = new List<Expression<Func<Table, string?>>>
             {
                 t => t.TableCode,
-                t => t.Area.ToString()
+                t => t.Area.Name
             };
             query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
 

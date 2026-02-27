@@ -4,7 +4,6 @@ namespace FoodHub.Domain.Entities
 {
     public abstract class BaseEntity
     {
-
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Guid? CreatedBy { get; set; }
 

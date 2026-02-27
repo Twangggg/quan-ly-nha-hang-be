@@ -158,5 +158,11 @@ namespace FoodHub.Application.Constants
             public const string UpdateForbidden = "SetMenu.UpdateForbidden";
             public const string DeleteForbidden = "SetMenu.DeleteForbidden";
         }
+
+        public static class Table
+            {
+                public const string NotFound = "Table.NotFound";
+                public const string AlreadyOccupied = "Table.AlreadyOccupied";
+        }
     }
 }
