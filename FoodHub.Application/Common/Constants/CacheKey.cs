@@ -71,6 +71,18 @@ public static class CacheKey
     // ==================== ORDERS ====================
     public const string OrderList = "order:list";
     public const string OrderById = "order:{0}";
+
+    // ==================== TABLES ====================
+    /// <summary>
+    /// Key cho danh sách tables (base key)
+    /// Sẽ kết hợp với filters/pagination
+    /// </summary>
+    public const string TableList = "table:list";
+    /// <summary>
+    /// Key cho một table cụ thể
+    /// Example: string.Format(TableById, "321") → "table:321"
+    /// </summary>
+    public const string TableById = "table:{0}";
 }
 
 public static class CacheTTL
@@ -81,4 +93,5 @@ public static class CacheTTL
     public static readonly TimeSpan SetMenus = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Options = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Orders = TimeSpan.FromMinutes(5);
+    public static readonly TimeSpan Tables = TimeSpan.FromMinutes(10);
 }

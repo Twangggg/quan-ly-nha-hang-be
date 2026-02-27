@@ -39,6 +39,14 @@
     <ProjectReference Include="..\FoodHub.Domain\FoodHub.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Tables\Commands\CreateTable\" />
+    <Folder Include="Features\Tables\Commands\DeleteTable\" />
+    <Folder Include="Features\Tables\Commands\InactiveTable\" />
+    <Folder Include="Features\Tables\Commands\UpdateTable\" />
+    <Folder Include="Features\Tables\Queries\GetTableById\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

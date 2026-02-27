@@ -21,7 +21,6 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(t => t.TableId).HasColumnName("table_id");
             builder.Property(t => t.TableCode).IsRequired().HasMaxLength(50).HasColumnName("table_code");
             builder.Property(t => t.Capacity).IsRequired().HasColumnName("capacity");
-            builder.Property(t => t.Shape).IsRequired().HasColumnName("shape");
             builder.Property(t => t.AreaId).IsRequired().HasColumnName("area_id");
             builder.Property(t => t.Status).IsRequired().HasColumnName("status");
 
