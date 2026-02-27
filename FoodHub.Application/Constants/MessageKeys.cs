@@ -158,5 +158,16 @@ namespace FoodHub.Application.Constants
             public const string UpdateForbidden = "SetMenu.UpdateForbidden";
             public const string DeleteForbidden = "SetMenu.DeleteForbidden";
         }
+
+        public static class Area
+        {
+            public const string NotFound = "Area.NotFound";
+            public const string CodeExists = "Area.CodeExists";
+            public const string NameRequired = "Area.NameRequired";
+            public const string CodeRequired = "Area.CodeRequired";
+            public const string UpdateForbidden = "Area.UpdateForbidden";
+            public const string DeleteForbidden = "Area.DeleteForbidden";
+            public const string DeactivateForbidden = "Area.DeactivateForbidden";
+        }
     }
 }

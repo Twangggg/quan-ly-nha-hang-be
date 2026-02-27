@@ -12,6 +12,8 @@ namespace FoodHub.Domain.Entities
         public Guid AreaId { get; set; }
         public required string Name { get; set; }
         public required string CodePrefix { get; set; }
+        public AreaType Type { get; set; } = AreaType.Normal;
+        public string? Description { get; set; }
         public AreaStatus Status { get; set; } = AreaStatus.Active;
         public virtual ICollection<Table> Tables { get; set; } = new List<Table>();
     }

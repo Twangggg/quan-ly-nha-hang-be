@@ -48,5 +48,13 @@ namespace FoodHub.Application.Constants
             public const string Delete = "Permissions.SetMenus.Delete";
             public const string UpdateStock = "Permissions.SetMenus.UpdateStock";
         }
+
+        public static class Areas
+        {
+            public const string View = "Permissions.Areas.View";
+            public const string Create = "Permissions.Areas.Create";
+            public const string Update = "Permissions.Areas.Update";
+            public const string Delete = "Permissions.Areas.Delete";
+        }
     }
 }

@@ -391,6 +391,8 @@ namespace FoodHub.Infrastructure.Persistence
                         AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                         Name = "Indoor",
                         CodePrefix = "F1",
+                        Type = AreaType.Normal,
+                        Description = "General indoor dining area",
                         CreatedAt = DateTime.UtcNow,
                     },
                     new Area
@@ -398,6 +400,8 @@ namespace FoodHub.Infrastructure.Persistence
                         AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                         Name = "Outdoor",
                         CodePrefix = "F2",
+                        Type = AreaType.Normal,
+                        Description = "Outdoor seating area",
                         CreatedAt = DateTime.UtcNow,
                     },
                     new Area
@@ -405,6 +409,8 @@ namespace FoodHub.Infrastructure.Persistence
                         AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                         Name = "VIP Room",
                         CodePrefix = "VIP",
+                        Type = AreaType.VIP,
+                        Description = "Private VIP rooms",
                         CreatedAt = DateTime.UtcNow,
                     },
                 };
