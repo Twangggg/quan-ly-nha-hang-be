@@ -12,5 +12,6 @@ namespace FoodHub.Domain.Enums
         Reserved = 1,
         Occupied = 2,
         Cleaning = 3,
+        OutOfService = 4
     }
 }

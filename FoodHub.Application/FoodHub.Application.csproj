@@ -40,7 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Tables\Commands\CreateTable\" />
     <Folder Include="Features\Tables\Commands\DeleteTable\" />
     <Folder Include="Features\Tables\Commands\InactiveTable\" />
     <Folder Include="Features\Tables\Commands\UpdateTable\" />

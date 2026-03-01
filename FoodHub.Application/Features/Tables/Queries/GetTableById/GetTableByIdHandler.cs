@@ -1,3 +1,4 @@
+using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
@@ -13,12 +14,14 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTableById
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
+        private readonly IMapper _mapper;
 
-        public GetTableByIdHandler(IUnitOfWork unitOfWork, IMessageService messageService, ICacheService cacheService)
+        public GetTableByIdHandler(IUnitOfWork unitOfWork, IMessageService messageService, ICacheService cacheService, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _cacheService = cacheService;
+            _mapper = mapper;
         }
         public async Task<Result<GetTableByIdResponse>> Handle(GetTableByIdQuery request, CancellationToken cancellationToken)
         {
@@ -40,19 +43,21 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTableById
                 return Result<GetTableByIdResponse>.NotFound(_messageService.GetMessage(MessageKeys.Table.NotFound));
             }
 
-            var response = new GetTableByIdResponse
-            {
-                TableId = table.TableId,
-                TableCode = table.TableCode,
-                Capacity = table.Capacity,
-                Area = table.Area.Name,
-                Status = table.Status.ToString(),
-                CreatedAt = table.CreatedAt,
-                CreatedBy = table.CreatedBy,
-                UpdatedAt = table.UpdatedAt,
-                UpdatedBy = table.UpdatedBy,
-                DeletedAt = table.DeletedAt
-            };
+            //var response = new GetTableByIdResponse
+            //{
+            //    TableId = table.TableId,
+            //    TableCode = table.TableCode,
+            //    Capacity = table.Capacity,
+            //    Area = table.Area.Name,
+            //    Status = table.Status.ToString(),
+            //    CreatedAt = table.CreatedAt,
+            //    CreatedBy = table.CreatedBy,
+            //    UpdatedAt = table.UpdatedAt,
+            //    UpdatedBy = table.UpdatedBy,
+            //    DeletedAt = table.DeletedAt
+            //};
+
+            var response = _mapper.Map<GetTableByIdResponse>(table);
 
             await _cacheService.SetAsync(cacheKey, response, CacheTTL.Tables, cancellationToken);
             return Result<GetTableByIdResponse>.Success(response);

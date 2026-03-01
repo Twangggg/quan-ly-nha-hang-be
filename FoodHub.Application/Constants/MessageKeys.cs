@@ -160,9 +160,15 @@ namespace FoodHub.Application.Constants
         }
 
         public static class Table
-            {
-                public const string NotFound = "Table.NotFound";
-                public const string AlreadyOccupied = "Table.AlreadyOccupied";
+        {
+            public const string NotFound = "Table.NotFound";
+            public const string AlreadyOccupied = "Table.AlreadyOccupied";
+            public const string CodeExists = "Table.CodeExists";
+        }
+
+        public static class Area
+        {
+            public const string NotFound = "Area.NotFound";
         }
     }
 }
