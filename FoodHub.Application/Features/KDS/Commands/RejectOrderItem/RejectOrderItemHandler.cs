@@ -95,7 +95,8 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                         oi.StationSnapshot == orderItem.StationSnapshot
                         && oi.Status == OrderItemStatus.Preparing
                     )
-                    .OrderBy(oi => oi.CreatedAt)
+                    .OrderByDescending(oi => oi.Order.IsPriority)
+                    .ThenBy(oi => oi.CreatedAt)
                     .FirstOrDefaultAsync(cancellationToken);
 
                 if (nextItem != null)

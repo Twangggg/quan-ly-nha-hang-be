@@ -16,6 +16,7 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
         public string Status { get; set; } = null!;
         public string? RejectionReason { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int PriorityScore { get; set; }
 
         public void Mapping(Profile profile)
         {

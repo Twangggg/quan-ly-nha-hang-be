@@ -82,7 +82,6 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 OrderId = Guid.NewGuid(),
                 OrderCode = newOrderCode,
                 OrderType = request.OrderType,
-                // Per discussion: Start at SERVING immediately
                 Status = OrderStatus.Serving,
                 TableId = request.TableId,
                 Note = request.Note,

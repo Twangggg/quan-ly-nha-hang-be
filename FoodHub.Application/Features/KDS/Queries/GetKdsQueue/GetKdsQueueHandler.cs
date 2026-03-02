@@ -43,7 +43,8 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
                 .Where(oi =>
                     oi.StationSnapshot == request.Station && oi.Status == OrderItemStatus.Preparing
                 )
-                .OrderBy(oi => oi.CreatedAt)
+                .OrderByDescending(oi => oi.Order.IsPriority)
+                .ThenBy(oi => oi.CreatedAt)
                 .ProjectTo<KdsQueueResponse>(_mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
 

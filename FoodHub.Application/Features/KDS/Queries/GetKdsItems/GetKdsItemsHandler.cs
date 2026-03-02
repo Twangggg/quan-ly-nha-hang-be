@@ -1,6 +1,7 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -15,11 +16,13 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly ILogger<GetKdsItemsHandler> _logger;
 
         public GetKdsItemsHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
+            KdsPriorityCalculator priorityCalculator,
             ILogger<GetKdsItemsHandler> logger
         )
         {
@@ -47,8 +50,9 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                         || oi.Status == OrderItemStatus.Cooking
                     )
                 )
-                .OrderBy(oi => oi.Status == OrderItemStatus.Cooking ? 0 : 1)
-                .ThenBy(oi => oi.CreatedAt)
+                .OrderBy(oi => oi.Status == OrderItemStatus.Cooking ? 0 : 1) // Đang nấu lên đầu
+                .ThenByDescending(oi => oi.Order.IsPriority) // Đơn VIP lên trước
+                .ThenBy(oi => oi.CreatedAt) // Ai chờ lâu hơn lên trước
                 .ProjectTo<KdsItemResponse>(_mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
 
