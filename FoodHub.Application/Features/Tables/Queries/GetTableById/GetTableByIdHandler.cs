@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Tables.Queries.GetTableById
 {
+    /// <summary>
+    /// Handler for retrieving a table by its ID. It checks the cache first before querying the database. If the table is found, it maps the entity to a response DTO and caches the result for future requests.
+    /// </summary>
     public class GetTableByIdHandler : IRequestHandler<GetTableByIdQuery, Result<GetTableByIdResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -16,6 +19,13 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTableById
         private readonly ICacheService _cacheService;
         private readonly IMapper _mapper;
 
+        /// <summary>
+        /// Constructor to inject dependencies for the GetTableByIdHandler, including database access, messaging, caching, and mapping services.
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        /// <param name="messageService"></param>
+        /// <param name="cacheService"></param>
+        /// <param name="mapper"></param>
         public GetTableByIdHandler(IUnitOfWork unitOfWork, IMessageService messageService, ICacheService cacheService, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
@@ -23,16 +33,23 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTableById
             _cacheService = cacheService;
             _mapper = mapper;
         }
+        /// <summary>
+        /// Handles the GetTableByIdQuery by first checking the cache for the requested table. If not found in cache, it queries the database, maps the result to a response DTO, caches it, and returns the result. If the table is not found in the database, it returns a NotFound result with an appropriate message.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<Result<GetTableByIdResponse>> Handle(GetTableByIdQuery request, CancellationToken cancellationToken)
         {
+            // Check cache first
             var cacheKey = string.Format(CacheKey.TableById, request.Id);
-
             var cachedTable = await _cacheService.GetAsync<GetTableByIdResponse>(cacheKey, cancellationToken);
             if (cachedTable != null)
             {
                 return Result<GetTableByIdResponse>.Success(cachedTable);
             }
 
+            // If not in cache, query the database
             var table = await _unitOfWork.Repository<Table>()
                 .Query()
                 .Include(t => t.Area)
@@ -43,22 +60,8 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTableById
                 return Result<GetTableByIdResponse>.NotFound(_messageService.GetMessage(MessageKeys.Table.NotFound));
             }
 
-            //var response = new GetTableByIdResponse
-            //{
-            //    TableId = table.TableId,
-            //    TableCode = table.TableCode,
-            //    Capacity = table.Capacity,
-            //    Area = table.Area.Name,
-            //    Status = table.Status.ToString(),
-            //    CreatedAt = table.CreatedAt,
-            //    CreatedBy = table.CreatedBy,
-            //    UpdatedAt = table.UpdatedAt,
-            //    UpdatedBy = table.UpdatedBy,
-            //    DeletedAt = table.DeletedAt
-            //};
-
+            // Map the table entity to the response DTO
             var response = _mapper.Map<GetTableByIdResponse>(table);
-
             await _cacheService.SetAsync(cacheKey, response, CacheTTL.Tables, cancellationToken);
             return Result<GetTableByIdResponse>.Success(response);
         }

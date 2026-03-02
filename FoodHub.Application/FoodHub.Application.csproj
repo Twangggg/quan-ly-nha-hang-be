@@ -40,9 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Tables\Commands\DeleteTable\" />
     <Folder Include="Features\Tables\Commands\InactiveTable\" />
-    <Folder Include="Features\Tables\Commands\UpdateTable\" />
+    <Folder Include="Features\Tables\Commands\ChangeStatusTable\" />
   </ItemGroup>
 
   <PropertyGroup>

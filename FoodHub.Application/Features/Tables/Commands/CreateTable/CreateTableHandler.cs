@@ -10,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Tables.Commands.CreateTable
 {
+    /// <summary>
+    /// Handler for creating a new table in the restaurant. It validates the input, checks for existing tables with the same code,
+    /// </summary>
     public class CreateTableHandler : IRequestHandler<CreateTableCommand, Result<CreateTableResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -19,6 +22,15 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
         private readonly IMapper _mapper;
         private readonly ILogger<CreateTableHandler> _logger;
 
+        /// <summary>
+        /// Constructor to inject dependencies for the CreateTableHandler, including database access, user context, messaging, caching, mapping, and logging services.
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        /// <param name="currentUserService"></param>
+        /// <param name="messageService"></param>
+        /// <param name="cacheService"></param>
+        /// <param name="mapper"></param>
+        /// <param name="logger"></param>
         public CreateTableHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
@@ -35,10 +47,18 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
             _logger = logger;
         }
 
+        /// <summary>
+        /// Handles the creation of a new table by validating the request, checking for duplicates, ensuring the specified area exists, and then adding the new table to the database. It also manages caching and returns an appropriate response based on the outcome of the operation.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<Result<CreateTableResponse>> Handle(CreateTableCommand request, CancellationToken cancellationToken)
         {
+            // Log the incoming request for traceability
             _logger.LogInformation("Handling CreateTableCommand for TableCode: {TableCode}", request.TableCode);
 
+            // Validate the request data
             var tableRepo = _unitOfWork.Repository<Table>();
             var areaRepo = _unitOfWork.Repository<Area>();
 
@@ -62,12 +82,14 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
                     ResultErrorType.NotFound);
             }
 
+            // Create a new table entity and populate its properties
             Guid? auditorId = null;
             if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
             {
                 auditorId = parsedId;
             }
 
+            // Create the new table entity
             var newTable = new Table
             {
                 TableId = Guid.NewGuid(),
@@ -79,21 +101,13 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
                 CreatedBy = auditorId
             };
 
+            // Add the new table to the repository and save changes
             await tableRepo.AddAsync(newTable);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
-
             await _cacheService.RemoveByPatternAsync("table:list", cancellationToken);
 
-            var response = new CreateTableResponse
-            {
-                TableId = newTable.TableId,
-                TableCode = newTable.TableCode,
-                Capacity = newTable.Capacity,
-                Status = newTable.Status,
-                CreatedAt = newTable.CreatedAt,
-                CreatedBy = newTable.CreatedBy
-            };
-
+            // Map the newly created table to the response DTO and return a success result
+            var response = _mapper.Map<CreateTableResponse>(newTable);
             return Result<CreateTableResponse>.Success(response);
         }
     }
