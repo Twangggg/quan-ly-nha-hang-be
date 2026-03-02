@@ -1,6 +1,10 @@
+using AutoMapper;
+using FoodHub.Application.Extensions.Mappings;
+using FoodHub.Domain.Entities;
+
 namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
 {
-    public class KdsItemResponse
+    public class KdsItemResponse : IMapFrom<OrderItem>
     {
         public Guid OrderItemId { get; set; }
         public Guid OrderId { get; set; }
@@ -12,5 +16,13 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
         public string Status { get; set; } = null!;
         public string? RejectionReason { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        public void Mapping(Profile profile)
+        {
+            profile
+                .CreateMap<OrderItem, KdsItemResponse>()
+                .ForMember(d => d.OrderCode, opt => opt.MapFrom(s => s.Order.OrderCode))
+                .ForMember(d => d.ItemNote, opt => opt.MapFrom(s => s.ItemNote));
+        }
     }
 }

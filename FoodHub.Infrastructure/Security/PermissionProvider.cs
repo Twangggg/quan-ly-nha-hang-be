@@ -72,6 +72,9 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.MenuItems.UpdateStock,
                 Permissions.SetMenus.View,
                 Permissions.SetMenus.UpdateStock,
+                Permissions.Kds.View,
+                Permissions.Kds.Manage,
+                Permissions.Kds.Reject,
             };
         }
     }

@@ -99,6 +99,7 @@ namespace FoodHub.Domain.Entities
             }
             Status = OrderItemStatus.Rejected;
             UpdatedAt = DateTime.UtcNow;
+            RejectedAt = DateTime.UtcNow;
             RejectionReason = reason;
             return DomainResult.Success();
         }

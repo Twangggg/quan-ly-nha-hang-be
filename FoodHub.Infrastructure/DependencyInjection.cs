@@ -69,6 +69,9 @@ namespace FoodHub.Infrastructure
             // Cloudinary Service
             services.AddScoped<ICloudinaryService, CloudinaryService>();
 
+            // SignalR Service
+            services.AddScoped<ISignalRService, SignalRService>();
+
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
