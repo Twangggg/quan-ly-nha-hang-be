@@ -17,6 +17,9 @@ namespace FoodHub.Application.Features.Areas.Commands.UpdateArea
 
             RuleFor(v => v.Description)
                 .MaximumLength(500).WithMessage("Maximum length of Description is 500 characters");
+
+            RuleFor(v => v.Type)
+                .IsInEnum().WithMessage("Invalid area type");
         }
     }
 }
