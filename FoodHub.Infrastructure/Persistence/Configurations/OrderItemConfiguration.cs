@@ -15,12 +15,18 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(oi => oi.UnitPriceSnapshot).HasColumnType("decimal(15,2)");
             builder.Property(oi => oi.ItemNote).HasMaxLength(255);
-            builder.HasOne(oi => oi.Order)
-                   .WithMany(o => o.OrderItems)
-                   .HasForeignKey(oi => oi.OrderId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder
+                .HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Property(oi => oi.CreatedAt).HasDefaultValueSql("now()");
+
+            // KDS Fields
+            builder.Property(oi => oi.RejectionReason).HasMaxLength(500);
+            builder.Property(oi => oi.RejectedAt).IsRequired(false);
+            builder.Property(oi => oi.CancelledAt).IsRequired(false);
 
             // Indexes for Optimization
             builder.HasIndex(oi => oi.OrderId);

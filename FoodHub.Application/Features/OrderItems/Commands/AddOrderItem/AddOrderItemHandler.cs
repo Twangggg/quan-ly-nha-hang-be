@@ -13,16 +13,19 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ISignalRService _signalRService;
 
         public AddOrderItemHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
-            IMessageService messageService
+            IMessageService messageService,
+            ISignalRService signalRService
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _signalRService = signalRService;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -152,6 +155,26 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            // Notify KDS via SignalR
+            if (existingItem != null)
+            {
+                _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                    existingItem.OrderItemId,
+                    existingItem.Status,
+                    existingItem.StationSnapshot
+                );
+            }
+            else
+            {
+                var newItem = order.OrderItems.Last();
+                _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                    newItem.OrderItemId,
+                    newItem.Status,
+                    newItem.StationSnapshot
+                );
+            }
+
             return Result<Guid>.Success(order.OrderId);
         }
 

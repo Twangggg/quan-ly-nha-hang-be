@@ -17,6 +17,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
         private readonly IMessageService _messageService;
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ISignalRService _signalRService;
         private readonly ILogger<CompleteOrderHandler> _logger;
 
         public CompleteOrderHandler(
@@ -24,6 +25,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
             IMessageService messageService,
             IMapper mapper,
             ICurrentUserService currentUserService,
+            ISignalRService signalRService,
             ILogger<CompleteOrderHandler> logger
         )
         {
@@ -31,6 +33,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
             _messageService = messageService;
             _mapper = mapper;
             _currentUserService = currentUserService;
+            _signalRService = signalRService;
             _logger = logger;
         }
 
@@ -75,6 +78,15 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
                 );
             }
 
+            // Clean up KDS: Mark all non-finished items as Completed
+            var itemsToNotify = new List<OrderItem>();
+            foreach (var item in order.OrderItems.Where(oi => !oi.IsFinished()))
+            {
+                item.Status = OrderItemStatus.Completed;
+                item.UpdatedAt = DateTime.UtcNow;
+                itemsToNotify.Add(item);
+            }
+
             var auditLog = new OrderAuditLog
             {
                 LogId = Guid.NewGuid(),
@@ -102,6 +114,16 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
                 );
                 return Result<CompleteOrderResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError)
+                );
+            }
+
+            // Notify KDS via SignalR
+            foreach (var item in itemsToNotify)
+            {
+                _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                    item.OrderItemId,
+                    item.Status,
+                    item.StationSnapshot
                 );
             }
 

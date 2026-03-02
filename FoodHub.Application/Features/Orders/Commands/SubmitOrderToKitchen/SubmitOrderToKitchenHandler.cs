@@ -15,16 +15,19 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ISignalRService _signalRService;
 
         public SubmitOrderToKitchenHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
-            IMessageService messageService
+            IMessageService messageService,
+            ISignalRService signalRService
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _signalRService = signalRService;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -276,6 +279,17 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             await _unitOfWork.Repository<Order>().AddAsync(order);
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            // Notify KDS via SignalR
+            foreach (var item in order.OrderItems)
+            {
+                _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                    item.OrderItemId,
+                    item.Status,
+                    item.StationSnapshot
+                );
+            }
+
             return Result<Guid>.Success(order.OrderId);
         }
 
