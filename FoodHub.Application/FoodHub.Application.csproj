@@ -39,11 +39,6 @@
     <ProjectReference Include="..\FoodHub.Domain\FoodHub.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Tables\Commands\InactiveTable\" />
-    <Folder Include="Features\Tables\Commands\ChangeStatusTable\" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

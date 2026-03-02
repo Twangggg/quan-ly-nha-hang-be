@@ -164,6 +164,8 @@ namespace FoodHub.Application.Constants
             public const string NotFound = "Table.NotFound";
             public const string AlreadyOccupied = "Table.AlreadyOccupied";
             public const string CodeExists = "Table.CodeExists";
+            public const string UpdateForbidden = "Table.UpdateForbidden";
+            public const string UpdateFail = "Table.UpdateFail";
         }
 
         public static class Area
