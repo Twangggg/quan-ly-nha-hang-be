@@ -36,7 +36,7 @@ namespace FoodHub.Domain.Entities
 
         public bool CanHaveMultipleSelections()
         {
-            return OptionType == OptionGroupType.Multiple;
+            return OptionType == OptionGroupType.Multi;
         }
 
         public bool RequiresSelection()
