@@ -90,6 +90,7 @@ namespace FoodHub.Application.Features.KDS.Commands.ReturnOrderItem
                     CreatedAt = DateTime.UtcNow,
                 };
 
+                orderItemRepository.Update(orderItem);
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
