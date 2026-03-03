@@ -58,7 +58,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                     );
                 }
 
-                var existingServingOrder = await _unitOfWork
+                var isTableOccupied = await _unitOfWork
                     .Repository<Order>()
                     .Query()
                     .AnyAsync(
@@ -66,7 +66,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                         cancellationToken
                     );
 
-                if (existingServingOrder)
+                if (isTableOccupied)
                 {
                     return Result<Guid>.Failure(
                         _messageService.GetMessage(MessageKeys.Order.TableAlreadyOccupied)

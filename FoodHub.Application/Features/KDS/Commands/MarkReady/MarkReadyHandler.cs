@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -15,6 +16,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ISignalRService _signalRService;
+        private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly ILogger<MarkReadyHandler> _logger;
 
         public MarkReadyHandler(
@@ -22,6 +24,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
             ICurrentUserService currentUserService,
             IMessageService messageService,
             ISignalRService signalRService,
+            KdsPriorityCalculator priorityCalculator,
             ILogger<MarkReadyHandler> logger
         )
         {
@@ -29,6 +32,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
             _currentUserService = currentUserService;
             _messageService = messageService;
             _signalRService = signalRService;
+            _priorityCalculator = priorityCalculator;
             _logger = logger;
         }
 
@@ -92,14 +96,23 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
                 // Auto-pull: Tìm món tiếp theo trong hàng đợi của station này
-                var nextItem = await orderItemRepository
+                var pendingItems = await orderItemRepository
                     .Query()
+                    .Include(oi => oi.Order)
                     .Where(oi =>
                         oi.StationSnapshot == orderItem.StationSnapshot
                         && oi.Status == OrderItemStatus.Preparing
                     )
-                    .OrderBy(oi => oi.CreatedAt)
-                    .FirstOrDefaultAsync(cancellationToken);
+                    .ToListAsync(cancellationToken);
+
+                OrderItem? nextItem = null;
+                if (pendingItems.Any())
+                {
+                    nextItem = pendingItems
+                        .OrderByDescending(oi => _priorityCalculator.Calculate(oi, oi.Order))
+                        .ThenBy(oi => oi.CreatedAt)
+                        .First();
+                }
 
                 if (nextItem != null)
                 {
