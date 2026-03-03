@@ -1,7 +1,7 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Areas.Commands.CreateArea;
-using FoodHub.Application.Features.Areas.Commands.DeactivateArea;
+using FoodHub.Application.Features.Areas.Commands.UpdateAreaStatus;
 using FoodHub.Application.Features.Areas.Commands.UpdateArea;
 using FoodHub.Application.Features.Areas.Queries.GetAllAreas;
 using FoodHub.Application.Features.Areas.Queries.GetAreaById;
@@ -124,22 +124,16 @@ namespace FoodHub.Presentation.Controllers
         }
 
         /// <summary>
-        /// Vô hiệu hóa khu vực (Dừng hoạt động).
+        /// Cập nhật trạng thái hoạt động của khu vực.
         /// </summary>
-        /// <remarks>Yêu cầu quyền: Areas.Update.</remarks>
-        /// <param name="id">ID của khu vực cần vô hiệu hóa.</param>
-        /// <response code="200">Vô hiệu hóa thành công.</response>
-        /// <response code="400">Khu vực đã bị vô hiệu hóa trước đó.</response>
-        /// <response code="404">Không tìm thấy khu vực.</response>
-        [HttpPatch("{id}/deactivate")]
+        /// <param name="id">Mã khu vực.</param>
+        /// <param name="isActive">Trạng thái (true: hoạt động, false: dừng hoạt động).</param>
+        [HttpPatch("{id}/status")]
         [HasPermission(Permissions.Areas.Update)]
-        [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
-        [ProducesResponseType(typeof(Result<DeactivateAreaResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeactivateArea(Guid id)
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateAreaStatus(Guid id, [FromQuery] bool isActive)
         {
-            var result = await _mediator.Send(new DeactivateAreaCommand(id));
+            var result = await _mediator.Send(new UpdateAreaStatusCommand(id, isActive));
             return HandleResult(result);
         }
     }
