@@ -19,7 +19,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             // Global Query Filter for Soft Delete
             builder.HasKey(t => t.TableId);
             builder.Property(t => t.TableId).HasColumnName("table_id");
-            builder.Property(t => t.TableCode).IsRequired().HasMaxLength(50).HasColumnName("table_code");
+            builder.Property(t => t.TableNumber).IsRequired().HasColumnName("table_number");
             builder.Property(t => t.Capacity).IsRequired().HasColumnName("capacity");
             builder.Property(t => t.AreaId).IsRequired().HasColumnName("area_id");
             builder.Property(t => t.Status).IsRequired().HasColumnName("status");
@@ -42,7 +42,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasQueryFilter(t => !t.DeletedAt.HasValue);
 
             // Indexes
-            builder.HasIndex(t => t.TableCode).IsUnique().HasDatabaseName("idx_tables_table_code");
+            builder.HasIndex(t => t.TableNumber).HasDatabaseName("idx_tables_table_number");
             builder.HasIndex(t => t.AreaId).HasDatabaseName("idx_tables_area_id");
             builder.HasIndex(t => t.CreatedAt).HasDatabaseName("idx_tables_created_at");
         }

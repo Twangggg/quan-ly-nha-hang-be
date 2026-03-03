@@ -11,12 +11,13 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
     {
         public CreateTableValidator()
         {
-            RuleFor(x => x.TableCode)
-                .NotEmpty().WithMessage("Table code is required.")
-                .MaximumLength(50).WithMessage("Table code must not exceed 50 characters.");
+            RuleFor(x => x.TableNumber)
+                .NotEmpty().WithMessage("Table number is required.")
+                .GreaterThan(0).WithMessage("Table number must be greater than 0.");
 
             RuleFor(x => x.Capacity)
-                .GreaterThan(0).WithMessage("Capacity must be greater than 0.");
+                .GreaterThan(0).WithMessage("Capacity must be greater than 0.")
+                .LessThanOrEqualTo(6).WithMessage("Capacity must be less than or equal to 6.");
 
             RuleFor(x => x.AreaId)
                 .NotEmpty().WithMessage("AreaId is required.");

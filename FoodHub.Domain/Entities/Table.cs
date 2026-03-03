@@ -10,7 +10,7 @@ namespace FoodHub.Domain.Entities
     public class Table : BaseEntity
     {
         public Guid TableId { get; set; }
-        public required string TableCode { get; set; }
+        public required int TableNumber { get; set; }
         public required int Capacity { get; set; }
         public required Guid AreaId { get; set; }
         public virtual Area Area { get; set; } = null!;

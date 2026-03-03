@@ -9,7 +9,7 @@ using MediatR;
 namespace FoodHub.Application.Features.Tables.Commands.CreateTable
 {
     public record CreateTableCommand(
-        string TableCode,
+        int TableNumber,
         int Capacity,
         Guid AreaId
         ) : IRequest<Result<CreateTableResponse>>;

@@ -56,19 +56,19 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
         public async Task<Result<CreateTableResponse>> Handle(CreateTableCommand request, CancellationToken cancellationToken)
         {
             // Log the incoming request for traceability
-            _logger.LogInformation("Handling CreateTableCommand for TableCode: {TableCode}", request.TableCode);
+            _logger.LogInformation("Handling CreateTableCommand for TableNumber: {TableNumber}", request.TableNumber);
 
             // Validate the request data
             var tableRepo = _unitOfWork.Repository<Table>();
             var areaRepo = _unitOfWork.Repository<Area>();
 
-            // Check if a table with the same code already exists
-            var existingTable = await tableRepo.Query().AnyAsync(t => t.TableCode == request.TableCode);
+            // Check if a table with the same number already exists
+            var existingTable = await tableRepo.Query().AnyAsync(t => t.TableNumber == request.TableNumber);
             if (existingTable)
             {
-                _logger.LogWarning("Table with code {TableCode} already exists", request.TableCode);
+                _logger.LogWarning("Table with code {TableCode} already exists", request.TableNumber);
                 return Result<CreateTableResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Table.CodeExists, request.TableCode),
+                    _messageService.GetMessage(MessageKeys.Table.CodeExists, request.TableNumber),
                     ResultErrorType.Conflict);
             }
 
@@ -93,7 +93,7 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
             var newTable = new Table
             {
                 TableId = Guid.NewGuid(),
-                TableCode = request.TableCode,
+                TableNumber = request.TableNumber,
                 Capacity = request.Capacity,
                 AreaId = request.AreaId,
                 Status = TableStatus.Available,

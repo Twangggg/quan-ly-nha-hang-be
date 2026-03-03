@@ -24,9 +24,9 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTableById
         {
             profile.CreateMap<Table, GetTableByIdResponse>()
                 .ForMember(d => d.TableCode, opt => opt.MapFrom(s =>
-                (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix))?s.Area.CodePrefix + "_" + s.TableCode:s.TableCode))
+                (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix)) ? s.Area.CodePrefix + "_" + s.TableNumber : s.TableNumber.ToString()))
                 .ForMember(d => d.Area, opt => opt.MapFrom(s => s.Area.Name))
-                .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString())); 
+                .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()));
         }
 
     }

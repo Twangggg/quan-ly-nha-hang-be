@@ -8,7 +8,9 @@ using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Tables.Queries.GetTables
 {
@@ -43,7 +45,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
         public async Task<Result<PagedResult<GetTablesResponse>>> Handle(GetTablesQuery request, CancellationToken cancellationToken)
         {
             // Generate a cache key based on the pagination parameters to store and retrieve cached results
-            var queryJson = JsonSerializer.Serialize(request.Pagination);
+            var queryJson = JsonSerializer.Serialize(new { request.Pagination, request.AreaId });
             var cacheKey = $"{CacheKey.TableList}:{queryJson.GetHashCode()}";
 
             // Attempt to retrieve the result from cache first to avoid unnecessary database queries
@@ -56,10 +58,16 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
             // Start building the query for Table entities
             var query = _unitOfWork.Repository<Table>().Query();
 
+            // Apply filtering by AreaId if it is provided in the request to narrow down the results to a specific area
+            if (request.AreaId.HasValue)
+            {
+                query = query.Where(t => t.AreaId == request.AreaId);
+            }
+
             // Define the fields that should be included in the global search functionality
             var searchableFields = new List<Expression<Func<Table, string?>>>
             {
-                t => t.TableCode,
+                t => t.TableNumber.ToString(),
                 t => t.Area.Name
             };
             query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
@@ -76,14 +84,14 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
             // Define the mapping of sort keys to their corresponding entity properties for dynamic sorting
             var sortMapping = new Dictionary<string, Expression<Func<Table, object>>>
             {
-                {"tableCode", t => t.TableCode},
+                {"tableNumber", t => t.TableNumber},
                 {"capacity", t => t.Capacity},
                 {"createdAt", t => t.CreatedAt}
             };
-            query = query.ApplySorting(request.Pagination.OrderBy, sortMapping, r => r.TableCode);
-
+            query = query.ApplySorting(request.Pagination.OrderBy, sortMapping, r => r.TableNumber);
             // Project the query results to the GetTablesResponse DTO and apply pagination before returning the result
             var pagedResult = await query
+                .Include(a => a.Area) // Include related Area entity for mapping to response DTO
                 .ProjectTo<GetTablesResponse>(_mapper.ConfigurationProvider)
                 .ToPagedResultAsync(request.Pagination);
 

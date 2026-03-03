@@ -420,7 +420,7 @@ namespace FoodHub.Infrastructure.Persistence
                     new Table
                     {
                         TableId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                        TableCode = "A01",
+                        TableNumber = 1,
                         Capacity = 4,
                         AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                         Status = TableStatus.Available,
@@ -429,7 +429,7 @@ namespace FoodHub.Infrastructure.Persistence
                     new Table
                     {
                         TableId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                        TableCode = "B01",
+                        TableNumber = 2,
                         Capacity = 2,
                         AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                         Status = TableStatus.Occupied,
@@ -438,7 +438,7 @@ namespace FoodHub.Infrastructure.Persistence
                     new Table
                     {
                         TableId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                        TableCode = "VIP01",
+                        TableNumber = 3,
                         Capacity = 6,
                         AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                         Status = TableStatus.Available,
