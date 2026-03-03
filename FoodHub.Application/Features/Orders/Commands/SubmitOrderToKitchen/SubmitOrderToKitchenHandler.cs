@@ -5,6 +5,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 {
@@ -15,18 +16,21 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ISignalRService _signalRService;
+        private readonly ILogger<SubmitOrderToKitchenHandler> _logger;
 
         public SubmitOrderToKitchenHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
-            ISignalRService signalRService
+            ISignalRService signalRService,
+            ILogger<SubmitOrderToKitchenHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
             _signalRService = signalRService;
+            _logger = logger;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -133,24 +137,20 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 
             if (request.OrderId != Guid.Empty)
             {
+                // We load the order WITHOUT includes to keep it lightweight and avoid
+                // concurrency issues with collection syncing when adding new items.
                 order = await _unitOfWork
                     .Repository<Order>()
                     .Query()
-                    .Include(x => x.OrderItems)
-                        .ThenInclude(oi => oi.OptionGroups)
-                            .ThenInclude(og => og.OptionValues)
                     .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
             }
 
             if (order == null && request.OrderType == OrderType.DineIn && request.TableId.HasValue)
             {
-                // Check for existing active order at this table
+                // Check for existing active order at this table (also lightweight)
                 order = await _unitOfWork
                     .Repository<Order>()
                     .Query()
-                    .Include(x => x.OrderItems)
-                        .ThenInclude(oi => oi.OptionGroups)
-                            .ThenInclude(og => og.OptionValues)
                     .FirstOrDefaultAsync(
                         x => x.TableId == request.TableId && x.Status == OrderStatus.Serving,
                         cancellationToken
@@ -176,7 +176,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 };
             }
 
-            // Add/Update Items using Domain Logic
+            // Append Items directly (No merging with old items)
             var processedItems = new List<OrderItem>();
             foreach (var itemDto in request.Items)
             {
@@ -203,36 +203,64 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                     }
                 }
 
-                var result = order.AddOrUpdateItem(
+                // Create Item using lightweight method
+                var newItem = order.CreateOrderItem(
                     menuItem,
                     itemDto.Quantity,
                     itemDto.Note,
                     domainOptions
                 );
-                processedItems.Add(result.Item);
+
+                // Add to repository directly to ensure EF only performs an INSERT
+                await _unitOfWork.Repository<OrderItem>().AddAsync(newItem);
+
+                // Track for SignalR notification
+                processedItems.Add(newItem);
+
+                // Update Order TotalAmount (Incremental Update)
+                var itemTotal = newItem.Quantity * newItem.UnitPriceSnapshot;
+                var optionsTotal = newItem
+                    .OptionGroups.SelectMany(og => og.OptionValues)
+                    .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity);
+
+                order.TotalAmount += itemTotal + (optionsTotal * newItem.Quantity);
+                order.UpdatedAt = DateTime.UtcNow;
             }
 
             // Save Changes
-            if (isNewOrder)
+            try
             {
-                await _unitOfWork.Repository<Order>().AddAsync(order);
-            }
-            else
-            {
-                _unitOfWork.Repository<Order>().Update(order);
-            }
+                if (isNewOrder)
+                {
+                    await _unitOfWork.Repository<Order>().AddAsync(order);
+                }
 
-            var auditLog = new OrderAuditLog
-            {
-                LogId = Guid.NewGuid(),
-                OrderId = order.OrderId,
-                EmployeeId = userId,
-                Action = isNewOrder ? AuditLogActions.SubmitOrder : AuditLogActions.AddOrderItem,
-                CreatedAt = DateTime.UtcNow,
-            };
-            await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+                var auditLog = new OrderAuditLog
+                {
+                    LogId = Guid.NewGuid(),
+                    OrderId = order.OrderId,
+                    EmployeeId = userId,
+                    Action = isNewOrder
+                        ? AuditLogActions.SubmitOrder
+                        : AuditLogActions.AddOrderItem,
+                    CreatedAt = DateTime.UtcNow,
+                };
+                await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
-            await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Concurrency conflict when saving order {OrderId}",
+                    order.OrderId
+                );
+                return Result<Guid>.Failure(
+                    "Đơn hàng đang được cập nhật bởi một phiên làm việc khác. Vui lòng thử lại sau.",
+                    ResultErrorType.Conflict
+                );
+            }
 
             // 4. Notify KDS
             foreach (var item in processedItems)
