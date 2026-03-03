@@ -129,7 +129,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 );
             }
 
-            // 1. Retrieve or Create Order
+            // Retrieve or Create Order
             Order? order = null;
 
             if (request.OrderId != Guid.Empty)
@@ -177,7 +177,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 };
             }
 
-            // 2. Add/Update Items using Domain Logic
+            // Add/Update Items using Domain Logic
             var processedItems = new List<OrderItem>();
             foreach (var itemDto in request.Items)
             {
@@ -213,7 +213,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 processedItems.Add(result.Item);
             }
 
-            // 3. Save Changes
+            // Save Changes
             if (isNewOrder)
             {
                 await _unitOfWork.Repository<Order>().AddAsync(order);
