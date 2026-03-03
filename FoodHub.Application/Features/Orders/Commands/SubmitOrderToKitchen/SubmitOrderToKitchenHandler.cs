@@ -57,21 +57,6 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                         _messageService.GetMessage(MessageKeys.Order.SelectTable)
                     );
                 }
-
-                var isTableOccupied = await _unitOfWork
-                    .Repository<Order>()
-                    .Query()
-                    .AnyAsync(
-                        o => o.TableId == request.TableId && o.Status == OrderStatus.Serving,
-                        cancellationToken
-                    );
-
-                if (isTableOccupied)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.Order.TableAlreadyOccupied)
-                    );
-                }
             }
 
             //Validate All Menu Items Exist
