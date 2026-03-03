@@ -18,6 +18,11 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
         public DateTime CreatedAt { get; set; }
         public int PriorityScore { get; set; }
         public string? ItemOptions { get; set; }
+        public bool IsOrderPriority { get; set; }
+        public string OrderType { get; set; } = null!;
+        public int TotalOrderItems { get; set; }
+        public int FinishedOrderItems { get; set; }
+        public int ExpectedTimeSeconds { get; set; }
         public ICollection<OrderItemOptionGroup> OptionGroups { get; set; } =
             new List<OrderItemOptionGroup>();
 

@@ -8,6 +8,9 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
     {
         public SubmitOrderToKitchenValidator(IMessageService messageService)
         {
+            RuleFor(x => x.OrderId)
+                .NotEmpty()
+                .WithMessage(messageService.GetMessage(MessageKeys.Common.IdRequired));
             RuleFor(x => x.Items)
                 .NotEmpty()
                 .WithMessage(messageService.GetMessage(MessageKeys.OrderItem.InvalidQuantity));

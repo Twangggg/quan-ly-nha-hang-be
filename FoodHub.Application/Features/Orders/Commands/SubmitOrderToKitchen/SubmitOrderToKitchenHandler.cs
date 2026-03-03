@@ -129,144 +129,114 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 );
             }
 
-            //Gen Order code
-            var orderCode = await GenerateOrderCodeAsync(cancellationToken);
+            // Retrieve or Create Order
+            Order? order = null;
 
-            //Create Order entity
-            var order = new Order
+            if (request.OrderId != Guid.Empty)
             {
-                OrderId = Guid.NewGuid(),
-                OrderCode = orderCode,
-                OrderType = request.OrderType,
-                Status = OrderStatus.Serving,
-                TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
-                Note = request.Note,
-                TotalAmount = 0, //calculated after items
-                IsPriority = false,
-                CreatedBy = userId,
-                CreatedAt = DateTime.UtcNow,
-                OrderItems = new List<OrderItem>(),
-                OrderAuditLogs = new List<OrderAuditLog>(),
-            };
+                order = await _unitOfWork
+                    .Repository<Order>()
+                    .Query()
+                    .Include(x => x.OrderItems)
+                        .ThenInclude(oi => oi.OptionGroups)
+                            .ThenInclude(og => og.OptionValues)
+                    .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
+            }
 
-            // Merge Duplicate Items and Create Order Items
-            // Group by MenuItemId + Note + Options to merge duplicates
-            var groupedItems = request
-                .Items.Select(i => new
-                {
-                    Item = i,
-                    // Create option signature for grouping
-                    OptionSignature = i.SelectedOptions == null
-                        ? string.Empty
-                        : string.Join(
-                            "|",
-                            i.SelectedOptions.OrderBy(og => og.OptionGroupId)
-                                .Select(og =>
-                                    $"{og.OptionGroupId}:{string.Join(",",
-                                og.SelectedValues
-                                    .OrderBy(v => v.OptionItemId)
-                                    .Select(v => $"{v.OptionItemId}x{v.Quantity}"))}"
-                                )
-                        ),
-                })
-                .GroupBy(x => new
-                {
-                    x.Item.MenuItemId,
-                    Note = x.Item.Note ?? string.Empty,
-                    x.OptionSignature,
-                })
-                .Select(g => new
-                {
-                    g.Key.MenuItemId,
-                    Note = string.IsNullOrEmpty(g.Key.Note) ? null : g.Key.Note,
-                    TotalQuantity = g.Sum(x => x.Item.Quantity),
-                    SelectedOptions = g.First().Item.SelectedOptions, // Use first item's options
-                })
-                .ToList();
-            foreach (var group in groupedItems)
+            if (order == null && request.OrderType == OrderType.DineIn && request.TableId.HasValue)
             {
-                var menuItem = menuItems[group.MenuItemId];
-                // Select price based on order type
-                var price = menuItem.GetPriceFor(order.OrderType);
-                var orderItem = new OrderItem
+                // Check for existing active order at this table
+                order = await _unitOfWork
+                    .Repository<Order>()
+                    .Query()
+                    .Include(x => x.OrderItems)
+                        .ThenInclude(oi => oi.OptionGroups)
+                            .ThenInclude(og => og.OptionValues)
+                    .FirstOrDefaultAsync(
+                        x => x.TableId == request.TableId && x.Status == OrderStatus.Serving,
+                        cancellationToken
+                    );
+            }
+
+            bool isNewOrder = false;
+            if (order == null)
+            {
+                isNewOrder = true;
+                var orderCode = await GenerateOrderCodeAsync(cancellationToken);
+                order = new Order
                 {
-                    OrderItemId = Guid.NewGuid(),
-                    OrderId = order.OrderId,
-                    MenuItemId = group.MenuItemId,
-                    Quantity = group.TotalQuantity,
-                    ItemNote = group.Note,
-                    Status = OrderItemStatus.Preparing,
+                    OrderId = Guid.NewGuid(),
+                    OrderCode = orderCode,
+                    OrderType = request.OrderType,
+                    Status = OrderStatus.Serving,
+                    TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
+                    Note = request.Note,
+                    TotalAmount = 0,
+                    CreatedBy = userId,
                     CreatedAt = DateTime.UtcNow,
-                    //snapshot
-                    ItemCodeSnapshot = menuItem.Code,
-                    ItemNameSnapshot = menuItem.Name,
-                    UnitPriceSnapshot = price,
-                    StationSnapshot = menuItem.Station.ToString(),
                 };
+            }
 
-                // NEW: Add option snapshots
-                if (group.SelectedOptions != null && group.SelectedOptions.Any())
+            // Add/Update Items using Domain Logic
+            var processedItems = new List<OrderItem>();
+            foreach (var itemDto in request.Items)
+            {
+                var menuItem = menuItems[itemDto.MenuItemId];
+
+                // Prepare options for Domain method
+                var domainOptions =
+                    new List<(
+                        OptionGroup Group,
+                        List<(OptionItem Item, int Quantity, string? Note)> Selections
+                    )>();
+                if (itemDto.SelectedOptions != null)
                 {
-                    foreach (var optionGroupDto in group.SelectedOptions)
+                    foreach (var optDto in itemDto.SelectedOptions)
                     {
-                        var optionGroup = optionGroups[optionGroupDto.OptionGroupId];
-
-                        var orderItemOptionGroup = new OrderItemOptionGroup
+                        if (optionGroups.TryGetValue(optDto.OptionGroupId, out var og))
                         {
-                            OrderItemOptionGroupId = Guid.NewGuid(),
-                            OrderItemId = orderItem.OrderItemId,
-                            GroupNameSnapshot = optionGroup.Name,
-                            GroupTypeSnapshot = optionGroup.OptionType.ToString(),
-                            IsRequiredSnapshot = optionGroup.IsRequired,
-                            CreatedAt = DateTime.UtcNow,
-                        };
-
-                        foreach (var valueDto in optionGroupDto.SelectedValues)
-                        {
-                            var optionItem = optionItems[valueDto.OptionItemId];
-
-                            var orderItemOptionValue = new OrderItemOptionValue
-                            {
-                                OrderItemOptionValueId = Guid.NewGuid(),
-                                OrderItemOptionGroupId =
-                                    orderItemOptionGroup.OrderItemOptionGroupId,
-                                OptionItemId = valueDto.OptionItemId, // Trace back
-                                LabelSnapshot = optionItem.Label,
-                                ExtraPriceSnapshot = optionItem.ExtraPrice,
-                                Quantity = valueDto.Quantity,
-                                Note = valueDto.Note,
-                                CreatedAt = DateTime.UtcNow,
-                            };
-
-                            orderItemOptionGroup.OptionValues.Add(orderItemOptionValue);
+                            var selections = optDto
+                                .SelectedValues.Where(v => optionItems.ContainsKey(v.OptionItemId))
+                                .Select(v => (optionItems[v.OptionItemId], v.Quantity, v.Note))
+                                .ToList();
+                            domainOptions.Add((og, selections));
                         }
-
-                        orderItem.OptionGroups.Add(orderItemOptionGroup);
                     }
                 }
 
-                order.OrderItems.Add(orderItem);
+                var result = order.AddOrUpdateItem(
+                    menuItem,
+                    itemDto.Quantity,
+                    itemDto.Note,
+                    domainOptions
+                );
+                processedItems.Add(result.Item);
             }
 
-            //Calculate total amount including option extra prices
-            order.RecalculateTotalAmount();
+            // Save Changes
+            if (isNewOrder)
+            {
+                await _unitOfWork.Repository<Order>().AddAsync(order);
+            }
+            else
+            {
+                _unitOfWork.Repository<Order>().Update(order);
+            }
 
-            //Audit Log
             var auditLog = new OrderAuditLog
             {
                 LogId = Guid.NewGuid(),
                 OrderId = order.OrderId,
                 EmployeeId = userId,
-                Action = AuditLogActions.SubmitOrder, // ? Only one action: SUBMIT (no CREATE or ADD_ITEM)
+                Action = isNewOrder ? AuditLogActions.SubmitOrder : AuditLogActions.AddOrderItem,
                 CreatedAt = DateTime.UtcNow,
             };
-
-            await _unitOfWork.Repository<Order>().AddAsync(order);
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            // Notify KDS via SignalR
-            foreach (var item in order.OrderItems)
+            // 4. Notify KDS
+            foreach (var item in processedItems)
             {
                 _ = _signalRService.NotifyOrderItemStatusChangedAsync(
                     item.OrderItemId,

@@ -43,12 +43,15 @@ namespace FoodHub.Tests.Features.KDS.Queries
             var order = new FoodHub.Domain.Entities.Order { IsPriority = false };
             var vipOrder = new FoodHub.Domain.Entities.Order { IsPriority = true };
 
+            var menuItem = new MenuItem { ExpectedTime = 10, Code = "TEST001", Name = "Test Item", ImageUrl = "http://test.com/image.jpg" };
+
             var cookingItem = new OrderItem
             {
                 OrderItemId = Guid.NewGuid(),
                 Status = OrderItemStatus.Cooking,
                 StationSnapshot = station,
                 Order = order,
+                MenuItem = menuItem,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -58,6 +61,7 @@ namespace FoodHub.Tests.Features.KDS.Queries
                 Status = OrderItemStatus.Preparing,
                 StationSnapshot = station,
                 Order = order,
+                MenuItem = menuItem,
                 CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             };
 
@@ -67,6 +71,7 @@ namespace FoodHub.Tests.Features.KDS.Queries
                 Status = OrderItemStatus.Preparing,
                 StationSnapshot = station,
                 Order = vipOrder,
+                MenuItem = menuItem,
                 CreatedAt = DateTime.UtcNow, // Mới tạo nhưng là VIP
             };
 

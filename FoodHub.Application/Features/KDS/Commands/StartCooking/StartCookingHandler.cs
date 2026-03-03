@@ -59,7 +59,7 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                 );
             }
 
-            // Xác định nhóm trạm 
+            // Xác định nhóm trạm
             var targetStations = new List<string> { orderItem.StationSnapshot };
             if (
                 orderItem.StationSnapshot == Station.HotKitchen.ToString()

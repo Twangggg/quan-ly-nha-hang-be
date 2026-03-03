@@ -4,5 +4,6 @@ namespace FoodHub.Domain.Enums
     {
         DineIn = 1,
         Takeaway = 2,
+        Delivery = 3,
     }
 }

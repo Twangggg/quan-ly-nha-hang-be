@@ -29,6 +29,7 @@ namespace FoodHub.Domain.Entities
         public string? RejectionReason { get; set; }
         public DateTime? RejectedAt { get; set; }
         public Order Order { get; set; } = null!;
+        public MenuItem MenuItem { get; set; } = null!;
         public ICollection<OrderItemOptionGroup> OptionGroups { get; set; } =
             new List<OrderItemOptionGroup>();
 
