@@ -5,7 +5,7 @@ using FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -18,6 +18,7 @@ namespace FoodHub.Tests.Features.Order.Commands
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ISignalRService> _mockSignalRService;
+        private readonly Mock<ILogger<SubmitOrderToKitchenHandler>> _mockLogger;
         private readonly SubmitOrderToKitchenHandler _handler;
 
         public SubmitOrderToKitchenTests()
@@ -26,12 +27,14 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
             _mockSignalRService = new Mock<ISignalRService>();
+            _mockLogger = new Mock<ILogger<SubmitOrderToKitchenHandler>>();
 
             _handler = new SubmitOrderToKitchenHandler(
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
-                _mockSignalRService.Object
+                _mockSignalRService.Object,
+                _mockLogger.Object
             );
         }
 

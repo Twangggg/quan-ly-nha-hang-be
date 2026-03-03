@@ -137,8 +137,6 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 
             if (request.OrderId != Guid.Empty)
             {
-                // We load the order WITHOUT includes to keep it lightweight and avoid
-                // concurrency issues with collection syncing when adding new items.
                 order = await _unitOfWork
                     .Repository<Order>()
                     .Query()
