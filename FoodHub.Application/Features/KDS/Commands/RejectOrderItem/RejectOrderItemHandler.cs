@@ -67,6 +67,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                var oldStatus = orderItem.Status;
                 var domainResult = orderItem.Reject(request.Reason);
                 if (!domainResult.IsSuccess)
                 {
@@ -87,8 +88,8 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                     OrderId = orderItem.OrderId,
                     EmployeeId = Guid.Parse(_currentUserService.UserId!),
                     Action = AuditLogActions.KdsReject,
-                    OldValue = orderItem.Status.ToString(),
-                    NewValue = OrderItemStatus.Rejected.ToString(),
+                    OldValue = $"\"{oldStatus}\"",
+                    NewValue = $"\"{OrderItemStatus.Rejected}\"",
                     CreatedAt = DateTime.UtcNow,
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
@@ -127,8 +128,8 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                         OrderId = nextItem.OrderId,
                         EmployeeId = Guid.Parse(_currentUserService.UserId!),
                         Action = AuditLogActions.KdsStartCooking,
-                        OldValue = OrderItemStatus.Preparing.ToString(),
-                        NewValue = OrderItemStatus.Cooking.ToString(),
+                        OldValue = $"\"{OrderItemStatus.Preparing}\"",
+                        NewValue = $"\"{OrderItemStatus.Cooking}\"",
                         ChangeReason = "Auto-pull (Station Slot Freed by Rejection)",
                         CreatedAt = DateTime.UtcNow,
                     };

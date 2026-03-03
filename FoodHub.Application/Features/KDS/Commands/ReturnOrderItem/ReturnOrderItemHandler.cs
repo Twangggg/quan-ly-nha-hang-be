@@ -84,8 +84,8 @@ namespace FoodHub.Application.Features.KDS.Commands.ReturnOrderItem
                     OrderId = orderItem.OrderId,
                     EmployeeId = Guid.Parse(_currentUserService.UserId!),
                     Action = AuditLogActions.KdsReturn,
-                    OldValue = oldStatus.ToString(),
-                    NewValue = OrderItemStatus.Preparing.ToString(),
+                    OldValue = $"\"{oldStatus}\"",
+                    NewValue = $"\"{OrderItemStatus.Preparing}\"",
                     ChangeReason = "Manager returned item to queue",
                     CreatedAt = DateTime.UtcNow,
                 };
