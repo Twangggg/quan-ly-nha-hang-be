@@ -3,6 +3,7 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodHub.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260227071212_AddTableAndRefactorBilling")]
+    partial class AddTableAndRefactorBilling
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -119,8 +122,7 @@ namespace FoodHub.Migrations
 
                     b.HasIndex("Name")
                         .IsUnique()
-                        .HasDatabaseName("ix_categories_name")
-                        .HasFilter("deleted_at IS NULL");
+                        .HasDatabaseName("ix_categories_name");
 
                     b.HasIndex("CategoryType", "IsActive")
                         .HasDatabaseName("ix_categories_type_is_active");
@@ -215,18 +217,15 @@ namespace FoodHub.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique()
-                        .HasDatabaseName("ix_employees_email")
-                        .HasFilter("deleted_at IS NULL");
+                        .HasDatabaseName("ix_employees_email");
 
                     b.HasIndex("EmployeeCode")
                         .IsUnique()
-                        .HasDatabaseName("ix_employees_employee_code")
-                        .HasFilter("deleted_at IS NULL");
+                        .HasDatabaseName("ix_employees_employee_code");
 
                     b.HasIndex("Phone")
                         .IsUnique()
-                        .HasDatabaseName("ix_employees_phone")
-                        .HasFilter("deleted_at IS NULL");
+                        .HasDatabaseName("ix_employees_phone");
 
                     b.HasIndex("Role")
                         .HasDatabaseName("ix_employees_role");
@@ -237,8 +236,7 @@ namespace FoodHub.Migrations
 
                     b.HasIndex("Username")
                         .IsUnique()
-                        .HasDatabaseName("ix_employees_username")
-                        .HasFilter("deleted_at IS NULL");
+                        .HasDatabaseName("ix_employees_username");
 
                     b.HasIndex("Role", "Status")
                         .HasDatabaseName("ix_employees_role_status");
@@ -339,8 +337,7 @@ namespace FoodHub.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique()
-                        .HasDatabaseName("ix_menu_items_code")
-                        .HasFilter("deleted_at IS NULL");
+                        .HasDatabaseName("ix_menu_items_code");
 
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("ix_menu_items_created_at");
@@ -688,15 +685,6 @@ namespace FoodHub.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
 
-                    b.Property<DateTime?>("RejectedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("rejected_at");
-
-                    b.Property<string>("RejectionReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("rejection_reason");
-
                     b.Property<string>("StationSnapshot")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1007,8 +995,7 @@ namespace FoodHub.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique()
-                        .HasDatabaseName("ix_set_menus_code")
-                        .HasFilter("deleted_at IS NULL");
+                        .HasDatabaseName("ix_set_menus_code");
 
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("ix_set_menus_created_at");

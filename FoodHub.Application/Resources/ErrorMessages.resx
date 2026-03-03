@@ -440,4 +440,12 @@
   <data name="Auth.InvalidTokenClaims" xml:space="preserve">
     <value>Token chứa thông tin không hợp lệ.</value>
   </data>
+
+  <!-- Checkout Errors -->
+  <data name="Order.AlreadyPaid" xml:space="preserve">
+    <value>Đơn hàng này đã được thanh toán.</value>
+  </data>
+  <data name="Order.InsufficientAmount" xml:space="preserve">
+    <value>Số tiền thanh toán (tiền mặt) không đủ.</value>
+  </data>
 </root>

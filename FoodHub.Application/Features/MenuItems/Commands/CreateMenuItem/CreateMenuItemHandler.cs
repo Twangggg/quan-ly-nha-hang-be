@@ -106,7 +106,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 ExpectedTime = request.ExpectedTime,
                 PriceDineIn = request.PriceDineIn,
                 PriceTakeAway = request.PriceTakeAway ?? request.PriceDineIn, // Default to DineIn price if not set
-                CostPrice = request.Cost ?? 0,
+                CostPrice = request.CostPrice ?? 0,
                 IsOutOfStock = false,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = auditorId,
@@ -133,7 +133,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 ExpectedTime = menuItem.ExpectedTime,
                 PriceDineIn = menuItem.PriceDineIn,
                 PriceTakeAway = menuItem.PriceTakeAway,
-                Cost = menuItem.CostPrice,
+                CostPrice = menuItem.CostPrice,
                 IsOutOfStock = menuItem.IsOutOfStock,
                 CreatedAt = menuItem.CreatedAt,
                 UpdatedAt = menuItem.UpdatedAt,

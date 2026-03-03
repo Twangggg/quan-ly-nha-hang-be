@@ -271,6 +271,30 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
+            if (!_context.Tables.Any())
+            {
+                var table01 = new Table
+                {
+                    TableId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    TableNumber = "01",
+                    Status = TableStatus.Available,
+                    Capacity = 4,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var table02 = new Table
+                {
+                    TableId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                    TableNumber = "02",
+                    Status = TableStatus.Available,
+                    Capacity = 4,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Tables.AddRange(table01, table02);
+                _context.SaveChanges();
+            }
+
             if (!_context.Orders.Any())
             {
                 var admin = _context.Employees.First(e => e.EmployeeCode == "M001001");
@@ -452,6 +476,8 @@ namespace FoodHub.Infrastructure.Persistence
 
                 _context.Orders.AddRange(order1, order2, order3);
                 _context.SaveChanges();
+
+                Console.WriteLine($"[TESTING] Seeded Order1 ID: {order1.OrderId}");
             }
 
             _context.SaveChanges();

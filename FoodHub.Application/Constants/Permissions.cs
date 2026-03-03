@@ -49,6 +49,10 @@ namespace FoodHub.Application.Constants
             public const string UpdateStock = "Permissions.SetMenus.UpdateStock";
         }
 
+        public static class Billing
+        {
+            public const string Checkout = "Permissions.Billing.Checkout";
+        }
         public static class Kds
         {
             public const string View = "Permissions.Kds.View";

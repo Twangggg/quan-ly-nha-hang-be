@@ -330,4 +330,12 @@
   <data name="Order.WrongTotalAmount" xml:space="preserve">
     <value>Total amount is incorrect.</value>
   </data>
+  
+  <!-- Checkout Errors -->
+  <data name="Order.AlreadyPaid" xml:space="preserve">
+    <value>This order has already been paid.</value>
+  </data>
+  <data name="Order.InsufficientAmount" xml:space="preserve">
+    <value>The payment amount is insufficient.</value>
+  </data>
 </root>
