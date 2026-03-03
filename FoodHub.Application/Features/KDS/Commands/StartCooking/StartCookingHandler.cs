@@ -105,8 +105,8 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                     OrderId = orderItem.OrderId,
                     EmployeeId = Guid.Parse(_currentUserService.UserId!),
                     Action = AuditLogActions.KdsStartCooking,
-                    OldValue = OrderItemStatus.Preparing.ToString(),
-                    NewValue = OrderItemStatus.Cooking.ToString(),
+                    OldValue = $"\"{OrderItemStatus.Preparing}\"",
+                    NewValue = $"\"{OrderItemStatus.Cooking}\"",
                     CreatedAt = DateTime.UtcNow,
                 };
 

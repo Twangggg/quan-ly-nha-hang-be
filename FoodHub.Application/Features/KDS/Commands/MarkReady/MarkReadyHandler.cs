@@ -67,6 +67,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                var oldStatus = orderItem.Status;
                 // 1. Mark current item as Ready
                 var domainResult = orderItem.MarkReady();
                 if (!domainResult.IsSuccess)
@@ -89,8 +90,8 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                     OrderId = orderItem.OrderId,
                     EmployeeId = Guid.Parse(_currentUserService.UserId!),
                     Action = AuditLogActions.KdsMarkReady,
-                    OldValue = OrderItemStatus.Cooking.ToString(),
-                    NewValue = OrderItemStatus.Ready.ToString(),
+                    OldValue = $"\"{oldStatus}\"",
+                    NewValue = $"\"{OrderItemStatus.Ready}\"",
                     CreatedAt = DateTime.UtcNow,
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
@@ -129,8 +130,8 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                         OrderId = nextItem.OrderId,
                         EmployeeId = Guid.Parse(_currentUserService.UserId!),
                         Action = AuditLogActions.KdsStartCooking,
-                        OldValue = OrderItemStatus.Preparing.ToString(),
-                        NewValue = OrderItemStatus.Cooking.ToString(),
+                        OldValue = $"\"{OrderItemStatus.Preparing}\"",
+                        NewValue = $"\"{OrderItemStatus.Cooking}\"",
                         ChangeReason = "Auto-pull (Station Slot Freed)",
                         CreatedAt = DateTime.UtcNow,
                     };
