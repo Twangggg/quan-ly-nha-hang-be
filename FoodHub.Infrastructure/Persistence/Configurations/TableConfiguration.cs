@@ -42,7 +42,10 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasQueryFilter(t => !t.DeletedAt.HasValue);
 
             // Indexes
-            builder.HasIndex(t => t.TableNumber).HasDatabaseName("idx_tables_table_number");
+            builder.HasIndex(t => new { t.TableNumber, t.AreaId })
+                .IsUnique()
+                .HasDatabaseName("idx_tables_table_number")
+                .HasFilter("deleted_at IS NULL");
             builder.HasIndex(t => t.AreaId).HasDatabaseName("idx_tables_area_id");
             builder.HasIndex(t => t.CreatedAt).HasDatabaseName("idx_tables_created_at");
         }

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,9 +10,9 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "idx_tables_table_code",
-                table: "tables");
+            migrationBuilder.Sql(@"
+                    DROP INDEX IF EXISTS idx_tables_table_code;
+                ");
 
             migrationBuilder.DropIndex(
                 name: "idx_areas_code_prefix",
