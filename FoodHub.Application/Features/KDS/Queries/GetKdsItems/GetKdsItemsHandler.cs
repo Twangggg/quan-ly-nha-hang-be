@@ -41,6 +41,13 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
 
             var orderItemRepository = _unitOfWork.Repository<OrderItem>();
 
+            var targetStations = new List<string> { request.Station };
+            if (request.Station.Equals("Kitchen", StringComparison.OrdinalIgnoreCase))
+            {
+                targetStations.Add(Station.HotKitchen.ToString());
+                targetStations.Add(Station.ColdKitchen.ToString());
+            }
+
             var items = await orderItemRepository
                 .Query()
                 .AsNoTracking()
@@ -48,7 +55,7 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                 .Include(op => op.OptionGroups)
                     .ThenInclude(og => og.OptionValues)
                 .Where(oi =>
-                    oi.StationSnapshot == request.Station
+                    targetStations.Contains(oi.StationSnapshot)
                     && (
                         oi.Status == OrderItemStatus.Preparing
                         || oi.Status == OrderItemStatus.Cooking

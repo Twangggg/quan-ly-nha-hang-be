@@ -96,12 +96,26 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
-                // Auto-pull: Tìm món tiếp theo trong hàng đợi của station này
+                // Xác định nhóm trạm
+                var targetStations = new List<string> { orderItem.StationSnapshot };
+                if (
+                    orderItem.StationSnapshot == Station.HotKitchen.ToString()
+                    || orderItem.StationSnapshot == Station.ColdKitchen.ToString()
+                )
+                {
+                    targetStations = new List<string>
+                    {
+                        Station.HotKitchen.ToString(),
+                        Station.ColdKitchen.ToString(),
+                    };
+                }
+
+                // Auto-pull: Tìm món tiếp theo trong hàng đợi của station group này
                 var pendingItems = await orderItemRepository
                     .Query()
                     .Include(oi => oi.Order)
                     .Where(oi =>
-                        oi.StationSnapshot == orderItem.StationSnapshot
+                        targetStations.Contains(oi.StationSnapshot)
                         && oi.Status == OrderItemStatus.Preparing
                     )
                     .ToListAsync(cancellationToken);
