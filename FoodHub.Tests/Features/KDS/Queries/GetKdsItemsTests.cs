@@ -82,11 +82,11 @@ namespace FoodHub.Tests.Features.KDS.Queries
                 .Returns(
                     (List<OrderItem> src) =>
                         src.Select(s => new KdsItemResponse
-                            {
-                                OrderItemId = s.OrderItemId,
-                                Status = s.Status.ToString(),
-                                CreatedAt = s.CreatedAt,
-                            })
+                        {
+                            OrderItemId = s.OrderItemId,
+                            Status = s.Status.ToString(),
+                            CreatedAt = s.CreatedAt,
+                        })
                             .ToList()
                 );
 
