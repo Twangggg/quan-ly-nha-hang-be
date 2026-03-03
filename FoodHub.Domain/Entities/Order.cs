@@ -98,7 +98,7 @@ namespace FoodHub.Domain.Entities
                 });
         }
 
-        public (OrderItem Item, bool IsNew) AddOrUpdateItem(
+        public OrderItem CreateOrderItem(
             MenuItem menuItem,
             int quantity,
             string? note,
@@ -108,26 +108,6 @@ namespace FoodHub.Domain.Entities
             )> options
         )
         {
-            // 1. Generate signature for matching logic
-            var signature = GenerateSignature(options);
-
-            // 2. Try to find existing item to merge
-            var existingItem = OrderItems.FirstOrDefault(oi =>
-                oi.MenuItemId == menuItem.MenuItemId
-                && oi.Status == OrderItemStatus.Preparing
-                && (oi.ItemNote ?? string.Empty) == (note ?? string.Empty)
-                && GetItemSignature(oi) == signature
-            );
-
-            if (existingItem != null)
-            {
-                existingItem.Quantity += quantity;
-                existingItem.UpdatedAt = DateTime.UtcNow;
-                RecalculateTotalAmount();
-                return (existingItem, false);
-            }
-
-            // 3. Create new item
             var newItem = new OrderItem
             {
                 OrderItemId = Guid.NewGuid(),
@@ -173,12 +153,47 @@ namespace FoodHub.Domain.Entities
                 newItem.OptionGroups.Add(orderItemOptGroup);
             }
 
+            return newItem;
+        }
+
+        public (OrderItem Item, bool IsNew) AddOrUpdateItem(
+            MenuItem menuItem,
+            int quantity,
+            string? note,
+            List<(
+                OptionGroup Group,
+                List<(OptionItem Item, int Quantity, string? Note)> Selections
+            )> options
+        )
+        {
+            // 1. Generate signature for matching logic
+            var signature = GenerateSignature(options);
+
+            // 2. Try to find existing item to merge
+            var existingItem = OrderItems.FirstOrDefault(oi =>
+                oi.MenuItemId == menuItem.MenuItemId
+                && oi.Status == OrderItemStatus.Preparing
+                && (oi.ItemNote ?? string.Empty) == (note ?? string.Empty)
+                && GetItemSignature(oi) == signature
+            );
+
+            if (existingItem != null)
+            {
+                existingItem.Quantity += quantity;
+                existingItem.UpdatedAt = DateTime.UtcNow;
+                RecalculateTotalAmount();
+                return (existingItem, false);
+            }
+
+            // 3. Create new item
+            var newItem = CreateOrderItem(menuItem, quantity, note, options);
+
             OrderItems.Add(newItem);
             RecalculateTotalAmount();
             return (newItem, true);
         }
 
-        private string GenerateSignature(
+        public string GenerateSignature(
             List<(
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
@@ -196,7 +211,7 @@ namespace FoodHub.Domain.Entities
             return string.Join("|", allValues);
         }
 
-        private string GetItemSignature(OrderItem item)
+        public string GetItemSignature(OrderItem item)
         {
             if (item.OptionGroups == null || !item.OptionGroups.Any())
                 return string.Empty;
