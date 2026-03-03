@@ -114,6 +114,8 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                 var pendingItems = await orderItemRepository
                     .Query()
                     .Include(oi => oi.Order)
+                        .ThenInclude(o => o.OrderItems)
+                    .Include(oi => oi.MenuItem)
                     .Where(oi =>
                         targetStations.Contains(oi.StationSnapshot)
                         && oi.Status == OrderItemStatus.Preparing
@@ -124,7 +126,19 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                 if (pendingItems.Any())
                 {
                     nextItem = pendingItems
-                        .OrderByDescending(oi => _priorityCalculator.Calculate(oi, oi.Order))
+                        .OrderByDescending(oi =>
+                            _priorityCalculator.Calculate(
+                                oi.CreatedAt,
+                                oi.Order.IsPriority,
+                                oi.MenuItem.ExpectedTime * 60,
+                                oi.Order.OrderType,
+                                oi.Order.OrderItems.Count,
+                                oi.Order.OrderItems.Count(x =>
+                                    x.Status == OrderItemStatus.Completed
+                                    || x.Status == OrderItemStatus.Ready
+                                )
+                            )
+                        )
                         .ThenBy(oi => oi.CreatedAt)
                         .First();
                 }

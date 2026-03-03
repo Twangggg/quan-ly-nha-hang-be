@@ -1,3 +1,4 @@
+using System;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
@@ -48,12 +49,10 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                 targetStations.Add(Station.ColdKitchen.ToString());
             }
 
-            var items = await orderItemRepository
+            var items = await _unitOfWork
+                .Repository<OrderItem>()
                 .Query()
                 .AsNoTracking()
-                .Include(oi => oi.Order) // Bắt buộc phải Include Order để có dữ liệu tính điểm (ví dụ: IsPriority)
-                .Include(op => op.OptionGroups)
-                    .ThenInclude(og => og.OptionValues)
                 .Where(oi =>
                     targetStations.Contains(oi.StationSnapshot)
                     && (
@@ -61,23 +60,55 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                         || oi.Status == OrderItemStatus.Cooking
                     )
                 )
+                .Select(oi => new KdsItemResponse
+                {
+                    OrderItemId = oi.OrderItemId,
+                    OrderId = oi.OrderId,
+                    OrderCode = oi.Order.OrderCode,
+                    ItemNameSnapshot = oi.ItemNameSnapshot,
+                    StationSnapshot = oi.StationSnapshot,
+                    Quantity = oi.Quantity,
+                    ItemNote = oi.ItemNote,
+                    Status = oi.Status.ToString(),
+                    RejectionReason = oi.RejectionReason,
+                    CreatedAt = oi.CreatedAt,
+                    IsOrderPriority = oi.Order.IsPriority,
+                    OrderType = oi.Order.OrderType.ToString(),
+                    TotalOrderItems = oi.Order.OrderItems.Count,
+                    FinishedOrderItems = oi.Order.OrderItems.Count(x =>
+                        x.Status == OrderItemStatus.Completed || x.Status == OrderItemStatus.Ready
+                    ),
+                    ExpectedTimeSeconds = oi.MenuItem.ExpectedTime * 60,
+                    ItemOptions = string.Join(
+                        ", ",
+                        oi.OptionGroups.SelectMany(g => g.OptionValues)
+                            .Select(v =>
+                                v.Quantity > 1
+                                    ? v.LabelSnapshot + " x" + v.Quantity
+                                    : v.LabelSnapshot
+                            )
+                    ),
+                })
                 .ToListAsync(cancellationToken);
 
-            // Ánh xạ sang DTO
-            var responses = _mapper.Map<List<KdsItemResponse>>(items);
-
-            // Tính điểm ưu tiên cho từng món dựa trên logic nghiệp vụ
-            foreach (var response in responses)
+            // Calculate Priority Score
+            foreach (var item in items)
             {
-                var originalItem = items.First(i => i.OrderItemId == response.OrderItemId);
-                response.PriorityScore = _priorityCalculator.Calculate(
-                    originalItem,
-                    originalItem.Order
-                );
+                if (Enum.TryParse<OrderType>(item.OrderType, out var orderType))
+                {
+                    item.PriorityScore = _priorityCalculator.Calculate(
+                        item.CreatedAt,
+                        item.IsOrderPriority,
+                        item.ExpectedTimeSeconds,
+                        orderType,
+                        item.TotalOrderItems,
+                        item.FinishedOrderItems
+                    );
+                }
             }
 
             // Sắp xếp lại danh sách theo thứ tự tối ưu
-            var sortedItems = responses
+            var sortedItems = items
                 .OrderBy(oi => oi.Status == OrderItemStatus.Cooking.ToString() ? 0 : 1) // Đang nấu ưu tiên hiện trước
                 .ThenByDescending(oi => oi.PriorityScore) // Điểm ưu tiên cao hơn lên trước
                 .ThenBy(oi => oi.CreatedAt) // FIFO fallback: ai đến trước làm trước nếu bằng điểm

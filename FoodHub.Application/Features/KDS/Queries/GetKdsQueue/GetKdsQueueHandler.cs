@@ -1,3 +1,4 @@
+using System;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
@@ -39,8 +40,6 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
         {
             _logger.LogInformation("Fetching KDS Queue for Station: {Station}", request.Station);
 
-            var orderItemRepository = _unitOfWork.Repository<OrderItem>();
-
             var targetStations = new List<string> { request.Station };
             if (request.Station.Equals("Kitchen", StringComparison.OrdinalIgnoreCase))
             {
@@ -48,31 +47,54 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
                 targetStations.Add(Station.ColdKitchen.ToString());
             }
 
-            var items = await orderItemRepository
+            var items = await _unitOfWork
+                .Repository<OrderItem>()
                 .Query()
                 .AsNoTracking()
-                .Include(oi => oi.Order)
-                .Include(op => op.OptionGroups)
                 .Where(oi =>
                     targetStations.Contains(oi.StationSnapshot)
                     && oi.Status == OrderItemStatus.Preparing
                 )
+                .OrderBy(oi => oi.CreatedAt)
+                .Take(50)
+                .Select(oi => new KdsQueueResponse
+                {
+                    OrderItemId = oi.OrderItemId,
+                    OrderId = oi.OrderId,
+                    OrderCode = oi.Order.OrderCode,
+                    ItemNameSnapshot = oi.ItemNameSnapshot,
+                    StationSnapshot = oi.StationSnapshot,
+                    Quantity = oi.Quantity,
+                    ItemNote = oi.ItemNote,
+                    CreatedAt = oi.CreatedAt,
+                    IsOrderPriority = oi.Order.IsPriority,
+                    OrderType = oi.Order.OrderType.ToString(),
+                    TotalOrderItems = oi.Order.OrderItems.Count,
+                    FinishedOrderItems = oi.Order.OrderItems.Count(x =>
+                        x.Status == OrderItemStatus.Completed || x.Status == OrderItemStatus.Ready
+                    ),
+                    ExpectedTimeSeconds = oi.MenuItem.ExpectedTime * 60,
+                })
                 .ToListAsync(cancellationToken);
 
-            var responses = _mapper.Map<List<KdsQueueResponse>>(items);
-
             // Tính điểm ưu tiên
-            foreach (var response in responses)
+            foreach (var response in items)
             {
-                var originalItem = items.First(i => i.OrderItemId == response.OrderItemId);
-                response.PriorityScore = _priorityCalculator.Calculate(
-                    originalItem,
-                    originalItem.Order
-                );
+                if (Enum.TryParse<OrderType>(response.OrderType, out var orderType))
+                {
+                    response.PriorityScore = _priorityCalculator.Calculate(
+                        response.CreatedAt,
+                        response.IsOrderPriority,
+                        response.ExpectedTimeSeconds,
+                        orderType,
+                        response.TotalOrderItems,
+                        response.FinishedOrderItems
+                    );
+                }
             }
 
             // Sắp xếp theo điểm trước khi gán vị trí hàng chờ
-            var sortedQueue = responses
+            var sortedQueue = items
                 .OrderByDescending(oi => oi.PriorityScore)
                 .ThenBy(oi => oi.CreatedAt)
                 .ToList();
@@ -83,7 +105,7 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
             }
 
             _logger.LogInformation(
-                "Successfully fetched and scored {Count} items in Queue for Station: {Station}",
+                "Successfully fetched scored and paginated {Count} items in Queue for Station: {Station}",
                 sortedQueue.Count,
                 request.Station
             );
