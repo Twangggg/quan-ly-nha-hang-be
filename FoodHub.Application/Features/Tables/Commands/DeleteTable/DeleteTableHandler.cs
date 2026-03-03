@@ -70,7 +70,8 @@ namespace FoodHub.Application.Features.Tables.Commands.DeleteTable
 
             // Update the table in the repository and save changes to the database
             await _unitOfWork.SaveChangeAsync(cancellationToken);
-            await _cacheService.RemoveByPatternAsync("table:list", cancellationToken);
+            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableList), cancellationToken);
+            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableListByArea, table.AreaId), cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.TableById, request.TableId), cancellationToken);
 
             // Map the deleted table to a response object and return it wrapped in a success result

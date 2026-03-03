@@ -45,7 +45,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
         public async Task<Result<PagedResult<GetTablesResponse>>> Handle(GetTablesQuery request, CancellationToken cancellationToken)
         {
             // Generate a cache key based on the pagination parameters to store and retrieve cached results
-            var queryJson = JsonSerializer.Serialize(new { request.Pagination, request.AreaId });
+            var queryJson = JsonSerializer.Serialize(new { request.Pagination});
             var cacheKey = $"{CacheKey.TableList}:{queryJson.GetHashCode()}";
 
             // Attempt to retrieve the result from cache first to avoid unnecessary database queries
@@ -57,12 +57,6 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
 
             // Start building the query for Table entities
             var query = _unitOfWork.Repository<Table>().Query();
-
-            // Apply filtering by AreaId if it is provided in the request to narrow down the results to a specific area
-            if (request.AreaId.HasValue)
-            {
-                query = query.Where(t => t.AreaId == request.AreaId);
-            }
 
             // Define the fields that should be included in the global search functionality
             var searchableFields = new List<Expression<Func<Table, string?>>>

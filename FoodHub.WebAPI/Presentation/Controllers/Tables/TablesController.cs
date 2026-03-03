@@ -6,6 +6,7 @@ using FoodHub.Application.Features.Tables.Commands.UpdateTable;
 using FoodHub.Application.Features.Tables.Commands.UpdateTableStatus;
 using FoodHub.Application.Features.Tables.Queries.GetTableById;
 using FoodHub.Application.Features.Tables.Queries.GetTables;
+using FoodHub.Application.Features.Tables.Queries.GetTablesByArea;
 using FoodHub.Domain.Enums;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
@@ -38,7 +39,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         [ProducesResponseType(typeof(Result<PagedResult<GetTablesResponse>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetTables([FromQuery] PaginationParams pagination, Guid? areaId)
         {
-            var query = new GetTablesQuery(pagination, areaId);
+            var query = new GetTablesQuery(pagination);
             var result = await _mediator.Send(query);
 
             if (result.IsSuccess && result.Data != null)
@@ -46,6 +47,20 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
                 Response.AddPaginationHeaders(result.Data);
             }
 
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Lấy danh sách các bàn ăn theo khu vực (area) với phân trang. Hành động này sẽ trả về danh sách các bàn ăn thuộc khu vực được chỉ định, giúp người dùng dễ dàng tìm kiếm và quản lý các bàn ăn theo từng khu vực trong nhà hàng.
+        /// </summary>
+        /// <param name="areaId">ID của khu vực.</param>
+        /// <returns code="200">Danh sách các bàn ăn thuộc khu vực được chỉ định.</returns>
+        [HttpGet("area/{areaId}")]
+        [ProducesResponseType(typeof(Result<List<GetTablesByAreaResponse>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetTablesByArea(Guid areaId)
+        {
+            var query = new GetTablesByAreaQuery(areaId);
+            var result = await _mediator.Send(query);
             return HandleResult(result);
         }
 

@@ -5,7 +5,6 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTable
 {
     public record UpdateTableCommand(
         Guid TableId,
-        int Capacity,
-        Guid AreaId
+        int Capacity
         ) : IRequest<Result<UpdateTableResponse>>;
 }

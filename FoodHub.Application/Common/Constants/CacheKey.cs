@@ -83,6 +83,11 @@ public static class CacheKey
     /// Example: string.Format(TableById, "321") → "table:321"
     /// </summary>
     public const string TableById = "table:{0}";
+    /// <summary>
+    /// Key cho danh sách tables theo area
+    /// Example: string.Format(TableListByArea, "area123") → "table:area:area123"
+    /// </summary>
+    public const string TableListByArea = "table:area:{0}";
 }
 
 public static class CacheTTL

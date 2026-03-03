@@ -58,15 +58,6 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTable
                 return Result<UpdateTableResponse>.NotFound(errorMessage);
             }
 
-            // Validate that the specified area exists
-            var areaRepository = _unitOfWork.Repository<Area>();
-            var area = await areaRepository.Query().AnyAsync(a => a.AreaId == request.AreaId, cancellationToken);
-            if (!area)
-            {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Area.NotFound, request.AreaId);
-                return Result<UpdateTableResponse>.NotFound(errorMessage);
-            }
-
             // Update the table's properties
             Guid? auditorId = null;
             if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
@@ -75,17 +66,16 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTable
             }
             // Update the table's capacity and area assignment
             var capacity = request.Capacity;
-            var areaId = request.AreaId;
 
             // Additional validation for capacity can be added here if needed (e.g., capacity must be greater than 0)
             table.Capacity = capacity;
-            table.AreaId = areaId;
             table.UpdatedAt = DateTime.UtcNow;
             table.UpdatedBy = auditorId;
 
             // Update the table in the repository
             await _unitOfWork.SaveChangeAsync(cancellationToken);
-            await _cacheService.RemoveByPatternAsync("table:list", cancellationToken);
+            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableList), cancellationToken);
+            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableListByArea, table.AreaId), cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.TableById, request.TableId), cancellationToken);
 
             // Map the updated table to the response DTO
