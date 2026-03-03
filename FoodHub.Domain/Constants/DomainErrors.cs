@@ -21,5 +21,30 @@ namespace FoodHub.Domain.Constants
             public const string RejectionReasonIsRequired = "OrderItem.RejectionReasonIsRequired";
             public const string MustBeRejectedToReturn = "OrderItem.MustBeRejectedToReturn";
         }
+
+        public static class Category
+        {
+            public const string CannotDeleteActiveCategory = "Category.CannotDeleteActiveCategory";
+            public const string CannotDeactivateWithActiveItems = "Category.CannotDeactivateWithActiveItems";
+            public const string NotFound = "Category.NotFound";
+        }
+
+        public static class SetMenu
+        {
+            public const string NotFound = "SetMenu.NotFound";
+            public const string CannotDeleteWithItems = "SetMenu.CannotDeleteWithItems";
+            public const string InvalidPrice = "SetMenu.InvalidPrice";
+        }
+
+        public static class OptionGroup
+        {
+            public const string CannotDeleteWithOptions = "OptionGroup.CannotDeleteWithOptions";
+            public const string CannotHaveBothMinAndMax = "OptionGroup.CannotHaveBothMinAndMax";
+        }
+
+        public static class OptionItem
+        {
+            public const string InvalidExtraPrice = "OptionItem.InvalidExtraPrice";
+        }
     }
 }

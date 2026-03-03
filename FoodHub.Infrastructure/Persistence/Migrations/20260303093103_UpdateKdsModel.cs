@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -16,8 +16,7 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                 column: "menu_item_id",
                 principalTable: "menu_items",
                 principalColumn: "menu_item_id",
-                onDelete: ReferentialAction.Cascade
-            );
+                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />
@@ -25,8 +24,7 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.DropForeignKey(
                 name: "fk_order_items_menu_items_menu_item_id",
-                table: "order_items"
-            );
+                table: "order_items");
         }
     }
 }
