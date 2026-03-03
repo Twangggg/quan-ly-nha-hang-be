@@ -88,8 +88,16 @@ public static class CacheKey
     /// Example: string.Format(TableListByArea, "area123") → "table:area:area123"
     /// </summary>
     public const string TableListByArea = "table:area:{0}";
-}
 
+
+    // ==================== AREAS ====================
+    /// <summary>
+    /// Key cho danh sách tất cả khu vực
+    /// Example: "area:list:all"
+    /// </summary>
+    public const string AreaList = "area:list:all";
+    public const string AreaById = "area:{0}";
+}
 public static class CacheTTL
 {
     public static readonly TimeSpan Categories = TimeSpan.FromHours(2);
@@ -98,5 +106,6 @@ public static class CacheTTL
     public static readonly TimeSpan SetMenus = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Options = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Orders = TimeSpan.FromMinutes(5);
+    public static readonly TimeSpan Areas = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan Tables = TimeSpan.FromMinutes(10);
 }

@@ -18,7 +18,9 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasKey(a => a.AreaId);
             builder.Property(a => a.AreaId).HasColumnName("area_id");
             builder.Property(a => a.Name).IsRequired().HasMaxLength(100).HasColumnName("name");
-            builder.Property(a => a.CodePrefix).IsRequired().HasMaxLength(10).HasColumnName("code_prefix");
+            builder.Property(a => a.CodePrefix).IsRequired().HasMaxLength(3).HasColumnName("code_prefix");
+            builder.Property(a => a.Type).IsRequired().HasColumnName("type");
+            builder.Property(a => a.Description).HasMaxLength(500).HasColumnName("description");
             builder.Property(a => a.Status).IsRequired().HasColumnName("status");
 
             // Audit
@@ -31,9 +33,16 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             // Soft-delete filter
             builder.HasQueryFilter(a => !a.DeletedAt.HasValue);
 
+            // Relationship to Tables
+            builder.HasMany(a => a.Tables)
+                   .WithOne(t => t.Area)
+                   .HasForeignKey(t => t.AreaId)
+                   .HasConstraintName("fk_tables_area_id")
+                   .OnDelete(DeleteBehavior.Restrict);
+
             // Indexes
             builder.HasIndex(a => a.Name).HasDatabaseName("idx_areas_name");
-            builder.HasIndex(a => a.CodePrefix).HasDatabaseName("idx_areas_code_prefix");
+            builder.HasIndex(a => a.CodePrefix).IsUnique().HasFilter("deleted_at IS NULL").HasDatabaseName("idx_areas_code_prefix");
             builder.HasIndex(a => a.CreatedAt).HasDatabaseName("idx_areas_created_at");
         }
     }

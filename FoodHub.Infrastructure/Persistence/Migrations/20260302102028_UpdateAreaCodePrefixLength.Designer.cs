@@ -3,17 +3,20 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodHub.Migrations
+namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260302102028_UpdateAreaCodePrefixLength")]
+    partial class UpdateAreaCodePrefixLength
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1142,9 +1145,11 @@ namespace FoodHub.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
-                    b.Property<int>("TableNumber")
-                        .HasColumnType("integer")
-                        .HasColumnName("table_number");
+                    b.Property<string>("TableCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("table_code");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1163,8 +1168,10 @@ namespace FoodHub.Migrations
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("idx_tables_created_at");
 
-                    b.HasIndex("TableNumber")
-                        .HasDatabaseName("idx_tables_table_number");
+                    b.HasIndex("TableCode")
+                        .IsUnique()
+                        .HasDatabaseName("idx_tables_table_code")
+                        .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("tables", (string)null);
                 });
