@@ -48,6 +48,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
             var station = "ColdKitchen";
             var userId = Guid.NewGuid().ToString();
             var reason = "Hết nguyên liệu";
+            var menuItem = new MenuItem { ExpectedTime = 10, Code = "TEST001", Name = "Test Item", ImageUrl = "http://test.com/image.jpg" };
 
             var currentItem = new OrderItem
             {
@@ -55,6 +56,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 StationSnapshot = station,
                 Status = OrderItemStatus.Cooking,
                 OrderId = Guid.NewGuid(),
+                MenuItem = menuItem,
             };
 
             var nextItem = new OrderItem
@@ -63,6 +65,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 StationSnapshot = station,
                 Status = OrderItemStatus.Preparing,
                 Order = new FoodHub.Domain.Entities.Order { IsPriority = false },
+                MenuItem = menuItem,
                 CreatedAt = DateTime.UtcNow,
             };
 

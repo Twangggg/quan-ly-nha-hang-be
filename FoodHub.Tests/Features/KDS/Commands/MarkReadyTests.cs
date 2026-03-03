@@ -47,6 +47,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
             var orderItemId = Guid.NewGuid();
             var station = "HotKitchen";
             var userId = Guid.NewGuid().ToString();
+            var menuItem = new MenuItem { ExpectedTime = 10, Code = "TEST001", Name = "Test Item", ImageUrl = "http://test.com/image.jpg" };
 
             var currentItem = new OrderItem
             {
@@ -54,6 +55,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 StationSnapshot = station,
                 Status = OrderItemStatus.Cooking,
                 OrderId = Guid.NewGuid(),
+                MenuItem = menuItem,
             };
 
             var normalItem = new OrderItem
@@ -63,6 +65,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 Status = OrderItemStatus.Preparing,
                 CreatedAt = DateTime.UtcNow.AddMinutes(-10),
                 Order = new FoodHub.Domain.Entities.Order { IsPriority = false },
+                MenuItem = menuItem,
             };
 
             var vipItem = new OrderItem
@@ -72,6 +75,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 Status = OrderItemStatus.Preparing,
                 CreatedAt = DateTime.UtcNow.AddMinutes(-2),
                 Order = new FoodHub.Domain.Entities.Order { IsPriority = true },
+                MenuItem = menuItem,
             };
 
             var items = new List<OrderItem> { currentItem, normalItem, vipItem };
