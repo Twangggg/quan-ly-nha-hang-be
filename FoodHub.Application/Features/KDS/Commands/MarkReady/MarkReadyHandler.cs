@@ -137,6 +137,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                     await _unitOfWork.Repository<OrderAuditLog>().AddAsync(autoPullLog);
                 }
 
+                orderItemRepository.Update(orderItem);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
 
