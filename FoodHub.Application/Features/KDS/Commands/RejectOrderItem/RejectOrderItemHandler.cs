@@ -113,14 +113,14 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                         .OrderByDescending(oi =>
                             _priorityCalculator.Calculate(
                                 oi.CreatedAt,
-                                oi.Order.IsPriority,
-                                oi.MenuItem.ExpectedTime * 60,
-                                oi.Order.OrderType,
-                                oi.Order.OrderItems.Count,
-                                oi.Order.OrderItems.Count(x =>
+                                oi.Order?.IsPriority ?? false,
+                                (oi.MenuItem?.ExpectedTime ?? 0) * 60,
+                                oi.Order?.OrderType ?? OrderType.DineIn,
+                                oi.Order?.OrderItems?.Count ?? 0,
+                                oi.Order?.OrderItems?.Count(x =>
                                     x.Status == OrderItemStatus.Completed
                                     || x.Status == OrderItemStatus.Ready
-                                )
+                                ) ?? 0
                             )
                         )
                         .ThenBy(oi => oi.CreatedAt)

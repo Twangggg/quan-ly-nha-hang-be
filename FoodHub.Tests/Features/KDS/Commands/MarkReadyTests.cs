@@ -46,7 +46,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
             // Arrange
             var orderItemId = Guid.NewGuid();
             var station = "HotKitchen";
-            var userId = Guid.NewGuid().ToString(); // Đảm bảo là string GUID hợp lệ
+            var userId = Guid.NewGuid().ToString();
 
             var currentItem = new OrderItem
             {
@@ -56,13 +56,12 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 OrderId = Guid.NewGuid(),
             };
 
-            // Hàng đợi có 2 món: 1 thường, 1 VIP
             var normalItem = new OrderItem
             {
                 OrderItemId = Guid.NewGuid(),
                 StationSnapshot = station,
                 Status = OrderItemStatus.Preparing,
-                CreatedAt = DateTime.UtcNow.AddMinutes(-10), // Chờ 10p
+                CreatedAt = DateTime.UtcNow.AddMinutes(-10),
                 Order = new FoodHub.Domain.Entities.Order { IsPriority = false },
             };
 
@@ -71,7 +70,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 OrderItemId = Guid.NewGuid(),
                 StationSnapshot = station,
                 Status = OrderItemStatus.Preparing,
-                CreatedAt = DateTime.UtcNow.AddMinutes(-2), // Mới chờ 2p nhưng là VIP
+                CreatedAt = DateTime.UtcNow.AddMinutes(-2),
                 Order = new FoodHub.Domain.Entities.Order { IsPriority = true },
             };
 

@@ -47,7 +47,7 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
                 targetStations.Add(Station.ColdKitchen.ToString());
             }
 
-            var items = await _unitOfWork
+            var query = await _unitOfWork
                 .Repository<OrderItem>()
                 .Query()
                 .AsNoTracking()
@@ -57,25 +57,26 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
                 )
                 .OrderBy(oi => oi.CreatedAt)
                 .Take(50)
-                .Select(oi => new KdsQueueResponse
-                {
-                    OrderItemId = oi.OrderItemId,
-                    OrderId = oi.OrderId,
-                    OrderCode = oi.Order.OrderCode,
-                    ItemNameSnapshot = oi.ItemNameSnapshot,
-                    StationSnapshot = oi.StationSnapshot,
-                    Quantity = oi.Quantity,
-                    ItemNote = oi.ItemNote,
-                    CreatedAt = oi.CreatedAt,
-                    IsOrderPriority = oi.Order.IsPriority,
-                    OrderType = oi.Order.OrderType.ToString(),
-                    TotalOrderItems = oi.Order.OrderItems.Count,
-                    FinishedOrderItems = oi.Order.OrderItems.Count(x =>
-                        x.Status == OrderItemStatus.Completed || x.Status == OrderItemStatus.Ready
-                    ),
-                    ExpectedTimeSeconds = oi.MenuItem.ExpectedTime * 60,
-                })
                 .ToListAsync(cancellationToken);
+
+            var items = query.Select(oi => new KdsQueueResponse
+            {
+                OrderItemId = oi.OrderItemId,
+                OrderId = oi.OrderId,
+                OrderCode = oi.Order != null ? oi.Order.OrderCode : string.Empty,
+                ItemNameSnapshot = oi.ItemNameSnapshot,
+                StationSnapshot = oi.StationSnapshot,
+                Quantity = oi.Quantity,
+                ItemNote = oi.ItemNote,
+                CreatedAt = oi.CreatedAt,
+                IsOrderPriority = oi.Order != null && oi.Order.IsPriority,
+                OrderType = oi.Order != null ? oi.Order.OrderType.ToString() : string.Empty,
+                TotalOrderItems = oi.Order?.OrderItems?.Count ?? 0,
+                FinishedOrderItems = oi.Order?.OrderItems?.Count(x =>
+                    x.Status == OrderItemStatus.Completed || x.Status == OrderItemStatus.Ready
+                ) ?? 0,
+                ExpectedTimeSeconds = (oi.MenuItem != null ? oi.MenuItem.ExpectedTime : 0) * 60,
+            }).ToList();
 
             // Tính điểm ưu tiên
             foreach (var response in items)
