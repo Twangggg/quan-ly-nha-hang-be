@@ -67,7 +67,7 @@ namespace FoodHub.Tests.Features.MenuItems
                 ImageUrl = "https://example.com/old-image.jpg",
                 Description = "Phở bò thường",
                 CategoryId = categoryId,
-                Category = new Category { CategoryId = categoryId, Name = "Món chính" },
+                Category = new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC" },
                 Station = Station.HotKitchen,
                 ExpectedTime = 15,
                 Price = 50000m,
@@ -80,7 +80,7 @@ namespace FoodHub.Tests.Features.MenuItems
             menuItemRepo.Setup(r => r.Query()).Returns(menuItems);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(menuItemRepo.Object);
 
-            var categories = new List<Category> { new Category { CategoryId = categoryId, Name = "Món chính" } }.AsQueryable().BuildMock();
+            var categories = new List<Category> { new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC" } }.AsQueryable().BuildMock();
             var categoryRepo = new Mock<IGenericRepository<Category>>();
             categoryRepo.Setup(r => r.Query()).Returns(categories);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(categoryRepo.Object);
@@ -219,7 +219,7 @@ namespace FoodHub.Tests.Features.MenuItems
                 Name = "Phở Bò",
                 ImageUrl = "",
                 CategoryId = categoryId,
-                Category = new Category { CategoryId = categoryId, Name = "Món chính" },
+                Category = new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC" },
                 Station = Station.HotKitchen
             };
 
@@ -228,7 +228,7 @@ namespace FoodHub.Tests.Features.MenuItems
             menuItemRepo.Setup(r => r.Query()).Returns(menuItems);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(menuItemRepo.Object);
 
-            var categories = new List<Category> { new Category { CategoryId = categoryId, Name = "Món chính" } }.AsQueryable().BuildMock();
+            var categories = new List<Category> { new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC" } }.AsQueryable().BuildMock();
             var categoryRepo = new Mock<IGenericRepository<Category>>();
             categoryRepo.Setup(r => r.Query()).Returns(categories);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(categoryRepo.Object);

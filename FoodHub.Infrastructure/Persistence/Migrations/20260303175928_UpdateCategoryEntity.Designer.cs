@@ -3,17 +3,20 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodHub.Migrations
+namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260303175928_UpdateCategoryEntity")]
+    partial class UpdateCategoryEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -382,10 +385,6 @@ namespace FoodHub.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_out_of_stock");
 
-                    b.Property<int>("ItemNumber")
-                        .HasColumnType("integer")
-                        .HasColumnName("item_number");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -438,11 +437,6 @@ namespace FoodHub.Migrations
 
                     b.HasIndex("CategoryId", "IsOutOfStock")
                         .HasDatabaseName("ix_menu_items_category_id_is_out_of_stock");
-
-                    b.HasIndex("CategoryId", "ItemNumber")
-                        .IsUnique()
-                        .HasDatabaseName("ix_menu_items_category_id_item_number")
-                        .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex("IsOutOfStock", "CategoryId")
                         .HasDatabaseName("ix_menu_items_is_out_of_stock_category_id");
@@ -1008,10 +1002,6 @@ namespace FoodHub.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("set_menu_id");
 
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("category_id");
-
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1048,10 +1038,6 @@ namespace FoodHub.Migrations
                     b.Property<bool>("IsOutOfStock")
                         .HasColumnType("boolean")
                         .HasColumnName("is_out_of_stock");
-
-                    b.Property<int>("ItemNumber")
-                        .HasColumnType("integer")
-                        .HasColumnName("item_number");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1097,11 +1083,6 @@ namespace FoodHub.Migrations
 
                     b.HasIndex("SetType")
                         .HasDatabaseName("ix_set_menus_set_type");
-
-                    b.HasIndex("CategoryId", "ItemNumber")
-                        .IsUnique()
-                        .HasDatabaseName("ix_set_menus_category_id_item_number")
-                        .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex("SetType", "IsOutOfStock")
                         .HasDatabaseName("ix_set_menus_set_type_is_out_of_stock");
@@ -1358,17 +1339,6 @@ namespace FoodHub.Migrations
                         .HasConstraintName("fk_refresh_tokens_employees_employee_id");
 
                     b.Navigation("Employee");
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
-                {
-                    b.HasOne("FoodHub.Domain.Entities.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_set_menus_categories_category_id");
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenuItem", b =>

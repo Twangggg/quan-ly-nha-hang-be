@@ -13,23 +13,27 @@ namespace FoodHub.Tests.Features.Categories
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICacheService> _mockCache;
+        private readonly Mock<IMessageService> _mockMessage;
         private readonly CreateCategoryHandler _handler;
 
         public CreateCategoryHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockCache = new Mock<ICacheService>();
+            _mockMessage = new Mock<IMessageService>();
 
-            _handler = new CreateCategoryHandler(_mockUow.Object, _mockCache.Object);
+            _handler = new CreateCategoryHandler(_mockUow.Object, _mockCache.Object, _mockMessage.Object);
         }
 
         [Fact]
         public async Task Handle_Should_ReturnSuccess_When_CategoryCreated()
         {
             // Arrange
-            var command = new CreateCategoryCommand("Đồ uống", CategoryType.Normal);
+            var command = new CreateCategoryCommand("Đồ uống", "DRK", CategoryType.Normal);
 
             var mockRepo = new Mock<IGenericRepository<Category>>();
+            mockRepo.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Category, bool>>>()))
+                .ReturnsAsync(false);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(mockRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockCache.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -42,6 +46,7 @@ namespace FoodHub.Tests.Features.Categories
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Name.Should().Be("Đồ uống");
+            result.Data.CodePrefix.Should().Be("DRK");
             result.Data.Type.Should().Be((int)CategoryType.Normal);
             _mockUow.Verify(u => u.Repository<Category>().AddAsync(It.IsAny<Category>()), Times.Once);
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -50,12 +55,14 @@ namespace FoodHub.Tests.Features.Categories
         }
 
         [Fact]
-        public async Task Handle_Should_CreateCategory_WithSpecialGroupType()
+        public async Task Handle_Should_CreateCategory_WithComboType()
         {
             // Arrange
-            var command = new CreateCategoryCommand("Combo đặc biệt", CategoryType.SpecialGroup);
+            var command = new CreateCategoryCommand("Combo đặc biệt", "CB", CategoryType.Combo);
 
             var mockRepo = new Mock<IGenericRepository<Category>>();
+            mockRepo.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Category, bool>>>()))
+                .ReturnsAsync(false);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(mockRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockCache.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -68,7 +75,8 @@ namespace FoodHub.Tests.Features.Categories
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Name.Should().Be("Combo đặc biệt");
-            result.Data.Type.Should().Be((int)CategoryType.SpecialGroup);
+            result.Data.CodePrefix.Should().Be("CB");
+            result.Data.Type.Should().Be((int)CategoryType.Combo);
         }
 
 

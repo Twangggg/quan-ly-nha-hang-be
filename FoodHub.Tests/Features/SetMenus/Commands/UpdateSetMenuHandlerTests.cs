@@ -38,10 +38,12 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
         {
             // Arrange
             var setMenuId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
                 SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
@@ -67,10 +69,12 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
         {
             // Arrange
             var setMenuId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
                 SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
@@ -102,10 +106,12 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             // Arrange
             var setMenuId = Guid.NewGuid();
             var menuItemId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
                 SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
@@ -155,10 +161,12 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var userId = Guid.NewGuid();
             var setMenuId = Guid.NewGuid();
             var menuItemId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
                 SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",

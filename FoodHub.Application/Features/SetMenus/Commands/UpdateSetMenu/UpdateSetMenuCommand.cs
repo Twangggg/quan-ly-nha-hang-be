@@ -10,6 +10,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
         Guid SetMenuId,
         string Name,
         SetType SetType,
+        Guid CategoryId,
         string? ImageUrl,
         string? Description,
         decimal Price,

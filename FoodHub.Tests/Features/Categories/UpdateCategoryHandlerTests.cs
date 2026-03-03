@@ -32,8 +32,8 @@ namespace FoodHub.Tests.Features.Categories
         {
             // Arrange
             var categoryId = Guid.NewGuid();
-            var category = new Category { CategoryId = categoryId, Name = "Old Name", CategoryType = CategoryType.Normal };
-            var command = new UpdateCategoryCommand(categoryId, "New Name", CategoryType.SpecialGroup);
+            var category = new Category { CategoryId = categoryId, Name = "Old Name", CodePrefix = "OLD", CategoryType = CategoryType.Normal };
+            var command = new UpdateCategoryCommand(categoryId, "New Name", CategoryType.Combo);
 
             var categories = new List<Category> { category }.AsQueryable().BuildMock();
             var repo = new Mock<IGenericRepository<Category>>();
@@ -50,9 +50,11 @@ namespace FoodHub.Tests.Features.Categories
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Name.Should().Be("New Name");
-            result.Data.Type.Should().Be(CategoryType.SpecialGroup);
+            result.Data.CodePrefix.Should().Be("OLD");
+            result.Data.Type.Should().Be((int)CategoryType.Combo);
             category.Name.Should().Be("New Name");
-            category.CategoryType.Should().Be(CategoryType.SpecialGroup);
+            category.CodePrefix.Should().Be("OLD");
+            category.CategoryType.Should().Be(CategoryType.Combo);
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
             _mockCache.Verify(c => c.RemoveAsync(CacheKey.CategoryList, It.IsAny<CancellationToken>()), Times.Once);
             _mockCache.Verify(c => c.RemoveAsync(string.Format(CacheKey.CategoryById, categoryId), It.IsAny<CancellationToken>()), Times.Once);

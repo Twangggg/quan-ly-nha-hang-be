@@ -3,6 +3,7 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Categories.Commands.CreateCategory;
 using FoodHub.Application.Features.Categories.Commands.DeleteCategory;
 using FoodHub.Application.Features.Categories.Commands.UpdateCategory;
+using FoodHub.Application.Features.Categories.Commands.UpdateCategoryStatus;
 using FoodHub.Application.Features.Categories.Queries.GetAllCategories;
 using FoodHub.Application.Features.Categories.Queries.GetCategoryById;
 using FoodHub.Application.Interfaces;
@@ -72,7 +73,7 @@ namespace FoodHub.Presentation.Controllers
         [HttpPost]
         [HasPermission(Permissions.Categories.Create)]
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
-        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Result<CreateCategoryResponse>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryCommand command)
         {
@@ -81,7 +82,7 @@ namespace FoodHub.Presentation.Controllers
             {
                 return CreatedAtAction(
                     nameof(GetCategoryById),
-                    new { id = result.Data },
+                    new { id = result.Data!.CategoryId },
                     result.Data
                 );
             }
@@ -100,7 +101,7 @@ namespace FoodHub.Presentation.Controllers
         [HttpPut("{id}")]
         [HasPermission(Permissions.Categories.Update)]
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<UpdateCategoryResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateCategory(
             Guid id,
@@ -122,6 +123,20 @@ namespace FoodHub.Presentation.Controllers
         }
 
         /// <summary>
+        /// Cập nhật trạng thái hoạt động của danh mục.
+        /// </summary>
+        /// <param name="id">Mã danh mục.</param>
+        /// <param name="isActive">Trạng thái (true: hoạt động, false: dừng hoạt động).</param>
+        [HttpPatch("{id}/status")]
+        [HasPermission(Permissions.Categories.Update)]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateCategoryStatus(Guid id, [FromQuery] bool isActive)
+        {
+            var result = await _mediator.Send(new UpdateCategoryStatusCommand(id, isActive));
+            return HandleResult(result);
+        }
+
+        /// <summary>
         /// Xóa một danh mục món ăn.
         /// </summary>
         /// <remarks>Yêu cầu quyền: Categories.Delete.</remarks>
@@ -131,7 +146,7 @@ namespace FoodHub.Presentation.Controllers
         [HttpDelete("{id}")]
         [HasPermission(Permissions.Categories.Delete)]
         [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 15)]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<DeleteCategoryResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeleteCategory(Guid id)
         {

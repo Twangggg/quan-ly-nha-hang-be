@@ -61,8 +61,8 @@ namespace FoodHub.Tests.Features.Categories
 
             var categories = new List<Category>
             {
-                new Category { CategoryId = Guid.NewGuid(), Name = "Category 1", CategoryType = CategoryType.Normal, IsActive = true },
-                new Category { CategoryId = Guid.NewGuid(), Name = "Category 2", CategoryType = CategoryType.SpecialGroup, IsActive = true }
+                new Category { CategoryId = Guid.NewGuid(), Name = "Category 1", CodePrefix = "C1", CategoryType = CategoryType.Normal, IsActive = true },
+                new Category { CategoryId = Guid.NewGuid(), Name = "Category 2", CodePrefix = "C2", CategoryType = CategoryType.Combo, IsActive = true }
             }.AsQueryable().BuildMock();
 
             var repo = new Mock<IGenericRepository<Category>>();
@@ -71,8 +71,8 @@ namespace FoodHub.Tests.Features.Categories
 
             var mappedItems = new List<GetAllCategoriesResponse>
             {
-                new GetAllCategoriesResponse { CategoryId = categories.ElementAt(0).CategoryId, Name = "Category 1", Type = (int)CategoryType.Normal },
-                new GetAllCategoriesResponse { CategoryId = categories.ElementAt(1).CategoryId, Name = "Category 2", Type = (int)CategoryType.SpecialGroup }
+                new GetAllCategoriesResponse { CategoryId = categories.ElementAt(0).CategoryId, Name = "Category 1", CodePrefix = "C1", Type = (int)CategoryType.Normal },
+                new GetAllCategoriesResponse { CategoryId = categories.ElementAt(1).CategoryId, Name = "Category 2", CodePrefix = "C2", Type = (int)CategoryType.Combo }
             };
 
 

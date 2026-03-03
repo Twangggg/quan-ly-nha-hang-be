@@ -65,7 +65,7 @@ namespace FoodHub.Tests.Features.Categories
         {
             // Arrange
             var categoryId = Guid.NewGuid();
-            var category = new Category { CategoryId = categoryId, Name = "Đồ uống" };
+            var category = new Category { CategoryId = categoryId, Name = "Đồ uống", CodePrefix = "DU" };
             var command = new DeleteCategoryCommand(categoryId);
 
             var categories = new List<Category> { category }.AsQueryable().BuildMock();

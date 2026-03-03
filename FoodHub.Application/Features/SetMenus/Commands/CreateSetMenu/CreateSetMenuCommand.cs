@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Http;
 namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
 {
     public record CreateSetMenuCommand(
-        string Code,
         string Name,
         SetType SetType,
+        Guid CategoryId,
         string? ImageUrl,
         string? Description,
         decimal Price,

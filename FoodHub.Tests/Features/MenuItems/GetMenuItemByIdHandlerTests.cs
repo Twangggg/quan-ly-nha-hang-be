@@ -77,7 +77,7 @@ namespace FoodHub.Tests.Features.MenuItems
                 ImageUrl = "https://example.com/pho.jpg",
                 Description = "Phở bò truyền thống",
                 CategoryId = categoryId,
-                Category = new Category { CategoryId = categoryId, Name = "Món chính" },
+                Category = new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC" },
                 Station = Station.HotKitchen,
                 ExpectedTime = 15,
                 Price = 50000m,

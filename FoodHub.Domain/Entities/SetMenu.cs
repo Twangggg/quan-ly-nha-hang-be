@@ -8,6 +8,7 @@ namespace FoodHub.Domain.Entities
     {
         public Guid SetMenuId { get; set; }
         public required string Code { get; set; }
+        public int ItemNumber { get; set; }
         public required string Name { get; set; }
         public SetType SetType { get; set; }
         public string? ImageUrl { get; set; }
@@ -15,6 +16,8 @@ namespace FoodHub.Domain.Entities
         public decimal Price { get; set; }
         public decimal CostPrice { get; set; }
         public bool IsOutOfStock { get; set; }
+        public Guid? CategoryId { get; set; }
+        public virtual Category? Category { get; set; }
         public virtual ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();
     }
 }

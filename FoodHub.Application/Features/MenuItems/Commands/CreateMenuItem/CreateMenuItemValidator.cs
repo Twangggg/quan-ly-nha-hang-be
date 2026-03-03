@@ -6,10 +6,6 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
     {
         public CreateMenuItemValidator()
         {
-            RuleFor(x => x.Code)
-                .NotEmpty().WithMessage("Code is required.")
-                .MaximumLength(50).WithMessage("Code must not exceed 50 characters.");
-
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name is required.")
                 .MaximumLength(150).WithMessage("Name must not exceed 150 characters.");

@@ -461,4 +461,19 @@
   <data name="Area.DeactivateForbidden" xml:space="preserve">
     <value>Khu vực này đã ngừng hoạt động.</value>
   </data>
+  <data name="Category.NameMaxLength" xml:space="preserve">
+    <value>Tên danh mục không được quá 100 ký tự.</value>
+  </data>
+  <data name="Category.CodePrefixRequired" xml:space="preserve">
+    <value>Mã danh mục không được để trống.</value>
+  </data>
+  <data name="Category.CodePrefixMaxLength" xml:space="preserve">
+    <value>Mã danh mục không được quá 10 ký tự.</value>
+  </data>
+  <data name="Category.CodePrefixExists" xml:space="preserve">
+    <value>Mã danh mục đã tồn tại, vui lòng chọn mã khác.</value>
+  </data>
+  <data name="Category.Inactive" xml:space="preserve">
+    <value>Danh mục đã dừng hoạt động, không thể tạo món ăn mới.</value>
+  </data>
 </root>

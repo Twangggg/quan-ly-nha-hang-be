@@ -13,6 +13,9 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
             RuleFor(x => x.Description)
                 .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
 
+            RuleFor(x => x.CategoryId)
+                .NotEmpty().WithMessage("Category ID is required.");
+
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name is required.")
                 .MaximumLength(150).WithMessage("Name must not exceed 150 characters.");

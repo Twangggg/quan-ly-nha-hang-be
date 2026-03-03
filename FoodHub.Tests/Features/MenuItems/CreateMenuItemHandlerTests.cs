@@ -44,7 +44,6 @@ namespace FoodHub.Tests.Features.MenuItems
             var userId = Guid.NewGuid();
             var categoryId = Guid.NewGuid();
             var command = new CreateMenuItemCommand(
-                "MI001",
                 "Phở Bò",
                 "https://example.com/image.jpg",
                 "Phở bò truyền thống",
@@ -67,7 +66,7 @@ namespace FoodHub.Tests.Features.MenuItems
                 .ReturnsAsync(false);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(menuItemRepo.Object);
 
-            var category = new Category { CategoryId = categoryId, Name = "Món chính" };
+            var category = new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC" };
             var categoryRepo = new Mock<IGenericRepository<Category>>();
             categoryRepo.Setup(r => r.GetByIdAsync(categoryId)).ReturnsAsync(category);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(categoryRepo.Object);
@@ -83,7 +82,6 @@ namespace FoodHub.Tests.Features.MenuItems
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Code.Should().Be("MI001");
             result.Data.Name.Should().Be("Phở Bò");
             result.Data.CategoryId.Should().Be(categoryId);
             result.Data.CategoryName.Should().Be("Món chính");
@@ -104,7 +102,6 @@ namespace FoodHub.Tests.Features.MenuItems
             // Arrange
             var categoryId = Guid.NewGuid();
             var command = new CreateMenuItemCommand(
-                "MI001",
                 "Phở Bò",
                 null,
                 null,
@@ -136,8 +133,8 @@ namespace FoodHub.Tests.Features.MenuItems
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(menuItemRepo.Object);
 
             _mockMessage
-                .Setup(m => m.GetMessage(MessageKeys.MenuItem.CodeExists, "MI001"))
-                .Returns("Menu item code MI001 already exists");
+                .Setup(m => m.GetMessage(MessageKeys.MenuItem.CodeExists, It.IsAny<string>()))
+                .Returns("Menu item code already exists");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -145,7 +142,7 @@ namespace FoodHub.Tests.Features.MenuItems
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.ErrorType.Should().Be(ResultErrorType.Conflict);
-            result.Error.Should().Be("Menu item code MI001 already exists");
+            result.Error.Should().Be("Menu item code already exists");
         }
 
         [Fact]
@@ -154,7 +151,6 @@ namespace FoodHub.Tests.Features.MenuItems
             // Arrange
             var categoryId = Guid.NewGuid();
             var command = new CreateMenuItemCommand(
-                "MI001",
                 "Phở Bò",
                 null,
                 null,

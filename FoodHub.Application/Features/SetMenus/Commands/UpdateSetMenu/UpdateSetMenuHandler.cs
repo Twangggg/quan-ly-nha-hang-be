@@ -59,6 +59,7 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
                 // 3. Update SetMenu properties
                 setMenu.Name = request.Name;
                 setMenu.SetType = request.SetType;
+                setMenu.CategoryId = request.CategoryId;
                 setMenu.Price = request.Price;
                 setMenu.ImageUrl = request.ImageUrl;
                 setMenu.Description = request.Description;
