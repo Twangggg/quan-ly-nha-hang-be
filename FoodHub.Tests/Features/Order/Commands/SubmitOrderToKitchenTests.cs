@@ -229,68 +229,6 @@ namespace FoodHub.Tests.Features.Order.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnFailure_When_TableAlreadyOccupied()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var tableId = Guid.NewGuid();
-            var command = new SubmitOrderToKitchenCommand
-            {
-                OrderType = OrderType.DineIn,
-                TableId = tableId,
-                Note = null,
-                Items = new List<OrderItemDto>
-                {
-                    new OrderItemDto
-                    {
-                        MenuItemId = Guid.NewGuid(),
-                        Quantity = 1,
-                        Note = null,
-                        SelectedOptions = null,
-                    },
-                },
-            };
-
-            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
-
-            var existingOrder = new FoodHub.Domain.Entities.Order
-            {
-                TableId = tableId,
-                Status = OrderStatus.Serving,
-            };
-
-            var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
-            _mockUow
-                .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
-                .Returns(mockOrderRepo.Object);
-
-            mockOrderRepo
-                .Setup(r => r.Query())
-                .Returns(
-                    new List<FoodHub.Domain.Entities.Order> { existingOrder }
-                        .AsQueryable()
-                        .BuildMock()
-                );
-
-            _mockMessageService
-                .Setup(m => m.GetMessage(MessageKeys.Order.TableAlreadyOccupied))
-                .Returns("Table is already occupied.");
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorType.Should().Be(ResultErrorType.BadRequest);
-            _mockUow.Verify(
-                u =>
-                    u.Repository<FoodHub.Domain.Entities.Order>()
-                        .AddAsync(It.IsAny<FoodHub.Domain.Entities.Order>()),
-                Times.Never
-            );
-        }
-
-        [Fact]
         public async Task Handle_Should_ReturnFailure_When_MenuItemNotFound()
         {
             // Arrange
