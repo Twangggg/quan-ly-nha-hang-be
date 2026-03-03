@@ -35,6 +35,7 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="pagination">Tham số phân trang.</param>
         /// <response code="200">Trả về danh sách khu vực.</response>
         [HttpGet]
+        [HasPermission(Permissions.Areas.View)]
         [ProducesResponseType(
             typeof(Result<PagedResult<GetAllAreasResponse>>),
             StatusCodes.Status200OK
@@ -53,6 +54,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Thông tin khu vực.</response>
         /// <response code="404">Không tìm thấy khu vực.</response>
         [HttpGet("{id}")]
+        [HasPermission(Permissions.Areas.View)]
         [ProducesResponseType(typeof(Result<GetAreaByIdResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAreaById(Guid id)

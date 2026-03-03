@@ -46,6 +46,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.MenuItems.View,
                 Permissions.Categories.View,
                 Permissions.SetMenus.View,
+                Permissions.Areas.View,
             };
         }
 
@@ -59,6 +60,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.MenuItems.View,
                 Permissions.Categories.View,
                 Permissions.SetMenus.View,
+                Permissions.Areas.View,
             };
         }
 
@@ -71,6 +73,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.MenuItems.UpdateStock,
                 Permissions.SetMenus.View,
                 Permissions.SetMenus.UpdateStock,
+                Permissions.Areas.View,
             };
         }
     }
