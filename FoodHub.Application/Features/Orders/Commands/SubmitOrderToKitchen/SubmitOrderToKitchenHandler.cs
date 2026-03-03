@@ -5,7 +5,6 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 {
