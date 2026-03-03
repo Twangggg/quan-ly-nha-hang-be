@@ -45,6 +45,7 @@ namespace FoodHub.Domain.Entities
 
             return Quantity * (UnitPriceSnapshot + optionsTotal);
         }
+
         public bool IsFinished() =>
             Status == OrderItemStatus.Completed
             || Status == OrderItemStatus.Cancelled
@@ -67,6 +68,7 @@ namespace FoodHub.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }
+
         public DomainResult StartCooking()
         {
             if (Status != OrderItemStatus.Preparing)
@@ -77,9 +79,10 @@ namespace FoodHub.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }
+
         public DomainResult MarkReady()
         {
-            if (Status != OrderItemStatus.Cooking)
+            if (Status != OrderItemStatus.Cooking && Status != OrderItemStatus.Preparing)
             {
                 return DomainResult.Failure(DomainErrors.OrderItem.MustBeCookingToReady);
             }
@@ -87,9 +90,10 @@ namespace FoodHub.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }
+
         public DomainResult Reject(string reason)
         {
-            if (Status != OrderItemStatus.Cooking)
+            if (Status != OrderItemStatus.Cooking && Status != OrderItemStatus.Preparing)
             {
                 return DomainResult.Failure(DomainErrors.OrderItem.MustBeCookingToReject);
             }
@@ -103,6 +107,7 @@ namespace FoodHub.Domain.Entities
             RejectionReason = reason;
             return DomainResult.Success();
         }
+
         public DomainResult ReturnToQueue()
         {
             if (Status != OrderItemStatus.Rejected)
