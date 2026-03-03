@@ -10,8 +10,10 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTablesByArea
         public Guid TableId { get; set; }
         public required string TableCode { get; set; }
         public required int Capacity { get; set; }
-        public required string Area { get; set; }
-        public required string Status { get; set; }
+        public Guid AreaId { get; set; } = Guid.Empty;
+        public required string AreaName { get; set; }
+        public required int Status { get; set; }
+        public required string StatusName { get; set; }
         public DateTime CreatedAt { get; set; }
         public Guid? CreatedBy { get; set; }
 
@@ -23,8 +25,8 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTablesByArea
             profile.CreateMap<Table, GetTablesByAreaResponse>()
                 .ForMember(d => d.TableCode, opt => opt.MapFrom(s =>
                 (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix)) ? s.Area.CodePrefix + "_" + s.TableNumber : s.TableNumber.ToString()))
-                .ForMember(d => d.Area, opt => opt.MapFrom(s => s.Area.Name))
-                .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()));
+                .ForMember(d => d.AreaName, opt => opt.MapFrom(s => s.Area.Name))
+                .ForMember(d => d.StatusName, opt => opt.MapFrom(s => s.Status.ToString()));
         }
     }
 }

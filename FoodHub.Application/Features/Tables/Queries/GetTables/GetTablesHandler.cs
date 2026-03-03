@@ -46,7 +46,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
         {
             // Generate a cache key based on the pagination parameters to store and retrieve cached results
             var queryJson = JsonSerializer.Serialize(new { request.Pagination});
-            var cacheKey = $"{CacheKey.TableList}:{queryJson.GetHashCode()}";
+            var cacheKey = string.Format(CacheKey.TableList);
 
             // Attempt to retrieve the result from cache first to avoid unnecessary database queries
             var cachedResult = await _cacheService.GetAsync<Result<PagedResult<GetTablesResponse>>>(cacheKey, cancellationToken);

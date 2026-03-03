@@ -36,6 +36,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         /// <param name="pagination">Tham số phân trang và lọc.</param>
         /// <returns code="200">Trả về danh sách bàn ăn.</returns>
         [HttpGet(Name = "GetTables")]
+        [HasPermission(Permissions.Tables.View)]
         [ProducesResponseType(typeof(Result<PagedResult<GetTablesResponse>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetTables([FromQuery] PaginationParams pagination, Guid? areaId)
         {
@@ -56,6 +57,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         /// <param name="areaId">ID của khu vực.</param>
         /// <returns code="200">Danh sách các bàn ăn thuộc khu vực được chỉ định.</returns>
         [HttpGet("area/{areaId}")]
+        [HasPermission(Permissions.Tables.View)]
         [ProducesResponseType(typeof(Result<List<GetTablesByAreaResponse>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetTablesByArea(Guid areaId)
         {
@@ -71,6 +73,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         /// <returns code="200">Trả về thông tin chi tiết của bàn ăn.</returns>
         /// <returns code="404">Trả về lỗi không tìm thấy bàn ăn.</returns>
         [HttpGet("{tableId}")]
+        [HasPermission(Permissions.Tables.View)]
         [ProducesResponseType(typeof(Result<GetTableByIdResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetTableById(Guid tableId)

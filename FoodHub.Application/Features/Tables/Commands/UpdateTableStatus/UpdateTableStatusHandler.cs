@@ -10,6 +10,7 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
 {
@@ -60,6 +61,7 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
             var tableRepository = _unitOfWork.Repository<Table>();
             var table = tableRepository
                 .Query()
+                .Include(t => t.Area)
                 .FirstOrDefault(t => t.TableId == request.TableId);
             if (table is null)
             {
@@ -74,33 +76,21 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
                 auditorId = userId;
             }
 
-            // Start a database transaction
-            await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                // Update the table's status and audit information
-                table.Status = request.Status;
-                table.UpdatedBy = auditorId;
-                table.UpdatedAt = DateTime.UtcNow;
+            // Update the table's status and audit information
+            table.Status = request.Status;
+            table.UpdatedBy = auditorId;
+            table.UpdatedAt = DateTime.UtcNow;
 
-                // Update the table in the database and save changes
-                tableRepository.Update(table);
-                await _unitOfWork.SaveChangeAsync(cancellationToken);
-                await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableList), cancellationToken);
-                await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableListByArea, table.AreaId), cancellationToken);
-                await _cacheService.RemoveAsync(string.Format(CacheKey.TableById, request.TableId), cancellationToken);
+            // Update the table in the database and save changes
+            tableRepository.Update(table);
+            await _unitOfWork.SaveChangeAsync(cancellationToken);
+            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableList), cancellationToken);
+            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableListByArea, table.AreaId), cancellationToken);
+            await _cacheService.RemoveAsync(string.Format(CacheKey.TableById, request.TableId), cancellationToken);
 
-                // Commit the transaction after successful update
-                var response = _mapper.Map<UpdateTableStatusResponse>(table);
-                return Result<UpdateTableStatusResponse>.Success(response);
-            }
-            catch (Exception ex)
-            {
-                // Rollback the transaction in case of any errors during the update process
-                await _unitOfWork.RollbackTransactionAsync();
-                var errorMessage = _messageService.GetMessage(MessageKeys.Table.UpdateFail, table.TableId);
-                return Result<UpdateTableStatusResponse>.Failure(errorMessage);
-            }
+            // Commit the transaction after successful update
+            var response = _mapper.Map<UpdateTableStatusResponse>(table);
+            return Result<UpdateTableStatusResponse>.Success(response);
         }
     }
 }

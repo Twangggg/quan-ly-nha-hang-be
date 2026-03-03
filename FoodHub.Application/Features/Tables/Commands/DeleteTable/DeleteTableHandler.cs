@@ -50,6 +50,7 @@ namespace FoodHub.Application.Features.Tables.Commands.DeleteTable
             var tableRepository = _unitOfWork.Repository<Table>();
             var table = await tableRepository
                 .Query()
+                .Include(t => t.Area)
                 .FirstOrDefaultAsync(t => t.TableId == request.TableId, cancellationToken);
             if (table is null)
             {
