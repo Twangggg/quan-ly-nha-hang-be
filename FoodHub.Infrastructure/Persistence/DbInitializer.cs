@@ -289,7 +289,7 @@ namespace FoodHub.Infrastructure.Persistence
                     OrderType = OrderType.DineIn,
                     Status = OrderStatus.Serving,
                     TableId = table02Id,
-                    TotalAmount = 70000,
+                    TotalAmount = 70000 + 45000 + 20000,
                     CreatedByEmployee = admin,
                     CreatedAt = DateTime.UtcNow.AddHours(-1),
                 };
@@ -326,6 +326,24 @@ namespace FoodHub.Infrastructure.Persistence
                     }
                 );
 
+                // Add more Preparing items
+                order1.OrderItems.Add(
+                    new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order1.OrderId,
+                        MenuItemId = beefNoodle.MenuItemId,
+                        ItemCodeSnapshot = beefNoodle.Code,
+                        ItemNameSnapshot = beefNoodle.Name,
+                        StationSnapshot = beefNoodle.Station.ToString(),
+                        Status = OrderItemStatus.Preparing,
+                        Quantity = 2,
+                        UnitPriceSnapshot = beefNoodle.PriceDineIn,
+                        ItemNote = "No onions",
+                        CreatedAt = order1.CreatedAt.AddMinutes(5),
+                    }
+                );
+
                 var order2 = new Order
                 {
                     OrderId = Guid.NewGuid(),
@@ -333,7 +351,7 @@ namespace FoodHub.Infrastructure.Persistence
                     OrderType = OrderType.DineIn,
                     Status = OrderStatus.Serving,
                     TableId = table01Id,
-                    TotalAmount = 45000,
+                    TotalAmount = 45000 + 50000,
                     CreatedByEmployee = admin,
                     CreatedAt = DateTime.UtcNow.AddMinutes(-30),
                 };
@@ -354,13 +372,31 @@ namespace FoodHub.Infrastructure.Persistence
                     }
                 );
 
+                // Add more Preparing items
+                order2.OrderItems.Add(
+                    new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order2.OrderId,
+                        MenuItemId = chickenRice.MenuItemId,
+                        ItemCodeSnapshot = chickenRice.Code,
+                        ItemNameSnapshot = chickenRice.Name,
+                        StationSnapshot = chickenRice.Station.ToString(),
+                        Status = OrderItemStatus.Preparing,
+                        Quantity = 3,
+                        UnitPriceSnapshot = chickenRice.PriceDineIn,
+                        ItemNote = "Extra spicy",
+                        CreatedAt = order2.CreatedAt.AddMinutes(2),
+                    }
+                );
+
                 var order3 = new Order
                 {
                     OrderId = Guid.NewGuid(),
                     OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0003",
                     OrderType = OrderType.Takeaway,
                     Status = OrderStatus.Serving,
-                    TotalAmount = 20000,
+                    TotalAmount = 20000 + 90000,
                     CreatedByEmployee = admin,
                     CreatedAt = DateTime.UtcNow.AddMinutes(-10),
                 };
@@ -378,6 +414,39 @@ namespace FoodHub.Infrastructure.Persistence
                         Quantity = 1,
                         UnitPriceSnapshot = lemonTea.PriceDineIn,
                         CreatedAt = order3.CreatedAt,
+                    }
+                );
+
+                // Add more Preparing items
+                order3.OrderItems.Add(
+                    new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order3.OrderId,
+                        MenuItemId = beefNoodle.MenuItemId,
+                        ItemCodeSnapshot = beefNoodle.Code,
+                        ItemNameSnapshot = beefNoodle.Name,
+                        StationSnapshot = beefNoodle.Station.ToString(),
+                        Status = OrderItemStatus.Preparing,
+                        Quantity = 1,
+                        UnitPriceSnapshot = beefNoodle.PriceTakeAway,
+                        CreatedAt = order3.CreatedAt.AddMinutes(1),
+                    }
+                );
+
+                order3.OrderItems.Add(
+                    new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order3.OrderId,
+                        MenuItemId = chickenRice.MenuItemId,
+                        ItemCodeSnapshot = chickenRice.Code,
+                        ItemNameSnapshot = chickenRice.Name,
+                        StationSnapshot = chickenRice.Station.ToString(),
+                        Status = OrderItemStatus.Preparing,
+                        Quantity = 1,
+                        UnitPriceSnapshot = chickenRice.PriceTakeAway,
+                        CreatedAt = order3.CreatedAt.AddMinutes(2),
                     }
                 );
 

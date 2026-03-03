@@ -16,7 +16,8 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
         public DateTime CreatedAt { get; set; }
         public int PriorityScore { get; set; }
         public int QueuePosition { get; set; }
-
+        public ICollection<OrderItemOptionGroup> OptionGroups { get; set; } =
+            new List<OrderItemOptionGroup>();
         public void Mapping(Profile profile)
         {
             profile

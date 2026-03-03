@@ -96,7 +96,6 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
                 // Auto-pull: Tìm món tiếp theo trong hàng đợi của station này
-                // Auto-pull: Tìm món tiếp theo dựa trên độ ưu tiên thông minh
                 var pendingItems = await orderItemRepository
                     .Query()
                     .Include(oi => oi.Order)

@@ -45,6 +45,7 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
                 .Query()
                 .AsNoTracking()
                 .Include(oi => oi.Order)
+                .Include(op => op.OptionGroups)
                 .Where(oi =>
                     oi.StationSnapshot == request.Station && oi.Status == OrderItemStatus.Preparing
                 )

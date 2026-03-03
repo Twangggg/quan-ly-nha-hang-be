@@ -45,6 +45,8 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                 .Query()
                 .AsNoTracking()
                 .Include(oi => oi.Order) // Bắt buộc phải Include Order để có dữ liệu tính điểm (ví dụ: IsPriority)
+                .Include(op => op.OptionGroups)
+                    .ThenInclude(og => og.OptionValues)
                 .Where(oi =>
                     oi.StationSnapshot == request.Station
                     && (

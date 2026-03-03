@@ -17,13 +17,31 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
         public string? RejectionReason { get; set; }
         public DateTime CreatedAt { get; set; }
         public int PriorityScore { get; set; }
+        public string? ItemOptions { get; set; }
+        public ICollection<OrderItemOptionGroup> OptionGroups { get; set; } =
+            new List<OrderItemOptionGroup>();
 
         public void Mapping(Profile profile)
         {
             profile
                 .CreateMap<OrderItem, KdsItemResponse>()
                 .ForMember(d => d.OrderCode, opt => opt.MapFrom(s => s.Order.OrderCode))
-                .ForMember(d => d.ItemNote, opt => opt.MapFrom(s => s.ItemNote));
+                .ForMember(d => d.ItemNote, opt => opt.MapFrom(s => s.ItemNote))
+                .ForMember(
+                    d => d.ItemOptions,
+                    opt =>
+                        opt.MapFrom(s =>
+                            string.Join(
+                                ", ",
+                                s.OptionGroups.SelectMany(g => g.OptionValues)
+                                    .Select(v =>
+                                        v.Quantity > 1
+                                            ? $"{v.LabelSnapshot} x{v.Quantity}"
+                                            : v.LabelSnapshot
+                                    )
+                            )
+                        )
+                );
         }
     }
 }
