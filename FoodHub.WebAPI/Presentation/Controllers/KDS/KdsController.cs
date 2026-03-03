@@ -5,6 +5,7 @@ using FoodHub.Application.Features.KDS.Commands.MarkReady;
 using FoodHub.Application.Features.KDS.Commands.RejectOrderItem;
 using FoodHub.Application.Features.KDS.Commands.ReturnOrderItem;
 using FoodHub.Application.Features.KDS.Commands.StartCooking;
+using FoodHub.Application.Features.KDS.Queries.GetKdsAuditLogs;
 using FoodHub.Application.Features.KDS.Queries.GetKdsItems;
 using FoodHub.Application.Features.KDS.Queries.GetKdsQueue;
 using FoodHub.Presentation.Controllers;
@@ -112,6 +113,33 @@ namespace FoodHub.WebAPI.Presentation.Controllers.KDS
         public async Task<IActionResult> ReturnToQueue([FromBody] ReturnOrderItemCommand command)
         {
             var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Lấy lịch sử hoạt động KDS (Audit Log).
+        /// </summary>
+        [HttpGet("audit-logs")]
+        [HasPermission(Permissions.Kds.View)]
+        [Produces(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(typeof(Result<List<GetKdsAuditLogsResponse>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAuditLogs(
+            [FromQuery] string? station = null,
+            [FromQuery] string? action = null,
+            [FromQuery] DateTime? fromDate = null,
+            [FromQuery] DateTime? toDate = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 50)
+        {
+            var result = await _mediator.Send(new GetKdsAuditLogsQuery
+            {
+                Station = station,
+                Action = action,
+                FromDate = fromDate,
+                ToDate = toDate,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            });
             return HandleResult(result);
         }
     }

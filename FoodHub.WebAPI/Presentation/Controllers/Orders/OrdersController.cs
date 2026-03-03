@@ -96,13 +96,15 @@ namespace FoodHub.Presentation.Controllers
         /// Gửi toàn bộ yêu cầu của đơn hàng xuống bếp.
         /// </summary>
         /// <remarks>Khi nhân viên nhấn "Gửi bếp", trạng thái các món ăn sẽ chuyển sang 'Pending'.</remarks>
-        [HttpPost("submit-to-kitchen")]
+        [HttpPost("{orderId:guid}/submit-to-kitchen")]
         [HasPermission(Permissions.Orders.SubmitToKitchen)]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
         public async Task<IActionResult> SubmitOrderToKitchen(
+            Guid orderId,
             [FromBody] SubmitOrderToKitchenCommand command
         )
         {
+            command.OrderId = orderId;
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
