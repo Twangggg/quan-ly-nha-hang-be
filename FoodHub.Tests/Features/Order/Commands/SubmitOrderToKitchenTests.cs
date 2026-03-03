@@ -76,11 +76,14 @@ namespace FoodHub.Tests.Features.Order.Commands
             var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
             var mockMenuRepo = new Mock<IGenericRepository<MenuItem>>();
             var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            var mockOrderItemRepo = new Mock<IGenericRepository<OrderItem>>(); // Added
+
             _mockUow
                 .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
                 .Returns(mockOrderRepo.Object);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
+            _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockOrderItemRepo.Object); // Added
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             mockOrderRepo
@@ -152,11 +155,14 @@ namespace FoodHub.Tests.Features.Order.Commands
             var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
             var mockMenuRepo = new Mock<IGenericRepository<MenuItem>>();
             var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            var mockOrderItemRepo = new Mock<IGenericRepository<OrderItem>>();
+
             _mockUow
                 .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
                 .Returns(mockOrderRepo.Object);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
+            _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockOrderItemRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             mockOrderRepo
@@ -418,11 +424,14 @@ namespace FoodHub.Tests.Features.Order.Commands
             var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
             var mockMenuRepo = new Mock<IGenericRepository<MenuItem>>();
             var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            var mockOrderItemRepo = new Mock<IGenericRepository<OrderItem>>();
+
             _mockUow
                 .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
                 .Returns(mockOrderRepo.Object);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
+            _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockOrderItemRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             mockOrderRepo
@@ -449,6 +458,10 @@ namespace FoodHub.Tests.Features.Order.Commands
                                 o.OrderItems.Count == 1 && o.OrderItems.First().Quantity == 5 // 2 + 3 merged
                             )
                         ),
+                Times.Once
+            );
+            _mockUow.Verify(
+                u => u.Repository<OrderItem>().AddAsync(It.IsAny<OrderItem>()),
                 Times.Once
             );
         }

@@ -193,7 +193,7 @@ namespace FoodHub.Domain.Entities
             return (newItem, true);
         }
 
-        private string GenerateSignature(
+        public string GenerateSignature(
             List<(
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
@@ -211,7 +211,7 @@ namespace FoodHub.Domain.Entities
             return string.Join("|", allValues);
         }
 
-        private string GetItemSignature(OrderItem item)
+        public string GetItemSignature(OrderItem item)
         {
             if (item.OptionGroups == null || !item.OptionGroups.Any())
                 return string.Empty;

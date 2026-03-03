@@ -174,8 +174,9 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 };
             }
 
-            // Append Items directly (No merging with old items)
-            var processedItems = new List<OrderItem>();
+            // Group items by signature to merge duplicates within the same request
+            var groupedItems = new List<(OrderItemDto Dto, OrderItem Item)>();
+
             foreach (var itemDto in request.Items)
             {
                 var menuItem = menuItems[itemDto.MenuItemId];
@@ -209,6 +210,31 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                     domainOptions
                 );
 
+                // Find if we already have an identical item in this request (Grouping logic)
+                // We use AddOrUpdateItem's signature logic indirectly or just compare signatures.
+                // Actually, let's just use a simple grouping here to avoid polluting 'order.OrderItems' yet.
+
+                var existingGrouped = groupedItems.FirstOrDefault(x =>
+                    x.Item.MenuItemId == newItem.MenuItemId
+                    && (x.Item.ItemNote ?? "") == (newItem.ItemNote ?? "")
+                    && order.GetItemSignature(x.Item) == order.GetItemSignature(newItem)
+                );
+
+                if (existingGrouped.Item != null)
+                {
+                    existingGrouped.Item.Quantity += newItem.Quantity;
+                }
+                else
+                {
+                    groupedItems.Add((itemDto, newItem));
+                }
+            }
+
+            var processedItems = new List<OrderItem>();
+            foreach (var grouped in groupedItems)
+            {
+                var newItem = grouped.Item;
+
                 // Add to repository directly to ensure EF only performs an INSERT
                 await _unitOfWork.Repository<OrderItem>().AddAsync(newItem);
 
@@ -223,6 +249,13 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 
                 order.TotalAmount += itemTotal + (optionsTotal * newItem.Quantity);
                 order.UpdatedAt = DateTime.UtcNow;
+
+                // For New Order, we also add to the collection so the initial AddAsync(order) includes them.
+                // This preserves the expected behavior in existing tests.
+                if (isNewOrder)
+                {
+                    order.OrderItems.Add(newItem);
+                }
             }
 
             // Save Changes
