@@ -220,13 +220,11 @@
     <value>Số điện thoại đã được sử dụng bởi người khác.</value>
   </data>
   <data name="Profile.EmailExists" xml:space="preserve">
-    <value>Email đã được sử dụng bởi người khác.</value>
+    <value>Email đã được sử dụng.</value>
   </data>
   <data name="Employee.CannotUpdateInactive" xml:space="preserve">
     <value>Không thể cập nhật thông tin cho nhân viên đang ngừng hoạt động.</value>
   </data>
-  
-  <!-- MenuItem Errors -->
   <data name="MenuItem.CategoryNotFound" xml:space="preserve">
     <value>Không tìm thấy danh mục với ID: {0}</value>
   </data>
@@ -260,7 +258,6 @@
   <data name="MenuItem.ExpectedTimeInvalid" xml:space="preserve">
     <value>Thời gian chờ phải lớn hơn 0.</value>
   </data>
-  <!-- SetMenu Errors -->
   <data name="SetMenu.CodeRequired" xml:space="preserve">
     <value>Mã set menu không được để trống.</value>
   </data>
@@ -273,14 +270,12 @@
   <data name="SetMenu.ItemsRequired" xml:space="preserve">
     <value>Set menu phải có ít nhất 1 món.</value>
   </data>
-  <!-- Category Errors -->
   <data name="Category.NameRequired" xml:space="preserve">
     <value>Tên danh mục không được để trống.</value>
   </data>
   <data name="Category.TypeInvalid" xml:space="preserve">
     <value>Loại danh mục không hợp lệ.</value>
   </data>
-  <!-- Option Errors -->
   <data name="OptionGroup.NameRequired" xml:space="preserve">
     <value>Tên nhóm tùy chọn không được để trống.</value>
   </data>
