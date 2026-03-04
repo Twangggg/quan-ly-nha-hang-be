@@ -47,39 +47,25 @@ namespace FoodHub.Domain.Entities
             Status = EmployeeStatus.Inactive;
 
             var suffix = $"_old_{timestamp}";
-            if (originalEmail.Length + suffix.Length > 150)
+            if (originalEmail != null)
             {
-                Email = originalEmail.Substring(0, 150 - suffix.Length) + suffix;
-            }
-            else
-            {
-                Email = originalEmail + suffix;
-            }
-
-            if (originalPhone.Length + suffix.Length > 150)
-            {
-                Phone = originalPhone.Substring(0, 150 - suffix.Length) + suffix;
-            }
-            else
-            {
-                Phone = originalPhone + suffix;
+                Email =
+                    originalEmail.Length + suffix.Length > 150
+                        ? originalEmail.Substring(0, 150 - suffix.Length) + suffix
+                        : originalEmail + suffix;
             }
 
-            if (Username.Length + suffix.Length > 150)
-            {
-                Username = originalUsername.Substring(0, 150 - suffix.Length) + suffix;
-            }
-            else
-            {
-                Username = originalUsername + suffix;
-            }
+            // RELEASE Username and Phone for the new record
+            Username = null;
+            Phone = null;
+
             UpdatedAt = DateTime.UtcNow;
 
             return new Employee
             {
                 EmployeeId = Guid.NewGuid(),
                 FullName = FullName,
-                Email = originalEmail,
+                Email = originalEmail!,
                 Username = originalUsername,
                 PasswordHash = PasswordHash,
                 Phone = originalPhone,
@@ -101,31 +87,28 @@ namespace FoodHub.Domain.Entities
 
             var suffix = $"-del{shortId}";
 
-            if (originalEmail.Length + suffix.Length > 150)
+            if (!string.IsNullOrEmpty(originalEmail))
             {
-                Email = originalEmail[..(150 - suffix.Length)] + suffix;
-            }
-            else
-            {
-                Email = originalEmail + suffix;
-            }
-
-            if (originalPhone.Length + suffix.Length > 15)
-            {
-                Phone = originalPhone[..(15 - suffix.Length)] + suffix;
-            }
-            else
-            {
-                Phone = originalPhone + suffix;
+                Email =
+                    originalEmail.Length + suffix.Length > 150
+                        ? originalEmail[..(150 - suffix.Length)] + suffix
+                        : originalEmail + suffix;
             }
 
-            if (originalUsername.Length + suffix.Length > 50)
+            if (!string.IsNullOrEmpty(originalPhone))
             {
-                Username = originalUsername[..(50 - suffix.Length)] + suffix;
+                Phone =
+                    originalPhone.Length + suffix.Length > 15
+                        ? originalPhone[..(15 - suffix.Length)] + suffix
+                        : originalPhone + suffix;
             }
-            else
+
+            if (!string.IsNullOrEmpty(originalUsername))
             {
-                Username = originalUsername + suffix;
+                Username =
+                    originalUsername.Length + suffix.Length > 50
+                        ? originalUsername[..(50 - suffix.Length)] + suffix
+                        : originalUsername + suffix;
             }
 
             UpdatedAt = DateTime.UtcNow;
