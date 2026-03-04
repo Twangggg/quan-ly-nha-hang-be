@@ -50,7 +50,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Đăng nhập thành công.</response>
         /// <response code="401">Thông tin đăng nhập không chính xác.</response>
         [HttpPost("login")]
-        [RateLimit(maxRequests: 5, windowMinutes: 10, blockMinutes: 5)]
+        [RateLimit(maxRequests: 10, windowMinutes: 10, blockMinutes: 5)]
         [ProducesResponseType(typeof(Result<LoginResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
