@@ -79,7 +79,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                     );
                     await _unitOfWork.RollbackTransactionAsync();
                     return Result<Guid>.Failure(
-                        _messageService.GetMessage(domainResult.ErrorCode!)
+                        _messageService.GetMessage(MessageKeys.OrderItem.MustBeCookingToReady)
                     );
                 }
 

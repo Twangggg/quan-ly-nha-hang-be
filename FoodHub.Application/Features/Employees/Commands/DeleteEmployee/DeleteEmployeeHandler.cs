@@ -47,11 +47,7 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
                 return Result<DeleteEmployeeResponse>.NotFound(_messageService.GetMessage(MessageKeys.Employee.NotFound));
             }
 
-            employee.Status = EmployeeStatus.Inactive;
-            employee.UpdatedAt = DateTime.UtcNow;
-            employee.UpdatedBy = auditorId;
-            employee.DeletedAt = DateTime.UtcNow;
-
+            employee.DeleteEmployee(auditorId);
             employeeRepository.Update(employee);
 
             var auditLog = new AuditLog
