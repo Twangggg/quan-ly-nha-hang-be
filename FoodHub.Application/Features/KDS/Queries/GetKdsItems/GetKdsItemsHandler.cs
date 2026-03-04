@@ -60,6 +60,7 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                         || oi.Status == OrderItemStatus.Cooking
                     )
                 )
+                .Include(oi => oi.Order)
                 .ToListAsync(cancellationToken);
 
             var responseItems = items.Select(oi => new KdsItemResponse

@@ -55,6 +55,7 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
                     targetStations.Contains(oi.StationSnapshot)
                     && oi.Status == OrderItemStatus.Preparing
                 )
+                .Include(oi => oi.Order)
                 .OrderBy(oi => oi.CreatedAt)
                 .Take(50)
                 .ToListAsync(cancellationToken);
