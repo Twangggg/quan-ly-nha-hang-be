@@ -10,7 +10,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
         string? ImageUrl,
         string? Description,
         Guid CategoryId,
-        Station Station,
+        int Station,
         int ExpectedTime,
         decimal Price,
         //IFormFile? ImageFile,

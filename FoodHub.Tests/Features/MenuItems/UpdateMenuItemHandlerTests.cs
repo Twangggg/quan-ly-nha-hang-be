@@ -50,7 +50,7 @@ namespace FoodHub.Tests.Features.MenuItems
                 "https://example.com/new-image.jpg",
                 "Phở bò đặc biệt với nhiều thịt",
                 categoryId,
-                Station.HotKitchen,
+                (int)Station.HotKitchen,
                 20,
                 60000m,
                 30000m
@@ -123,7 +123,7 @@ namespace FoodHub.Tests.Features.MenuItems
                 "image.jpg",
                 null,
                 categoryId,
-                Station.HotKitchen,
+                (int)Station.HotKitchen,
                 15,
                 50000m,
                 null
@@ -156,7 +156,7 @@ namespace FoodHub.Tests.Features.MenuItems
                 "image.jpg",
                 null,
                 categoryId,
-                Station.HotKitchen,
+                (int)Station.HotKitchen,
                 15,
                 50000m,
                 null
@@ -203,7 +203,7 @@ namespace FoodHub.Tests.Features.MenuItems
                 "image.jpg",
                 null,
                 categoryId,
-                Station.HotKitchen,
+                (int)Station.HotKitchen,
                 15,
                 50000m,
                 30000m

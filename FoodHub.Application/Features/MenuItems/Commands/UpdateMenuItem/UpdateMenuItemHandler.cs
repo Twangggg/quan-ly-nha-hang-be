@@ -54,7 +54,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             menuItem.ImageUrl = imageUrl;
             menuItem.Description = description;
             menuItem.CategoryId = categoryId;
-            menuItem.Station = station;
+            menuItem.Station = (Station)station;
             menuItem.ExpectedTime = expectedTime;
             menuItem.Price = price;
 
