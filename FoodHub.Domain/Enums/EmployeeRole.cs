@@ -5,6 +5,6 @@ namespace FoodHub.Domain.Enums
         Manager = 1,
         Cashier = 2,
         Waiter = 3,
-        ChefBar = 4
+        ChefBar = 4,
     }
 }

@@ -124,6 +124,21 @@ namespace FoodHub.Application.Constants
         {
             public const string InvalidQuantity = "OrderItem.InvalidQuantity";
             public const string NotFound = "OrderItem.NotFound";
+
+            // KDS state transitions
+            public const string MustBePreparingToStartCooking =
+                "OrderItem.MustBePreparingToStartCooking";
+            public const string MustBeCookingToReady = "OrderItem.MustBeCookingToReady";
+            public const string MustBeCookingToReject = "OrderItem.MustBeCookingToReject";
+            public const string RejectionReasonRequired = "OrderItem.RejectionReasonRequired";
+            public const string MustBeRejectedToReturn = "OrderItem.MustBeRejectedToReturn";
+        }
+
+        public static class KDS
+        {
+            public const string WipLimitExceeded = "KDS.WipLimitExceeded";
+            public const string StationMismatch = "KDS.StationMismatch";
+            public const string ManagerRoleRequired = "KDS.ManagerRoleRequired";
         }
 
         public static class MenuItem

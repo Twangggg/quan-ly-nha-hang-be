@@ -9,32 +9,48 @@ namespace FoodHub.Infrastructure.Persistence
     {
         public AppDbContext CreateDbContext(string[] args)
         {
-            string envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
-
-            if (!File.Exists(envPath))
-            {
-                var currentBreak = Directory.GetCurrentDirectory();
-
-                while (
-                    !File.Exists(Path.Combine(currentBreak, ".env"))
-                    && Directory.GetParent(currentBreak) != null
-                )
-                {
-                    currentBreak = Directory.GetParent(currentBreak).FullName;
-                }
-                envPath = Path.Combine(currentBreak, ".env");
-            }
-
-            if (File.Exists(envPath))
-            {
-                DotNetEnv.Env.Load(envPath);
-            }
-
             var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
             var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
             var dbName = Environment.GetEnvironmentVariable("DB_NAME");
             var dbUser = Environment.GetEnvironmentVariable("DB_USER");
             var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+            if (string.IsNullOrEmpty(dbHost) || string.IsNullOrEmpty(dbPassword))
+            {
+                var entryDir =
+                    Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly()?.Location)
+                    ?? Directory.GetCurrentDirectory();
+                var searchDirs = new[]
+                {
+                    Directory.GetCurrentDirectory(),
+                    entryDir,
+                    AppContext.BaseDirectory,
+                };
+
+                foreach (var sDir in searchDirs)
+                {
+                    var current = sDir;
+                    while (current != null)
+                    {
+                        var potentialEnv = Path.Combine(current, ".env");
+                        if (File.Exists(potentialEnv))
+                        {
+                            DotNetEnv.Env.Load(potentialEnv);
+                            dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+                            dbPort = Environment.GetEnvironmentVariable("DB_PORT");
+                            dbName = Environment.GetEnvironmentVariable("DB_NAME");
+                            dbUser = Environment.GetEnvironmentVariable("DB_USER");
+                            dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+                            if (!string.IsNullOrEmpty(dbHost))
+                                break;
+                        }
+                        current = Directory.GetParent(current)?.FullName;
+                    }
+                    if (!string.IsNullOrEmpty(dbHost))
+                        break;
+                }
+            }
 
             var connectionString =
                 $"Host={dbHost};Port={dbPort ?? "5432"};Database={dbName ?? "FoodHub"};Username={dbUser ?? "postgres"};Password={dbPassword}";
@@ -42,7 +58,7 @@ namespace FoodHub.Infrastructure.Persistence
             if (string.IsNullOrEmpty(dbHost) || string.IsNullOrEmpty(dbPassword))
             {
                 Console.WriteLine(
-                    $"Warning: .env file not found or incomplete variables at {envPath}"
+                    $"Warning: .env file not found or incomplete variables. Connection attempt may fail. Host={dbHost ?? "null"}"
                 );
             }
 

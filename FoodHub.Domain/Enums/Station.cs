@@ -4,6 +4,6 @@ namespace FoodHub.Domain.Enums
     {
         HotKitchen = 1,
         ColdKitchen = 2,
-        Bar = 3
+        Bar = 3,
     }
 }

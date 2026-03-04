@@ -1,3 +1,4 @@
+using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces;
 using FoodHub.Infrastructure.BackgroundJobs;
 using FoodHub.Infrastructure.Persistence;
@@ -58,6 +59,7 @@ namespace FoodHub.Infrastructure
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ITokenService, JwtTokenService>();
+            services.AddSingleton<KdsPriorityCalculator>();
             services.AddScoped<DbInitializer>();
 
             // Rate Limiting Service
@@ -68,6 +70,9 @@ namespace FoodHub.Infrastructure
 
             // Cloudinary Service
             services.AddScoped<ICloudinaryService, CloudinaryService>();
+
+            // SignalR Service
+            services.AddScoped<ISignalRService, SignalRService>();
 
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();

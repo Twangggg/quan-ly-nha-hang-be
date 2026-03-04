@@ -7,6 +7,6 @@ namespace FoodHub.Domain.Enums
         Ready = 3,
         Completed = 4,
         Cancelled = 5,
-        Rejected = 6
+        Rejected = 6,
     }
 }

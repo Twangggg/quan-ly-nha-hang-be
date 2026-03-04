@@ -56,6 +56,8 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Orders.View,
                 Permissions.Orders.Complete,
                 Permissions.Orders.Create,
+                Permissions.Orders.Update,
+                Permissions.Orders.SubmitToKitchen,
                 Permissions.MenuItems.View,
                 Permissions.Categories.View,
                 Permissions.SetMenus.View,
@@ -71,6 +73,9 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.MenuItems.UpdateStock,
                 Permissions.SetMenus.View,
                 Permissions.SetMenus.UpdateStock,
+                Permissions.Kds.View,
+                Permissions.Kds.Manage,
+                Permissions.Kds.Reject,
             };
         }
     }
