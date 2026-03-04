@@ -37,6 +37,17 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
             CancellationToken cancellationToken
         )
         {
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            {
+                _logger.LogWarning(
+                    "Unauthorized cancel attempt for OrderItemId {OrderItemId}",
+                    request.OrderItemId
+                );
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
+            }
             _logger.LogInformation(
                 "Attempting to start cooking for OrderItemId: {OrderItemId}",
                 request.OrderItemId
@@ -109,7 +120,9 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                     );
                     await _unitOfWork.RollbackTransactionAsync();
                     return Result<Guid>.Failure(
-                        _messageService.GetMessage(domainResult.ErrorCode!)
+                        _messageService.GetMessage(
+                            MessageKeys.OrderItem.MustBePreparingToStartCooking
+                        )
                     );
                 }
 
@@ -117,7 +130,7 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                 {
                     LogId = Guid.NewGuid(),
                     OrderId = orderItem.OrderId,
-                    EmployeeId = Guid.Parse(_currentUserService.UserId!),
+                    EmployeeId = auditorId,
                     Action = AuditLogActions.KdsStartCooking,
                     OldValue = $"\"{OrderItemStatus.Preparing}\"",
                     NewValue = $"\"{OrderItemStatus.Cooking}\"",

@@ -41,6 +41,18 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
             CancellationToken cancellationToken
         )
         {
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            {
+                _logger.LogWarning(
+                    "Unauthorized cancel attempt for OrderItemId {OrderItemId}",
+                    request.OrderItemId
+                );
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
+            }
+
             _logger.LogInformation(
                 "Attempting to mark ready for OrderItemId: {OrderItemId}",
                 request.OrderItemId
@@ -79,7 +91,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                     );
                     await _unitOfWork.RollbackTransactionAsync();
                     return Result<Guid>.Failure(
-                        _messageService.GetMessage(domainResult.ErrorCode!)
+                        _messageService.GetMessage(MessageKeys.OrderItem.MustBeCookingToReady)
                     );
                 }
 
@@ -88,7 +100,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                 {
                     LogId = Guid.NewGuid(),
                     OrderId = orderItem.OrderId,
-                    EmployeeId = Guid.Parse(_currentUserService.UserId!),
+                    EmployeeId = auditorId,
                     Action = AuditLogActions.KdsMarkReady,
                     OldValue = $"\"{oldStatus}\"",
                     NewValue = $"\"{OrderItemStatus.Ready}\"",
@@ -156,7 +168,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                     {
                         LogId = Guid.NewGuid(),
                         OrderId = nextItem.OrderId,
-                        EmployeeId = Guid.Parse(_currentUserService.UserId!),
+                        EmployeeId = auditorId,
                         Action = AuditLogActions.KdsStartCooking,
                         OldValue = $"\"{OrderItemStatus.Preparing}\"",
                         NewValue = $"\"{OrderItemStatus.Cooking}\"",
@@ -164,6 +176,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                         CreatedAt = DateTime.UtcNow,
                     };
                     await _unitOfWork.Repository<OrderAuditLog>().AddAsync(autoPullLog);
+                    orderItemRepository.Update(nextItem);
                 }
 
                 orderItemRepository.Update(orderItem);
