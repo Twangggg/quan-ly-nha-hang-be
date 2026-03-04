@@ -63,35 +63,42 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                 .Include(oi => oi.Order)
                 .ToListAsync(cancellationToken);
 
-            var responseItems = items.Select(oi => new KdsItemResponse
-            {
-                OrderItemId = oi.OrderItemId,
-                OrderId = oi.OrderId,
-                OrderCode = oi.Order != null ? oi.Order.OrderCode : string.Empty,
-                ItemNameSnapshot = oi.ItemNameSnapshot,
-                StationSnapshot = oi.StationSnapshot,
-                Quantity = oi.Quantity,
-                ItemNote = oi.ItemNote,
-                Status = oi.Status.ToString(),
-                RejectionReason = oi.RejectionReason,
-                CreatedAt = oi.CreatedAt,
-                IsOrderPriority = oi.Order != null && oi.Order.IsPriority,
-                OrderType = oi.Order != null ? oi.Order.OrderType.ToString() : string.Empty,
-                TotalOrderItems = oi.Order?.OrderItems?.Count ?? 0,
-                FinishedOrderItems = oi.Order?.OrderItems?.Count(x =>
-                    x.Status == OrderItemStatus.Completed || x.Status == OrderItemStatus.Ready
-                ) ?? 0,
-                ExpectedTimeSeconds = (oi.MenuItem != null ? oi.MenuItem.ExpectedTime : 0) * 60,
-                ItemOptions = string.Join(
-                    ", ",
-                    (oi.OptionGroups ?? Enumerable.Empty<OrderItemOptionGroup>()).SelectMany(g => g.OptionValues ?? Enumerable.Empty<OrderItemOptionValue>())
-                        .Select(v =>
-                            v.Quantity > 1
-                                ? v.LabelSnapshot + " x" + v.Quantity
-                                : v.LabelSnapshot
-                        )
-                ),
-            }).ToList();
+            var responseItems = items
+                .Select(oi => new KdsItemResponse
+                {
+                    OrderItemId = oi.OrderItemId,
+                    OrderId = oi.OrderId,
+                    OrderCode = oi.Order != null ? oi.Order.OrderCode : string.Empty,
+                    ItemNameSnapshot = oi.ItemNameSnapshot,
+                    StationSnapshot = oi.StationSnapshot,
+                    Quantity = oi.Quantity,
+                    ItemNote = oi.ItemNote,
+                    Status = oi.Status.ToString(),
+                    RejectionReason = oi.RejectionReason,
+                    CreatedAt = oi.CreatedAt,
+                    IsOrderPriority = oi.Order != null && oi.Order.IsPriority,
+                    OrderType = oi.Order != null ? oi.Order.OrderType.ToString() : string.Empty,
+                    TotalOrderItems = oi.Order?.OrderItems?.Count ?? 0,
+                    FinishedOrderItems =
+                        oi.Order?.OrderItems?.Count(x =>
+                            x.Status == OrderItemStatus.Completed
+                            || x.Status == OrderItemStatus.Ready
+                        ) ?? 0,
+                    ExpectedTimeSeconds = (oi.MenuItem != null ? oi.MenuItem.ExpectedTime : 0) * 60,
+                    ItemOptions = string.Join(
+                        ", ",
+                        (oi.OptionGroups ?? Enumerable.Empty<OrderItemOptionGroup>())
+                            .SelectMany(g =>
+                                g.OptionValues ?? Enumerable.Empty<OrderItemOptionValue>()
+                            )
+                            .Select(v =>
+                                v.Quantity > 1
+                                    ? v.LabelSnapshot + " x" + v.Quantity
+                                    : v.LabelSnapshot
+                            )
+                    ),
+                })
+                .ToList();
 
             // Calculate Priority Score
             foreach (var item in responseItems)

@@ -56,8 +56,23 @@ namespace FoodHub.Domain.Entities
                 Email = originalEmail + suffix;
             }
 
-            Username = null;
-            Phone = null;
+            if (originalPhone.Length + suffix.Length > 150)
+            {
+                Phone = originalPhone.Substring(0, 150 - suffix.Length) + suffix;
+            }
+            else
+            {
+                Phone = originalPhone + suffix;
+            }
+
+            if (Username.Length + suffix.Length > 150)
+            {
+                Username = originalUsername.Substring(0, 150 - suffix.Length) + suffix;
+            }
+            else
+            {
+                Username = originalUsername + suffix;
+            }
             UpdatedAt = DateTime.UtcNow;
 
             return new Employee
@@ -74,6 +89,48 @@ namespace FoodHub.Domain.Entities
                 Status = EmployeeStatus.Active,
                 CreatedAt = DateTime.UtcNow,
             };
+        }
+
+        public void DeleteEmployee(Guid auditorId)
+        {
+            var shortId = Guid.NewGuid().ToString("N")[..8];
+            var originalEmail = Email;
+            var originalPhone = Phone ?? string.Empty;
+            var originalUsername = Username ?? string.Empty;
+            Status = EmployeeStatus.Inactive;
+
+            var suffix = $"-del{shortId}";
+
+            if (originalEmail.Length + suffix.Length > 150)
+            {
+                Email = originalEmail[..(150 - suffix.Length)] + suffix;
+            }
+            else
+            {
+                Email = originalEmail + suffix;
+            }
+
+            if (originalPhone.Length + suffix.Length > 15)
+            {
+                Phone = originalPhone[..(15 - suffix.Length)] + suffix;
+            }
+            else
+            {
+                Phone = originalPhone + suffix;
+            }
+
+            if (originalUsername.Length + suffix.Length > 50)
+            {
+                Username = originalUsername[..(50 - suffix.Length)] + suffix;
+            }
+            else
+            {
+                Username = originalUsername + suffix;
+            }
+
+            UpdatedAt = DateTime.UtcNow;
+            DeletedAt = DateTime.UtcNow;
+            UpdatedBy = auditorId;
         }
     }
 }

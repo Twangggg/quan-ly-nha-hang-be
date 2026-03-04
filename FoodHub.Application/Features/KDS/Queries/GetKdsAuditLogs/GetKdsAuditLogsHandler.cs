@@ -4,28 +4,41 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.KDS.Queries.GetKdsAuditLogs;
 
-public class GetKdsAuditLogsHandler : IRequestHandler<GetKdsAuditLogsQuery, Result<List<GetKdsAuditLogsResponse>>>
+public class GetKdsAuditLogsHandler
+    : IRequestHandler<GetKdsAuditLogsQuery, Result<PagedResult<GetKdsAuditLogsResponse>>>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<GetKdsAuditLogsHandler> _logger;
 
-    public GetKdsAuditLogsHandler(IUnitOfWork unitOfWork)
+    public GetKdsAuditLogsHandler(IUnitOfWork unitOfWork, ILogger<GetKdsAuditLogsHandler> logger)
     {
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
-    public async Task<Result<List<GetKdsAuditLogsResponse>>> Handle(
+    public async Task<Result<PagedResult<GetKdsAuditLogsResponse>>> Handle(
         GetKdsAuditLogsQuery request,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
+        _logger.LogInformation(
+            "GetKdsAuditLogs started. Station: {Station}, Action: {Action}, Page: {PageNumber}, PageSize: {PageSize}",
+            request.Station,
+            request.Action,
+            request.PageNumber,
+            request.PageSize
+        );
+
         var kdsActions = new[]
         {
             AuditLogActions.KdsStartCooking,
             AuditLogActions.KdsMarkReady,
             AuditLogActions.KdsReject,
-            AuditLogActions.KdsReturn
+            AuditLogActions.KdsReturn,
         };
 
         var query = _unitOfWork
@@ -39,7 +52,9 @@ public class GetKdsAuditLogsHandler : IRequestHandler<GetKdsAuditLogsQuery, Resu
         // Filter by station (from Order's station or OrderItem's station)
         if (!string.IsNullOrEmpty(request.Station) && request.Station != "all")
         {
-            query = query.Where(x => x.Order.OrderItems.Any(oi => oi.StationSnapshot == request.Station));
+            query = query.Where(x =>
+                x.Order.OrderItems.Any(oi => oi.StationSnapshot == request.Station)
+            );
         }
 
         // Filter by action
@@ -59,28 +74,67 @@ public class GetKdsAuditLogsHandler : IRequestHandler<GetKdsAuditLogsQuery, Resu
             query = query.Where(x => x.CreatedAt <= request.ToDate.Value);
         }
 
-        var logs = await query
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var pagedLogs = await query
             .OrderByDescending(x => x.CreatedAt)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
+            .Select(log => new
+            {
+                log.LogId,
+                log.CreatedAt,
+                log.OrderId,
+                OrderCode = log.Order != null ? log.Order.OrderCode : string.Empty,
+                log.Action,
+                log.EmployeeId,
+                ActorName = log.Employee != null ? log.Employee.FullName : "Unknown",
+                ActorRole = log.Employee != null
+                    ? (FoodHub.Domain.Enums.EmployeeRole?)log.Employee.Role
+                    : null,
+                Reason = log.ChangeReason,
+                OrderItems = log.NewValue, // Project raw value here
+            })
             .ToListAsync(cancellationToken);
 
-        var response = logs.Select(log => new GetKdsAuditLogsResponse
-        {
-            LogId = log.LogId,
-            CreatedAt = log.CreatedAt,
-            OrderId = log.OrderId,
-            OrderCode = log.Order?.OrderCode ?? string.Empty,
-            Action = log.Action,
-            ActionName = GetActionName(log.Action),
-            EmployeeId = log.EmployeeId,
-            ActorName = log.Employee?.FullName ?? "Unknown",
-            ActorRole = log.Employee.Role.ToString(),
-            Reason = log.ChangeReason,
-            OrderItems = log.NewValue ?? string.Empty
-        }).ToList();
+        var responseData = pagedLogs
+            .Select(log => new GetKdsAuditLogsResponse
+            {
+                LogId = log.LogId,
+                CreatedAt = log.CreatedAt,
+                OrderId = log.OrderId,
+                OrderCode = log.OrderCode,
+                Action = log.Action,
+                ActionName = GetActionName(log.Action),
+                EmployeeId = log.EmployeeId,
+                ActorName = log.ActorName,
+                ActorRole = log.ActorRole?.ToString() ?? "Unknown",
+                Reason = log.Reason,
+                OrderItems = log.OrderItems ?? string.Empty, // Handle null-coalescing here
+            })
+            .ToList();
 
-        return Result<List<GetKdsAuditLogsResponse>>.Success(response);
+        var paginationParams = new PaginationParams
+        {
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
+        };
+
+        var result = new PagedResult<GetKdsAuditLogsResponse>(
+            responseData,
+            paginationParams,
+            totalCount
+        );
+
+        _logger.LogInformation(
+            "GetKdsAuditLogs completed. Total: {TotalCount}, Returned: {ReturnedCount}, Page: {PageNumber}/{TotalPages}",
+            totalCount,
+            responseData.Count,
+            request.PageNumber,
+            (int)Math.Ceiling((double)totalCount / request.PageSize)
+        );
+
+        return Result<PagedResult<GetKdsAuditLogsResponse>>.Success(result);
     }
 
     private static string GetActionName(string action)
@@ -91,7 +145,7 @@ public class GetKdsAuditLogsHandler : IRequestHandler<GetKdsAuditLogsQuery, Resu
             AuditLogActions.KdsMarkReady => "Hoàn thành",
             AuditLogActions.KdsReject => "Từ chối",
             AuditLogActions.KdsReturn => "Trả lại",
-            _ => action
+            _ => action,
         };
     }
 }

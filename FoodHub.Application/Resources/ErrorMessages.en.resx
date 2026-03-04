@@ -330,4 +330,53 @@
   <data name="Order.WrongTotalAmount" xml:space="preserve">
     <value>Total amount is incorrect.</value>
   </data>
+  
+  <!-- OrderItem KDS Errors -->
+  <data name="OrderItem.MustBePreparingToStartCooking" xml:space="preserve">
+    <value>Item must be in Preparing status to start cooking.</value>
+  </data>
+  <data name="OrderItem.MustBeCookingToReady" xml:space="preserve">
+    <value>Item must be in Cooking status to mark as Ready.</value>
+  </data>
+  <data name="OrderItem.MustBeCookingToReject" xml:space="preserve">
+    <value>Item must be in Cooking status to reject.</value>
+  </data>
+  <data name="OrderItem.RejectionReasonIsRequired" xml:space="preserve">
+    <value>Please provide a reason for rejecting this item.</value>
+  </data>
+  <data name="OrderItem.RejectionReasonRequired" xml:space="preserve">
+    <value>Please provide a reason for rejecting this item.</value>
+  </data>
+  <data name="OrderItem.MustBeRejectedToReturn" xml:space="preserve">
+    <value>Item must be rejected to return.</value>
+  </data>
+  <data name="OrderItem.InvalidStatusForCancel" xml:space="preserve">
+    <value>Item cannot be cancelled in its current status.</value>
+  </data>
+  
+  <!-- Category Errors -->
+  <data name="Category.CannotDeleteActiveCategory" xml:space="preserve">
+    <value>Cannot delete an active category.</value>
+  </data>
+  <data name="Category.CannotDeactivateWithActiveItems" xml:space="preserve">
+    <value>Cannot deactivate a category with active items.</value>
+  </data>
+  
+  <!-- SetMenu Errors -->
+  <data name="SetMenu.CannotDeleteWithItems" xml:space="preserve">
+    <value>Cannot delete a set menu that contains items.</value>
+  </data>
+  
+  <!-- OptionGroup Errors -->
+  <data name="OptionGroup.CannotDeleteWithOptions" xml:space="preserve">
+    <value>Cannot delete an option group that contains options.</value>
+  </data>
+  <data name="OptionGroup.CannotHaveBothMinAndMax" xml:space="preserve">
+    <value>Option group cannot have both Min and Max at the same time.</value>
+  </data>
+  
+  <!-- OptionItem Errors -->
+  <data name="OptionItem.InvalidExtraPrice" xml:space="preserve">
+    <value>Extra price must be greater than or equal to 0.</value>
+  </data>
 </root>
