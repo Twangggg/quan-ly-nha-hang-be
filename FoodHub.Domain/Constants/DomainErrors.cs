@@ -7,6 +7,8 @@ namespace FoodHub.Domain.Constants
             public const string InvalidStatusForCancel = "Order.InvalidStatusForCancel";
             public const string OrderNotReadyForCompletion = "Order.OrderNotReadyForCompletion";
             public const string NotFound = "Order.NotFound";
+            public const string InvalidActionWithStatus = "Order.InvalidActionWithStatus";
+            public const string InsufficientAmount = "Order.InsufficientAmount";
         }
 
         public static class OrderItem
@@ -25,7 +27,8 @@ namespace FoodHub.Domain.Constants
         public static class Category
         {
             public const string CannotDeleteActiveCategory = "Category.CannotDeleteActiveCategory";
-            public const string CannotDeactivateWithActiveItems = "Category.CannotDeactivateWithActiveItems";
+            public const string CannotDeactivateWithActiveItems =
+                "Category.CannotDeactivateWithActiveItems";
             public const string NotFound = "Category.NotFound";
         }
 
@@ -46,7 +49,7 @@ namespace FoodHub.Domain.Constants
         {
             public const string InvalidExtraPrice = "OptionItem.InvalidExtraPrice";
         }
-        
+
         public static class Invoice
         {
             public const string AlreadyPaid = "Invoice.AlreadyPaid";

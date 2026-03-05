@@ -33,6 +33,42 @@ namespace FoodHub.Domain.Entities
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
 
+        public DomainResult ProcessCheckout(PaymentMethod paymentMethod, decimal? amountPaid)
+        {
+            if (
+                Status == OrderStatus.Paid
+                || Status == OrderStatus.Completed
+                || Status == OrderStatus.Cancelled
+            )
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            if (Status != OrderStatus.Serving)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            if (paymentMethod == FoodHub.Domain.Enums.PaymentMethod.Cash)
+            {
+                if ((amountPaid ?? 0) < TotalAmount)
+                {
+                    return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
+                }
+                AmountPaid = amountPaid;
+            }
+            else if (paymentMethod == FoodHub.Domain.Enums.PaymentMethod.QRCode)
+            {
+                AmountPaid = TotalAmount;
+            }
+
+            Status = OrderStatus.Paid;
+            PaymentMethod = paymentMethod;
+            PaidAt = DateTime.UtcNow;
+
+            return DomainResult.Success();
+        }
+
         public bool CanCancel() => Status == OrderStatus.Serving;
 
         public DomainResult Cancel()
