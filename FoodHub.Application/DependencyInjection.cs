@@ -28,6 +28,8 @@ namespace FoodHub.Application
                 cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             });
 
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ActiveUserBehavior<,>));
+
             // Đăng ký FluentValidation
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 

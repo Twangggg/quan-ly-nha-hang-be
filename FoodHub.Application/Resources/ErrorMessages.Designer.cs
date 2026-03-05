@@ -61,6 +61,24 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tài khoản của bạn đã bị vô hiệu hóa..
+        /// </summary>
+        public static string ActiveUserBehavior_InActiveAccount {
+            get {
+                return ResourceManager.GetString("ActiveUserBehavior.InActiveAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Truy cập trái phép.
+        /// </summary>
+        public static string ActiveUserBehavior_Unauthorized {
+            get {
+                return ResourceManager.GetString("ActiveUserBehavior.Unauthorized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tài khoản bị tạm khóa do nhập sai quá nhiều lần. Vui lòng thử lại sau..
         /// </summary>
         public static string Auth_AccountBlocked {
@@ -268,6 +286,15 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Không thể chuyển sang vai trò Quản lý.
+        /// </summary>
+        public static string CannotPromoteToManager {
+            get {
+                return ResourceManager.GetString("CannotPromoteToManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tên danh mục không được để trống..
         /// </summary>
         public static string Category_NameRequired {
@@ -399,6 +426,15 @@ namespace FoodHub.Application.Resources {
         public static string Employee_CodeInvalidFormat {
             get {
                 return ResourceManager.GetString("Employee.CodeInvalidFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nhân viên này hiện không hoạt động..
+        /// </summary>
+        public static string EmployeeNotActive {
+            get {
+                return ResourceManager.GetString("EmployeeNotActive", resourceCulture);
             }
         }
         

@@ -45,13 +45,6 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
 
             var employeeRepository = _unitOfWork.Repository<Employee>();
 
-            // Verify người thực hiện vẫn đang Active trong DB (ngăn Inactive manager dùng token cũ)
-            var performer = await employeeRepository.GetByIdAsync(auditorId);
-            if (performer == null || performer.Status == EmployeeStatus.Inactive)
-            {
-                return Result<UpdateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
-            }
-
             var employee = await employeeRepository.GetByIdAsync(request.EmployeeId);
 
             if (employee == null)
