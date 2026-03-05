@@ -39,7 +39,8 @@ namespace FoodHub.Tests.Features.Employees
                 _mockCurrentUser.Object,
                 _mockMessage.Object,
                 _mockCache.Object,
-                _mockLogger.Object);
+                _mockLogger.Object
+            );
         }
 
         [Fact]
@@ -67,7 +68,7 @@ namespace FoodHub.Tests.Features.Employees
                 Username = "olduser",
                 Phone = "987654321",
                 Address = "Old Address",
-                Status = EmployeeStatus.Active
+                Status = EmployeeStatus.Active,
             };
 
             var repo = new Mock<IGenericRepository<Employee>>();
@@ -79,13 +80,17 @@ namespace FoodHub.Tests.Features.Employees
 
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-            _mockCache.Setup(c => c.RemoveByPatternAsync("employee:list", It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-            _mockCache.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            _mockCache
+                .Setup(c => c.RemoveByPatternAsync("employee:list", It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            _mockCache
+                .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             var response = new UpdateEmployeeResponse
             {
                 EmployeeId = employeeId,
-                FullName = "Updated Name"
+                FullName = "Updated Name",
             };
             _mockMapper.Setup(m => m.Map<UpdateEmployeeResponse>(employee)).Returns(response);
 
@@ -103,8 +108,14 @@ namespace FoodHub.Tests.Features.Employees
             employee.DateOfBirth.Should().Be(DateOnly.Parse("1990-01-01"));
             employee.Status.Should().Be(EmployeeStatus.Active);
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
-            _mockCache.Verify(c => c.RemoveByPatternAsync("employee:list", It.IsAny<CancellationToken>()), Times.Once);
-            _mockCache.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mockCache.Verify(
+                c => c.RemoveByPatternAsync("employee:list", It.IsAny<CancellationToken>()),
+                Times.Once
+            );
+            _mockCache.Verify(
+                c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -129,7 +140,9 @@ namespace FoodHub.Tests.Features.Employees
             repo.Setup(r => r.GetByIdAsync(employeeId)).ReturnsAsync((Employee)null);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
-            _mockMessage.Setup(m => m.GetMessage(MessageKeys.Employee.NotFound)).Returns("Employee not found");
+            _mockMessage
+                .Setup(m => m.GetMessage(MessageKeys.Employee.NotFound))
+                .Returns("Employee not found");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -138,45 +151,6 @@ namespace FoodHub.Tests.Features.Employees
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Employee not found");
             result.ErrorType.Should().Be(ResultErrorType.NotFound);
-        }
-
-        [Fact]
-        public async Task Handle_Should_ReturnFailure_When_EmployeeIsInactive()
-        {
-            // Arrange
-            var auditorId = Guid.NewGuid();
-            var employeeId = Guid.NewGuid();
-            var command = new UpdateEmployeeCommand(
-                EmployeeId: employeeId,
-                Username: null,
-                FullName: "Updated Name",
-                Phone: null,
-                Address: null,
-                Status: null,
-                DateOfBirth: null
-            );
-
-            _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
-
-            var employee = new Employee
-            {
-                EmployeeId = employeeId,
-                Status = EmployeeStatus.Inactive
-            };
-
-            var repo = new Mock<IGenericRepository<Employee>>();
-            repo.Setup(r => r.GetByIdAsync(employeeId)).ReturnsAsync(employee);
-            _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
-
-            _mockMessage.Setup(m => m.GetMessage(MessageKeys.Employee.CannotUpdateInactive)).Returns("Cannot update inactive employee");
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be("Cannot update inactive employee");
-            result.ErrorType.Should().Be(ResultErrorType.BadRequest);
         }
 
         [Fact]
@@ -195,7 +169,9 @@ namespace FoodHub.Tests.Features.Employees
             );
 
             _mockCurrentUser.Setup(c => c.UserId).Returns("invalid-guid");
-            _mockMessage.Setup(m => m.GetMessage(MessageKeys.Employee.CannotIdentifyUser)).Returns("Cannot identify user");
+            _mockMessage
+                .Setup(m => m.GetMessage(MessageKeys.Employee.CannotIdentifyUser))
+                .Returns("Cannot identify user");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);

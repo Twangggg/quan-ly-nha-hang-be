@@ -24,6 +24,10 @@ namespace FoodHub.Application.Constants
             public const string InternalServerError = "Common.InternalServerError";
             public const string ValidationFailed = "Common.ValidationFailed";
             public const string NotFound = "Common.NotFound";
+            public const string PageNumberAtLeastOne = "Common.PageNumberAtLeastOne";
+            public const string PageSizeBetween = "Common.PageSizeBetween";
+            public const string ToDateAfterFromDate = "Common.ToDateAfterFromDate";
+            public const string DateNotInFuture = "Common.DateNotInFuture";
         }
 
         public static class Password
@@ -139,6 +143,8 @@ namespace FoodHub.Application.Constants
             public const string WipLimitExceeded = "KDS.WipLimitExceeded";
             public const string StationMismatch = "KDS.StationMismatch";
             public const string ManagerRoleRequired = "KDS.ManagerRoleRequired";
+            public const string StationMaxLength = "KDS.StationMaxLength";
+            public const string ActionMaxLength = "KDS.ActionMaxLength";
         }
 
         public static class MenuItem
@@ -172,6 +178,34 @@ namespace FoodHub.Application.Constants
             public const string CodeExists = "SetMenu.CodeExists";
             public const string UpdateForbidden = "SetMenu.UpdateForbidden";
             public const string DeleteForbidden = "SetMenu.DeleteForbidden";
+        }
+
+        public static class ActiveUserBehavior
+        {
+            public const string InActiveAccount = "ActiveUserBehavior.InActiveAccount";
+            public const string Unauthorized = "ActiveUserBehavior.Unauthorized";
+        }
+
+        public static class Table
+        {
+            public const string NotFound = "Table.NotFound";
+            public const string AlreadyOccupied = "Table.AlreadyOccupied";
+            public const string NotAvailable = "Table.NotAvailable";
+            public const string CodeExists = "Table.CodeExists";
+            public const string UpdateForbidden = "Table.UpdateForbidden";
+            public const string UpdateFail = "Table.UpdateFail";
+        }
+
+        public static class Area
+        {
+            public const string NotFound = "Area.NotFound";
+            public const string CodeExists = "Area.CodeExists";
+            public const string NameRequired = "Area.NameRequired";
+            public const string CodeRequired = "Area.CodeRequired";
+            public const string UpdateForbidden = "Area.UpdateForbidden";
+            public const string DeleteForbidden = "Area.DeleteForbidden";
+            public const string DeactivateForbidden = "Area.DeactivateForbidden";
+            public const string Inactive = "Area.Inactive";
         }
     }
 }

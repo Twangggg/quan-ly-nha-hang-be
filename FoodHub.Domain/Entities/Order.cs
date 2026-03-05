@@ -119,7 +119,7 @@ namespace FoodHub.Domain.Entities
                 Status = OrderItemStatus.Preparing,
                 ItemNameSnapshot = menuItem.Name,
                 ItemCodeSnapshot = menuItem.Code,
-                UnitPriceSnapshot = menuItem.GetPriceFor(this.OrderType),
+                UnitPriceSnapshot = menuItem.Price,
                 StationSnapshot = menuItem.Station.ToString(),
             };
 

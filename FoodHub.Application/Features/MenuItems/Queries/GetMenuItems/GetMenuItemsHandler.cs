@@ -54,7 +54,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
                 { "categoryId", m => m.CategoryId },
                 { "station", m => m.Station },
                 { "isOutOfStock", m => m.IsOutOfStock },
-                { "priceDineIn", m => m.PriceDineIn }
+                { "price", m => m.Price }
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
@@ -63,8 +63,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
             {
                 { "code", m => m.Code },
                 { "name", m => m.Name },
-                { "priceDineIn", m => m.PriceDineIn },
-                { "priceTakeAway", m => m.PriceTakeAway },
+                { "price", m => m.Price },
                 { "createdAt", m => m.CreatedAt }
             };
 

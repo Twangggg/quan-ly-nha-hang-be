@@ -45,6 +45,8 @@ namespace FoodHub.Tests.Features.KDS.Commands
             var orderItemId = Guid.NewGuid();
             var station = "HotKitchen";
 
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(Guid.NewGuid().ToString());
+
             var orderItem = new OrderItem
             {
                 OrderItemId = orderItemId,

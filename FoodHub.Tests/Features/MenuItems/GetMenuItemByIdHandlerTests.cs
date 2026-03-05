@@ -80,8 +80,7 @@ namespace FoodHub.Tests.Features.MenuItems
                 Category = new Category { CategoryId = categoryId, Name = "Món chính" },
                 Station = Station.HotKitchen,
                 ExpectedTime = 15,
-                PriceDineIn = 50000m,
-                PriceTakeAway = 45000m,
+                Price = 50000m,
                 CostPrice = 25000m,
                 IsOutOfStock = false,
                 CreatedAt = DateTime.UtcNow

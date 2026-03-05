@@ -155,8 +155,7 @@ namespace FoodHub.Infrastructure.Persistence
                         CategoryId = foodCategory.CategoryId,
                         Station = Station.HotKitchen,
                         ExpectedTime = 15,
-                        PriceDineIn = 50000,
-                        PriceTakeAway = 48000,
+                        Price = 50000,
                         CostPrice = 30000,
                         CreatedAt = DateTime.UtcNow,
                     },
@@ -170,8 +169,7 @@ namespace FoodHub.Infrastructure.Persistence
                         CategoryId = foodCategory.CategoryId,
                         Station = Station.HotKitchen,
                         ExpectedTime = 12,
-                        PriceDineIn = 45000,
-                        PriceTakeAway = 43000,
+                        Price = 45000,
                         CostPrice = 25000,
                         CreatedAt = DateTime.UtcNow,
                     },
@@ -185,8 +183,7 @@ namespace FoodHub.Infrastructure.Persistence
                         CategoryId = drinkCategory.CategoryId,
                         Station = Station.Bar,
                         ExpectedTime = 3,
-                        PriceDineIn = 20000,
-                        PriceTakeAway = 18000,
+                        Price = 20000,
                         CostPrice = 8000,
                         CreatedAt = DateTime.UtcNow,
                     },
@@ -200,8 +197,7 @@ namespace FoodHub.Infrastructure.Persistence
                         CategoryId = comboCategory.CategoryId,
                         Station = Station.HotKitchen,
                         ExpectedTime = 18,
-                        PriceDineIn = 65000,
-                        PriceTakeAway = 62000,
+                        Price = 65000,
                         CostPrice = 40000,
                         CreatedAt = DateTime.UtcNow,
                     },
@@ -305,7 +301,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = chickenRice.Station.ToString(),
                         Status = OrderItemStatus.Ready,
                         Quantity = 1,
-                        UnitPriceSnapshot = chickenRice.PriceDineIn,
+                        UnitPriceSnapshot = chickenRice.Price,
                         CreatedAt = order1.CreatedAt,
                     }
                 );
@@ -321,7 +317,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = lemonTea.Station.ToString(),
                         Status = OrderItemStatus.Completed,
                         Quantity = 1,
-                        UnitPriceSnapshot = lemonTea.PriceDineIn,
+                        UnitPriceSnapshot = lemonTea.Price,
                         CreatedAt = order1.CreatedAt,
                     }
                 );
@@ -338,7 +334,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = beefNoodle.Station.ToString(),
                         Status = OrderItemStatus.Preparing,
                         Quantity = 2,
-                        UnitPriceSnapshot = beefNoodle.PriceDineIn,
+                        UnitPriceSnapshot = beefNoodle.Price,
                         ItemNote = "No onions",
                         CreatedAt = order1.CreatedAt.AddMinutes(5),
                     }
@@ -367,7 +363,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = beefNoodle.Station.ToString(),
                         Status = OrderItemStatus.Preparing,
                         Quantity = 1,
-                        UnitPriceSnapshot = beefNoodle.PriceDineIn,
+                        UnitPriceSnapshot = beefNoodle.Price,
                         CreatedAt = order2.CreatedAt,
                     }
                 );
@@ -384,7 +380,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = chickenRice.Station.ToString(),
                         Status = OrderItemStatus.Preparing,
                         Quantity = 3,
-                        UnitPriceSnapshot = chickenRice.PriceDineIn,
+                        UnitPriceSnapshot = chickenRice.Price,
                         ItemNote = "Extra spicy",
                         CreatedAt = order2.CreatedAt.AddMinutes(2),
                     }
@@ -412,7 +408,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = lemonTea.Station.ToString(),
                         Status = OrderItemStatus.Ready,
                         Quantity = 1,
-                        UnitPriceSnapshot = lemonTea.PriceDineIn,
+                        UnitPriceSnapshot = lemonTea.Price,
                         CreatedAt = order3.CreatedAt,
                     }
                 );
@@ -429,7 +425,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = beefNoodle.Station.ToString(),
                         Status = OrderItemStatus.Preparing,
                         Quantity = 1,
-                        UnitPriceSnapshot = beefNoodle.PriceTakeAway,
+                        UnitPriceSnapshot = beefNoodle.Price,
                         CreatedAt = order3.CreatedAt.AddMinutes(1),
                     }
                 );
@@ -445,12 +441,86 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = chickenRice.Station.ToString(),
                         Status = OrderItemStatus.Preparing,
                         Quantity = 1,
-                        UnitPriceSnapshot = chickenRice.PriceTakeAway,
+                        UnitPriceSnapshot = chickenRice.Price,
                         CreatedAt = order3.CreatedAt.AddMinutes(2),
                     }
                 );
 
                 _context.Orders.AddRange(order1, order2, order3);
+                _context.SaveChanges();
+            }
+
+            // Ensure the tables and areas exist before seeding orders, since orders reference tables
+            if (!_context.Areas.Any())
+            {
+                var areas = new Area[]
+                {
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        Name = "Indoor",
+                        CodePrefix = "F1",
+                        Type = AreaType.Normal,
+                        Description = "General indoor dining area",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        Name = "Outdoor",
+                        CodePrefix = "F2",
+                        Type = AreaType.Normal,
+                        Description = "Outdoor seating area",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                        Name = "VIP Room",
+                        CodePrefix = "VIP",
+                        Type = AreaType.VIP,
+                        Description = "Private VIP rooms",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                };
+                _context.Areas.AddRange(areas);
+                _context.SaveChanges();
+            }
+
+            // Seed tables with specific IDs to match FE expectations
+            if (!_context.Tables.Any())
+            {
+                var tables = new Table[]
+                {
+                    new Table
+                    {
+                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        TableNumber = 1,
+                        Capacity = 4,
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        Status = TableStatus.Available,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Table
+                    {
+                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        TableNumber = 2,
+                        Capacity = 2,
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        Status = TableStatus.Occupied,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Table
+                    {
+                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                        TableNumber = 3,
+                        Capacity = 6,
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                        Status = TableStatus.Available,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                };
+                _context.Tables.AddRange(tables);
                 _context.SaveChanges();
             }
 
