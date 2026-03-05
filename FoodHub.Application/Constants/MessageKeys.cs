@@ -122,6 +122,8 @@ namespace FoodHub.Application.Constants
             public const string TableAlreadyOccupied = "Order.TableAlreadyOccupied";
             public const string InvalidStatusForCancel = "Order.InvalidStatusForCancel";
             public const string OrderNotReadyForCompletion = "Order.OrderNotReadyForCompletion";
+            public const string AlreadyPaid = "Order.AlreadyPaid";
+            public const string InsufficientAmount = "Order.InsufficientAmount";
         }
 
         public static class OrderItem

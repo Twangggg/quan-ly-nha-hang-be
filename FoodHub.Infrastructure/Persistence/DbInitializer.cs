@@ -267,6 +267,80 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
+            // Ensure the tables and areas exist before seeding orders, since orders reference tables
+            if (!_context.Areas.Any())
+            {
+                var areas = new Area[]
+                {
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        Name = "Indoor",
+                        CodePrefix = "F1",
+                        Type = AreaType.Normal,
+                        Description = "General indoor dining area",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        Name = "Outdoor",
+                        CodePrefix = "F2",
+                        Type = AreaType.Normal,
+                        Description = "Outdoor seating area",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                        Name = "VIP Room",
+                        CodePrefix = "VIP",
+                        Type = AreaType.VIP,
+                        Description = "Private VIP rooms",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                };
+                _context.Areas.AddRange(areas);
+                _context.SaveChanges();
+            }
+
+            // Seed tables with specific IDs to match FE expectations
+            if (!_context.Tables.Any())
+            {
+                var tables = new Table[]
+                {
+                    new Table
+                    {
+                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        TableNumber = 1,
+                        Capacity = 4,
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        Status = TableStatus.Available,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Table
+                    {
+                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        TableNumber = 2,
+                        Capacity = 2,
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        Status = TableStatus.Occupied,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Table
+                    {
+                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                        TableNumber = 3,
+                        Capacity = 6,
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                        Status = TableStatus.Available,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                };
+                _context.Tables.AddRange(tables);
+                _context.SaveChanges();
+            }
+
             if (!_context.Orders.Any())
             {
                 var admin = _context.Employees.First(e => e.EmployeeCode == "M001001");
@@ -448,80 +522,8 @@ namespace FoodHub.Infrastructure.Persistence
 
                 _context.Orders.AddRange(order1, order2, order3);
                 _context.SaveChanges();
-            }
 
-            // Ensure the tables and areas exist before seeding orders, since orders reference tables
-            if (!_context.Areas.Any())
-            {
-                var areas = new Area[]
-                {
-                    new Area
-                    {
-                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                        Name = "Indoor",
-                        CodePrefix = "F1",
-                        Type = AreaType.Normal,
-                        Description = "General indoor dining area",
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                    new Area
-                    {
-                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                        Name = "Outdoor",
-                        CodePrefix = "F2",
-                        Type = AreaType.Normal,
-                        Description = "Outdoor seating area",
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                    new Area
-                    {
-                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                        Name = "VIP Room",
-                        CodePrefix = "VIP",
-                        Type = AreaType.VIP,
-                        Description = "Private VIP rooms",
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                };
-                _context.Areas.AddRange(areas);
-                _context.SaveChanges();
-            }
-
-            // Seed tables with specific IDs to match FE expectations
-            if (!_context.Tables.Any())
-            {
-                var tables = new Table[]
-                {
-                    new Table
-                    {
-                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                        TableNumber = 1,
-                        Capacity = 4,
-                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                        Status = TableStatus.Available,
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                    new Table
-                    {
-                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                        TableNumber = 2,
-                        Capacity = 2,
-                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                        Status = TableStatus.Occupied,
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                    new Table
-                    {
-                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                        TableNumber = 3,
-                        Capacity = 6,
-                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                        Status = TableStatus.Available,
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                };
-                _context.Tables.AddRange(tables);
-                _context.SaveChanges();
+                Console.WriteLine($"[TESTING] Seeded Order1 ID: {order1.OrderId}");
             }
 
             _context.SaveChanges();

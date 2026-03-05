@@ -19,6 +19,11 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             // Relationships
             builder.HasOne(o => o.CreatedByEmployee).WithMany().HasForeignKey(o => o.CreatedBy);
 
+            builder.HasOne(o => o.Table)
+                   .WithMany(t => t.Orders)
+                   .HasForeignKey(o => o.TableId)
+                   .OnDelete(DeleteBehavior.SetNull);
+
             builder.Property(o => o.CreatedAt).HasDefaultValueSql("now()");
             builder.Property(o => o.CompletedAt).IsRequired(false);
             builder.Property(o => o.CancelledAt).IsRequired(false);

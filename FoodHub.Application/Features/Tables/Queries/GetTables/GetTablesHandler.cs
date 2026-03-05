@@ -74,7 +74,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
             query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
 
             // Define the mapping of filter keys to their corresponding entity properties for dynamic filtering
-            var filterMapping = new Dictionary<string, Expression<Func<Table, object>>>
+            var filterMapping = new Dictionary<string, Expression<Func<Table, object?>>>
             {
                 { "status", t => t.Status },
                 { "areaId", t => t.AreaId },
@@ -83,7 +83,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
             // Define the mapping of sort keys to their corresponding entity properties for dynamic sorting
-            var sortMapping = new Dictionary<string, Expression<Func<Table, object>>>
+            var sortMapping = new Dictionary<string, Expression<Func<Table, object?>>>
             {
                 { "tableNumber", t => t.TableNumber },
                 { "capacity", t => t.Capacity },
