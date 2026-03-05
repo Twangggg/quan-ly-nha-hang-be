@@ -8,6 +8,7 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
     public class CreateTableResponse : IMapFrom<Table>
     {
         public Guid TableId { get; set; }
+        public required string TableCode { get; set; }
         public required int TableNumber { get; set; }
         public required int Capacity { get; set; }
         public Guid AreaId { get; set; } = Guid.Empty;
@@ -19,7 +20,10 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
         public void Mapping(Profile profile)
         {
             profile.CreateMap<Table, CreateTableResponse>()
+                .ForMember(d => d.TableCode, opt => opt.MapFrom(s =>
+                (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix)) ? s.Area.CodePrefix + "_" + s.TableNumber : s.TableNumber.ToString()))
                 .ForMember(d => d.StatusName, opt => opt.MapFrom(s => s.Status.ToString()));
         }
+
     }
 }

@@ -7,6 +7,7 @@ using FoodHub.Application.Features.Tables.Commands.UpdateTableStatus;
 using FoodHub.Application.Features.Tables.Queries.GetTableById;
 using FoodHub.Application.Features.Tables.Queries.GetTables;
 using FoodHub.Application.Features.Tables.Queries.GetTablesByArea;
+
 using FoodHub.Domain.Enums;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
@@ -30,29 +31,19 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
             _mediator = mediator;
         }
 
-        /// <summary>
-        /// Lấy danh sách các bàn ăn với phân trang.
-        /// </summary>
-        /// <param name="pagination">Tham số phân trang và lọc.</param>
-        /// <returns code="200">Trả về danh sách bàn ăn.</returns>
         [HttpGet(Name = "GetTables")]
         [HasPermission(Permissions.Tables.View)]
-        [ProducesResponseType(typeof(Result<PagedResult<GetTablesResponse>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetTables([FromQuery] PaginationParams pagination, Guid? areaId)
+        [ProducesResponseType(typeof(Result<List<GetTablesResponse>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetTables(Guid? areaId)
         {
-            var query = new GetTablesQuery(pagination);
+            var query = new GetTablesQuery(areaId);
             var result = await _mediator.Send(query);
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                Response.AddPaginationHeaders(result.Data);
-            }
-
             return HandleResult(result);
         }
 
+
         /// <summary>
-        /// Lấy danh sách các bàn ăn theo khu vực (area) với phân trang. Hành động này sẽ trả về danh sách các bàn ăn thuộc khu vực được chỉ định, giúp người dùng dễ dàng tìm kiếm và quản lý các bàn ăn theo từng khu vực trong nhà hàng.
+        /// Lấy danh sách các bàn ăn theo khu vực (area).
         /// </summary>
         /// <param name="areaId">ID của khu vực.</param>
         /// <returns code="200">Danh sách các bàn ăn thuộc khu vực được chỉ định.</returns>
@@ -65,6 +56,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
             var result = await _mediator.Send(query);
             return HandleResult(result);
         }
+
 
         /// <summary>
         /// Lấy thông tin chi tiết của một bàn ăn theo ID.
@@ -94,7 +86,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<CreateTableResponse>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CreateTable([FromForm] CreateTableCommand request)
+        public async Task<IActionResult> CreateTable([FromBody] CreateTableCommand request)
         {
             var result = await _mediator.Send(request);
 
@@ -121,47 +113,33 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<UpdateTableResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateTable(Guid tableId, [FromForm] UpdateTableCommand request)
+        public async Task<IActionResult> UpdateTable(Guid tableId, [FromBody] UpdateTableCommand request)
         {
             var result = await _mediator.Send(request with { TableId = tableId });
             return HandleResult(result);
         }
 
         /// <summary>
-        /// Cập nhật trạng thái của một bàn ăn thành "Không hoạt động" (OutOfService). Hành động này sẽ đánh dấu bàn ăn là không thể sử dụng được, thường được áp dụng khi bàn ăn đang được bảo trì hoặc có vấn đề cần khắc phục.
+        /// Cập nhật trạng thái hoạt động của một bàn ăn (Kích hoạt/Ngưng hoạt động).
         /// </summary>
-        /// <param name="tableId">ID của bản ăn.</param>
+        /// <param name="tableId">ID của bàn ăn.</param>
+        /// <param name="isActive">Trạng thái mong muốn (true = Kích hoạt, false = Ngưng hoạt động).</param>
         /// <returns code="200">Trả về thông tin của bàn ăn đã được cập nhật.</returns>
         /// <returns code="404">Trả về lỗi không tìm thấy bàn ăn.</returns>
-        [HttpPatch("{tableId}/status/inactive")]
+        [HttpPatch("{tableId}/status")]
         [HasPermission(Permissions.Tables.UpdateStatus)]
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<UpdateTableStatusResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateTableStatusInactive(Guid tableId)
+        public async Task<IActionResult> UpdateTableStatus(Guid tableId, [FromBody] UpdateTableStatusRequest request)
         {
-            var request = new UpdateTableStatusCommand(tableId, TableStatus.OutOfService);
-            var result = await _mediator.Send(request);
+            var status = request.IsActive ? TableStatus.Available : TableStatus.OutOfService;
+            var command = new UpdateTableStatusCommand(tableId, status);
+            var result = await _mediator.Send(command);
             return HandleResult(result);
         }
 
-        /// <summary>
-        /// Cập nhật trạng thái của một bàn ăn thành "Có sẵn" (Available). Hành động này sẽ đánh dấu bàn ăn là có thể sử dụng được, thường được áp dụng khi bàn ăn đã được dọn dẹp xong và sẵn sàng phục vụ khách hàng.
-        /// </summary>
-        /// <param name="tableId">ID của bàn ăn.</param>
-        /// <returns code="200">Trả về thông tin của bàn ăn được cập nhật</returns>
-        /// <returns code="404">Trả về lỗi không tìm thấy bàn ăn.</returns>
-        [HttpPatch("{tableId}/status/available")]
-        [HasPermission(Permissions.Tables.UpdateStatus)]
-        [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
-        [ProducesResponseType(typeof(Result<UpdateTableStatusResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateTableStatusAvailable(Guid tableId)
-        {
-            var request = new UpdateTableStatusCommand(tableId, TableStatus.Available);
-            var result = await _mediator.Send(request);
-            return HandleResult(result);
-        }
+        public record UpdateTableStatusRequest(bool IsActive);
 
         /// <summary>
         /// Xóa một bàn ăn khỏi hệ thống. Hành động này sẽ đánh dấu bàn ăn là đã xóa (soft delete) thay vì xóa hoàn toàn khỏi cơ sở dữ liệu.

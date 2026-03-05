@@ -34,8 +34,9 @@ namespace FoodHub.Application.Features.Areas.Commands.UpdateArea
             if (area is null)
                 return Result<GetAreaByIdResponse>.NotFound(_messageService.GetMessage(MessageKeys.Area.NotFound));
 
-            // Chỉ cho sửa Name, Description, Type, KHÔNG cho sửa CodePrefix
+            // Chỉ cho sửa Name, Description, Type, CodePrefix
             area.Name = request.Name;
+            area.CodePrefix = request.CodePrefix;
             area.Description = request.Description;
             area.Type = request.Type;
 
