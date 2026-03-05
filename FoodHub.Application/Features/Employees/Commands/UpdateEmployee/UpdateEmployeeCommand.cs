@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Behaviors;
 using FoodHub.Application.Common.Models;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -13,5 +14,5 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
         string? Address,
         string? Status,
         string? DateOfBirth
-        ) : IRequest<Result<UpdateEmployeeResponse>>;
+        ) : IRequest<Result<UpdateEmployeeResponse>>, IMustBeActive;
 }

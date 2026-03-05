@@ -126,6 +126,9 @@
   <data name="OperationCancelled" xml:space="preserve">
     <value>The operation was cancelled.</value>
   </data>
+  <data name="InvalidUserId" xml:space="preserve">
+    <value>Thông tin đăng nhập hiện tại của người dùng không có hoặc không hợp lệ.</value>
+  </data>
   <data name="Unauthorized" xml:space="preserve">
     <value>You are not authorized to perform this action.</value>
   </data>
@@ -222,6 +225,27 @@
   <data name="Employee.CannotUpdateInactive" xml:space="preserve">
     <value>Cannot update information for inactive employees.</value>
   </data>
+  <data name="MenuItem.CategoryNotFound" xml:space="preserve">
+    <value>Không tìm thấy danh mục với ID: {0}</value>
+  </data>
+  <data name="MenuItem.NotFound" xml:space="preserve">
+    <value>Menu Item not found.</value>
+  </data>
+  <data name="MenuItem.CategoryRequired" xml:space="preserve">
+    <value>Danh mục không được để trống.</value>
+  </data>
+  <data name="Category.NameRequired" xml:space="preserve">
+    <value>The category name cannot be left blank.</value>
+  </data>
+  <data name="Category.TypeInvalid" xml:space="preserve">
+    <value>Invalid category type.</value>
+  </data>
+  <data name="MenuItem.StationInvalid" xml:space="preserve">
+    <value>Station is invalid.</value>
+  </data>
+  <data name="OptionGroup.Required" xml:space="preserve">
+    <value>Option group is required.</value>
+  </data>
   <data name="Order.InvalidType" xml:space="preserve">
     <value>Invalid order type</value>
   </data>
@@ -237,14 +261,14 @@
   <data name="Order.InvalidAction" xml:space="preserve">
     <value>Invalid action</value>
   </data>
-  <data name="MenuItem.NotFound" xml:space="preserve">
-    <value>Menu Item not found.</value>
-  </data>
   <data name="Order.InvalidActionWithStatus" xml:space="preserve">
     <value>Invalid action with </value>
   </data>
   <data name="Order.MustHaveItem" xml:space="preserve">
     <value>Order must have item</value>
+  </data>
+  <data name="Order.WrongTotalAmount" xml:space="preserve">
+    <value>Total amount is incorrect.</value>
   </data>
   <data name="MenuItem.OutOfStock" xml:space="preserve">
     <value>Out of stock for: </value>
@@ -254,6 +278,69 @@
   </data>
   <data name="MenuItem.InvalidQuantity" xml:space="preserve">
     <value>Quantity must greater than 0.</value>
+  </data>
+  <data name="OptionGroup.NotFound" xml:space="preserve">
+    <value>Option group not found.</value>
+  </data>
+  <data name="OptionItem.NotFound" xml:space="preserve">
+    <value>Option item not found</value>
+  </data>
+  <data name="Auth.PasswordChangedSuccess" xml:space="preserve">
+    <value>Change Password successful!</value>
+  </data>
+  <data name="Auth.PasswordResetSuccess" xml:space="preserve">
+    <value>Password reset successful.</value>
+  </data>
+  <data name="Auth.PasswordResetGenericMessage" xml:space="preserve">
+    <value>If an account exists for that employee code, a reset email has been sent.</value>
+  </data>
+  <data name="Auth.TokenRequired" xml:space="preserve">
+    <value>Token is required.</value>
+  </data>
+  <data name="Auth.NewPasswordRequired" xml:space="preserve">
+    <value>New password is required.</value>
+  </data>
+  <data name="Auth.ConfirmPasswordRequired" xml:space="preserve">
+    <value>Confirm password is required.</value>
+  </data>
+  <data name="Auth.ConfirmPasswordMismatch" xml:space="preserve">
+    <value>Confirm password does not match new password.</value>
+  </data>
+  <data name="Auth.EmployeeCodeRequired" xml:space="preserve">
+    <value>Employee code is required.</value>
+  </data>
+  <data name="Employee.CodeInvalidFormat" xml:space="preserve">
+    <value>Employee Code must start with W, C, B, or M followed by 6 digits (e.g., M000001).</value>
+  </data>
+  <data name="Common.IdMismatch" xml:space="preserve">
+    <value>The identifiers don't match.</value>
+  </data>
+  <data name="Common.IdRequired" xml:space="preserve">
+    <value>The identification code is required.</value>
+  </data>
+  <data name="Common.NoFileProvided" xml:space="preserve">
+    <value>Please provide the file.</value>
+  </data>
+  <data name="Common.UploadSuccess" xml:space="preserve">
+    <value>File uploaded successfully.</value>
+  </data>
+  <data name="Common.DeleteSuccess" xml:space="preserve">
+    <value>File deleted successfully.</value>
+  </data>
+  <data name="Common.DeleteFailed" xml:space="preserve">
+    <value>File deletion failed.</value>
+  </data>
+  <data name="Common.InternalServerError" xml:space="preserve">
+    <value>Internal system error.</value>
+  </data>
+  <data name="Common.ValidationFailed" xml:space="preserve">
+    <value>Invalid data.</value>
+  </data>
+  <data name="Common.NotFound" xml:space="preserve">
+    <value>No resources found.</value>
+  </data>
+  <data name="Auth.InvalidTokenClaims" xml:space="preserve">
+    <value>The token contains invalid information.</value>
   </data>
   <data name="Password.NotEmpty" xml:space="preserve">
     <value>Password cannot be empty.</value>
@@ -282,27 +369,6 @@
   <data name="Profile.PhoneInvalid" xml:space="preserve">
     <value>Invalid phone number format.</value>
   </data>
-  <data name="Employee.CodeInvalidFormat" xml:space="preserve">
-    <value>Employee Code must start with W, C, B, or M followed by 6 digits (e.g., M000001).</value>
-  </data>
-  <data name="Auth.TokenRequired" xml:space="preserve">
-    <value>Token is required.</value>
-  </data>
-  <data name="Auth.NewPasswordRequired" xml:space="preserve">
-    <value>New password is required.</value>
-  </data>
-  <data name="Auth.ConfirmPasswordRequired" xml:space="preserve">
-    <value>Confirm password is required.</value>
-  </data>
-  <data name="Auth.ConfirmPasswordMismatch" xml:space="preserve">
-    <value>Confirm password does not match new password.</value>
-  </data>
-  <data name="Auth.EmployeeCodeRequired" xml:space="preserve">
-    <value>Employee code is required.</value>
-  </data>
-  <data name="Auth.PasswordResetGenericMessage" xml:space="preserve">
-    <value>If an account exists for that employee code, a reset email has been sent.</value>
-  </data>
   <data name="EmployeeNotActive" xml:space="preserve">
     <value>Employee is not active.</value>
   </data>
@@ -313,22 +379,13 @@
     <value>New role must be different from current role.</value>
   </data>
   <data name="RoleChangedButEmailFailed" xml:space="preserve">
-     <value>Role changed successfully for {0}, but notification email failed to send.</value>
-   </data>
-  <data name="MenuItem.StationInvalid" xml:space="preserve">
-    <value>Station is invalid.</value>
+    <value>Role changed successfully for {0}, but notification email failed to send.</value>
   </data>
-  <data name="OptionGroup.Required" xml:space="preserve">
-    <value>Option group is required.</value>
+  <data name="ActiveUserBehavior.InActiveAccount" xml:space="preserve">
+    <value>Your account has been disabled.</value>
   </data>
-  <data name="OptionGroup.NotFound" xml:space="preserve">
-    <value>Option group not found.</value>
-  </data>
-  <data name="OptionItem.NotFound" xml:space="preserve">
-    <value>Option item not found</value>
-  </data>
-  <data name="Order.WrongTotalAmount" xml:space="preserve">
-    <value>Total amount is incorrect.</value>
+  <data name="ActiveUserBehavior.Unauthorized" xml:space="preserve">
+    <value>Unauthorized access</value>
   </data>
   
   <!-- OrderItem KDS Errors -->
