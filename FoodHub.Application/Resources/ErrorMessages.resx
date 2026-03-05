@@ -496,5 +496,25 @@
   </data>
   <data name="ActiveUserBehavior.Unauthorized" xml:space="preserve">
     <value>Truy cập trái phép</value>
+  <data name="Area.NotFound" xml:space="preserve">
+    <value>Không tìm thấy khu vực.</value>
+  </data>
+  <data name="Area.CodeExists" xml:space="preserve">
+    <value>Mã khu vực đã tồn tại.</value>
+  </data>
+  <data name="Area.NameRequired" xml:space="preserve">
+    <value>Tên khu vực là bắt buộc.</value>
+  </data>
+  <data name="Area.CodeRequired" xml:space="preserve">
+    <value>Mã khu vực là bắt buộc.</value>
+  </data>
+  <data name="Area.UpdateForbidden" xml:space="preserve">
+    <value>Không có quyền cập nhật khu vực này.</value>
+  </data>
+  <data name="Area.DeleteForbidden" xml:space="preserve">
+    <value>Không có quyền xóa khu vực này.</value>
+  </data>
+  <data name="Area.DeactivateForbidden" xml:space="preserve">
+    <value>Khu vực này đã ngừng hoạt động.</value>
   </data>
 </root>

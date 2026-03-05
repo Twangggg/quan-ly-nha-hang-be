@@ -15,8 +15,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
         public string CategoryName { get; set; } = string.Empty;
         public int Station { get; set; }
         public int? ExpectedTime { get; set; }
-        public decimal PriceDineIn { get; set; }
-        public decimal? PriceTakeAway { get; set; }
+        public decimal Price { get; set; }
         public decimal? CostPrice { get; set; } // Only visible to Manager/Cashier
         public bool IsOutOfStock { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -28,6 +27,7 @@ namespace FoodHub.Application.Features.MenuItems.Queries.GetMenuItems
                 .CreateMap<MenuItem, GetMenuItemsResponse>()
                 .ForMember(d => d.MenuItemId, opt => opt.MapFrom(s => s.MenuItemId))
                 .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.Category.Name))
+                .ForMember(d => d.CostPrice, opt => opt.MapFrom(s => s.CostPrice))
                 .ForMember(d => d.Station, opt => opt.MapFrom(s => (int)s.Station))
                 .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(s => s.UpdatedAt ?? s.CreatedAt));
         }

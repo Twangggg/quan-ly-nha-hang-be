@@ -437,3 +437,25 @@
     <value>Extra price must be greater than or equal to 0.</value>
   </data>
 </root>
+  <data name="Area.NotFound" xml:space="preserve">
+    <value>Area not found.</value>
+  </data>
+  <data name="Area.CodeExists" xml:space="preserve">
+    <value>Area code already exists.</value>
+  </data>
+  <data name="Area.NameRequired" xml:space="preserve">
+    <value>Area name is required.</value>
+  </data>
+  <data name="Area.CodeRequired" xml:space="preserve">
+    <value>Area code is required.</value>
+  </data>
+  <data name="Area.UpdateForbidden" xml:space="preserve">
+    <value>You are not allowed to update this area.</value>
+  </data>
+  <data name="Area.DeleteForbidden" xml:space="preserve">
+    <value>You are not allowed to delete this area.</value>
+  </data>
+  <data name="Area.DeactivateForbidden" xml:space="preserve">
+    <value>This area is already inactive.</value>
+  </data>
+</root>

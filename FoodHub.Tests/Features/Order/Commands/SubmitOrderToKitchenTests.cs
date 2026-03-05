@@ -68,7 +68,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 MenuItemId = menuItemId,
                 Code = "MI001",
                 Name = "Test Item",
-                PriceTakeAway = 50,
+                Price = 50,
                 Station = Station.HotKitchen,
                 ImageUrl = "",
             };
@@ -147,7 +147,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 MenuItemId = menuItemId,
                 Code = "MI002",
                 Name = "Dine-in Item",
-                PriceDineIn = 75,
+                Price = 75,
                 Station = Station.Bar,
                 ImageUrl = "",
             };
@@ -416,7 +416,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 MenuItemId = menuItemId,
                 Code = "MI003",
                 Name = "Merge Test Item",
-                PriceTakeAway = 25,
+                Price = 25,
                 Station = Station.HotKitchen,
                 ImageUrl = "",
             };

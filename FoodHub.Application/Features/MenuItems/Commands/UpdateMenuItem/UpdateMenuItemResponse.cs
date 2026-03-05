@@ -19,8 +19,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         public Station Station { get; set; }
         public int ExpectedTime { get; set; } // Minutes
 
-        public decimal PriceDineIn { get; set; }
-        public decimal PriceTakeAway { get; set; }
+        public decimal Price { get; set; }
         public decimal? CostPrice { get; set; } // Internal cost
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
