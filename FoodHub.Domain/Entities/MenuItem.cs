@@ -18,8 +18,7 @@ namespace FoodHub.Domain.Entities
         public Station Station { get; set; }
         public int ExpectedTime { get; set; } // Minutes
 
-        public decimal PriceDineIn { get; set; }
-        public decimal PriceTakeAway { get; set; }
+        public decimal Price { get; set; }
         public decimal CostPrice { get; set; } // Internal cost
 
         public bool IsOutOfStock { get; set; }
@@ -27,11 +26,5 @@ namespace FoodHub.Domain.Entities
         public ICollection<OptionGroup> OptionGroups { get; set; } = new List<OptionGroup>();
         public ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();
 
-        public decimal GetPriceFor(OrderType orderType)
-        {
-            return orderType == OrderType.Takeaway
-                       ? PriceTakeAway
-                       : PriceDineIn;
-        }
     }
 }

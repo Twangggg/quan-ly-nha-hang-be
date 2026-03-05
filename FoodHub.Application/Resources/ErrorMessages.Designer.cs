@@ -79,6 +79,69 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mã khu vực đã tồn tại..
+        /// </summary>
+        public static string Area_CodeExists {
+            get {
+                return ResourceManager.GetString("Area.CodeExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mã khu vực là bắt buộc..
+        /// </summary>
+        public static string Area_CodeRequired {
+            get {
+                return ResourceManager.GetString("Area.CodeRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Khu vực này đã ngừng hoạt động..
+        /// </summary>
+        public static string Area_DeactivateForbidden {
+            get {
+                return ResourceManager.GetString("Area.DeactivateForbidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không có quyền xóa khu vực này..
+        /// </summary>
+        public static string Area_DeleteForbidden {
+            get {
+                return ResourceManager.GetString("Area.DeleteForbidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tên khu vực là bắt buộc..
+        /// </summary>
+        public static string Area_NameRequired {
+            get {
+                return ResourceManager.GetString("Area.NameRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy khu vực..
+        /// </summary>
+        public static string Area_NotFound {
+            get {
+                return ResourceManager.GetString("Area.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không có quyền cập nhật khu vực này..
+        /// </summary>
+        public static string Area_UpdateForbidden {
+            get {
+                return ResourceManager.GetString("Area.UpdateForbidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tài khoản bị tạm khóa do nhập sai quá nhiều lần. Vui lòng thử lại sau..
         /// </summary>
         public static string Auth_AccountBlocked {
@@ -291,6 +354,24 @@ namespace FoodHub.Application.Resources {
         public static string CannotPromoteToManager {
             get {
                 return ResourceManager.GetString("CannotPromoteToManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không thể vô hiệu hóa danh mục có món đang hoạt động..
+        /// </summary>
+        public static string Category_CannotDeactivateWithActiveItems {
+            get {
+                return ResourceManager.GetString("Category.CannotDeactivateWithActiveItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không thể xóa danh mục đang hoạt động..
+        /// </summary>
+        public static string Category_CannotDeleteActiveCategory {
+            get {
+                return ResourceManager.GetString("Category.CannotDeleteActiveCategory", resourceCulture);
             }
         }
         
@@ -619,6 +700,24 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Không thể xóa nhóm tùy chọn còn chứa tùy chọn..
+        /// </summary>
+        public static string OptionGroup_CannotDeleteWithOptions {
+            get {
+                return ResourceManager.GetString("OptionGroup.CannotDeleteWithOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nhóm tùy chọn không thể có cả Min và Max cùng lúc..
+        /// </summary>
+        public static string OptionGroup_CannotHaveBothMinAndMax {
+            get {
+                return ResourceManager.GetString("OptionGroup.CannotHaveBothMinAndMax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Món ăn không được để trống..
         /// </summary>
         public static string OptionGroup_MenuItemIdRequired {
@@ -660,6 +759,15 @@ namespace FoodHub.Application.Resources {
         public static string OptionItem_ExtraPriceInvalid {
             get {
                 return ResourceManager.GetString("OptionItem.ExtraPriceInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Giá thêm phải lớn hơn hoặc bằng 0..
+        /// </summary>
+        public static string OptionItem_InvalidExtraPrice {
+            get {
+                return ResourceManager.GetString("OptionItem.InvalidExtraPrice", resourceCulture);
             }
         }
         
@@ -799,11 +907,74 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Món không thể huỷ ở trạng thái hiện tại..
+        /// </summary>
+        public static string OrderItem_InvalidStatusForCancel {
+            get {
+                return ResourceManager.GetString("OrderItem.InvalidStatusForCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Món phải đang nấu để chuyển sang trạng thái Sẵn sàng..
+        /// </summary>
+        public static string OrderItem_MustBeCookingToReady {
+            get {
+                return ResourceManager.GetString("OrderItem.MustBeCookingToReady", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Món phải đang nấu để từ chối..
+        /// </summary>
+        public static string OrderItem_MustBeCookingToReject {
+            get {
+                return ResourceManager.GetString("OrderItem.MustBeCookingToReject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Món phải đang ở trạng thái Chuẩn bị để bắt đầu nấu..
+        /// </summary>
+        public static string OrderItem_MustBePreparingToStartCooking {
+            get {
+                return ResourceManager.GetString("OrderItem.MustBePreparingToStartCooking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Món phải bị từ chối để hoàn trả..
+        /// </summary>
+        public static string OrderItem_MustBeRejectedToReturn {
+            get {
+                return ResourceManager.GetString("OrderItem.MustBeRejectedToReturn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Không tìm thấy món trong đơn hàng..
         /// </summary>
         public static string OrderItem_NotFound {
             get {
                 return ResourceManager.GetString("OrderItem.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vui lòng nhập lý do từ chối món ăn..
+        /// </summary>
+        public static string OrderItem_RejectionReasonIsRequired {
+            get {
+                return ResourceManager.GetString("OrderItem.RejectionReasonIsRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vui lòng nhập lý do từ chối món ăn..
+        /// </summary>
+        public static string OrderItem_RejectionReasonRequired {
+            get {
+                return ResourceManager.GetString("OrderItem.RejectionReasonRequired", resourceCulture);
             }
         }
         
@@ -966,6 +1137,15 @@ namespace FoodHub.Application.Resources {
         public static string ResetPassword_SuccessWithEmail {
             get {
                 return ResourceManager.GetString("ResetPassword.SuccessWithEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không thể xóa set menu còn chứa món..
+        /// </summary>
+        public static string SetMenu_CannotDeleteWithItems {
+            get {
+                return ResourceManager.GetString("SetMenu.CannotDeleteWithItems", resourceCulture);
             }
         }
         

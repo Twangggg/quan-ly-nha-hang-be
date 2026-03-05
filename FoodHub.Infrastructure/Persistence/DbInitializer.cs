@@ -334,7 +334,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = beefNoodle.Station.ToString(),
                         Status = OrderItemStatus.Preparing,
                         Quantity = 2,
-                        UnitPriceSnapshot = beefNoodle.PriceDineIn,
+                        UnitPriceSnapshot = beefNoodle.Price,
                         ItemNote = "No onions",
                         CreatedAt = order1.CreatedAt.AddMinutes(5),
                     }
@@ -380,7 +380,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = chickenRice.Station.ToString(),
                         Status = OrderItemStatus.Preparing,
                         Quantity = 3,
-                        UnitPriceSnapshot = chickenRice.PriceDineIn,
+                        UnitPriceSnapshot = chickenRice.Price,
                         ItemNote = "Extra spicy",
                         CreatedAt = order2.CreatedAt.AddMinutes(2),
                     }
@@ -425,7 +425,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = beefNoodle.Station.ToString(),
                         Status = OrderItemStatus.Preparing,
                         Quantity = 1,
-                        UnitPriceSnapshot = beefNoodle.PriceTakeAway,
+                        UnitPriceSnapshot = beefNoodle.Price,
                         CreatedAt = order3.CreatedAt.AddMinutes(1),
                     }
                 );
@@ -441,7 +441,7 @@ namespace FoodHub.Infrastructure.Persistence
                         StationSnapshot = chickenRice.Station.ToString(),
                         Status = OrderItemStatus.Preparing,
                         Quantity = 1,
-                        UnitPriceSnapshot = chickenRice.PriceTakeAway,
+                        UnitPriceSnapshot = chickenRice.Price,
                         CreatedAt = order3.CreatedAt.AddMinutes(2),
                     }
                 );

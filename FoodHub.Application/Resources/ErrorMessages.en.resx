@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
+    <!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -59,403 +59,402 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
             <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
             </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <data name="DatabaseConflict" xml:space="preserve">
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="DatabaseConflict" xml:space="preserve">
     <value>The record already exists in the system.</value>
   </data>
-  <data name="DatabaseUpdateError" xml:space="preserve">
+    <data name="DatabaseUpdateError" xml:space="preserve">
     <value>An error occurred while updating the database.</value>
   </data>
-  <data name="OperationCancelled" xml:space="preserve">
+    <data name="OperationCancelled" xml:space="preserve">
     <value>The operation was cancelled.</value>
   </data>
-  <data name="InvalidUserId" xml:space="preserve">
+    <data name="InvalidUserId" xml:space="preserve">
     <value>Thông tin đăng nhập hiện tại của người dùng không có hoặc không hợp lệ.</value>
   </data>
-  <data name="Unauthorized" xml:space="preserve">
+    <data name="Unauthorized" xml:space="preserve">
     <value>You are not authorized to perform this action.</value>
   </data>
-  <data name="CannotIdentifyManager" xml:space="preserve">
+    <data name="CannotIdentifyManager" xml:space="preserve">
     <value>Cannot identify the manager performing the reset.</value>
   </data>
-  <data name="OnlyManagerCanReset" xml:space="preserve">
+    <data name="OnlyManagerCanReset" xml:space="preserve">
     <value>Only managers are allowed to reset passwords.</value>
   </data>
-  <data name="OnlyActiveEmployeeCanReset" xml:space="preserve">
+    <data name="OnlyActiveEmployeeCanReset" xml:space="preserve">
     <value>Password can only be reset for active accounts.</value>
   </data>
-  <data name="Password.MinLength" xml:space="preserve">
+    <data name="Password.MinLength" xml:space="preserve">
     <value>Password must be at least 8 characters long.</value>
   </data>
-  <data name="Password.RequireUppercase" xml:space="preserve">
+    <data name="Password.RequireUppercase" xml:space="preserve">
     <value>Password must contain at least one uppercase letter.</value>
   </data>
-  <data name="Password.RequireLowercase" xml:space="preserve">
+    <data name="Password.RequireLowercase" xml:space="preserve">
     <value>Password must contain at least one lowercase letter.</value>
   </data>
-  <data name="Password.RequireDigit" xml:space="preserve">
+    <data name="Password.RequireDigit" xml:space="preserve">
     <value>Password must contain at least one digit.</value>
   </data>
-  <data name="Password.RequireSpecial" xml:space="preserve">
+    <data name="Password.RequireSpecial" xml:space="preserve">
     <value>Password must contain at least one special character.</value>
   </data>
-  <data name="ResetPassword.EmployeeIdRequired" xml:space="preserve">
+    <data name="ResetPassword.EmployeeIdRequired" xml:space="preserve">
     <value>Employee ID is required.</value>
   </data>
-  <data name="ResetPassword.ReasonRequired" xml:space="preserve">
+    <data name="ResetPassword.ReasonRequired" xml:space="preserve">
     <value>Password reset reason is required.</value>
   </data>
-  <data name="ResetPassword.ReasonMinLength" xml:space="preserve">
+    <data name="ResetPassword.ReasonMinLength" xml:space="preserve">
     <value>Reason must be at least 10 characters long.</value>
   </data>
-  <data name="ResetPassword.ReasonMaxLength" xml:space="preserve">
+    <data name="ResetPassword.ReasonMaxLength" xml:space="preserve">
     <value>Reason cannot exceed 500 characters.</value>
   </data>
-  <data name="Auth.InvalidCredentials" xml:space="preserve">
+    <data name="Auth.InvalidCredentials" xml:space="preserve">
     <value>Invalid email or password.</value>
   </data>
-  <data name="Auth.AccountInactive" xml:space="preserve">
+    <data name="Auth.AccountInactive" xml:space="preserve">
     <value>Account is currently locked or inactive.</value>
   </data>
-  <data name="Auth.AccountBlocked" xml:space="preserve">
+    <data name="Auth.AccountBlocked" xml:space="preserve">
     <value>Account temporarily blocked due to too many failed attempts. Please try again later.</value>
   </data>
-  <data name="Auth.InvalidToken" xml:space="preserve">
+    <data name="Auth.InvalidToken" xml:space="preserve">
     <value>Invalid or expired token.</value>
   </data>
-  <data name="Auth.RefreshTokenNotFound" xml:space="preserve">
+    <data name="Auth.RefreshTokenNotFound" xml:space="preserve">
     <value>Refresh token not found.</value>
   </data>
-  <data name="Auth.RefreshTokenExpired" xml:space="preserve">
+    <data name="Auth.RefreshTokenExpired" xml:space="preserve">
     <value>Refresh token has expired.</value>
   </data>
-  <data name="Auth.RefreshTokenRevoked" xml:space="preserve">
+    <data name="Auth.RefreshTokenRevoked" xml:space="preserve">
     <value>Refresh token has been revoked.</value>
   </data>
-  <data name="Auth.AccountCreationEmailFailed" xml:space="preserve">
+    <data name="Auth.AccountCreationEmailFailed" xml:space="preserve">
     <value>Account creation failed: Unable to send notification email. Please check the email address.</value>
   </data>
-  <data name="Auth.ResetRequestLimit" xml:space="preserve">
+    <data name="Auth.ResetRequestLimit" xml:space="preserve">
     <value>Too many password reset requests. Please try again later.</value>
   </data>
-  <data name="Auth.InvalidResetLink" xml:space="preserve">
+    <data name="Auth.InvalidResetLink" xml:space="preserve">
     <value>The reset link is invalid or has expired.</value>
   </data>
-  <data name="Auth.UserNotLoggedIn" xml:space="preserve">
+    <data name="Auth.UserNotLoggedIn" xml:space="preserve">
     <value>User is not logged in.</value>
   </data>
-  <data name="Auth.InvalidAction" xml:space="preserve">
+    <data name="Auth.InvalidAction" xml:space="preserve">
     <value>Invalid action.</value>
   </data>
-  <data name="Auth.TooManyAttempts" xml:space="preserve">
+    <data name="Auth.TooManyAttempts" xml:space="preserve">
     <value>Too many attempts. Please try again later.</value>
   </data>
-  <data name="Password.ConfirmationMismatch" xml:space="preserve">
+    <data name="Password.ConfirmationMismatch" xml:space="preserve">
     <value>Password confirmation does not match.</value>
   </data>
-  <data name="Password.MustBeDifferent" xml:space="preserve">
+    <data name="Password.MustBeDifferent" xml:space="preserve">
     <value>New password must be different from current password.</value>
   </data>
-  <data name="Password.IncorrectCurrent" xml:space="preserve">
+    <data name="Password.IncorrectCurrent" xml:space="preserve">
     <value>Current password is incorrect.</value>
   </data>
-  <data name="Profile.PhoneExists" xml:space="preserve">
+    <data name="Profile.PhoneExists" xml:space="preserve">
     <value>Phone number is already in use by another user.</value>
   </data>
-  <data name="Profile.EmailExists" xml:space="preserve">
+    <data name="Profile.EmailExists" xml:space="preserve">
     <value>Email is already in use by another user.</value>
   </data>
-  <data name="Employee.CannotUpdateInactive" xml:space="preserve">
+    <data name="Employee.CannotUpdateInactive" xml:space="preserve">
     <value>Cannot update information for inactive employees.</value>
   </data>
-  <data name="MenuItem.CategoryNotFound" xml:space="preserve">
+    <data name="MenuItem.CategoryNotFound" xml:space="preserve">
     <value>Không tìm thấy danh mục với ID: {0}</value>
   </data>
-  <data name="MenuItem.NotFound" xml:space="preserve">
+    <data name="MenuItem.NotFound" xml:space="preserve">
     <value>Menu Item not found.</value>
   </data>
-  <data name="MenuItem.CategoryRequired" xml:space="preserve">
+    <data name="MenuItem.CategoryRequired" xml:space="preserve">
     <value>Danh mục không được để trống.</value>
   </data>
-  <data name="Category.NameRequired" xml:space="preserve">
+    <data name="Category.NameRequired" xml:space="preserve">
     <value>The category name cannot be left blank.</value>
   </data>
-  <data name="Category.TypeInvalid" xml:space="preserve">
+    <data name="Category.TypeInvalid" xml:space="preserve">
     <value>Invalid category type.</value>
   </data>
-  <data name="MenuItem.StationInvalid" xml:space="preserve">
+    <data name="MenuItem.StationInvalid" xml:space="preserve">
     <value>Station is invalid.</value>
   </data>
-  <data name="OptionGroup.Required" xml:space="preserve">
+    <data name="OptionGroup.Required" xml:space="preserve">
     <value>Option group is required.</value>
   </data>
-  <data name="Order.InvalidType" xml:space="preserve">
+    <data name="Order.InvalidType" xml:space="preserve">
     <value>Invalid order type</value>
   </data>
-  <data name="Order.SelectTable" xml:space="preserve">
+    <data name="Order.SelectTable" xml:space="preserve">
     <value>Please select a table for dine-in orders.</value>
   </data>
-  <data name="Order.InvalidQuantity" xml:space="preserve">
+    <data name="Order.InvalidQuantity" xml:space="preserve">
     <value>Quantity must greater than 0</value>
   </data>
-  <data name="Order.NotFound" xml:space="preserve">
+    <data name="Order.NotFound" xml:space="preserve">
     <value>Order not found.</value>
   </data>
-  <data name="Order.InvalidAction" xml:space="preserve">
+    <data name="Order.InvalidAction" xml:space="preserve">
     <value>Invalid action</value>
   </data>
-  <data name="Order.InvalidActionWithStatus" xml:space="preserve">
+    <data name="Order.InvalidActionWithStatus" xml:space="preserve">
     <value>Invalid action with </value>
   </data>
-  <data name="Order.MustHaveItem" xml:space="preserve">
+    <data name="Order.MustHaveItem" xml:space="preserve">
     <value>Order must have item</value>
   </data>
-  <data name="Order.WrongTotalAmount" xml:space="preserve">
+    <data name="Order.WrongTotalAmount" xml:space="preserve">
     <value>Total amount is incorrect.</value>
   </data>
-  <data name="MenuItem.OutOfStock" xml:space="preserve">
+    <data name="MenuItem.OutOfStock" xml:space="preserve">
     <value>Out of stock for: </value>
   </data>
-  <data name="OrderItem.InvalidQuantity" xml:space="preserve">
+    <data name="OrderItem.InvalidQuantity" xml:space="preserve">
     <value>At least one item must be sent to the kitchen.</value>
   </data>
-  <data name="MenuItem.InvalidQuantity" xml:space="preserve">
+    <data name="MenuItem.InvalidQuantity" xml:space="preserve">
     <value>Quantity must greater than 0.</value>
   </data>
-  <data name="OptionGroup.NotFound" xml:space="preserve">
+    <data name="OptionGroup.NotFound" xml:space="preserve">
     <value>Option group not found.</value>
   </data>
-  <data name="OptionItem.NotFound" xml:space="preserve">
+    <data name="OptionItem.NotFound" xml:space="preserve">
     <value>Option item not found</value>
   </data>
-  <data name="Auth.PasswordChangedSuccess" xml:space="preserve">
+    <data name="Auth.PasswordChangedSuccess" xml:space="preserve">
     <value>Change Password successful!</value>
   </data>
-  <data name="Auth.PasswordResetSuccess" xml:space="preserve">
+    <data name="Auth.PasswordResetSuccess" xml:space="preserve">
     <value>Password reset successful.</value>
   </data>
-  <data name="Auth.PasswordResetGenericMessage" xml:space="preserve">
+    <data name="Auth.PasswordResetGenericMessage" xml:space="preserve">
     <value>If an account exists for that employee code, a reset email has been sent.</value>
   </data>
-  <data name="Auth.TokenRequired" xml:space="preserve">
+    <data name="Auth.TokenRequired" xml:space="preserve">
     <value>Token is required.</value>
   </data>
-  <data name="Auth.NewPasswordRequired" xml:space="preserve">
+    <data name="Auth.NewPasswordRequired" xml:space="preserve">
     <value>New password is required.</value>
   </data>
-  <data name="Auth.ConfirmPasswordRequired" xml:space="preserve">
+    <data name="Auth.ConfirmPasswordRequired" xml:space="preserve">
     <value>Confirm password is required.</value>
   </data>
-  <data name="Auth.ConfirmPasswordMismatch" xml:space="preserve">
+    <data name="Auth.ConfirmPasswordMismatch" xml:space="preserve">
     <value>Confirm password does not match new password.</value>
   </data>
-  <data name="Auth.EmployeeCodeRequired" xml:space="preserve">
+    <data name="Auth.EmployeeCodeRequired" xml:space="preserve">
     <value>Employee code is required.</value>
   </data>
-  <data name="Employee.CodeInvalidFormat" xml:space="preserve">
+    <data name="Employee.CodeInvalidFormat" xml:space="preserve">
     <value>Employee Code must start with W, C, B, or M followed by 6 digits (e.g., M000001).</value>
   </data>
-  <data name="Common.IdMismatch" xml:space="preserve">
+    <data name="Common.IdMismatch" xml:space="preserve">
     <value>The identifiers don't match.</value>
   </data>
-  <data name="Common.IdRequired" xml:space="preserve">
+    <data name="Common.IdRequired" xml:space="preserve">
     <value>The identification code is required.</value>
   </data>
-  <data name="Common.NoFileProvided" xml:space="preserve">
+    <data name="Common.NoFileProvided" xml:space="preserve">
     <value>Please provide the file.</value>
   </data>
-  <data name="Common.UploadSuccess" xml:space="preserve">
+    <data name="Common.UploadSuccess" xml:space="preserve">
     <value>File uploaded successfully.</value>
   </data>
-  <data name="Common.DeleteSuccess" xml:space="preserve">
+    <data name="Common.DeleteSuccess" xml:space="preserve">
     <value>File deleted successfully.</value>
   </data>
-  <data name="Common.DeleteFailed" xml:space="preserve">
+    <data name="Common.DeleteFailed" xml:space="preserve">
     <value>File deletion failed.</value>
   </data>
-  <data name="Common.InternalServerError" xml:space="preserve">
+    <data name="Common.InternalServerError" xml:space="preserve">
     <value>Internal system error.</value>
   </data>
-  <data name="Common.ValidationFailed" xml:space="preserve">
+    <data name="Common.ValidationFailed" xml:space="preserve">
     <value>Invalid data.</value>
   </data>
-  <data name="Common.NotFound" xml:space="preserve">
+    <data name="Common.NotFound" xml:space="preserve">
     <value>No resources found.</value>
   </data>
-  <data name="Auth.InvalidTokenClaims" xml:space="preserve">
+    <data name="Auth.InvalidTokenClaims" xml:space="preserve">
     <value>The token contains invalid information.</value>
   </data>
-  <data name="Password.NotEmpty" xml:space="preserve">
+    <data name="Password.NotEmpty" xml:space="preserve">
     <value>Password cannot be empty.</value>
   </data>
-  <data name="ResetStatusNoEmail" xml:space="preserve">
+    <data name="ResetStatusNoEmail" xml:space="preserve">
     <value>Password reset successful. However, the email could not be sent.</value>
   </data>
-  <data name="Profile.EmployeeIdRequired" xml:space="preserve">
+    <data name="Profile.EmployeeIdRequired" xml:space="preserve">
     <value>EmployeeId cannot be empty.</value>
   </data>
-  <data name="Profile.FullNameRequired" xml:space="preserve">
+    <data name="Profile.FullNameRequired" xml:space="preserve">
     <value>Full name cannot be empty.</value>
   </data>
-  <data name="Profile.FullNameMaxLength" xml:space="preserve">
+    <data name="Profile.FullNameMaxLength" xml:space="preserve">
     <value>Full name cannot exceed 100 characters.</value>
   </data>
-  <data name="Profile.EmailRequired" xml:space="preserve">
+    <data name="Profile.EmailRequired" xml:space="preserve">
     <value>Email cannot be empty.</value>
   </data>
-  <data name="Profile.EmailInvalid" xml:space="preserve">
+    <data name="Profile.EmailInvalid" xml:space="preserve">
     <value>Invalid email format.</value>
   </data>
-  <data name="Profile.PhoneRequired" xml:space="preserve">
+    <data name="Profile.PhoneRequired" xml:space="preserve">
     <value>Phone number cannot be empty.</value>
   </data>
-  <data name="Profile.PhoneInvalid" xml:space="preserve">
+    <data name="Profile.PhoneInvalid" xml:space="preserve">
     <value>Invalid phone number format.</value>
   </data>
-  <data name="EmployeeNotActive" xml:space="preserve">
+    <data name="EmployeeNotActive" xml:space="preserve">
     <value>Employee is not active.</value>
   </data>
-  <data name="CannotPromoteToManager" xml:space="preserve">
+    <data name="CannotPromoteToManager" xml:space="preserve">
     <value>Cannot promote to Manager directly.</value>
   </data>
-  <data name="NewRoleMustBeDifferent" xml:space="preserve">
+    <data name="NewRoleMustBeDifferent" xml:space="preserve">
     <value>New role must be different from current role.</value>
   </data>
-  <data name="RoleChangedButEmailFailed" xml:space="preserve">
+    <data name="RoleChangedButEmailFailed" xml:space="preserve">
     <value>Role changed successfully for {0}, but notification email failed to send.</value>
   </data>
-  <data name="ActiveUserBehavior.InActiveAccount" xml:space="preserve">
+    <data name="ActiveUserBehavior.InActiveAccount" xml:space="preserve">
     <value>Your account has been disabled.</value>
   </data>
-  <data name="ActiveUserBehavior.Unauthorized" xml:space="preserve">
+    <data name="ActiveUserBehavior.Unauthorized" xml:space="preserve">
     <value>Unauthorized access</value>
   </data>
-  
-  <!-- OrderItem KDS Errors -->
-  <data name="OrderItem.MustBePreparingToStartCooking" xml:space="preserve">
+
+    <!-- OrderItem KDS Errors -->
+    <data name="OrderItem.MustBePreparingToStartCooking" xml:space="preserve">
     <value>Item must be in Preparing status to start cooking.</value>
   </data>
-  <data name="OrderItem.MustBeCookingToReady" xml:space="preserve">
+    <data name="OrderItem.MustBeCookingToReady" xml:space="preserve">
     <value>Item must be in Cooking status to mark as Ready.</value>
   </data>
-  <data name="OrderItem.MustBeCookingToReject" xml:space="preserve">
+    <data name="OrderItem.MustBeCookingToReject" xml:space="preserve">
     <value>Item must be in Cooking status to reject.</value>
   </data>
-  <data name="OrderItem.RejectionReasonIsRequired" xml:space="preserve">
+    <data name="OrderItem.RejectionReasonIsRequired" xml:space="preserve">
     <value>Please provide a reason for rejecting this item.</value>
   </data>
-  <data name="OrderItem.RejectionReasonRequired" xml:space="preserve">
+    <data name="OrderItem.RejectionReasonRequired" xml:space="preserve">
     <value>Please provide a reason for rejecting this item.</value>
   </data>
-  <data name="OrderItem.MustBeRejectedToReturn" xml:space="preserve">
+    <data name="OrderItem.MustBeRejectedToReturn" xml:space="preserve">
     <value>Item must be rejected to return.</value>
   </data>
-  <data name="OrderItem.InvalidStatusForCancel" xml:space="preserve">
+    <data name="OrderItem.InvalidStatusForCancel" xml:space="preserve">
     <value>Item cannot be cancelled in its current status.</value>
   </data>
-  
-  <!-- Category Errors -->
-  <data name="Category.CannotDeleteActiveCategory" xml:space="preserve">
+
+    <!-- Category Errors -->
+    <data name="Category.CannotDeleteActiveCategory" xml:space="preserve">
     <value>Cannot delete an active category.</value>
   </data>
-  <data name="Category.CannotDeactivateWithActiveItems" xml:space="preserve">
+    <data name="Category.CannotDeactivateWithActiveItems" xml:space="preserve">
     <value>Cannot deactivate a category with active items.</value>
   </data>
-  
-  <!-- SetMenu Errors -->
-  <data name="SetMenu.CannotDeleteWithItems" xml:space="preserve">
+
+    <!-- SetMenu Errors -->
+    <data name="SetMenu.CannotDeleteWithItems" xml:space="preserve">
     <value>Cannot delete a set menu that contains items.</value>
   </data>
-  
-  <!-- OptionGroup Errors -->
-  <data name="OptionGroup.CannotDeleteWithOptions" xml:space="preserve">
+
+    <!-- OptionGroup Errors -->
+    <data name="OptionGroup.CannotDeleteWithOptions" xml:space="preserve">
     <value>Cannot delete an option group that contains options.</value>
   </data>
-  <data name="OptionGroup.CannotHaveBothMinAndMax" xml:space="preserve">
+    <data name="OptionGroup.CannotHaveBothMinAndMax" xml:space="preserve">
     <value>Option group cannot have both Min and Max at the same time.</value>
   </data>
-  
-  <!-- OptionItem Errors -->
-  <data name="OptionItem.InvalidExtraPrice" xml:space="preserve">
+
+    <!-- OptionItem Errors -->
+    <data name="OptionItem.InvalidExtraPrice" xml:space="preserve">
     <value>Extra price must be greater than or equal to 0.</value>
   </data>
-</root>
-  <data name="Area.NotFound" xml:space="preserve">
+    <data name="Area.NotFound" xml:space="preserve">
     <value>Area not found.</value>
   </data>
-  <data name="Area.CodeExists" xml:space="preserve">
+    <data name="Area.CodeExists" xml:space="preserve">
     <value>Area code already exists.</value>
   </data>
-  <data name="Area.NameRequired" xml:space="preserve">
+    <data name="Area.NameRequired" xml:space="preserve">
     <value>Area name is required.</value>
   </data>
-  <data name="Area.CodeRequired" xml:space="preserve">
+    <data name="Area.CodeRequired" xml:space="preserve">
     <value>Area code is required.</value>
   </data>
-  <data name="Area.UpdateForbidden" xml:space="preserve">
+    <data name="Area.UpdateForbidden" xml:space="preserve">
     <value>You are not allowed to update this area.</value>
   </data>
-  <data name="Area.DeleteForbidden" xml:space="preserve">
+    <data name="Area.DeleteForbidden" xml:space="preserve">
     <value>You are not allowed to delete this area.</value>
   </data>
-  <data name="Area.DeactivateForbidden" xml:space="preserve">
+    <data name="Area.DeactivateForbidden" xml:space="preserve">
     <value>This area is already inactive.</value>
   </data>
 </root>

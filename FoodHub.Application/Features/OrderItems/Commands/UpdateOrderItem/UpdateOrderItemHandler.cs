@@ -157,7 +157,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                             );
                         }
 
-                        var price = menuItem.GetPriceFor(order.OrderType);
+                        var price = menuItem.Price;
 
                         var newItem = new OrderItem
                         {
