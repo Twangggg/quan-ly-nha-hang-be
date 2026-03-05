@@ -47,24 +47,25 @@ namespace FoodHub.Domain.Entities
             Status = EmployeeStatus.Inactive;
 
             var suffix = $"_old_{timestamp}";
-            if (originalEmail.Length + suffix.Length > 150)
+            if (originalEmail != null)
             {
-                Email = originalEmail.Substring(0, 150 - suffix.Length) + suffix;
-            }
-            else
-            {
-                Email = originalEmail + suffix;
+                Email =
+                    originalEmail.Length + suffix.Length > 150
+                        ? originalEmail.Substring(0, 150 - suffix.Length) + suffix
+                        : originalEmail + suffix;
             }
 
+            // RELEASE Username and Phone for the new record
             Username = null;
             Phone = null;
+
             UpdatedAt = DateTime.UtcNow;
 
             return new Employee
             {
                 EmployeeId = Guid.NewGuid(),
                 FullName = FullName,
-                Email = originalEmail,
+                Email = originalEmail!,
                 Username = originalUsername,
                 PasswordHash = PasswordHash,
                 Phone = originalPhone,
@@ -74,6 +75,45 @@ namespace FoodHub.Domain.Entities
                 Status = EmployeeStatus.Active,
                 CreatedAt = DateTime.UtcNow,
             };
+        }
+
+        public void DeleteEmployee(Guid auditorId)
+        {
+            var shortId = Guid.NewGuid().ToString("N")[..8];
+            var originalEmail = Email;
+            var originalPhone = Phone ?? string.Empty;
+            var originalUsername = Username ?? string.Empty;
+            Status = EmployeeStatus.Inactive;
+
+            var suffix = $"-del{shortId}";
+
+            if (!string.IsNullOrEmpty(originalEmail))
+            {
+                Email =
+                    originalEmail.Length + suffix.Length > 150
+                        ? originalEmail[..(150 - suffix.Length)] + suffix
+                        : originalEmail + suffix;
+            }
+
+            if (!string.IsNullOrEmpty(originalPhone))
+            {
+                Phone =
+                    originalPhone.Length + suffix.Length > 15
+                        ? originalPhone[..(15 - suffix.Length)] + suffix
+                        : originalPhone + suffix;
+            }
+
+            if (!string.IsNullOrEmpty(originalUsername))
+            {
+                Username =
+                    originalUsername.Length + suffix.Length > 50
+                        ? originalUsername[..(50 - suffix.Length)] + suffix
+                        : originalUsername + suffix;
+            }
+
+            UpdatedAt = DateTime.UtcNow;
+            DeletedAt = DateTime.UtcNow;
+            UpdatedBy = auditorId;
         }
     }
 }

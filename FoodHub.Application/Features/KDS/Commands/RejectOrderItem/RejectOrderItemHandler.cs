@@ -41,6 +41,17 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
             CancellationToken cancellationToken
         )
         {
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            {
+                _logger.LogWarning(
+                    "Unauthorized cancel attempt for OrderItemId {OrderItemId}",
+                    request.OrderItemId
+                );
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
+            }
             _logger.LogInformation(
                 "Attempting to reject OrderItemId: {OrderItemId}. Reason: {Reason}",
                 request.OrderItemId,
@@ -78,7 +89,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                     );
                     await _unitOfWork.RollbackTransactionAsync();
                     return Result<Guid>.Failure(
-                        _messageService.GetMessage(domainResult.ErrorCode!)
+                        _messageService.GetMessage(MessageKeys.OrderItem.MustBeCookingToReject)
                     );
                 }
 
@@ -86,7 +97,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                 {
                     LogId = Guid.NewGuid(),
                     OrderId = orderItem.OrderId,
-                    EmployeeId = Guid.Parse(_currentUserService.UserId!),
+                    EmployeeId = auditorId,
                     Action = AuditLogActions.KdsReject,
                     OldValue = $"\"{oldStatus}\"",
                     NewValue = $"\"{OrderItemStatus.Rejected}\"",
@@ -140,7 +151,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                     {
                         LogId = Guid.NewGuid(),
                         OrderId = nextItem.OrderId,
-                        EmployeeId = Guid.Parse(_currentUserService.UserId!),
+                        EmployeeId = auditorId,
                         Action = AuditLogActions.KdsStartCooking,
                         OldValue = $"\"{OrderItemStatus.Preparing}\"",
                         NewValue = $"\"{OrderItemStatus.Cooking}\"",
@@ -148,6 +159,8 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                         CreatedAt = DateTime.UtcNow,
                     };
                     await _unitOfWork.Repository<OrderAuditLog>().AddAsync(autoPullLog);
+
+                    orderItemRepository.Update(nextItem);
                 }
 
                 orderItemRepository.Update(orderItem);

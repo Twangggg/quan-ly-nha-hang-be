@@ -220,13 +220,11 @@
     <value>Số điện thoại đã được sử dụng bởi người khác.</value>
   </data>
   <data name="Profile.EmailExists" xml:space="preserve">
-    <value>Email đã được sử dụng bởi người khác.</value>
+    <value>Email đã được sử dụng.</value>
   </data>
   <data name="Employee.CannotUpdateInactive" xml:space="preserve">
     <value>Không thể cập nhật thông tin cho nhân viên đang ngừng hoạt động.</value>
   </data>
-  
-  <!-- MenuItem Errors -->
   <data name="MenuItem.CategoryNotFound" xml:space="preserve">
     <value>Không tìm thấy danh mục với ID: {0}</value>
   </data>
@@ -260,7 +258,6 @@
   <data name="MenuItem.ExpectedTimeInvalid" xml:space="preserve">
     <value>Thời gian chờ phải lớn hơn 0.</value>
   </data>
-  <!-- SetMenu Errors -->
   <data name="SetMenu.CodeRequired" xml:space="preserve">
     <value>Mã set menu không được để trống.</value>
   </data>
@@ -273,14 +270,12 @@
   <data name="SetMenu.ItemsRequired" xml:space="preserve">
     <value>Set menu phải có ít nhất 1 món.</value>
   </data>
-  <!-- Category Errors -->
   <data name="Category.NameRequired" xml:space="preserve">
     <value>Tên danh mục không được để trống.</value>
   </data>
   <data name="Category.TypeInvalid" xml:space="preserve">
     <value>Loại danh mục không hợp lệ.</value>
   </data>
-  <!-- Option Errors -->
   <data name="OptionGroup.NameRequired" xml:space="preserve">
     <value>Tên nhóm tùy chọn không được để trống.</value>
   </data>
@@ -447,5 +442,66 @@
   </data>
   <data name="Order.InsufficientAmount" xml:space="preserve">
     <value>Số tiền thanh toán (tiền mặt) không đủ.</value>
+  </data>
+  
+  <!-- OrderItem KDS Errors -->
+  <data name="OrderItem.MustBePreparingToStartCooking" xml:space="preserve">
+    <value>Món phải đang ở trạng thái Chuẩn bị để bắt đầu nấu.</value>
+  </data>
+  <data name="OrderItem.MustBeCookingToReady" xml:space="preserve">
+    <value>Món phải đang nấu để chuyển sang trạng thái Sẵn sàng.</value>
+  </data>
+  <data name="OrderItem.MustBeCookingToReject" xml:space="preserve">
+    <value>Món phải đang nấu để từ chối.</value>
+  </data>
+  <data name="OrderItem.RejectionReasonIsRequired" xml:space="preserve">
+    <value>Vui lòng nhập lý do từ chối món ăn.</value>
+  </data>
+  <data name="OrderItem.RejectionReasonRequired" xml:space="preserve">
+    <value>Vui lòng nhập lý do từ chối món ăn.</value>
+  </data>
+  <data name="OrderItem.MustBeRejectedToReturn" xml:space="preserve">
+    <value>Món phải bị từ chối để hoàn trả.</value>
+  </data>
+  <data name="OrderItem.InvalidStatusForCancel" xml:space="preserve">
+    <value>Món không thể huỷ ở trạng thái hiện tại.</value>
+  </data>
+  
+  <!-- Category Errors -->
+  <data name="Category.CannotDeleteActiveCategory" xml:space="preserve">
+    <value>Không thể xóa danh mục đang hoạt động.</value>
+  </data>
+  <data name="Category.CannotDeactivateWithActiveItems" xml:space="preserve">
+    <value>Không thể vô hiệu hóa danh mục có món đang hoạt động.</value>
+  </data>
+  
+  <!-- SetMenu Errors -->
+  <data name="SetMenu.CannotDeleteWithItems" xml:space="preserve">
+    <value>Không thể xóa set menu còn chứa món.</value>
+  </data>
+  
+  <!-- OptionGroup Errors -->
+  <data name="OptionGroup.CannotDeleteWithOptions" xml:space="preserve">
+    <value>Không thể xóa nhóm tùy chọn còn chứa tùy chọn.</value>
+  </data>
+  <data name="OptionGroup.CannotHaveBothMinAndMax" xml:space="preserve">
+    <value>Nhóm tùy chọn không thể có cả Min và Max cùng lúc.</value>
+  </data>
+  
+  <!-- OptionItem Errors -->
+  <data name="OptionItem.InvalidExtraPrice" xml:space="preserve">
+    <value>Giá thêm phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="EmployeeNotActive" xml:space="preserve">
+    <value>Nhân viên này hiện không hoạt động.</value>
+  </data>
+  <data name="CannotPromoteToManager" xml:space="preserve">
+    <value>Không thể chuyển sang vai trò Quản lý</value>
+  </data>
+  <data name="ActiveUserBehavior.InActiveAccount" xml:space="preserve">
+    <value>Tài khoản của bạn đã bị vô hiệu hóa.</value>
+  </data>
+  <data name="ActiveUserBehavior.Unauthorized" xml:space="preserve">
+    <value>Truy cập trái phép</value>
   </data>
 </root>

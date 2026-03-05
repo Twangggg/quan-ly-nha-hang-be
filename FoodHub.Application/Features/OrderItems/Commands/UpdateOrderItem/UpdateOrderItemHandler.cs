@@ -18,14 +18,14 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
         private readonly IMessageService _messageService;
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
-        private readonly ILogger<UpdateOrderItemCommand> _logger;
+        private readonly ILogger<UpdateOrderItemHandler> _logger;
 
         public UpdateOrderItemHandler(
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
             IMapper mapper,
-            ILogger<UpdateOrderItemCommand> logger
+            ILogger<UpdateOrderItemHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
@@ -42,6 +42,10 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
         {
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
+                _logger.LogWarning(
+                    "Unauthorized user attempt to update order {OrderId}.",
+                    request.OrderId
+                );
                 return Result<UpdateOrderItemResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
                     ResultErrorType.Unauthorized
@@ -64,6 +68,20 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                 );
             }
 
+            // BR: Không cho phép chỉnh sửa order đã hoàn thành hoặc hủy
+            if (order.Status == OrderStatus.Completed || order.Status == OrderStatus.Cancelled)
+            {
+                _logger.LogWarning(
+                    "Cannot update items for Order {OrderId} because status is {Status}.",
+                    order.OrderId,
+                    order.Status
+                );
+                return Result<UpdateOrderItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus),
+                    ResultErrorType.BadRequest
+                );
+            }
+
             var incomingItems = request.Items ?? new List<UpdateOrderItemDto>();
 
             var itemsToRemove = order
@@ -73,93 +91,129 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                 )
                 .ToList();
 
-            foreach (var item in itemsToRemove)
+            // BR: Items đang được nấu, hoàn thành không thể xóa (KDS-05)
+            if (itemsToRemove.Any(oi => oi.Status != OrderItemStatus.Preparing))
             {
-                item.Status = OrderItemStatus.Cancelled;
-                item.UpdatedAt = DateTime.UtcNow;
-            }
-
-            foreach (var incomingItem in incomingItems)
-            {
-                var existingItem = order.OrderItems.FirstOrDefault(i =>
-                    i.OrderItemId == incomingItem.OrderItemId
+                _logger.LogWarning(
+                    "Attempted to cancel order items not in Preparing state for Order {OrderId}.",
+                    order.OrderId
                 );
-
-                if (existingItem != null)
-                {
-                    // Update existing
-                    existingItem.Quantity = incomingItem.Quantity;
-                    existingItem.ItemNote = incomingItem.ItemNote;
-                    existingItem.UpdatedAt = DateTime.UtcNow;
-
-                    await ProcessOptionsAsync(
-                        existingItem,
-                        incomingItem.SelectedOptions,
-                        cancellationToken
-                    );
-                }
-                else
-                {
-                    // Add new item
-                    var menuItem = await _unitOfWork
-                        .Repository<MenuItem>()
-                        .GetByIdAsync(incomingItem.MenuItemId);
-                    if (menuItem == null)
-                    {
-                        return Result<UpdateOrderItemResponse>.Failure(
-                            _messageService.GetMessage(MessageKeys.MenuItem.NotFound)
-                        );
-                    }
-
-                    var price = menuItem.GetPriceFor(order.OrderType);
-
-                    var newItem = new OrderItem
-                    {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order.OrderId,
-                        MenuItemId = incomingItem.MenuItemId,
-                        Quantity = incomingItem.Quantity,
-                        ItemNote = incomingItem.ItemNote,
-                        CreatedAt = DateTime.UtcNow,
-                        Status = OrderItemStatus.Preparing,
-                        ItemNameSnapshot = menuItem.Name,
-                        ItemCodeSnapshot = menuItem.Code,
-                        UnitPriceSnapshot = price,
-                        StationSnapshot = menuItem.Station.ToString(),
-                    };
-
-                    await ProcessOptionsAsync(
-                        newItem,
-                        incomingItem.SelectedOptions,
-                        cancellationToken
-                    );
-                    order.OrderItems.Add(newItem);
-                }
+                return Result<UpdateOrderItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus),
+                    ResultErrorType.BadRequest
+                );
             }
 
-            order.RecalculateTotalAmount();
-            order.UpdatedAt = DateTime.UtcNow;
-
-            var auditLog = new OrderAuditLog
-            {
-                LogId = Guid.NewGuid(),
-                OrderId = order.OrderId,
-                EmployeeId = auditorId,
-                Action = AuditLogActions.UpdateOrderItem,
-                CreatedAt = DateTime.UtcNow,
-                ChangeReason = request.Reason,
-                NewValue = "{\"action\": \"Updated Order Items Sync\"}",
-            };
-
-            await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
-            _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+            await _unitOfWork.BeginTransactionAsync();
 
             try
             {
+                foreach (var item in itemsToRemove)
+                {
+                    var cancelResult = item.Cancel();
+                    if (!cancelResult.IsSuccess)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<UpdateOrderItemResponse>.Failure(
+                            _messageService.GetMessage(
+                                cancelResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
+                            ),
+                            ResultErrorType.BadRequest
+                        );
+                    }
+                    item.UpdatedAt = DateTime.UtcNow;
+                }
+
+                foreach (var incomingItem in incomingItems)
+                {
+                    var existingItem = order.OrderItems.FirstOrDefault(i =>
+                        i.OrderItemId == incomingItem.OrderItemId
+                    );
+
+                    if (existingItem != null)
+                    {
+                        // Update existing
+                        existingItem.Quantity = incomingItem.Quantity;
+                        existingItem.ItemNote = incomingItem.ItemNote;
+                        existingItem.UpdatedAt = DateTime.UtcNow;
+
+                        await ProcessOptionsAsync(
+                            existingItem,
+                            incomingItem.SelectedOptions,
+                            cancellationToken
+                        );
+                    }
+                    else
+                    {
+                        // Add new item
+                        var menuItem = await _unitOfWork
+                            .Repository<MenuItem>()
+                            .GetByIdAsync(incomingItem.MenuItemId);
+                        if (menuItem == null)
+                        {
+                            await _unitOfWork.RollbackTransactionAsync();
+                            return Result<UpdateOrderItemResponse>.Failure(
+                                _messageService.GetMessage(MessageKeys.MenuItem.NotFound)
+                            );
+                        }
+
+                        var price = menuItem.GetPriceFor(order.OrderType);
+
+                        var newItem = new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order.OrderId,
+                            MenuItemId = incomingItem.MenuItemId,
+                            Quantity = incomingItem.Quantity,
+                            ItemNote = incomingItem.ItemNote,
+                            CreatedAt = DateTime.UtcNow,
+                            Status = OrderItemStatus.Preparing,
+                            ItemNameSnapshot = menuItem.Name,
+                            ItemCodeSnapshot = menuItem.Code,
+                            UnitPriceSnapshot = price,
+                            StationSnapshot = menuItem.Station.ToString(),
+                        };
+
+                        await ProcessOptionsAsync(
+                            newItem,
+                            incomingItem.SelectedOptions,
+                            cancellationToken
+                        );
+                        order.OrderItems.Add(newItem);
+                    }
+                }
+
+                order.RecalculateTotalAmount();
+                order.UpdatedAt = DateTime.UtcNow;
+
+                var auditLog = new OrderAuditLog
+                {
+                    LogId = Guid.NewGuid(),
+                    OrderId = order.OrderId,
+                    EmployeeId = auditorId,
+                    Action = AuditLogActions.UpdateOrderItem,
+                    CreatedAt = DateTime.UtcNow,
+                    ChangeReason = request.Reason,
+                    NewValue = "{\"action\": \"Updated Order Items Sync\"}",
+                };
+
+                await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+                _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.CommitTransactionAsync();
+
+                _logger.LogInformation(
+                    "Successfully updated order items for Order {OrderId}.",
+                    order.OrderId
+                );
+
+                var response = _mapper.Map<UpdateOrderItemResponse>(order);
+                return Result<UpdateOrderItemResponse>.Success(response);
             }
             catch (DbUpdateException ex)
             {
+                await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(
                     ex,
                     "Database error occurred while updating order items for OrderId {OrderId}",
@@ -169,9 +223,16 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                     _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError)
                 );
             }
-
-            var response = _mapper.Map<UpdateOrderItemResponse>(order);
-            return Result<UpdateOrderItemResponse>.Success(response);
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(
+                    ex,
+                    "Unexpected error occurred while updating order items for OrderId {OrderId}",
+                    request.OrderId
+                );
+                throw;
+            }
         }
 
         private async Task ProcessOptionsAsync(

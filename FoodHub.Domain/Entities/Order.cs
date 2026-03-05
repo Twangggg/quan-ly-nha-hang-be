@@ -172,10 +172,10 @@ namespace FoodHub.Domain.Entities
             )> options
         )
         {
-            // 1. Generate signature for matching logic
+            // Generate signature for matching logic
             var signature = GenerateSignature(options);
 
-            // 2. Try to find existing item to merge
+            // Try to find existing item to merge
             var existingItem = OrderItems.FirstOrDefault(oi =>
                 oi.MenuItemId == menuItem.MenuItemId
                 && oi.Status == OrderItemStatus.Preparing

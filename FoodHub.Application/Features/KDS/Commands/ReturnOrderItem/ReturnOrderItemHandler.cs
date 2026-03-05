@@ -37,6 +37,17 @@ namespace FoodHub.Application.Features.KDS.Commands.ReturnOrderItem
             CancellationToken cancellationToken
         )
         {
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            {
+                _logger.LogWarning(
+                    "Unauthorized cancel attempt for OrderItemId {OrderItemId}",
+                    request.OrderItemId
+                );
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
+            }
             _logger.LogInformation(
                 "Attempting to return OrderItemId to queue: {OrderItemId}",
                 request.OrderItemId
@@ -74,7 +85,7 @@ namespace FoodHub.Application.Features.KDS.Commands.ReturnOrderItem
                     );
                     await _unitOfWork.RollbackTransactionAsync();
                     return Result<Guid>.Failure(
-                        _messageService.GetMessage(domainResult.ErrorCode!)
+                        _messageService.GetMessage(MessageKeys.OrderItem.MustBeRejectedToReturn)
                     );
                 }
 
@@ -82,7 +93,7 @@ namespace FoodHub.Application.Features.KDS.Commands.ReturnOrderItem
                 {
                     LogId = Guid.NewGuid(),
                     OrderId = orderItem.OrderId,
-                    EmployeeId = Guid.Parse(_currentUserService.UserId!),
+                    EmployeeId = auditorId,
                     Action = AuditLogActions.KdsReturn,
                     OldValue = $"\"{oldStatus}\"",
                     NewValue = $"\"{OrderItemStatus.Preparing}\"",
