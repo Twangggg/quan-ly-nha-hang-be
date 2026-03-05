@@ -96,12 +96,28 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
-                // Auto-pull: Tìm món tiếp theo trong hàng đợi của station này
+                // Xác định nhóm trạm
+                var targetStations = new List<string> { orderItem.StationSnapshot };
+                if (
+                    orderItem.StationSnapshot == Station.HotKitchen.ToString()
+                    || orderItem.StationSnapshot == Station.ColdKitchen.ToString()
+                )
+                {
+                    targetStations = new List<string>
+                    {
+                        Station.HotKitchen.ToString(),
+                        Station.ColdKitchen.ToString(),
+                    };
+                }
+
+                // Auto-pull: Tìm món tiếp theo trong hàng đợi của station group này
                 var pendingItems = await orderItemRepository
                     .Query()
                     .Include(oi => oi.Order)
+                        .ThenInclude(o => o.OrderItems)
+                    .Include(oi => oi.MenuItem)
                     .Where(oi =>
-                        oi.StationSnapshot == orderItem.StationSnapshot
+                        targetStations.Contains(oi.StationSnapshot)
                         && oi.Status == OrderItemStatus.Preparing
                     )
                     .ToListAsync(cancellationToken);
@@ -110,7 +126,19 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                 if (pendingItems.Any())
                 {
                     nextItem = pendingItems
-                        .OrderByDescending(oi => _priorityCalculator.Calculate(oi, oi.Order))
+                        .OrderByDescending(oi =>
+                            _priorityCalculator.Calculate(
+                                oi.CreatedAt,
+                                oi.Order?.IsPriority ?? false,
+                                (oi.MenuItem?.ExpectedTime ?? 0) * 60,
+                                oi.Order?.OrderType ?? OrderType.DineIn,
+                                oi.Order?.OrderItems?.Count ?? 0,
+                                oi.Order?.OrderItems?.Count(x =>
+                                    x.Status == OrderItemStatus.Completed
+                                    || x.Status == OrderItemStatus.Ready
+                                ) ?? 0
+                            )
+                        )
                         .ThenBy(oi => oi.CreatedAt)
                         .First();
                 }

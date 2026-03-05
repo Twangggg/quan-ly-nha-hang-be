@@ -5,7 +5,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 {
@@ -16,18 +16,21 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ISignalRService _signalRService;
+        private readonly ILogger<SubmitOrderToKitchenHandler> _logger;
 
         public SubmitOrderToKitchenHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
-            ISignalRService signalRService
+            ISignalRService signalRService,
+            ILogger<SubmitOrderToKitchenHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
             _signalRService = signalRService;
+            _logger = logger;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -129,144 +132,169 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 );
             }
 
-            //Gen Order code
-            var orderCode = await GenerateOrderCodeAsync(cancellationToken);
+            // Retrieve or Create Order
+            Order? order = null;
 
-            //Create Order entity
-            var order = new Order
+            if (request.OrderId != Guid.Empty)
             {
-                OrderId = Guid.NewGuid(),
-                OrderCode = orderCode,
-                OrderType = request.OrderType,
-                Status = OrderStatus.Serving,
-                TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
-                Note = request.Note,
-                TotalAmount = 0, //calculated after items
-                IsPriority = false,
-                CreatedBy = userId,
-                CreatedAt = DateTime.UtcNow,
-                OrderItems = new List<OrderItem>(),
-                OrderAuditLogs = new List<OrderAuditLog>(),
-            };
+                order = await _unitOfWork
+                    .Repository<Order>()
+                    .Query()
+                    .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
+            }
 
-            // Merge Duplicate Items and Create Order Items
-            // Group by MenuItemId + Note + Options to merge duplicates
-            var groupedItems = request
-                .Items.Select(i => new
-                {
-                    Item = i,
-                    // Create option signature for grouping
-                    OptionSignature = i.SelectedOptions == null
-                        ? string.Empty
-                        : string.Join(
-                            "|",
-                            i.SelectedOptions.OrderBy(og => og.OptionGroupId)
-                                .Select(og =>
-                                    $"{og.OptionGroupId}:{string.Join(",",
-                                og.SelectedValues
-                                    .OrderBy(v => v.OptionItemId)
-                                    .Select(v => $"{v.OptionItemId}x{v.Quantity}"))}"
-                                )
-                        ),
-                })
-                .GroupBy(x => new
-                {
-                    x.Item.MenuItemId,
-                    Note = x.Item.Note ?? string.Empty,
-                    x.OptionSignature,
-                })
-                .Select(g => new
-                {
-                    g.Key.MenuItemId,
-                    Note = string.IsNullOrEmpty(g.Key.Note) ? null : g.Key.Note,
-                    TotalQuantity = g.Sum(x => x.Item.Quantity),
-                    SelectedOptions = g.First().Item.SelectedOptions, // Use first item's options
-                })
-                .ToList();
-            foreach (var group in groupedItems)
+            if (order == null && request.OrderType == OrderType.DineIn && request.TableId.HasValue)
             {
-                var menuItem = menuItems[group.MenuItemId];
-                // Select price based on order type
-                var price = menuItem.GetPriceFor(order.OrderType);
-                var orderItem = new OrderItem
+                // Check for existing active order at this table (also lightweight)
+                order = await _unitOfWork
+                    .Repository<Order>()
+                    .Query()
+                    .FirstOrDefaultAsync(
+                        x => x.TableId == request.TableId && x.Status == OrderStatus.Serving,
+                        cancellationToken
+                    );
+            }
+
+            bool isNewOrder = false;
+            if (order == null)
+            {
+                isNewOrder = true;
+                var orderCode = await GenerateOrderCodeAsync(cancellationToken);
+                order = new Order
                 {
-                    OrderItemId = Guid.NewGuid(),
-                    OrderId = order.OrderId,
-                    MenuItemId = group.MenuItemId,
-                    Quantity = group.TotalQuantity,
-                    ItemNote = group.Note,
-                    Status = OrderItemStatus.Preparing,
+                    OrderId = Guid.NewGuid(),
+                    OrderCode = orderCode,
+                    OrderType = request.OrderType,
+                    Status = OrderStatus.Serving,
+                    TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
+                    Note = request.Note,
+                    TotalAmount = 0,
+                    CreatedBy = userId,
                     CreatedAt = DateTime.UtcNow,
-                    //snapshot
-                    ItemCodeSnapshot = menuItem.Code,
-                    ItemNameSnapshot = menuItem.Name,
-                    UnitPriceSnapshot = price,
-                    StationSnapshot = menuItem.Station.ToString(),
                 };
+            }
 
-                // NEW: Add option snapshots
-                if (group.SelectedOptions != null && group.SelectedOptions.Any())
+            // Group items by signature to merge duplicates within the same request
+            var groupedItems = new List<(OrderItemDto Dto, OrderItem Item)>();
+
+            foreach (var itemDto in request.Items)
+            {
+                var menuItem = menuItems[itemDto.MenuItemId];
+
+                // Prepare options for Domain method
+                var domainOptions =
+                    new List<(
+                        OptionGroup Group,
+                        List<(OptionItem Item, int Quantity, string? Note)> Selections
+                    )>();
+                if (itemDto.SelectedOptions != null)
                 {
-                    foreach (var optionGroupDto in group.SelectedOptions)
+                    foreach (var optDto in itemDto.SelectedOptions)
                     {
-                        var optionGroup = optionGroups[optionGroupDto.OptionGroupId];
-
-                        var orderItemOptionGroup = new OrderItemOptionGroup
+                        if (optionGroups.TryGetValue(optDto.OptionGroupId, out var og))
                         {
-                            OrderItemOptionGroupId = Guid.NewGuid(),
-                            OrderItemId = orderItem.OrderItemId,
-                            GroupNameSnapshot = optionGroup.Name,
-                            GroupTypeSnapshot = optionGroup.OptionType.ToString(),
-                            IsRequiredSnapshot = optionGroup.IsRequired,
-                            CreatedAt = DateTime.UtcNow,
-                        };
-
-                        foreach (var valueDto in optionGroupDto.SelectedValues)
-                        {
-                            var optionItem = optionItems[valueDto.OptionItemId];
-
-                            var orderItemOptionValue = new OrderItemOptionValue
-                            {
-                                OrderItemOptionValueId = Guid.NewGuid(),
-                                OrderItemOptionGroupId =
-                                    orderItemOptionGroup.OrderItemOptionGroupId,
-                                OptionItemId = valueDto.OptionItemId, // Trace back
-                                LabelSnapshot = optionItem.Label,
-                                ExtraPriceSnapshot = optionItem.ExtraPrice,
-                                Quantity = valueDto.Quantity,
-                                Note = valueDto.Note,
-                                CreatedAt = DateTime.UtcNow,
-                            };
-
-                            orderItemOptionGroup.OptionValues.Add(orderItemOptionValue);
+                            var selections = optDto
+                                .SelectedValues.Where(v => optionItems.ContainsKey(v.OptionItemId))
+                                .Select(v => (optionItems[v.OptionItemId], v.Quantity, v.Note))
+                                .ToList();
+                            domainOptions.Add((og, selections));
                         }
-
-                        orderItem.OptionGroups.Add(orderItemOptionGroup);
                     }
                 }
 
-                order.OrderItems.Add(orderItem);
+                // Create Item using lightweight method
+                var newItem = order.CreateOrderItem(
+                    menuItem,
+                    itemDto.Quantity,
+                    itemDto.Note,
+                    domainOptions
+                );
+
+                // Find if we already have an identical item in this request (Grouping logic)
+                // We use AddOrUpdateItem's signature logic indirectly or just compare signatures.
+                // Actually, let's just use a simple grouping here to avoid polluting 'order.OrderItems' yet.
+
+                var existingGrouped = groupedItems.FirstOrDefault(x =>
+                    x.Item.MenuItemId == newItem.MenuItemId
+                    && (x.Item.ItemNote ?? "") == (newItem.ItemNote ?? "")
+                    && order.GetItemSignature(x.Item) == order.GetItemSignature(newItem)
+                );
+
+                if (existingGrouped.Item != null)
+                {
+                    existingGrouped.Item.Quantity += newItem.Quantity;
+                }
+                else
+                {
+                    groupedItems.Add((itemDto, newItem));
+                }
             }
 
-            //Calculate total amount including option extra prices
-            order.RecalculateTotalAmount();
-
-            //Audit Log
-            var auditLog = new OrderAuditLog
+            var processedItems = new List<OrderItem>();
+            foreach (var grouped in groupedItems)
             {
-                LogId = Guid.NewGuid(),
-                OrderId = order.OrderId,
-                EmployeeId = userId,
-                Action = AuditLogActions.SubmitOrder, // ? Only one action: SUBMIT (no CREATE or ADD_ITEM)
-                CreatedAt = DateTime.UtcNow,
-            };
+                var newItem = grouped.Item;
 
-            await _unitOfWork.Repository<Order>().AddAsync(order);
-            await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
-            await _unitOfWork.SaveChangeAsync(cancellationToken);
+                // Add to repository directly to ensure EF only performs an INSERT
+                await _unitOfWork.Repository<OrderItem>().AddAsync(newItem);
 
-            // Notify KDS via SignalR
-            foreach (var item in order.OrderItems)
+                // Track for SignalR notification
+                processedItems.Add(newItem);
+
+                // Update Order TotalAmount (Incremental Update)
+                var itemTotal = newItem.Quantity * newItem.UnitPriceSnapshot;
+                var optionsTotal = newItem
+                    .OptionGroups.SelectMany(og => og.OptionValues)
+                    .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity);
+
+                order.TotalAmount += itemTotal + (optionsTotal * newItem.Quantity);
+                order.UpdatedAt = DateTime.UtcNow;
+
+                // For New Order, we also add to the collection so the initial AddAsync(order) includes them.
+                // This preserves the expected behavior in existing tests.
+                if (isNewOrder)
+                {
+                    order.OrderItems.Add(newItem);
+                }
+            }
+
+            // Save Changes
+            try
+            {
+                if (isNewOrder)
+                {
+                    await _unitOfWork.Repository<Order>().AddAsync(order);
+                }
+
+                var auditLog = new OrderAuditLog
+                {
+                    LogId = Guid.NewGuid(),
+                    OrderId = order.OrderId,
+                    EmployeeId = userId,
+                    Action = isNewOrder
+                        ? AuditLogActions.SubmitOrder
+                        : AuditLogActions.AddOrderItem,
+                    CreatedAt = DateTime.UtcNow,
+                };
+                await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Concurrency conflict when saving order {OrderId}",
+                    order.OrderId
+                );
+                return Result<Guid>.Failure(
+                    "Đơn hàng đang được cập nhật bởi một phiên làm việc khác. Vui lòng thử lại sau.",
+                    ResultErrorType.Conflict
+                );
+            }
+
+            // 4. Notify KDS
+            foreach (var item in processedItems)
             {
                 _ = _signalRService.NotifyOrderItemStatusChangedAsync(
                     item.OrderItemId,

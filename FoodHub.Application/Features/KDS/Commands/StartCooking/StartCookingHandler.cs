@@ -59,13 +59,27 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                 );
             }
 
-            // WIP Limit Check (Max 4 items per Station)
+            // Xác định nhóm trạm
+            var targetStations = new List<string> { orderItem.StationSnapshot };
+            if (
+                orderItem.StationSnapshot == Station.HotKitchen.ToString()
+                || orderItem.StationSnapshot == Station.ColdKitchen.ToString()
+            )
+            {
+                targetStations = new List<string>
+                {
+                    Station.HotKitchen.ToString(),
+                    Station.ColdKitchen.ToString(),
+                };
+            }
+
+            // WIP Limit Check (Max 4 items per Station Group)
             var cookingCount = await orderItemRepository
                 .Query()
                 .AsNoTracking()
                 .CountAsync(
                     oi =>
-                        oi.StationSnapshot == orderItem.StationSnapshot
+                        targetStations.Contains(oi.StationSnapshot)
                         && oi.Status == OrderItemStatus.Cooking,
                     cancellationToken
                 );

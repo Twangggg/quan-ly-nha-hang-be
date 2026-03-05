@@ -1,3 +1,4 @@
+using System;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
@@ -39,32 +40,62 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
         {
             _logger.LogInformation("Fetching KDS Queue for Station: {Station}", request.Station);
 
-            var orderItemRepository = _unitOfWork.Repository<OrderItem>();
+            var targetStations = new List<string> { request.Station };
+            if (request.Station.Equals("Kitchen", StringComparison.OrdinalIgnoreCase))
+            {
+                targetStations.Add(Station.HotKitchen.ToString());
+                targetStations.Add(Station.ColdKitchen.ToString());
+            }
 
-            var items = await orderItemRepository
+            var query = await _unitOfWork
+                .Repository<OrderItem>()
                 .Query()
                 .AsNoTracking()
-                .Include(oi => oi.Order)
-                .Include(op => op.OptionGroups)
                 .Where(oi =>
-                    oi.StationSnapshot == request.Station && oi.Status == OrderItemStatus.Preparing
+                    targetStations.Contains(oi.StationSnapshot)
+                    && oi.Status == OrderItemStatus.Preparing
                 )
+                .OrderBy(oi => oi.CreatedAt)
+                .Take(50)
                 .ToListAsync(cancellationToken);
 
-            var responses = _mapper.Map<List<KdsQueueResponse>>(items);
+            var items = query.Select(oi => new KdsQueueResponse
+            {
+                OrderItemId = oi.OrderItemId,
+                OrderId = oi.OrderId,
+                OrderCode = oi.Order != null ? oi.Order.OrderCode : string.Empty,
+                ItemNameSnapshot = oi.ItemNameSnapshot,
+                StationSnapshot = oi.StationSnapshot,
+                Quantity = oi.Quantity,
+                ItemNote = oi.ItemNote,
+                CreatedAt = oi.CreatedAt,
+                IsOrderPriority = oi.Order != null && oi.Order.IsPriority,
+                OrderType = oi.Order != null ? oi.Order.OrderType.ToString() : string.Empty,
+                TotalOrderItems = oi.Order?.OrderItems?.Count ?? 0,
+                FinishedOrderItems = oi.Order?.OrderItems?.Count(x =>
+                    x.Status == OrderItemStatus.Completed || x.Status == OrderItemStatus.Ready
+                ) ?? 0,
+                ExpectedTimeSeconds = (oi.MenuItem != null ? oi.MenuItem.ExpectedTime : 0) * 60,
+            }).ToList();
 
             // Tính điểm ưu tiên
-            foreach (var response in responses)
+            foreach (var response in items)
             {
-                var originalItem = items.First(i => i.OrderItemId == response.OrderItemId);
-                response.PriorityScore = _priorityCalculator.Calculate(
-                    originalItem,
-                    originalItem.Order
-                );
+                if (Enum.TryParse<OrderType>(response.OrderType, out var orderType))
+                {
+                    response.PriorityScore = _priorityCalculator.Calculate(
+                        response.CreatedAt,
+                        response.IsOrderPriority,
+                        response.ExpectedTimeSeconds,
+                        orderType,
+                        response.TotalOrderItems,
+                        response.FinishedOrderItems
+                    );
+                }
             }
 
             // Sắp xếp theo điểm trước khi gán vị trí hàng chờ
-            var sortedQueue = responses
+            var sortedQueue = items
                 .OrderByDescending(oi => oi.PriorityScore)
                 .ThenBy(oi => oi.CreatedAt)
                 .ToList();
@@ -75,7 +106,7 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
             }
 
             _logger.LogInformation(
-                "Successfully fetched and scored {Count} items in Queue for Station: {Station}",
+                "Successfully fetched scored and paginated {Count} items in Queue for Station: {Station}",
                 sortedQueue.Count,
                 request.Station
             );

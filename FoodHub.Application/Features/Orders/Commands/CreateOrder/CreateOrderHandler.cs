@@ -39,7 +39,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 request.OrderType,
                 request.TableId
             );
-            // 1. Validate Basic Logic
+            // Validate Basic Logic
             if (request.OrderType == OrderType.DineIn && request.TableId == null)
             {
                 return Result<Guid>.Failure(
@@ -48,15 +48,11 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 );
             }
 
-            // 2. Generate Order Code: ORD-yyyyMMdd-XXXX
-            // Example: ORD-20231027-0001
+            // Generate Order Code: ORD-yyyyMMdd-XXXX
             var today = DateTime.UtcNow.ToString("yyyyMMdd");
             var prefix = $"ORD-{today}-";
 
             // Find max code for today
-            // Note: This needs to be carefully handled for concurrency in high-load systems.
-            // For now, using standard approach with transaction isolation or lock logic
-            // inside SaveChanges is ideal, but here we query max.
             var lastOrder = await _unitOfWork
                 .Repository<Order>()
                 .Query()
@@ -76,7 +72,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             }
             var newOrderCode = $"{prefix}{nextSequence:D4}";
 
-            // 3. Create Order
+            // Create Order
             var newOrder = new Order
             {
                 OrderId = Guid.NewGuid(),
@@ -93,10 +89,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     : Guid.Empty,
             };
 
-            // If TableId provided, we might want to check if table exists or is occupied?
-            // Assuming simplified logic for now as requested in plan.
-
-            // 4. Save
+            // Save
             await _unitOfWork.Repository<Order>().AddAsync(newOrder);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 

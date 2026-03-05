@@ -6,8 +6,8 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 {
     public class SubmitOrderToKitchenCommand : IRequest<Result<Guid>>
     {
+        public Guid OrderId { get; set; }
         public Guid? TableId { get; set; }
-        //Order type - defaults to DINE-IN when selecting a table
         public OrderType OrderType { get; init; } = OrderType.DineIn;
         public string? Note { get; set; }
         public List<OrderItemDto> Items { get; init; } = new();

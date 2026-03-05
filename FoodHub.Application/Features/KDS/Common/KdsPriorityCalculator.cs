@@ -1,4 +1,6 @@
+using System;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.KDS.Common
 {
@@ -9,26 +11,56 @@ namespace FoodHub.Application.Features.KDS.Common
     public class KdsPriorityCalculator
     {
         /// <summary>
-        /// Tính điểm ưu tiên cho món ăn. Điểm càng cao, độ ưu tiên càng lớn.
+        /// Tính điểm ưu tiên nâng cao cho món ăn (Phase 2 - Smart Heuristics).
         /// </summary>
-        public int Calculate(OrderItem item, Order order)
+        public int Calculate(
+            DateTime createdAt,
+            bool isOrderPriority,
+            int expectedTimeSeconds,
+            OrderType orderType,
+            int totalOrderItems,
+            int finishedOrderItems
+        )
         {
-            var score = 0;
+            var score = 0.0;
+            var now = DateTime.UtcNow;
 
-            // Thời gian chờ (Wait Time): 2 điểm cho mỗi phút chờ kể từ lúc tạo
-            var waitMinutes = (DateTime.UtcNow - item.CreatedAt).TotalMinutes;
-            score += (int)(waitMinutes * 2);
+            // Base Wait Time: +2 pts per minute
+            var waitMinutes = (now - createdAt).TotalMinutes;
+            score += waitMinutes * 2;
 
-            // Độ ưu tiên đơn hàng (VIP/Urgent): +50 điểm nếu là đơn ưu tiên
-            if (order.IsPriority)
+            // Order Priority: +100 pts
+            if (isOrderPriority)
             {
-                score += 50;
+                score += 100;
             }
 
-            // Số lượng món (Quantity): Món có số lượng nhiều/phức tạp thường cần làm sớm hơn
-            score += item.Quantity * 3;
+            // Preparation Type Weight
+            var expectedTimeMinutes = expectedTimeSeconds / 60.0;
+            score += expectedTimeMinutes * 1.5;
 
-            return score;
+            // Stale Item Penalty: +10 pts per minute AFTER ExpectedTime
+            if (waitMinutes > expectedTimeMinutes)
+            {
+                var overdueMinutes = waitMinutes - expectedTimeMinutes;
+                score += overdueMinutes * 10;
+            }
+
+            // Order Completion Boost
+            if (totalOrderItems > 0)
+            {
+                score += ((double)finishedOrderItems / totalOrderItems) * 50;
+            }
+
+            // Order Type Factor
+            score += orderType switch
+            {
+                OrderType.Takeaway => 15,
+                OrderType.Delivery => 25,
+                _ => 0,
+            };
+
+            return (int)Math.Round(score);
         }
     }
 }
