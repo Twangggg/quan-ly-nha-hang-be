@@ -24,6 +24,10 @@ namespace FoodHub.Application.Constants
             public const string InternalServerError = "Common.InternalServerError";
             public const string ValidationFailed = "Common.ValidationFailed";
             public const string NotFound = "Common.NotFound";
+            public const string PageNumberAtLeastOne = "Common.PageNumberAtLeastOne";
+            public const string PageSizeBetween = "Common.PageSizeBetween";
+            public const string ToDateAfterFromDate = "Common.ToDateAfterFromDate";
+            public const string DateNotInFuture = "Common.DateNotInFuture";
         }
 
         public static class Password
@@ -139,6 +143,8 @@ namespace FoodHub.Application.Constants
             public const string WipLimitExceeded = "KDS.WipLimitExceeded";
             public const string StationMismatch = "KDS.StationMismatch";
             public const string ManagerRoleRequired = "KDS.ManagerRoleRequired";
+            public const string StationMaxLength = "KDS.StationMaxLength";
+            public const string ActionMaxLength = "KDS.ActionMaxLength";
         }
 
         public static class MenuItem

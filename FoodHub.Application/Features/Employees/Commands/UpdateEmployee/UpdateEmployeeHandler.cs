@@ -11,7 +11,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
 {
-    public class UpdateEmployeeHandler : IRequestHandler<UpdateEmployeeCommand, Result<UpdateEmployeeResponse>>
+    public class UpdateEmployeeHandler
+        : IRequestHandler<UpdateEmployeeCommand, Result<UpdateEmployeeResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -26,7 +27,8 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
             ICurrentUserService currentUserService,
             IMessageService messageService,
             ICacheService cacheService,
-            ILogger<UpdateEmployeeHandler> logger)
+            ILogger<UpdateEmployeeHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -36,11 +38,17 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
             _logger = logger;
         }
 
-        public async Task<Result<UpdateEmployeeResponse>> Handle(UpdateEmployeeCommand request, CancellationToken cancellationToken)
+        public async Task<Result<UpdateEmployeeResponse>> Handle(
+            UpdateEmployeeCommand request,
+            CancellationToken cancellationToken
+        )
         {
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                return Result<UpdateEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
+                return Result<UpdateEmployeeResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser),
+                    ResultErrorType.Unauthorized
+                );
             }
 
             var employeeRepository = _unitOfWork.Repository<Employee>();
@@ -78,7 +86,10 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
 
             employee.UpdatedAt = DateTime.UtcNow;
 
-            if (!string.IsNullOrEmpty(request.Status) && Enum.TryParse<EmployeeStatus>(request.Status, true, out var status))
+            if (
+                !string.IsNullOrEmpty(request.Status)
+                && Enum.TryParse<EmployeeStatus>(request.Status, true, out var status)
+            )
             {
                 employee.Status = status;
             }
@@ -92,7 +103,7 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
                 TargetId = employee.EmployeeId,
                 PerformedByEmployeeId = auditorId,
                 CreatedAt = DateTimeOffset.UtcNow,
-                Reason = "Update employee details"
+                Reason = "Update employee details",
             };
             await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
 
@@ -100,24 +111,35 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
             {
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _cacheService.RemoveByPatternAsync("employee:list", cancellationToken);
-                await _cacheService.RemoveAsync(string.Format(CacheKey.EmployeeById, request.EmployeeId), cancellationToken);
+                await _cacheService.RemoveAsync(
+                    string.Format(CacheKey.EmployeeById, request.EmployeeId),
+                    cancellationToken
+                );
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, "Database error occurred while updating employee {EmployeeId}", request.EmployeeId);
+                _logger.LogError(
+                    ex,
+                    "Database error occurred while updating employee {EmployeeId}",
+                    request.EmployeeId
+                );
 
                 var innerException = ex.InnerException?.Message ?? ex.Message;
-                if (innerException.Contains("duplicate", StringComparison.OrdinalIgnoreCase) ||
-                    innerException.Contains("unique", StringComparison.OrdinalIgnoreCase))
+                if (
+                    innerException.Contains("duplicate", StringComparison.OrdinalIgnoreCase)
+                    || innerException.Contains("unique", StringComparison.OrdinalIgnoreCase)
+                )
                 {
                     return Result<UpdateEmployeeResponse>.Failure(
-                         _messageService.GetMessage(MessageKeys.Common.DatabaseConflict),
-                         ResultErrorType.Conflict);
+                        _messageService.GetMessage(MessageKeys.Common.DatabaseConflict),
+                        ResultErrorType.Conflict
+                    );
                 }
 
                 return Result<UpdateEmployeeResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError),
-                    ResultErrorType.BadRequest);
+                    ResultErrorType.BadRequest
+                );
             }
 
             var response = _mapper.Map<UpdateEmployeeResponse>(employee);

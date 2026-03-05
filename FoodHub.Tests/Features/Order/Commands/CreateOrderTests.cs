@@ -56,6 +56,9 @@ namespace FoodHub.Tests.Features.Order.Commands
                 .Returns(mockRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
+            var auditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(auditRepo.Object);
+
             // Mock query for order code generation (no existing orders)
             mockRepo
                 .Setup(r => r.Query())
@@ -97,6 +100,37 @@ namespace FoodHub.Tests.Features.Order.Commands
                 .Returns(mockRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
+            var area = new Area
+            {
+                AreaId = Guid.NewGuid(),
+                Name = "Standard",
+                CodePrefix = "STD",
+                Type = AreaType.Normal,
+                Status = AreaStatus.Active,
+            };
+            var table = new Table
+            {
+                TableId = tableId,
+                TableNumber = 1,
+                Capacity = 4,
+                Status = TableStatus.Available,
+                Area = area,
+                AreaId = area.AreaId,
+            };
+
+            var tableRepo = new Mock<IGenericRepository<Table>>();
+            tableRepo
+                .Setup(r => r.Query())
+                .Returns(
+                    new List<Table> { table }
+                        .AsQueryable()
+                        .BuildMock()
+                );
+            _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
+
+            var auditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(auditRepo.Object);
+
             // Mock query for order code generation
             mockRepo
                 .Setup(r => r.Query())
@@ -133,6 +167,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 Note = "Test",
             };
 
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(Guid.NewGuid().ToString());
             _mockMessageService
                 .Setup(m => m.GetMessage(MessageKeys.Order.SelectTable))
                 .Returns("Please select a table for dine-in orders.");
@@ -170,6 +205,9 @@ namespace FoodHub.Tests.Features.Order.Commands
                 .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
                 .Returns(mockRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var auditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(auditRepo.Object);
 
             // Mock query for order code generation (no existing orders)
             mockRepo
@@ -218,6 +256,9 @@ namespace FoodHub.Tests.Features.Order.Commands
                 .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
                 .Returns(mockRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var auditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(auditRepo.Object);
 
             // Mock query for order code generation
             mockRepo
