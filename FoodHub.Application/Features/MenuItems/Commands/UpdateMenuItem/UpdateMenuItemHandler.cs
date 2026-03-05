@@ -40,7 +40,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             var imageUrl = request.ImageUrl.Trim();
             var description = request.Description?.Trim();
             var categoryId = request.CategoryId;
-            var station = request.Station;
+            var station = (Station)request.Station;
             var expectedTime = request.ExpectedTime;
             var price = request.Price;
             var costPrice = request.CostPrice;

@@ -57,7 +57,9 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
 
             if (employee == null)
             {
-                return Result<UpdateEmployeeResponse>.NotFound(_messageService.GetMessage(MessageKeys.Employee.NotFound));
+                return Result<UpdateEmployeeResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.Employee.NotFound)
+                );
             }
 
             if (!string.IsNullOrWhiteSpace(request.FullName))

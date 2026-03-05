@@ -7,6 +7,8 @@ namespace FoodHub.Domain.Constants
             public const string InvalidStatusForCancel = "Order.InvalidStatusForCancel";
             public const string OrderNotReadyForCompletion = "Order.OrderNotReadyForCompletion";
             public const string NotFound = "Order.NotFound";
+            public const string InvalidActionWithStatus = "Order.InvalidActionWithStatus";
+            public const string InsufficientAmount = "Order.InsufficientAmount";
         }
 
         public static class OrderItem
@@ -25,7 +27,8 @@ namespace FoodHub.Domain.Constants
         public static class Category
         {
             public const string CannotDeleteActiveCategory = "Category.CannotDeleteActiveCategory";
-            public const string CannotDeactivateWithActiveItems = "Category.CannotDeactivateWithActiveItems";
+            public const string CannotDeactivateWithActiveItems =
+                "Category.CannotDeactivateWithActiveItems";
             public const string NotFound = "Category.NotFound";
         }
 
@@ -45,6 +48,23 @@ namespace FoodHub.Domain.Constants
         public static class OptionItem
         {
             public const string InvalidExtraPrice = "OptionItem.InvalidExtraPrice";
+        }
+
+        public static class Invoice
+        {
+            public const string AlreadyPaid = "Invoice.AlreadyPaid";
+            public const string AlreadyCancelled = "Invoice.AlreadyCancelled";
+            public const string CannotCancelPaid = "Invoice.CannotCancelPaid";
+            public const string NotFound = "Invoice.NotFound";
+            public const string OrderNotCompleted = "Invoice.OrderNotCompleted";
+            public const string AlreadyExists = "Invoice.AlreadyExists";
+        }
+
+        public static class Payment
+        {
+            public const string NotFound = "Payment.NotFound";
+            public const string InvalidInvoiceStatus = "Payment.InvalidInvoiceStatus";
+            public const string AmountExceedsRemaining = "Payment.AmountExceedsRemaining";
         }
     }
 }
