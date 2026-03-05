@@ -15,19 +15,29 @@ namespace FoodHub.Application.Common.Behaviors
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
 
-        public ActiveUserBehavior(ICurrentUserService currentUserService, IUnitOfWork unitOfWork, IMessageService messageService)
+        public ActiveUserBehavior(
+            ICurrentUserService currentUserService,
+            IUnitOfWork unitOfWork,
+            IMessageService messageService
+        )
         {
             _currentUserService = currentUserService;
             _unitOfWork = unitOfWork;
             _messageService = messageService;
         }
 
-        public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+        public async Task<TResponse> Handle(
+            TRequest request,
+            RequestHandlerDelegate<TResponse> next,
+            CancellationToken cancellationToken
+        )
         {
             // 1. Lấy UserId từ Token
             if (!Guid.TryParse(_currentUserService.UserId, out var userId))
             {
-                return CreateFailureResponse(_messageService.GetMessage(MessageKeys.ActiveUserBehavior.Unauthorized));
+                return CreateFailureResponse(
+                    _messageService.GetMessage(MessageKeys.ActiveUserBehavior.Unauthorized)
+                );
             }
 
             // 2. Kiểm tra DB xem User có đang Active không
@@ -36,7 +46,9 @@ namespace FoodHub.Application.Common.Behaviors
 
             if (user == null || user.Status == EmployeeStatus.Inactive)
             {
-                return CreateFailureResponse(_messageService.GetMessage(MessageKeys.ActiveUserBehavior.InActiveAccount) );
+                return CreateFailureResponse(
+                    _messageService.GetMessage(MessageKeys.ActiveUserBehavior.InActiveAccount)
+                );
             }
 
             // 3. Nếu mọi thứ OK, cho phép đi tiếp vào Handler
@@ -48,11 +60,19 @@ namespace FoodHub.Application.Common.Behaviors
         {
             // Vì TResponse thường là Result<T>, ta dùng Reflection để gọi phương thức Failure của nó
             var resultType = typeof(TResponse);
-            var failureMethod = resultType.GetMethod("Failure", new[] { typeof(string), typeof(ResultErrorType) });
+            var failureMethod = resultType.GetMethod(
+                "Failure",
+                new[] { typeof(string), typeof(ResultErrorType) }
+            );
 
             if (failureMethod != null)
             {
-                return (failureMethod.Invoke(null, new object[] { message, ResultErrorType.Unauthorized }) as TResponse)!;
+                return (
+                    failureMethod.Invoke(
+                        null,
+                        new object[] { message, ResultErrorType.Unauthorized }
+                    ) as TResponse
+                )!;
             }
 
             return default!;

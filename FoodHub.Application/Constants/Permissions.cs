@@ -56,7 +56,7 @@ namespace FoodHub.Application.Constants
             public const string Reject = "Permissions.Kds.Reject";
             public const string Return = "Permissions.Kds.Return";
         }
-        
+
         public static class Tables
         {
             public const string View = "Permissions.Tables.View";

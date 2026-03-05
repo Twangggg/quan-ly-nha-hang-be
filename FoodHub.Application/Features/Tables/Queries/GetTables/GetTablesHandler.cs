@@ -17,7 +17,8 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
     /// <summary>
     /// Handler for retrieving a paginated list of tables with support for global search, filtering, and sorting.
     /// </summary>
-    public class GetTablesHandler : IRequestHandler<GetTablesQuery, Result<PagedResult<GetTablesResponse>>>
+    public class GetTablesHandler
+        : IRequestHandler<GetTablesQuery, Result<PagedResult<GetTablesResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -42,14 +43,20 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Result<PagedResult<GetTablesResponse>>> Handle(GetTablesQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<GetTablesResponse>>> Handle(
+            GetTablesQuery request,
+            CancellationToken cancellationToken
+        )
         {
             // Generate a cache key based on the pagination parameters to store and retrieve cached results
-            var queryJson = JsonSerializer.Serialize(new { request.Pagination});
+            var queryJson = JsonSerializer.Serialize(new { request.Pagination });
             var cacheKey = string.Format(CacheKey.TableList);
 
             // Attempt to retrieve the result from cache first to avoid unnecessary database queries
-            var cachedResult = await _cacheService.GetAsync<Result<PagedResult<GetTablesResponse>>>(cacheKey, cancellationToken);
+            var cachedResult = await _cacheService.GetAsync<Result<PagedResult<GetTablesResponse>>>(
+                cacheKey,
+                cancellationToken
+            );
             if (cachedResult != null)
             {
                 return cachedResult;
@@ -62,25 +69,25 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
             var searchableFields = new List<Expression<Func<Table, string?>>>
             {
                 t => t.TableNumber.ToString(),
-                t => t.Area.Name
+                t => t.Area.Name,
             };
             query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
 
             // Define the mapping of filter keys to their corresponding entity properties for dynamic filtering
             var filterMapping = new Dictionary<string, Expression<Func<Table, object>>>
             {
-                {"status", t => t.Status},
-                {"areaId", t => t.AreaId},
-                {"capacity", t => t.Capacity}
+                { "status", t => t.Status },
+                { "areaId", t => t.AreaId },
+                { "capacity", t => t.Capacity },
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
             // Define the mapping of sort keys to their corresponding entity properties for dynamic sorting
             var sortMapping = new Dictionary<string, Expression<Func<Table, object>>>
             {
-                {"tableNumber", t => t.TableNumber},
-                {"capacity", t => t.Capacity},
-                {"createdAt", t => t.CreatedAt}
+                { "tableNumber", t => t.TableNumber },
+                { "capacity", t => t.Capacity },
+                { "createdAt", t => t.CreatedAt },
             };
             query = query.ApplySorting(request.Pagination.OrderBy, sortMapping, r => r.TableNumber);
             // Project the query results to the GetTablesResponse DTO and apply pagination before returning the result

@@ -179,11 +179,12 @@ namespace FoodHub.Application.Constants
             public const string InActiveAccount = "ActiveUserBehavior.InActiveAccount";
             public const string Unauthorized = "ActiveUserBehavior.Unauthorized";
         }
-        
+
         public static class Table
         {
             public const string NotFound = "Table.NotFound";
             public const string AlreadyOccupied = "Table.AlreadyOccupied";
+            public const string NotAvailable = "Table.NotAvailable";
             public const string CodeExists = "Table.CodeExists";
             public const string UpdateForbidden = "Table.UpdateForbidden";
             public const string UpdateFail = "Table.UpdateFail";
@@ -198,6 +199,7 @@ namespace FoodHub.Application.Constants
             public const string UpdateForbidden = "Area.UpdateForbidden";
             public const string DeleteForbidden = "Area.DeleteForbidden";
             public const string DeactivateForbidden = "Area.DeactivateForbidden";
+            public const string Inactive = "Area.Inactive";
         }
     }
 }

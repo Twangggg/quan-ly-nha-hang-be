@@ -457,4 +457,10 @@
     <data name="Area.DeactivateForbidden" xml:space="preserve">
     <value>This area is already inactive.</value>
   </data>
+    <data name="Table.NotAvailable" xml:space="preserve">
+    <value>Table is not available for ordering. Please choose another table.</value>
+  </data>
+    <data name="Area.Inactive" xml:space="preserve">
+    <value>Cannot perform this action because the area is inactive.</value>
+  </data>
 </root>
