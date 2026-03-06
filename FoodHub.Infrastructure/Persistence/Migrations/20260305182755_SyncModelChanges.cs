@@ -18,7 +18,8 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                 nullable: false,
                 oldClrType: typeof(string),
                 oldType: "character varying(20)",
-                oldMaxLength: 20);
+                oldMaxLength: 20
+            );
         }
 
         /// <inheritdoc />
@@ -32,7 +33,8 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                 nullable: false,
                 oldClrType: typeof(int),
                 oldType: "integer",
-                oldMaxLength: 20);
+                oldMaxLength: 20
+            );
         }
     }
 }

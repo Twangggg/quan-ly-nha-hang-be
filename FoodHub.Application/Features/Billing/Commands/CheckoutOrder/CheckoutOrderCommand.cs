@@ -1,7 +1,7 @@
+using System.Text.Json.Serialization;
 using FoodHub.Application.Common.Models;
 using FoodHub.Domain.Enums;
 using MediatR;
-using System.Text.Json.Serialization;
 
 namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
 {
