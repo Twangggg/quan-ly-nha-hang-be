@@ -15,8 +15,7 @@ namespace FoodHub.Application.Features.Areas.Commands.UpdateArea
 
         /// <summary>Tên khu vực mới.</summary>
         public required string Name { get; init; }
-
-        /// <summary>Mô tả về khu vực (không bắt buộc).</summary>
+        public required string CodePrefix { get; init; }
         public string? Description { get; init; }
 
         /// <summary>Loại khu vực (Normal, VIP, etc.).</summary>

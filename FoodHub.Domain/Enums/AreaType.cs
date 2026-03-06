@@ -8,7 +8,7 @@ namespace FoodHub.Domain.Enums
 {
     public enum AreaType
     {
-        Normal = 1,
-        VIP = 2
+        Normal = 0,
+        VIP = 1
     }
 }

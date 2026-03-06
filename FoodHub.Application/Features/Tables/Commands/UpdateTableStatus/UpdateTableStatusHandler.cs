@@ -84,6 +84,7 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
             // Update the table in the database and save changes
             tableRepository.Update(table);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+            await _cacheService.RemoveAsync(CacheKey.AreaList, cancellationToken);
             await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableList), cancellationToken);
             await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableListByArea, table.AreaId), cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.TableById, request.TableId), cancellationToken);

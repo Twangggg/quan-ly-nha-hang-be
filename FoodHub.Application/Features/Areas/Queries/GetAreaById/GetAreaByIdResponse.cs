@@ -2,7 +2,6 @@ using AutoMapper;
 using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-
 namespace FoodHub.Application.Features.Areas.Queries.GetAreaById
 {
     /// <summary>
@@ -33,10 +32,11 @@ namespace FoodHub.Application.Features.Areas.Queries.GetAreaById
 
         /// <summary>Thời điểm cập nhật gần nhất.</summary>
         public DateTime UpdatedAt { get; set; }
-
+        public int NumberOfTables { get; set; }
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<Area, GetAreaByIdResponse>();
+            profile.CreateMap<Area, GetAreaByIdResponse>()
+                .ForMember(d => d.NumberOfTables, opt => opt.MapFrom(s => s.Tables.Count));
         }
     }
 }

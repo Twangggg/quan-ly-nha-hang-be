@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Behaviors;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Entities;

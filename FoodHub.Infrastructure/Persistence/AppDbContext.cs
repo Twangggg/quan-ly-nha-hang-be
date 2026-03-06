@@ -8,6 +8,12 @@ namespace FoodHub.Infrastructure.Persistence
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.CoreEventId.PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning));
+            base.OnConfiguring(optionsBuilder);
+        }
+
         public DbSet<Employee> Employees { get; set; } = null!;
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
