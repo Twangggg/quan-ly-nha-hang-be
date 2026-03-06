@@ -42,7 +42,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Result<PagedResult<GetTablesResponse>>> Handle(
+        public async Task<Result<List<GetTablesResponse>>> Handle(
             GetTablesQuery request,
             CancellationToken cancellationToken
         )
