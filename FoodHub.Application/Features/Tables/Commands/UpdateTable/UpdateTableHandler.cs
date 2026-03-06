@@ -64,18 +64,21 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTable
             {
                 auditorId = parsedId;
             }
-            // Update the table's capacity and area assignment
-            var capacity = request.Capacity;
 
-            // Additional validation for capacity can be added here if needed (e.g., capacity must be greater than 0)
-            table.Capacity = capacity;
+            table.TableNumber = request.TableNumber;
+            table.Capacity = request.Capacity;
+            table.AreaId = request.AreaId;
             table.UpdatedAt = DateTime.UtcNow;
             table.UpdatedBy = auditorId;
 
             // Update the table in the repository
+            tableRepository.Update(table);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
-            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableList), cancellationToken);
-            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableListByArea, table.AreaId), cancellationToken);
+
+            // Invalidate cache
+            await _cacheService.RemoveAsync(CacheKey.AreaList, cancellationToken);
+            await _cacheService.RemoveByPatternAsync(CacheKey.TableList + "*", cancellationToken);
+            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableListByArea, "*"), cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.TableById, request.TableId), cancellationToken);
 
             // Map the updated table to the response DTO

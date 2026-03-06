@@ -1,3 +1,4 @@
+using AutoMapper;
 using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -8,6 +9,7 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
     {
         public Guid TableId { get; set; }
         public required string TableCode { get; set; }
+        public required int TableNumber { get; set; }
         public required int Capacity { get; set; }
         public Guid AreaId { get; set; } = Guid.Empty;
         public string AreaName { get; set; } = string.Empty;
