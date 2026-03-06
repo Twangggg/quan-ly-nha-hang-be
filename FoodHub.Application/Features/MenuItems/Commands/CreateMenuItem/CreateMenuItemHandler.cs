@@ -67,6 +67,14 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 );
             }
 
+            if (category.CategoryType != CategoryType.Normal)
+            {
+                return Result<CreateMenuItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Category.InvalidType, category.Name),
+                    ResultErrorType.BadRequest
+                );
+            }
+
             // 2. Generate ItemNumber and Code
             var nextItemNumber = await menuItemRepository
                 .Query()

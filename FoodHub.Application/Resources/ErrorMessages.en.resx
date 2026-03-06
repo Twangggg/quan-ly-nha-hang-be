@@ -351,4 +351,10 @@
   <data name="Area.DeactivateForbidden" xml:space="preserve">
     <value>This area is already inactive.</value>
   </data>
+  <data name="Category.NotFound" xml:space="preserve">
+    <value>Category not found.</value>
+  </data>
+  <data name="Category.InvalidType" xml:space="preserve">
+    <value>The category type is invalid for this menu type.</value>
+  </data>
 </root>

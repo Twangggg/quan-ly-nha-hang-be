@@ -52,15 +52,15 @@ namespace FoodHub.Presentation.Controllers
         {
             try
             {
-                if (file == null || file.Length == 0)
-                {
-                    return BadRequest(
-                        new ErrorResponse(
-                            StatusCodes.Status400BadRequest,
-                            _messageService.GetMessage(MessageKeys.Common.NoFileProvided)
-                        )
-                    );
-                }
+                // if (file == null || file.Length == 0)
+                // {
+                //     return BadRequest(
+                //         new ErrorResponse(
+                //             StatusCodes.Status400BadRequest,
+                //             _messageService.GetMessage(MessageKeys.Common.NoFileProvided)
+                //         )
+                //     );
+                // }
 
                 var imageUrl = await _cloudinaryService.UploadImageAsync(file, folder);
 

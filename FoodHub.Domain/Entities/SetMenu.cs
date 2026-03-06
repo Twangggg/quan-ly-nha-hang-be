@@ -10,7 +10,6 @@ namespace FoodHub.Domain.Entities
         public required string Code { get; set; }
         public int ItemNumber { get; set; }
         public required string Name { get; set; }
-        public SetType SetType { get; set; }
         public string? ImageUrl { get; set; }
         public string? Description { get; set; }
         public decimal Price { get; set; }

@@ -16,9 +16,6 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
             RuleFor(x => x.CategoryId)
                 .NotEmpty().WithMessage("Category ID is required.");
 
-            RuleFor(x => x.SetType)
-                .IsInEnum().WithMessage("Invalid set type.");
-
             RuleFor(x => x.ImageUrl)
                 .MaximumLength(255).When(x => !string.IsNullOrEmpty(x.ImageUrl))
                 .WithMessage("Image URL must not exceed 255 characters.");

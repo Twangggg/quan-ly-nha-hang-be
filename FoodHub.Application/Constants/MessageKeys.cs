@@ -140,6 +140,7 @@ namespace FoodHub.Application.Constants
         {
             public const string NotFound = "Category.NotFound";
             public const string Inactive = "Category.Inactive";
+            public const string InvalidType = "Category.InvalidType";
         }
 
         public static class OptionGroup

@@ -24,8 +24,6 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(e => e.Name).HasColumnName("name").HasMaxLength(150).IsRequired();
 
-            builder.Property(e => e.SetType).HasColumnName("set_type").HasConversion<string>();
-
             builder.Property(e => e.ImageUrl).HasColumnName("image_url").HasMaxLength(500);
 
             builder.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
@@ -51,13 +49,9 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
 
             // Indexes for Optimization
-            builder.HasIndex(e => e.SetType);
             builder.HasIndex(e => e.IsOutOfStock);
             builder.HasIndex(e => e.Price);
             builder.HasIndex(e => e.CreatedAt);
-
-            // Composite indexes
-            builder.HasIndex(e => new { e.SetType, e.IsOutOfStock });
 
             // Filtered index for available sets
             builder.HasIndex(e => e.IsOutOfStock).HasFilter("deleted_at IS NULL");

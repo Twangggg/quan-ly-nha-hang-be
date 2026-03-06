@@ -3,6 +3,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,6 +36,12 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
             // 1. Check if Category exists
             var category = await categoryRepository.GetByIdAsync(request.CategoryId);
             if (category == null) return Result<CreateSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.NotFound, request.CategoryId), ResultErrorType.NotFound);
+
+            if (!category.IsActive)
+                return Result<CreateSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.Inactive, category.Name), ResultErrorType.BadRequest);
+
+            if (category.CategoryType != CategoryType.Combo)
+                return Result<CreateSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.InvalidType, category.Name), ResultErrorType.BadRequest);
 
             // 2. Generate ItemNumber and Code
             var nextItemNumber = await setMenuRepository
@@ -83,7 +90,6 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
                 ItemNumber = nextItemNumber,
                 CategoryId = request.CategoryId,
                 Name = request.Name,
-                SetType = request.SetType,
                 ImageUrl = imageUrl,
                 Description = request.Description,
                 Price = request.Price,
@@ -114,7 +120,6 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
                 SetMenuId = setMenu.SetMenuId,
                 Code = setMenu.Code,
                 Name = setMenu.Name,
-                SetType = setMenu.SetType,
                 ImageUrl = setMenu.ImageUrl,
                 Description = setMenu.Description,
                 Price = setMenu.Price,

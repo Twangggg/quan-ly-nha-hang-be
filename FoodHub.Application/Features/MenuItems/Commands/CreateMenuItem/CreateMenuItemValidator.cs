@@ -1,4 +1,6 @@
 using FluentValidation;
+using FoodHub.Domain.Enums;
+
 
 namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
 {
@@ -24,7 +26,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 .NotEmpty().WithMessage("Category ID is required.");
 
             RuleFor(x => x.Station)
-                .IsInEnum().WithMessage("Invalid station.");
+                .Must(x => Enum.IsDefined(typeof(Station), x)).WithMessage("Invalid station.");
 
             RuleFor(x => x.ExpectedTime)
                 .GreaterThan(0).WithMessage("Expected time must be greater than 0.");

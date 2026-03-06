@@ -4,7 +4,7 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
+
 using Moq;
 using Xunit;
 
@@ -40,7 +40,6 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
                 Name: "Combo 1",
-                SetType: SetType.SET_LUNCH,
                 CategoryId: categoryId,
                 Price: 15.00m,
                 CostPrice: 10.00m,
@@ -85,7 +84,6 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
                 Name: "Combo 1",
-                SetType: SetType.SET_LUNCH,
                 CategoryId: categoryId,
                 Price: 15.00m,
                 CostPrice: 10.00m,
@@ -140,7 +138,6 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
                 Name: "Combo 1",
-                SetType: SetType.SET_LUNCH,
                 CategoryId: categoryId,
                 Price: 15.00m,
                 CostPrice: 10.00m,
@@ -205,7 +202,6 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
                 Name: "Dinner Combo",
-                SetType: SetType.SET_MORNING,
                 CategoryId: categoryId,
                 Price: 25.00m,
                 CostPrice: 18.00m,
@@ -254,7 +250,6 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             result.IsSuccess.Should().BeTrue();
             result.Data.Price.Should().Be(25.00m);
             result.Data.CostPrice.Should().Be(18.00m);
-            result.Data.SetType.Should().Be(SetType.SET_MORNING);
             result.Data.Items.Should().NotBeEmpty();
         }
     }

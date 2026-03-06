@@ -5,7 +5,7 @@ using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.SetMenus.Queries.GetSetMenus;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
+
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -76,7 +76,6 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
                     SetMenuId = Guid.NewGuid(),
                     Code = "SET001",
                     Name = "Combo 1",
-                    SetType = SetType.SET_LUNCH,
                     Price = 15.00m,
                     IsOutOfStock = false,
                 },
@@ -85,7 +84,6 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
                     SetMenuId = Guid.NewGuid(),
                     Code = "SET002",
                     Name = "Combo 2",
-                    SetType = SetType.SET_MORNING,
                     Price = 25.00m,
                     IsOutOfStock = false,
                 },

@@ -45,10 +45,15 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             var price = request.Price;
             var costPrice = request.CostPrice;
 
-            var categoryExists = await _unitOfWork.Repository<Category>().Query()
-                .AnyAsync(c => c.CategoryId == categoryId, cancellationToken);
-            if (!categoryExists)
+            var category = await _unitOfWork.Repository<Category>().GetByIdAsync(categoryId);
+            if (category == null)
                 return Result<UpdateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.NotFound));
+
+            if (!category.IsActive)
+                return Result<UpdateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.Inactive));
+
+            if (category.CategoryType != CategoryType.Normal)
+                return Result<UpdateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.InvalidType));
 
             menuItem.Name = name;
             menuItem.ImageUrl = imageUrl;
