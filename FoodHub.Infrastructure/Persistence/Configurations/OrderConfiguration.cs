@@ -17,11 +17,16 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(o => o.Note).HasColumnType("text");
 
             // Relationships
-            builder.HasOne(o => o.CreatedByEmployee)
-                   .WithMany()
-                   .HasForeignKey(o => o.CreatedBy);
+            builder.HasOne(o => o.CreatedByEmployee).WithMany().HasForeignKey(o => o.CreatedBy);
+
+            builder.HasOne(o => o.Table)
+                   .WithMany(t => t.Orders)
+                   .HasForeignKey(o => o.TableId)
+                   .OnDelete(DeleteBehavior.SetNull);
 
             builder.Property(o => o.CreatedAt).HasDefaultValueSql("now()");
+            builder.Property(o => o.CompletedAt).IsRequired(false);
+            builder.Property(o => o.CancelledAt).IsRequired(false);
 
             // Audit Properties from BaseEntity
             builder.Property(o => o.CreatedBy).HasColumnName("created_by");
@@ -40,8 +45,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(o => o.IsPriority);
 
             builder.HasIndex(o => new { o.TableId, o.Status });
-            builder.HasIndex(o => o.Status)
-                .HasFilter("deleted_at IS NULL");
+            builder.HasIndex(o => o.Status).HasFilter("deleted_at IS NULL");
         }
     }
 }

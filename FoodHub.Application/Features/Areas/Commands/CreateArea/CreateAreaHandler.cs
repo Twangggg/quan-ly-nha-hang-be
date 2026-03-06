@@ -18,16 +18,27 @@ namespace FoodHub.Application.Features.Areas.Commands.CreateArea
         private readonly IMapper _mapper;
         private readonly ICacheService _cacheService;
         private readonly IMessageService _messageService;
+        private readonly ILogger<CreateAreaHandler> _logger;
 
-        public CreateAreaHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cacheService, IMessageService messageService)
+        public CreateAreaHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ICacheService cacheService,
+            IMessageService messageService,
+            ILogger<CreateAreaHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cacheService = cacheService;
             _messageService = messageService;
+            _logger = logger;
         }
 
-        public async Task<Result<GetAreaByIdResponse>> Handle(CreateAreaCommand request, CancellationToken cancellationToken)
+        public async Task<Result<GetAreaByIdResponse>> Handle(
+            CreateAreaCommand request,
+            CancellationToken cancellationToken
+        )
         {
             var area = new Area
             {

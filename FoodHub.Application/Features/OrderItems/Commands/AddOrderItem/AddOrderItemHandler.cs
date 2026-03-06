@@ -13,16 +13,19 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ISignalRService _signalRService;
 
         public AddOrderItemHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
-            IMessageService messageService
+            IMessageService messageService,
+            ISignalRService signalRService
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _signalRService = signalRService;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -81,65 +84,65 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 );
             }
 
-            // Create simplified option signature for comparison (using only OptionItemIds)
-            var requestSignature =
-                request.SelectedOptions == null
-                    ? string.Empty
-                    : string.Join(
-                        "|",
-                        request
-                            .SelectedOptions.SelectMany(og => og.SelectedValues)
-                            .OrderBy(v => v.OptionItemId)
-                            .Select(v => $"{v.OptionItemId}x{v.Quantity}")
-                    );
+            // Prepare Domain-ready options
+            var domainOptions =
+                new List<(
+                    OptionGroup Group,
+                    List<(OptionItem Item, int Quantity, string? Note)> Selections
+                )>();
+            if (request.SelectedOptions != null)
+            {
+                var optionGroupIds = request
+                    .SelectedOptions.Select(og => og.OptionGroupId)
+                    .ToList();
+                var optionItemIds = request
+                    .SelectedOptions.SelectMany(og => og.SelectedValues)
+                    .Select(v => v.OptionItemId)
+                    .ToList();
 
-            var existingItem = order.OrderItems.FirstOrDefault(x =>
-                x.MenuItemId == request.MenuItemId
-                && x.Status == OrderItemStatus.Preparing
-                && (x.ItemNote ?? string.Empty) == (request.Note ?? string.Empty)
-                && GetItemSignature(x) == requestSignature
+                var optionGroups = await _unitOfWork
+                    .Repository<OptionGroup>()
+                    .Query()
+                    .Where(og => optionGroupIds.Contains(og.OptionGroupId))
+                    .ToDictionaryAsync(og => og.OptionGroupId, cancellationToken);
+
+                var optionItems = await _unitOfWork
+                    .Repository<OptionItem>()
+                    .Query()
+                    .Where(oi => optionItemIds.Contains(oi.OptionItemId))
+                    .ToDictionaryAsync(oi => oi.OptionItemId, cancellationToken);
+
+                foreach (var optDto in request.SelectedOptions)
+                {
+                    if (optionGroups.TryGetValue(optDto.OptionGroupId, out var og))
+                    {
+                        var selections = optDto
+                            .SelectedValues.Where(v => optionItems.ContainsKey(v.OptionItemId))
+                            .Select(v => (optionItems[v.OptionItemId], v.Quantity, v.Note))
+                            .ToList();
+
+                        domainOptions.Add((og, selections));
+                    }
+                }
+            }
+
+            // Delegate logic to Domain Entity
+            var result = order.AddOrUpdateItem(
+                menuItem,
+                request.Quantity,
+                request.Note,
+                domainOptions
             );
 
-            if (existingItem != null)
+            if (!result.IsNew && request.Reason == null)
             {
-                if (request.Reason == null)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.Order.ReasonRequired),
-                        ResultErrorType.BadRequest
-                    );
-                }
-                existingItem.Quantity += request.Quantity;
-                existingItem.UpdatedAt = DateTime.UtcNow;
-            }
-            else
-            {
-                var price = menuItem.Price;
-
-                var newItem = new OrderItem
-                {
-                    OrderItemId = Guid.NewGuid(),
-                    OrderId = request.OrderId,
-                    MenuItemId = request.MenuItemId,
-                    Quantity = request.Quantity,
-                    ItemNote = request.Note,
-                    CreatedAt = DateTime.UtcNow,
-                    Status = OrderItemStatus.Preparing,
-                    ItemNameSnapshot = menuItem.Name,
-                    ItemCodeSnapshot = menuItem.Code,
-                    UnitPriceSnapshot = price,
-                    StationSnapshot = menuItem.Station.ToString(),
-                };
-
-                await ProcessOptionsAsync(newItem, request.SelectedOptions, cancellationToken);
-
-                order.OrderItems.Add(newItem);
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.ReasonRequired),
+                    ResultErrorType.BadRequest
+                );
             }
 
-            // Recalculate Total including options
-            order.RecalculateTotalAmount();
-
-            // Audit Log
+            // Audit & Save
             var auditLog = new OrderAuditLog
             {
                 LogId = Guid.NewGuid(),
@@ -152,86 +155,15 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            // Notify KDS
+            _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                result.Item.OrderItemId,
+                result.Item.Status,
+                result.Item.StationSnapshot
+            );
+
             return Result<Guid>.Success(order.OrderId);
-        }
-
-        private string GetItemSignature(OrderItem item)
-        {
-            if (item.OptionGroups == null || !item.OptionGroups.Any())
-                return string.Empty;
-
-            var allValues = item
-                .OptionGroups.SelectMany(og => og.OptionValues)
-                .Where(ov => ov.OptionItemId.HasValue)
-                .OrderBy(ov => ov.OptionItemId)
-                .Select(ov => $"{ov.OptionItemId}x{ov.Quantity}");
-
-            return string.Join("|", allValues);
-        }
-
-        private async Task ProcessOptionsAsync(
-            OrderItem item,
-            List<OrderItemOptionGroupDto>? selectedOptions,
-            CancellationToken cancellationToken
-        )
-        {
-            if (selectedOptions == null || !selectedOptions.Any())
-                return;
-
-            var optionGroupIds = selectedOptions.Select(og => og.OptionGroupId).ToList();
-            var optionItemIds = selectedOptions
-                .SelectMany(og => og.SelectedValues)
-                .Select(v => v.OptionItemId)
-                .ToList();
-
-            var optionGroups = await _unitOfWork
-                .Repository<OptionGroup>()
-                .Query()
-                .Where(og => optionGroupIds.Contains(og.OptionGroupId))
-                .ToDictionaryAsync(og => og.OptionGroupId, cancellationToken);
-
-            var optionItems = await _unitOfWork
-                .Repository<OptionItem>()
-                .Query()
-                .Where(oi => optionItemIds.Contains(oi.OptionItemId))
-                .ToDictionaryAsync(oi => oi.OptionItemId, cancellationToken);
-
-            foreach (var optionGroupDto in selectedOptions)
-            {
-                if (optionGroups.TryGetValue(optionGroupDto.OptionGroupId, out var ogDef))
-                {
-                    var orderItemOptionGroup = new OrderItemOptionGroup
-                    {
-                        OrderItemOptionGroupId = Guid.NewGuid(),
-                        OrderItemId = item.OrderItemId,
-                        GroupNameSnapshot = ogDef.Name,
-                        GroupTypeSnapshot = ogDef.OptionType.ToString(),
-                        IsRequiredSnapshot = ogDef.IsRequired,
-                        CreatedAt = DateTime.UtcNow,
-                    };
-
-                    foreach (var valueDto in optionGroupDto.SelectedValues)
-                    {
-                        if (optionItems.TryGetValue(valueDto.OptionItemId, out var oiDef))
-                        {
-                            var orderItemOptionValue = new OrderItemOptionValue
-                            {
-                                OrderItemOptionValueId = Guid.NewGuid(),
-                                OrderItemOptionGroupId =
-                                    orderItemOptionGroup.OrderItemOptionGroupId,
-                                OptionItemId = valueDto.OptionItemId,
-                                LabelSnapshot = oiDef.Label,
-                                ExtraPriceSnapshot = oiDef.ExtraPrice,
-                                Quantity = valueDto.Quantity,
-                                Note = valueDto.Note,
-                                CreatedAt = DateTime.UtcNow,
-                            };
-                            orderItemOptionGroup.OptionValues.Add(orderItemOptionValue);
-                        }
-                    }
-                    item.OptionGroups.Add(orderItemOptionGroup);
-                }
-            }
         }
     }
 }

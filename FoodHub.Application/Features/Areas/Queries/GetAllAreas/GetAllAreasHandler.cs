@@ -36,7 +36,7 @@ namespace FoodHub.Application.Features.Areas.Queries.GetAllAreas
                 return Result<List<GetAllAreasResponse>>.Success(cachedResult);
             }
 
-            var query = _unitOfWork.Repository<Area>().Query();
+            var query = _unitOfWork.Repository<Area>().Query().AsNoTracking();
 
             var areas = await query
                 .OrderBy(a => a.Name)

@@ -2,8 +2,8 @@ using System.Text.Json.Serialization;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Areas.Commands.CreateArea;
-using FoodHub.Application.Features.Areas.Commands.UpdateAreaStatus;
 using FoodHub.Application.Features.Areas.Commands.UpdateArea;
+using FoodHub.Application.Features.Areas.Commands.UpdateAreaStatus;
 using FoodHub.Application.Features.Areas.Queries.GetAllAreas;
 using FoodHub.Application.Features.Areas.Queries.GetAreaById;
 using FoodHub.Application.Interfaces;
@@ -80,14 +80,6 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> CreateArea([FromBody] CreateAreaCommand command)
         {
             var result = await _mediator.Send(command);
-            if (result.IsSuccess && result.Data != null)
-            {
-                return CreatedAtAction(
-                    nameof(GetAreaById),
-                    new { id = result.Data.AreaId },
-                    result
-                );
-            }
             return HandleResult(result);
         }
 
@@ -106,21 +98,10 @@ namespace FoodHub.Presentation.Controllers
         [ProducesResponseType(typeof(Result<GetAreaByIdResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateArea(
-            Guid id,
-            [FromBody] UpdateAreaCommand command)
+        public async Task<IActionResult> UpdateArea(Guid id, [FromBody] UpdateAreaCommand command)
         {
-            if (id != command.AreaId)
-            {
-                return BadRequest(
-                    new ErrorResponse(
-                        StatusCodes.Status400BadRequest,
-                        _messageService.GetMessage(MessageKeys.Common.IdMismatch)
-                    )
-                );
-            }
-
-            var result = await _mediator.Send(command);
+            var commandWithId = command with { AreaId = id };
+            var result = await _mediator.Send(commandWithId);
             return HandleResult(result);
         }
 

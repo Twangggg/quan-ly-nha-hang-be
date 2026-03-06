@@ -23,6 +23,12 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
         private readonly IMapper _mapper;
         private readonly ICacheService _cacheService;
 
+        /// <summary>
+        /// Constructor to inject dependencies for the GetTablesHandler, including database access, mapping, and caching services.
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        /// <param name="mapper"></param>
+        /// <param name="cacheService"></param>
         public GetTablesHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
@@ -30,7 +36,16 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
             _cacheService = cacheService;
         }
 
-        public async Task<Result<List<GetTablesResponse>>> Handle(GetTablesQuery request, CancellationToken cancellationToken)
+        /// <summary>
+        /// Handles the GetTablesQuery by applying global search, filters, and sorting to the Table entities, then returns a paginated result. The results are cached to improve performance for subsequent requests with the same parameters.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<Result<PagedResult<GetTablesResponse>>> Handle(
+            GetTablesQuery request,
+            CancellationToken cancellationToken
+        )
         {
             var cacheKey = request.AreaId.HasValue 
                 ? string.Format(CacheKey.TableListByArea, request.AreaId) 

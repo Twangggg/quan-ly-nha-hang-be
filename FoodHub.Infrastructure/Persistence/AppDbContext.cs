@@ -5,7 +5,8 @@ namespace FoodHub.Infrastructure.Persistence
 {
     public partial class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options) { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -21,6 +22,9 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<OrderItem> OrderItems { get; set; } = null!;
         public DbSet<OrderAuditLog> OrderAuditLogs { get; set; } = null!;
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
+
+        // Billing
+        // (Invoices and Payments removed)
 
         // Menu Management
         public DbSet<MenuItem> MenuItems { get; set; } = null!;
@@ -42,6 +46,7 @@ namespace FoodHub.Infrastructure.Persistence
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
             OnModelCreatingPartial(modelBuilder);
         }
+
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }
 }

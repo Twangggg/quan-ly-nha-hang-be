@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
     push:
-        branches: [main, develop]
+        branches: [main, dev]
     pull_request:
-        branches: [main, develop]
+        branches: [main, dev]
 
 jobs:
     build:
@@ -119,11 +119,47 @@ jobs:
         steps:
             - name: Deploy to Server via SSH
               uses: appleboy/ssh-action@master
+              env:
+                  # Container & Server info
+                  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+                  SERVER_IP: ${{ secrets.SERVER_IP }}
+                  # Database
+                  DB_HOST: db
+                  DB_PORT: 5432
+                  DB_NAME: ${{ secrets.DB_NAME }}
+                  DB_USER: ${{ secrets.DB_USER }}
+                  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+                  # Redis
+                  REDIS_CONNECTION: redis:6379
+                  # JWT
+                  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+                  JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+                  JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE }}
+                  JWT_ACCESS_TOKEN_EXPIRES_IN_MINUTE: ${{ secrets.JWT_ACCESS_TOKEN_EXPIRES_IN_MINUTE }}
+                  JWT_REFRESH_TOKEN_EXPIRES_IN_DAYS: ${{ secrets.JWT_REFRESH_TOKEN_EXPIRES_IN_DAYS }}
+                  # Email
+                  EMAIL_SMTP_HOST: ${{ secrets.EMAIL_SMTP_HOST }}
+                  EMAIL_SMTP_PORT: ${{ secrets.EMAIL_SMTP_PORT }}
+                  EMAIL_SENDER_EMAIL: ${{ secrets.EMAIL_SENDER_EMAIL }}
+                  EMAIL_SENDER_NAME: ${{ secrets.EMAIL_SENDER_NAME }}
+                  EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+                  # Cloudinary
+                  CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+                  CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+                  CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+                  # Others
+                  ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+                  OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+                  OTEL_SERVICE_NAME: ${{ secrets.OTEL_SERVICE_NAME }}
               with:
                   host: ${{ secrets.SERVER_IP }}
                   username: ${{ secrets.SERVER_USER }}
                   key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  envs: DOCKER_USERNAME,SERVER_IP,DB_HOST,DB_PORT,DB_NAME,DB_USER,DB_PASSWORD,REDIS_CONNECTION,JWT_SECRET_KEY,JWT_ISSUER,JWT_AUDIENCE,JWT_ACCESS_TOKEN_EXPIRES_IN_MINUTE,JWT_REFRESH_TOKEN_EXPIRES_IN_DAYS,EMAIL_SMTP_HOST,EMAIL_SMTP_PORT,EMAIL_SENDER_EMAIL,EMAIL_SENDER_NAME,EMAIL_APP_PASSWORD,CLOUDINARY_CLOUD_NAME,CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET,ALLOWED_ORIGINS,OTEL_EXPORTER_OTLP_ENDPOINT,OTEL_SERVICE_NAME
                   script: |
                       cd ~/foodhub
-                      docker compose pull backend
-                      docker compose up -d backend
+                      # Tạo/Ghi đè file .env đầy đủ
+                      printf "DOCKER_USERNAME=$DOCKER_USERNAME\nSERVER_IP=$SERVER_IP\nDB_HOST=$DB_HOST\nDB_PORT=$DB_PORT\nDB_NAME=$DB_NAME\nDB_USER=$DB_USER\nDB_PASSWORD=$DB_PASSWORD\nREDIS_CONNECTION=$REDIS_CONNECTION\nJWT_SECRET_KEY=$JWT_SECRET_KEY\nJWT_ISSUER=$JWT_ISSUER\nJWT_AUDIENCE=$JWT_AUDIENCE\nJWT_ACCESS_TOKEN_EXPIRES_IN_MINUTE=$JWT_ACCESS_TOKEN_EXPIRES_IN_MINUTE\nJWT_REFRESH_TOKEN_EXPIRES_IN_DAYS=$JWT_REFRESH_TOKEN_EXPIRES_IN_DAYS\nEMAIL_SMTP_HOST=$EMAIL_SMTP_HOST\nEMAIL_SMTP_PORT=$EMAIL_SMTP_PORT\nEMAIL_SENDER_EMAIL=$EMAIL_SENDER_EMAIL\nEMAIL_SENDER_NAME=$EMAIL_SENDER_NAME\nEMAIL_APP_PASSWORD=$EMAIL_APP_PASSWORD\nCLOUDINARY_CLOUD_NAME=$CLOUDINARY_CLOUD_NAME\nCLOUDINARY_API_KEY=$CLOUDINARY_API_KEY\nCLOUDINARY_API_SECRET=$CLOUDINARY_API_SECRET\nALLOWED_ORIGINS=$ALLOWED_ORIGINS\nOTEL_EXPORTER_OTLP_ENDPOINT=$OTEL_EXPORTER_OTLP_ENDPOINT\nOTEL_SERVICE_NAME=$OTEL_SERVICE_NAME\n" > .env
+
+                      docker compose pull
+                      docker compose up -d

@@ -34,12 +34,22 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             CancellationToken cancellationToken
         )
         {
+            if (!Guid.TryParse(_currentUserService.UserId, out var userId))
+            {
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
+            }
+
             _logger.LogInformation(
-                "Creating new order. Type: {OrderType}, Table: {TableId}",
+                "Creating new order. Type: {OrderType}, Table: {TableId}, CreatedBy: {UserId}",
                 request.OrderType,
-                request.TableId
+                request.TableId,
+                userId
             );
-            // 1. Validate Basic Logic
+
+            // Validate Basic Logic
             if (request.OrderType == OrderType.DineIn && request.TableId == null)
             {
                 return Result<Guid>.Failure(
@@ -48,15 +58,146 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 );
             }
 
-            // 2. Generate Order Code: ORD-yyyyMMdd-XXXX
-            // Example: ORD-20231027-0001
-            var today = DateTime.UtcNow.ToString("yyyyMMdd");
-            var prefix = $"ORD-{today}-";
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var tableRepository = _unitOfWork.Repository<Table>();
 
-            // Find max code for today
-            // Note: This needs to be carefully handled for concurrency in high-load systems.
-            // For now, using standard approach with transaction isolation or lock logic
-            // inside SaveChanges is ideal, but here we query max.
+                Table? table = null;
+                if (request.OrderType == OrderType.DineIn && request.TableId.HasValue)
+                {
+                    // Load table + area in one query
+                    table = await tableRepository
+                        .Query()
+                        .Include(t => t.Area)
+                        .FirstOrDefaultAsync(
+                            t => t.TableId == request.TableId.Value,
+                            cancellationToken
+                        );
+
+                    if (table is null)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Table.NotFound),
+                            ResultErrorType.NotFound
+                        );
+                    }
+
+                    // Bàn phải ở trạng thái Available mới được tạo order
+                    if (table.Status != TableStatus.Available)
+                    {
+                        _logger.LogWarning(
+                            "Cannot create order — Table {TableId} is not Available (Status: {Status})",
+                            table.TableId,
+                            table.Status
+                        );
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Table.NotAvailable),
+                            ResultErrorType.Conflict
+                        );
+                    }
+
+                    // Khu vực phải Active mới cho tạo order
+                    if (table.Area.Status == AreaStatus.Inactive)
+                    {
+                        _logger.LogWarning(
+                            "Cannot create order — Area {AreaId} for Table {TableId} is Inactive",
+                            table.AreaId,
+                            table.TableId
+                        );
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Area.Inactive),
+                            ResultErrorType.Conflict
+                        );
+                    }
+                }
+
+                // Generate Order Code inside transaction to prevent race condition
+                var orderCode = await GenerateOrderCodeAsync(cancellationToken);
+
+                // IsPriority = true nếu bàn thuộc khu VIP
+                var isPriority = table?.Area?.Type == AreaType.VIP;
+
+                // Create Order
+                var newOrder = new Order
+                {
+                    OrderId = Guid.NewGuid(),
+                    OrderCode = orderCode,
+                    OrderType = request.OrderType,
+                    Status = OrderStatus.Serving,
+                    TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
+                    Note = request.Note,
+                    TotalAmount = 0,
+                    IsPriority = isPriority,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = userId,
+                };
+
+                await _unitOfWork.Repository<Order>().AddAsync(newOrder);
+
+                var auditLog = new OrderAuditLog
+                {
+                    LogId = Guid.NewGuid(),
+                    OrderId = newOrder.OrderId,
+                    EmployeeId = userId,
+                    Action = AuditLogActions.CreateOrder,
+                    NewValue =
+                        $"{{\"orderCode\": \"{newOrder.OrderCode}\", \"orderType\": \"{newOrder.OrderType}\", \"tableId\": \"{newOrder.TableId}\"}}",
+                    CreatedAt = DateTime.UtcNow,
+                };
+                await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.CommitTransactionAsync();
+
+                _logger.LogInformation(
+                    "Successfully created order {OrderCode} (Id: {OrderId})",
+                    newOrder.OrderCode,
+                    newOrder.OrderId
+                );
+
+                return Result<Guid>.Success(newOrder.OrderId);
+            }
+            catch (DbUpdateException ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(
+                    ex,
+                    "Database error while creating order. Type: {OrderType}, Table: {TableId}",
+                    request.OrderType,
+                    request.TableId
+                );
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError),
+                    ResultErrorType.Conflict
+                );
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(
+                    ex,
+                    "Unexpected error while creating order. Type: {OrderType}, Table: {TableId}",
+                    request.OrderType,
+                    request.TableId
+                );
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Generate unique order code in format: ORD-yyyyMMdd-xxxx.
+        /// Must be called inside a transaction to prevent race conditions.
+        /// </summary>
+        private async Task<string> GenerateOrderCodeAsync(CancellationToken cancellationToken)
+        {
+            var today = DateTime.UtcNow.Date;
+            var dateString = today.ToString("yyyyMMdd");
+            var prefix = $"ORD-{dateString}-";
+
             var lastOrder = await _unitOfWork
                 .Repository<Order>()
                 .Query()
@@ -64,44 +205,17 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 .OrderByDescending(o => o.OrderCode)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            int nextSequence = 1;
+            int sequenceNumber = 1;
             if (lastOrder != null)
             {
-                var lastCode = lastOrder.OrderCode;
-                var lastSequencePart = lastCode.Split('-').LastOrDefault();
-                if (int.TryParse(lastSequencePart, out int lastSeq))
+                var parts = lastOrder.OrderCode.Split('-');
+                if (parts.Length == 3 && int.TryParse(parts[2], out int lastSequence))
                 {
-                    nextSequence = lastSeq + 1;
+                    sequenceNumber = lastSequence + 1;
                 }
             }
-            var newOrderCode = $"{prefix}{nextSequence:D4}";
 
-            // 3. Create Order
-            var newOrder = new Order
-            {
-                OrderId = Guid.NewGuid(),
-                OrderCode = newOrderCode,
-                OrderType = request.OrderType,
-                // Per discussion: Start at SERVING immediately
-                Status = OrderStatus.Serving,
-                TableId = request.TableId,
-                Note = request.Note,
-                TotalAmount = 0, // Initial amount is 0
-                IsPriority = false,
-                CreatedAt = DateTime.UtcNow,
-                CreatedBy = Guid.TryParse(_currentUserService.UserId, out var userId)
-                    ? userId
-                    : Guid.Empty,
-            };
-
-            // If TableId provided, we might want to check if table exists or is occupied?
-            // Assuming simplified logic for now as requested in plan.
-
-            // 4. Save
-            await _unitOfWork.Repository<Order>().AddAsync(newOrder);
-            await _unitOfWork.SaveChangeAsync(cancellationToken);
-
-            return Result<Guid>.Success(newOrder.OrderId);
+            return $"{prefix}{sequenceNumber:D4}";
         }
     }
 }

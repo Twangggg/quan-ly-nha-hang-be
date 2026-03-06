@@ -16,6 +16,7 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ISignalRService> _mockSignalRService;
         private readonly AddOrderItemHandler _handler;
 
         public AddOrderItemHandlerTests()
@@ -23,10 +24,13 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
             _mockUow = new Mock<IUnitOfWork>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
+            _mockSignalRService = new Mock<ISignalRService>();
+
             _handler = new AddOrderItemHandler(
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
-                _mockMessageService.Object
+                _mockMessageService.Object,
+                _mockSignalRService.Object
             );
         }
 

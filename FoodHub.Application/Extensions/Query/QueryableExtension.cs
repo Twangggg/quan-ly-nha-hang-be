@@ -111,12 +111,22 @@ namespace FoodHub.Application.Extensions.Query
 
                     try
                     {
-                        // 2. T? d?ng ép ki?u chu?i "value" sang ki?u d? li?u c?a thu?c tính (int, decimal, bool, DateTime, ...)
+                        // 2. T? d?ng ép ki?u chu?i "value" sang ki?u d? li?u c?a thu?c tính (int, decimal, bool, DateTime, Enum, ...)
                         object? convertedValue;
                         if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
                         {
                             var underlyingType = Nullable.GetUnderlyingType(propertyType)!;
-                            convertedValue = string.IsNullOrEmpty(value) ? null : Convert.ChangeType(value, underlyingType);
+                            if (string.IsNullOrEmpty(value))
+                                convertedValue = null;
+                            else if (underlyingType.IsEnum)
+                                convertedValue = Enum.Parse(underlyingType, value);
+                            else
+                                convertedValue = Convert.ChangeType(value, underlyingType);
+                        }
+                        else if (propertyType.IsEnum)
+                        {
+                            // Hỗ trợ filter theo Enum (vd: role:1, status:2)
+                            convertedValue = Enum.Parse(propertyType, value);
                         }
                         else
                         {

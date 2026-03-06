@@ -8,10 +8,10 @@ namespace FoodHub.Domain.Enums
 {
     public enum TableStatus
     {
-        Available = 0,
-        Reserved = 1,
+        Available = 1,
         Occupied = 2,
         Cleaning = 3,
-        OutOfService = 4
+        Reserved = 4,
+        OutOfService = 5,
     }
 }

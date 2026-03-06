@@ -36,19 +36,34 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
         {
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
+                _logger.LogWarning(
+                    "Unauthorized cancel attempt for OrderItemId {OrderItemId}",
+                    request.OrderItemId
+                );
                 return Result<bool>.Failure(
-                    _messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser),
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
                     ResultErrorType.Unauthorized
                 );
             }
 
+            _logger.LogInformation(
+                "Canceling OrderItem {OrderItemId}. Reason: {Reason}, RequestedBy: {UserId}",
+                request.OrderItemId,
+                request.Reason,
+                auditorId
+            );
+
             var orderItemRepository = _unitOfWork.Repository<OrderItem>();
             var orderItem = await orderItemRepository
                 .Query()
-                .FirstOrDefaultAsync(oi => oi.OrderItemId == request.OrderItemId);
+                .FirstOrDefaultAsync(
+                    oi => oi.OrderItemId == request.OrderItemId,
+                    cancellationToken
+                );
 
             if (orderItem == null)
             {
+                _logger.LogWarning("OrderItem {OrderItemId} not found.", request.OrderItemId);
                 return Result<bool>.Failure(
                     _messageService.GetMessage(MessageKeys.OrderItem.NotFound),
                     ResultErrorType.NotFound
@@ -58,6 +73,11 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
             var domainResult = orderItem.Cancel();
             if (!domainResult.IsSuccess)
             {
+                _logger.LogWarning(
+                    "Domain validation failed for canceling OrderItem {OrderItemId}. Error: {Error}",
+                    request.OrderItemId,
+                    domainResult.ErrorCode
+                );
                 return Result<bool>.Failure(
                     _messageService.GetMessage(
                         domainResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
@@ -66,39 +86,75 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                 );
             }
 
-            orderItemRepository.Update(orderItem);
-
-            var order = await _unitOfWork
-                .Repository<Domain.Entities.Order>()
-                .Query()
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.OptionGroups)
-                        .ThenInclude(og => og.OptionValues)
-                .FirstOrDefaultAsync(o => o.OrderId == orderItem.OrderId, cancellationToken);
-
-            if (order != null)
+            // Using transaction for multi-write (orderItem cancel, order total update, audit log)
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                order.RecalculateTotalAmount();
-                order.UpdatedAt = DateTime.UtcNow;
-                _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+                orderItemRepository.Update(orderItem);
+
+                var order = await _unitOfWork
+                    .Repository<Domain.Entities.Order>()
+                    .Query()
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.OptionGroups)
+                            .ThenInclude(og => og.OptionValues)
+                    .FirstOrDefaultAsync(o => o.OrderId == orderItem.OrderId, cancellationToken);
+
+                if (order != null)
+                {
+                    order.RecalculateTotalAmount();
+                    order.UpdatedAt = DateTime.UtcNow;
+                    _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+                }
+
+                var auditLog = new OrderAuditLog
+                {
+                    LogId = Guid.NewGuid(),
+                    OrderId = orderItem.OrderId,
+                    EmployeeId = auditorId,
+                    Action = AuditLogActions.CancelOrderItem,
+                    CreatedAt = DateTime.UtcNow,
+                    ChangeReason = request.Reason,
+                    NewValue =
+                        $"{{\"orderItemId\": \"{orderItem.OrderItemId}\", \"status\": \"Cancelled\"}}",
+                };
+
+                await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.CommitTransactionAsync();
+
+                _logger.LogInformation(
+                    "Successfully canceled OrderItem {OrderItemId} for Order {OrderId}",
+                    request.OrderItemId,
+                    orderItem.OrderId
+                );
+
+                return Result<bool>.Success(true);
             }
-
-            var auditLog = new OrderAuditLog
+            catch (DbUpdateException ex)
             {
-                LogId = Guid.NewGuid(),
-                OrderId = orderItem.OrderId,
-                EmployeeId = auditorId,
-                Action = AuditLogActions.CancelOrderItem,
-                CreatedAt = DateTime.UtcNow,
-                ChangeReason = request.Reason,
-                NewValue = "{\"status\": \"Cancelled\"}",
-            };
-
-            await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
-
-            await _unitOfWork.SaveChangeAsync(cancellationToken);
-
-            return Result<bool>.Success(true);
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(
+                    ex,
+                    "Database error while canceling OrderItem {OrderItemId}",
+                    request.OrderItemId
+                );
+                return Result<bool>.Failure(
+                    _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError),
+                    ResultErrorType.Conflict
+                );
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(
+                    ex,
+                    "Unexpected error while canceling OrderItem {OrderItemId}",
+                    request.OrderItemId
+                );
+                throw;
+            }
         }
     }
 }
