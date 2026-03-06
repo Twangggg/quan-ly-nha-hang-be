@@ -14,9 +14,11 @@ namespace FoodHub.Application.Features.Areas.Queries.GetAreaById
         public AreaStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public int NumberOfTables { get; set; }
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<Area, GetAreaByIdResponse>();
+            profile.CreateMap<Area, GetAreaByIdResponse>()
+                .ForMember(d => d.NumberOfTables, opt => opt.MapFrom(s => s.Tables.Count));
         }
     }
 }

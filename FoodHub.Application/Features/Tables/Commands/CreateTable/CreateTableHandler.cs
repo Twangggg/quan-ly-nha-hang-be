@@ -102,6 +102,7 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
             // Add the new table to the repository and save changes
             await tableRepo.AddAsync(newTable);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+            await _cacheService.RemoveAsync(CacheKey.AreaList, cancellationToken);
             await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableList), cancellationToken);
             await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableListByArea, request.AreaId), cancellationToken);
 

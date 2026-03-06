@@ -31,6 +31,11 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
             _mediator = mediator;
         }
 
+        /// <summary>
+        /// Lấy danh sách tất cả các bàn ăn. Có thể lọc theo khu vực (areaId).
+        /// </summary>
+        /// <param name="areaId">ID của khu vực cần lọc (tùy chọn).</param>
+        /// <returns code="200">Danh sách các bàn ăn.</returns>
         [HttpGet(Name = "GetTables")]
         [HasPermission(Permissions.Tables.View)]
         [ProducesResponseType(typeof(Result<List<GetTablesResponse>>), StatusCodes.Status200OK)]

@@ -30,6 +30,10 @@ namespace FoodHub.Presentation.Controllers
             _messageService = messageService;
         }
 
+        /// <summary>
+        /// Lấy danh sách tất cả các khu vực trong hệ thống.
+        /// </summary>
+        /// <returns code="200">Danh sách các khu vực.</returns>
         [HttpGet]
         [HasPermission(Permissions.Areas.View)]
         [ProducesResponseType(

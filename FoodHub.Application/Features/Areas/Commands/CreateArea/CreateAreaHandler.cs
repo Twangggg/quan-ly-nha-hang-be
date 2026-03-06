@@ -29,15 +29,6 @@ namespace FoodHub.Application.Features.Areas.Commands.CreateArea
 
         public async Task<Result<GetAreaByIdResponse>> Handle(CreateAreaCommand request, CancellationToken cancellationToken)
         {
-            var existingArea = await _unitOfWork.Repository<Area>()
-                .Query()
-                .FirstOrDefaultAsync(a => a.CodePrefix == request.CodePrefix, cancellationToken);
-
-            if (existingArea != null)
-            {
-                return Result<GetAreaByIdResponse>.Failure(_messageService.GetMessage(MessageKeys.Area.CodeExists));
-            }
-
             var area = new Area
             {
                 Name = request.Name,

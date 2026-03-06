@@ -31,8 +31,8 @@ namespace FoodHub.Migrations
 
                     b.Property<string>("CodePrefix")
                         .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
                         .HasColumnName("code_prefix");
 
                     b.Property<DateTime>("CreatedAt")
@@ -78,7 +78,6 @@ namespace FoodHub.Migrations
                         .HasName("pk_areas");
 
                     b.HasIndex("CodePrefix")
-                        .IsUnique()
                         .HasDatabaseName("idx_areas_code_prefix")
                         .HasFilter("deleted_at IS NULL");
 
