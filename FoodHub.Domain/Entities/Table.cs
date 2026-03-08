@@ -22,5 +22,9 @@ namespace FoodHub.Domain.Entities
         {
             Status = TableStatus.Cleaning;
         }
+        public void MarkAsAvailable()
+        {
+            Status = TableStatus.Available;
+        }
     }
 }

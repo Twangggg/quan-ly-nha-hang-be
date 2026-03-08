@@ -89,6 +89,23 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
             _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
 
+            // Giải phóng bàn nếu là ăn tại chỗ
+            if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
+            {
+                var table = await _unitOfWork
+                    .Repository<Domain.Entities.Table>()
+                    .GetByIdAsync(order.TableId.Value);
+                if (table != null)
+                {
+                    table.MarkAsAvailable();
+                    _unitOfWork.Repository<Domain.Entities.Table>().Update(table);
+
+                    // Ngắt kết nối đơn hàng với bàn sau khi đã giải phóng bàn xong
+                    order.TableId = null;
+                    _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+                }
+            }
+
             try
             {
                 await _unitOfWork.SaveChangeAsync(cancellationToken);

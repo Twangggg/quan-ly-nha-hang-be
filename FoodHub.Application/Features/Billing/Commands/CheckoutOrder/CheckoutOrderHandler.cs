@@ -97,8 +97,12 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                         .GetByIdAsync(order.TableId.Value);
                     if (table != null)
                     {
-                        table.MarkAsCleaning();
+                        table.MarkAsAvailable();
                         _unitOfWork.Repository<Domain.Entities.Table>().Update(table);
+
+                        // Ngắt kết nối đơn hàng với bàn sau khi đã giải phóng bàn xong
+                        order.TableId = null;
+                        _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
                     }
                 }
 
