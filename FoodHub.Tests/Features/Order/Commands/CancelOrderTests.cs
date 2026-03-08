@@ -74,8 +74,11 @@ namespace FoodHub.Tests.Features.Order.Commands
             var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
             var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
             var mockTableRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Table>>();
-            var table = new FoodHub.Domain.Entities.Table { TableId = tableId };
-            table.MarkAsOccupied();
+            var table = new FoodHub.Domain.Entities.Table
+            {
+                TableId = tableId,
+                Status = TableStatus.Occupied,
+            };
 
             _mockUow
                 .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
