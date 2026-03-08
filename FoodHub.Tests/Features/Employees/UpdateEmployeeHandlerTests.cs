@@ -137,7 +137,7 @@ namespace FoodHub.Tests.Features.Employees
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
 
             var repo = new Mock<IGenericRepository<Employee>>();
-            repo.Setup(r => r.GetByIdAsync(employeeId)).ReturnsAsync((Employee)null);
+            repo.Setup(r => r.GetByIdAsync(employeeId)).ReturnsAsync((Employee?)null);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
             _mockMessage
