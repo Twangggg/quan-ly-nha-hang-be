@@ -47,8 +47,8 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
             CancellationToken cancellationToken
         )
         {
-            var cacheKey = request.AreaId.HasValue 
-                ? string.Format(CacheKey.TableListByArea, request.AreaId) 
+            var cacheKey = request.AreaId.HasValue
+                ? string.Format(CacheKey.TableListByArea, request.AreaId)
                 : string.Format(CacheKey.TableList);
 
             var cachedResult = await _cacheService.GetAsync<List<GetTablesResponse>>(cacheKey, cancellationToken);

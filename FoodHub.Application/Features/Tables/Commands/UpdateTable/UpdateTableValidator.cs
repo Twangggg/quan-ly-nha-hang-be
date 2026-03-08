@@ -9,7 +9,8 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTable
 {
     public class UpdateTableValidator : AbstractValidator<UpdateTableCommand>
     {
-        public UpdateTableValidator() {
+        public UpdateTableValidator()
+        {
             RuleFor(x => x.TableId)
                 .NotEmpty().WithMessage("Table id is required.");
             RuleFor(x => x.TableNumber)

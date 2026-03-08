@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
@@ -8,8 +10,6 @@ using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FoodHub.Application.Features.Areas.Commands.CreateArea
 {
