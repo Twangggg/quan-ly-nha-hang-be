@@ -37,6 +37,7 @@ namespace FoodHub.Tests.Features.Areas.Commands.UpdateArea
             {
                 AreaId = Guid.NewGuid(),
                 Name = "New",
+                CodePrefix = "T1",
                 Type = AreaType.Normal,
             };
             var repo = new Mock<IGenericRepository<Area>>();
@@ -53,8 +54,7 @@ namespace FoodHub.Tests.Features.Areas.Commands.UpdateArea
                 _mockUow.Object,
                 mapConfig.CreateMapper(),
                 _mockCache.Object,
-                _mockMessage.Object,
-                _mockLogger.Object
+                _mockMessage.Object
             );
 
             // Act
@@ -80,6 +80,7 @@ namespace FoodHub.Tests.Features.Areas.Commands.UpdateArea
             {
                 AreaId = areaId,
                 Name = "Mới",
+                CodePrefix = "T1",
                 Description = "Updated",
                 Type = AreaType.Normal,
             };
@@ -102,8 +103,7 @@ namespace FoodHub.Tests.Features.Areas.Commands.UpdateArea
                 _mockUow.Object,
                 mapConfig.CreateMapper(),
                 _mockCache.Object,
-                _mockMessage.Object,
-                _mockLogger.Object
+                _mockMessage.Object
             );
 
             // Act

@@ -7,7 +7,6 @@ using FoodHub.Application.Features.Tables.Commands.UpdateTableStatus;
 using FoodHub.Application.Features.Tables.Queries.GetTableById;
 using FoodHub.Application.Features.Tables.Queries.GetTables;
 using FoodHub.Application.Features.Tables.Queries.GetTablesByArea;
-
 using FoodHub.Domain.Enums;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
@@ -46,7 +45,6 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
             return HandleResult(result);
         }
 
-
         /// <summary>
         /// Lấy danh sách các bàn ăn theo khu vực (area).
         /// </summary>
@@ -54,14 +52,16 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         /// <returns code="200">Danh sách các bàn ăn thuộc khu vực được chỉ định.</returns>
         [HttpGet("area/{areaId}")]
         [HasPermission(Permissions.Tables.View)]
-        [ProducesResponseType(typeof(Result<List<GetTablesByAreaResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(
+            typeof(Result<List<GetTablesByAreaResponse>>),
+            StatusCodes.Status200OK
+        )]
         public async Task<IActionResult> GetTablesByArea(Guid areaId)
         {
             var query = new GetTablesByAreaQuery(areaId);
             var result = await _mediator.Send(query);
             return HandleResult(result);
         }
-
 
         /// <summary>
         /// Lấy thông tin chi tiết của một bàn ăn theo ID.
@@ -100,7 +100,8 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
                 return CreatedAtAction(
                     nameof(GetTableById),
                     new { tableId = result.Data.TableId },
-                    result);
+                    result
+                );
             }
 
             return HandleResult(result);
@@ -118,7 +119,10 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<UpdateTableResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateTable(Guid tableId, [FromBody] UpdateTableCommand request)
+        public async Task<IActionResult> UpdateTable(
+            Guid tableId,
+            [FromBody] UpdateTableCommand request
+        )
         {
             var result = await _mediator.Send(request with { TableId = tableId });
             return HandleResult(result);
@@ -128,7 +132,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         /// Cập nhật trạng thái hoạt động của một bàn ăn (Kích hoạt/Ngưng hoạt động).
         /// </summary>
         /// <param name="tableId">ID của bàn ăn.</param>
-        /// <param name="isActive">Trạng thái mong muốn (true = Kích hoạt, false = Ngưng hoạt động).</param>
+        /// <param name="request">Thông tin cập nhật trạng thái (IsActive = true/false).</param>
         /// <returns code="200">Trả về thông tin của bàn ăn đã được cập nhật.</returns>
         /// <returns code="404">Trả về lỗi không tìm thấy bàn ăn.</returns>
         [HttpPatch("{tableId}/status")]
@@ -136,7 +140,10 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<UpdateTableStatusResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateTableStatus(Guid tableId, [FromBody] UpdateTableStatusRequest request)
+        public async Task<IActionResult> UpdateTableStatus(
+            Guid tableId,
+            [FromBody] UpdateTableStatusRequest request
+        )
         {
             var status = request.IsActive ? TableStatus.Available : TableStatus.OutOfService;
             var command = new UpdateTableStatusCommand(tableId, status);
