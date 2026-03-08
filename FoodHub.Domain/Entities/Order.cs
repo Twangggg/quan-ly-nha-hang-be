@@ -62,6 +62,11 @@ namespace FoodHub.Domain.Entities
                 AmountPaid = TotalAmount;
             }
 
+            //if (OrderItems.Any(oi => !oi.IsFinished()))
+            //{
+            //    return DomainResult.Failure(DomainErrors.Order.ItemsNotFinished);
+            //}
+
             Status = OrderStatus.Paid;
             PaymentMethod = paymentMethod;
             PaidAt = DateTime.UtcNow;
@@ -80,11 +85,6 @@ namespace FoodHub.Domain.Entities
 
             Status = OrderStatus.Cancelled;
             CancelledAt = DateTime.UtcNow;
-
-            if (OrderType == OrderType.DineIn)
-            {
-                TableId = null;
-            }
 
             foreach (var item in OrderItems)
             {
@@ -114,11 +114,6 @@ namespace FoodHub.Domain.Entities
 
             CompletedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
-
-            if (OrderType == OrderType.DineIn && OrderItems.All(oi => oi.IsFinished()))
-            {
-                TableId = null;
-            }
 
             return DomainResult.Success();
         }

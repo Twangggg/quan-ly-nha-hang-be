@@ -44,16 +44,16 @@ namespace FoodHub.Tests.Features.Options.Queries
                             OptionItemId = Guid.NewGuid(),
                             OptionGroupId = Guid.NewGuid(),
                             Label = "Small",
-                            ExtraPrice = 0
+                            ExtraPrice = 0,
                         },
                         new OptionItem
                         {
                             OptionItemId = Guid.NewGuid(),
                             OptionGroupId = Guid.NewGuid(),
                             Label = "Large",
-                            ExtraPrice = 2.00m
-                        }
-                    }
+                            ExtraPrice = 2.00m,
+                        },
+                    },
                 },
                 new OptionGroup
                 {
@@ -62,14 +62,12 @@ namespace FoodHub.Tests.Features.Options.Queries
                     Name = "Toppings",
                     OptionType = OptionGroupType.Multi,
                     IsRequired = false,
-                    OptionItems = new List<OptionItem>()
-                }
+                    OptionItems = new List<OptionItem>(),
+                },
             };
 
             var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
-            mockRepo
-                .Setup(r => r.Query())
-                .Returns(optionGroups.AsQueryable().BuildMock());
+            mockRepo.Setup(r => r.Query()).Returns(optionGroups.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<OptionGroup>()).Returns(mockRepo.Object);
 
             // Act
@@ -78,9 +76,9 @@ namespace FoodHub.Tests.Features.Options.Queries
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Count.Should().Be(2);
+            result.Data!.Count.Should().Be(2);
             result.Data.First().Name.Should().Be("Size");
-            result.Data.First().OptionItems.Count.Should().Be(2);
+            result.Data.First().OptionItems!.Count.Should().Be(2);
         }
 
         [Fact]
@@ -93,9 +91,7 @@ namespace FoodHub.Tests.Features.Options.Queries
             var optionGroups = new List<OptionGroup>();
 
             var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
-            mockRepo
-                .Setup(r => r.Query())
-                .Returns(optionGroups.AsQueryable().BuildMock());
+            mockRepo.Setup(r => r.Query()).Returns(optionGroups.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<OptionGroup>()).Returns(mockRepo.Object);
 
             // Act
@@ -130,16 +126,14 @@ namespace FoodHub.Tests.Features.Options.Queries
                             OptionItemId = Guid.NewGuid(),
                             OptionGroupId = Guid.NewGuid(),
                             Label = "Medium",
-                            ExtraPrice = 1.00m
-                        }
-                    }
-                }
+                            ExtraPrice = 1.00m,
+                        },
+                    },
+                },
             };
 
             var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
-            mockRepo
-                .Setup(r => r.Query())
-                .Returns(optionGroups.AsQueryable().BuildMock());
+            mockRepo.Setup(r => r.Query()).Returns(optionGroups.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<OptionGroup>()).Returns(mockRepo.Object);
 
             // Act
@@ -147,11 +141,12 @@ namespace FoodHub.Tests.Features.Options.Queries
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            var firstGroup = result.Data.First();
+            result.Data.Should().NotBeNull();
+            var firstGroup = result.Data!.First();
             firstGroup.Name.Should().Be("Size");
             firstGroup.Type.Should().Be((int)OptionGroupType.Single);
             firstGroup.IsRequired.Should().BeTrue();
-            firstGroup.OptionItems.First().Label.Should().Be("Medium");
+            firstGroup.OptionItems!.First().Label.Should().Be("Medium");
             firstGroup.OptionItems.First().ExtraPrice.Should().Be(1.00m);
         }
     }

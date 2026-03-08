@@ -14,8 +14,7 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
     /// <summary>
     /// Handler for creating a new table in the restaurant. It validates the input, checks for existing tables with the same code,
     /// </summary>
-    public class CreateTableHandler
-        : IRequestHandler<CreateTableCommand, Result<CreateTableResponse>>
+    public class CreateTableHandler : IRequestHandler<CreateTableCommand, Result<CreateTableResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
@@ -39,8 +38,7 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
             IMessageService messageService,
             ICacheService cacheService,
             IMapper mapper,
-            ILogger<CreateTableHandler> logger
-        )
+            ILogger<CreateTableHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
@@ -56,39 +54,20 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Result<CreateTableResponse>> Handle(
-            CreateTableCommand request,
-            CancellationToken cancellationToken
-        )
+        public async Task<Result<CreateTableResponse>> Handle(CreateTableCommand request, CancellationToken cancellationToken)
         {
             // Validate the request data
             var tableRepo = _unitOfWork.Repository<Table>();
             var areaRepo = _unitOfWork.Repository<Area>();
 
-            // Check if the specified area exists and is active
-            var existingArea = await areaRepo
-                .Query()
-                .FirstOrDefaultAsync(a => a.AreaId == request.AreaId);
-            if (existingArea is null)
+            // Check if the specified area exists
+            var existingArea = await areaRepo.Query().AnyAsync(a => a.AreaId == request.AreaId);
+            if (!existingArea)
             {
                 _logger.LogWarning("Area with ID {AreaId} does not exist", request.AreaId);
                 return Result<CreateTableResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Area.NotFound, request.AreaId),
-                    ResultErrorType.NotFound
-                );
-            }
-
-            // Không cho tạo bàn trong khu vực đang Inactive
-            if (existingArea.Status == AreaStatus.Inactive)
-            {
-                _logger.LogWarning(
-                    "Cannot create table — Area {AreaId} is Inactive",
-                    request.AreaId
-                );
-                return Result<CreateTableResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Area.Inactive),
-                    ResultErrorType.Conflict
-                );
+                    ResultErrorType.NotFound);
             }
 
             // Create a new table entity and populate its properties
@@ -99,19 +78,14 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
             }
 
             // Generate the next table number for the specified area
-            var tableNumber =
-                await tableRepo
-                    .Query()
-                    .Where(t => t.AreaId == request.AreaId)
-                    .MaxAsync(t => (int?)t.TableNumber)
-                ?? 0;
+            var tableNumber = await tableRepo
+                .Query()
+                .Where(t => t.AreaId == request.AreaId)
+                .MaxAsync(t => (int?)t.TableNumber) ?? 0;
             tableNumber++;
 
             // Log the incoming request for traceability
-            _logger.LogInformation(
-                "Handling CreateTableCommand for TableNumber: {TableNumber}",
-                tableNumber
-            );
+            _logger.LogInformation("Handling CreateTableCommand for TableNumber: {TableNumber}", tableNumber);
 
             // Create the new table entity
             var newTable = new Table
@@ -122,20 +96,15 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
                 AreaId = request.AreaId,
                 Status = TableStatus.Available,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = auditorId,
+                CreatedBy = auditorId
             };
 
             // Add the new table to the repository and save changes
             await tableRepo.AddAsync(newTable);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
-            await _cacheService.RemoveByPatternAsync(
-                string.Format(CacheKey.TableList),
-                cancellationToken
-            );
-            await _cacheService.RemoveByPatternAsync(
-                string.Format(CacheKey.TableListByArea, request.AreaId),
-                cancellationToken
-            );
+            await _cacheService.RemoveAsync(CacheKey.AreaList, cancellationToken);
+            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableList), cancellationToken);
+            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableListByArea, request.AreaId), cancellationToken);
 
             // Map the newly created table to the response DTO and return a success result
             var response = _mapper.Map<CreateTableResponse>(newTable);

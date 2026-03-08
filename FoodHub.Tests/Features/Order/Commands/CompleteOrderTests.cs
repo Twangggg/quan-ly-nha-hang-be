@@ -118,7 +118,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             result.Data.Should().BeEquivalentTo(response);
             order.Status.Should().Be(OrderStatus.Completed);
             order.TotalAmount.Should().Be(expectedTotal);
-            order.TableId.Should().BeNull(); // Table released for dine-in when all items finished
+            order.TableId.Should().NotBeNull(); // Table ID is preserved until checkout
             order.CompletedAt.Should().NotBeNull();
             order.UpdatedAt.Should().NotBeNull();
             _mockUow.Verify(
@@ -226,7 +226,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             // Arrange
             var command = new CompleteOrderCommand { OrderId = Guid.NewGuid() };
 
-            _mockCurrentUserService.Setup(s => s.UserId).Returns((string)null);
+            _mockCurrentUserService.Setup(s => s.UserId).Returns((string?)null);
 
             _mockMessageService
                 .Setup(m => m.GetMessage(MessageKeys.Auth.UserNotLoggedIn))

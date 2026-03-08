@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
@@ -39,33 +41,12 @@ namespace FoodHub.Application.Features.Areas.Commands.CreateArea
             CancellationToken cancellationToken
         )
         {
-            _logger.LogInformation(
-                "Bắt đầu tạo khu vực mới. CodePrefix: {CodePrefix}",
-                request.CodePrefix
-            );
-
-            var existingArea = await _unitOfWork
-                .Repository<Area>()
-                .Query()
-                .FirstOrDefaultAsync(a => a.CodePrefix == request.CodePrefix, cancellationToken);
-
-            if (existingArea != null)
-            {
-                _logger.LogWarning(
-                    "Tạo khu vực thất bại. CodePrefix '{CodePrefix}' đã tồn tại.",
-                    request.CodePrefix
-                );
-                return Result<GetAreaByIdResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Area.CodeExists)
-                );
-            }
-
             var area = new Area
             {
                 Name = request.Name,
                 CodePrefix = request.CodePrefix,
                 Type = request.Type,
-                Description = request.Description,
+                Description = request.Description
             };
 
             await _unitOfWork.Repository<Area>().AddAsync(area);
@@ -75,11 +56,6 @@ namespace FoodHub.Application.Features.Areas.Commands.CreateArea
 
             await _cacheService.RemoveAsync(CacheKey.AreaList, cancellationToken);
 
-            _logger.LogInformation(
-                "Tạo khu vực thành công. AreaId: {AreaId}, CodePrefix: {CodePrefix}",
-                area.AreaId,
-                area.CodePrefix
-            );
             return Result<GetAreaByIdResponse>.Success(result);
         }
     }

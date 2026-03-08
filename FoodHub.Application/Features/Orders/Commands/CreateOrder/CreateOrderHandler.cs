@@ -150,6 +150,13 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
+                // Cập nhật trạng thái bàn sang Occupied
+                if (table != null)
+                {
+                    table.Status = TableStatus.Occupied;
+                    _unitOfWork.Repository<Table>().Update(table);
+                }
+
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
 

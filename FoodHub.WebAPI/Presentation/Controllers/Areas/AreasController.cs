@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Areas.Commands.CreateArea;
@@ -30,22 +31,22 @@ namespace FoodHub.Presentation.Controllers
         }
 
         /// <summary>
-        /// Lấy tất cả khu vực với phân trang.
+        /// Lấy danh sách tất cả các khu vực trong hệ thống.
         /// </summary>
-        /// <param name="pagination">Tham số phân trang.</param>
-        /// <response code="200">Trả về danh sách khu vực.</response>
+        /// <returns code="200">Danh sách các khu vực.</returns>
         [HttpGet]
         [HasPermission(Permissions.Areas.View)]
         [ProducesResponseType(
-            typeof(Result<PagedResult<GetAllAreasResponse>>),
+            typeof(Result<List<GetAllAreasResponse>>),
             StatusCodes.Status200OK
         )]
-        public async Task<IActionResult> GetAllAreas([FromQuery] PaginationParams pagination)
+        public async Task<IActionResult> GetAllAreas()
         {
-            var query = new GetAllAreasQuery(pagination);
+            var query = new GetAllAreasQuery();
             var result = await _mediator.Send(query);
             return HandleResult(result);
         }
+
 
         /// <summary>
         /// Lấy thông tin khu vực theo ID.
@@ -104,18 +105,25 @@ namespace FoodHub.Presentation.Controllers
             return HandleResult(result);
         }
 
+        public class UpdateAreaStatusRequest
+        {
+            [JsonPropertyName("isActive")]
+            public bool IsActive { get; set; }
+        }
+
         /// <summary>
-        /// Cập nhật trạng thái hoạt động của khu vực.
+        /// Thay đổi trạng thái hoạt động của khu vực.
         /// </summary>
         /// <param name="id">Mã khu vực.</param>
-        /// <param name="isActive">Trạng thái (true: hoạt động, false: dừng hoạt động).</param>
+        /// <param name="request">Dữ liệu trạng thái mới.</param>
         [HttpPatch("{id}/status")]
         [HasPermission(Permissions.Areas.Update)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateAreaStatus(Guid id, [FromQuery] bool isActive)
+        public async Task<IActionResult> UpdateAreaStatus(Guid id, [FromBody] UpdateAreaStatusRequest request)
         {
-            var result = await _mediator.Send(new UpdateAreaStatusCommand(id, isActive));
+            var result = await _mediator.Send(new UpdateAreaStatusCommand(id, request.IsActive));
             return HandleResult(result);
         }
+
     }
 }

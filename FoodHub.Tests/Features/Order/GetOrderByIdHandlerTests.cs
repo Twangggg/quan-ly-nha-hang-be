@@ -85,7 +85,9 @@ namespace FoodHub.Tests.Features.Orders
                         It.IsAny<EventId>(),
                         It.Is<It.IsAnyType>(
                             (v, t) =>
-                                v.ToString().Contains($"Successfully retrieved order {orderId}")
+                                v != null
+                                && v.ToString() != null
+                                && v.ToString()!.Contains($"Successfully retrieved order {orderId}")
                         ),
                         It.IsAny<Exception?>(),
                         It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)

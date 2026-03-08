@@ -361,7 +361,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 Items = new List<OrderItemDto>(),
             };
 
-            _mockCurrentUserService.Setup(s => s.UserId).Returns((string)null);
+            _mockCurrentUserService.Setup(s => s.UserId).Returns((string?)null);
 
             _mockMessageService
                 .Setup(m => m.GetMessage(MessageKeys.Auth.UserNotLoggedIn))

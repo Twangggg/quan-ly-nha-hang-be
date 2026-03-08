@@ -1,7 +1,7 @@
+using System.Text.Json.Serialization;
 using FoodHub.Application.Common.Models;
 using FoodHub.Domain.Enums;
 using MediatR;
-using System.Text.Json.Serialization;
 
 namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
 {
@@ -10,6 +10,8 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
         [JsonIgnore]
         public Guid OrderId { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
+
+        [JsonPropertyName("amountReceived")]
         public decimal? AmountPaid { get; set; }
     }
 }

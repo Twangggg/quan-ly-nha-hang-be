@@ -9,6 +9,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTablesByArea
     {
         public Guid TableId { get; set; }
         public required string TableCode { get; set; }
+        public required int TableNumber { get; set; }
         public required int Capacity { get; set; }
         public Guid AreaId { get; set; } = Guid.Empty;
         public required string AreaName { get; set; }

@@ -14,7 +14,7 @@ namespace FoodHub.Application.Features.Areas.Commands.CreateArea
 
             RuleFor(v => v.CodePrefix)
                 .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Area.CodeRequired))
-                .MaximumLength(3).WithMessage("Maximum length of Code is 3 characters");
+                .MaximumLength(10).WithMessage("Maximum length of Code is 10 characters");
 
             RuleFor(v => v.Type)
                 .IsInEnum().WithMessage("Invalid Area Type");
