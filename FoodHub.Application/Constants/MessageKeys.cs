@@ -124,6 +124,7 @@ namespace FoodHub.Application.Constants
             public const string OrderNotReadyForCompletion = "Order.OrderNotReadyForCompletion";
             public const string AlreadyPaid = "Order.AlreadyPaid";
             public const string InsufficientAmount = "Order.InsufficientAmount";
+            public const string ItemsNotFinished = "Order.ItemsNotFinished";
         }
 
         public static class OrderItem

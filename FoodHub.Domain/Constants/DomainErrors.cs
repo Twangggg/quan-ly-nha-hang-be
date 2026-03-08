@@ -9,6 +9,7 @@ namespace FoodHub.Domain.Constants
             public const string NotFound = "Order.NotFound";
             public const string InvalidActionWithStatus = "Order.InvalidActionWithStatus";
             public const string InsufficientAmount = "Order.InsufficientAmount";
+            public const string ItemsNotFinished = "Order.ItemsNotFinished";
         }
 
         public static class OrderItem

@@ -62,6 +62,11 @@ namespace FoodHub.Domain.Entities
                 AmountPaid = TotalAmount;
             }
 
+            if (OrderItems.Any(oi => !oi.IsFinished()))
+            {
+                return DomainResult.Failure(DomainErrors.Order.ItemsNotFinished);
+            }
+
             Status = OrderStatus.Paid;
             PaymentMethod = paymentMethod;
             PaidAt = DateTime.UtcNow;

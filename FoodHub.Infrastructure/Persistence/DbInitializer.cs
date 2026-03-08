@@ -304,42 +304,31 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
-            // Seed tables with specific IDs to match FE expectations
-            if (!_context.Tables.Any())
+            // Seed tables with specific IDs to match FE expectations (12 tables)
+            for (int i = 1; i <= 12; i++)
             {
-                var tables = new Table[]
+                var tableId = Guid.Parse($"00000000-0000-0000-0000-0000000000{i:D2}");
+                if (!_context.Tables.Any(t => t.TableId == tableId))
                 {
-                    new Table
-                    {
-                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                        TableNumber = 1,
-                        Capacity = 4,
-                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                        Status = TableStatus.Available,
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                    new Table
-                    {
-                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                        TableNumber = 2,
-                        Capacity = 2,
-                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                        Status = TableStatus.Occupied,
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                    new Table
-                    {
-                        TableId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                        TableNumber = 3,
-                        Capacity = 6,
-                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                        Status = TableStatus.Available,
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                };
-                _context.Tables.AddRange(tables);
-                _context.SaveChanges();
+                    var areaId =
+                        i <= 8 ? Guid.Parse("00000000-0000-0000-0000-000000000001")
+                        : i <= 10 ? Guid.Parse("00000000-0000-0000-0000-000000000002")
+                        : Guid.Parse("00000000-0000-0000-0000-000000000003");
+
+                    _context.Tables.Add(
+                        new Table
+                        {
+                            TableId = tableId,
+                            TableNumber = i,
+                            Capacity = i <= 8 ? (i % 2 == 0 ? 4 : 2) : (i <= 10 ? 4 : 8),
+                            AreaId = areaId,
+                            Status = TableStatus.Available,
+                            CreatedAt = DateTime.UtcNow,
+                        }
+                    );
+                }
             }
+            _context.SaveChanges();
 
             if (!_context.Orders.Any())
             {
