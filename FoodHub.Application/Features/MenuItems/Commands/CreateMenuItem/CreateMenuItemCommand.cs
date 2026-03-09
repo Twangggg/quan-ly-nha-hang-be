@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
 {
     public record CreateMenuItemCommand(
-        string Code,
         string Name,
         string? ImageUrl,
         string? Description,

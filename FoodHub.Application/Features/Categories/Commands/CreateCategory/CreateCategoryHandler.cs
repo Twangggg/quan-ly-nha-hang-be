@@ -10,19 +10,33 @@ namespace FoodHub.Application.Features.Categories.Commands.CreateCategory
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICacheService _cacheService;
+        private readonly IMessageService _messageService;
 
-        public CreateCategoryHandler(IUnitOfWork unitOfWork, ICacheService cacheService)
+        public CreateCategoryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _cacheService = cacheService;
+            _messageService = messageService;
         }
 
         public async Task<Result<CreateCategoryResponse>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
         {
+            var repo = _unitOfWork.Repository<Domain.Entities.Category>();
+
+            // Check if CodePrefix exists
+            var exists = await repo.AnyAsync(x => x.CodePrefix == request.CodePrefix);
+            if (exists)
+            {
+                return Result<CreateCategoryResponse>.Failure(
+                    _messageService.GetMessage("Category.CodePrefixExists"),
+                    ResultErrorType.Conflict);
+            }
+
             var category = new Domain.Entities.Category
             {
                 CategoryId = Guid.NewGuid(),
                 Name = request.Name,
+                CodePrefix = request.CodePrefix,
                 CategoryType = request.Type
             };
 
@@ -37,6 +51,7 @@ namespace FoodHub.Application.Features.Categories.Commands.CreateCategory
             {
                 CategoryId = category.CategoryId,
                 Name = category.Name,
+                CodePrefix = category.CodePrefix,
                 Type = (int)category.CategoryType
             };
 

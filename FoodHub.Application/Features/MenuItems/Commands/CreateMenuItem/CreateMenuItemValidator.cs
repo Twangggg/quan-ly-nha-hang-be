@@ -1,4 +1,6 @@
 using FluentValidation;
+using FoodHub.Domain.Enums;
+
 
 namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
 {
@@ -6,10 +8,6 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
     {
         public CreateMenuItemValidator()
         {
-            RuleFor(x => x.Code)
-                .NotEmpty().WithMessage("Code is required.")
-                .MaximumLength(50).WithMessage("Code must not exceed 50 characters.");
-
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name is required.")
                 .MaximumLength(150).WithMessage("Name must not exceed 150 characters.");
@@ -28,7 +26,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
                 .NotEmpty().WithMessage("Category ID is required.");
 
             RuleFor(x => x.Station)
-                .IsInEnum().WithMessage("Invalid station.");
+                .Must(x => Enum.IsDefined(typeof(Station), x)).WithMessage("Invalid station.");
 
             RuleFor(x => x.ExpectedTime)
                 .GreaterThan(0).WithMessage("Expected time must be greater than 0.");

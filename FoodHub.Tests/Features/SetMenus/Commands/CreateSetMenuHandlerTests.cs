@@ -5,6 +5,7 @@ using FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
+using MockQueryable.Moq;
 using Moq;
 using Xunit;
 
@@ -37,10 +38,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
-                Code: "SET001",
                 Name: "Combo 1",
-                SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 15.00m,
                 CostPrice: 10.00m,
                 Description: "Test combo",
@@ -54,6 +55,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(new List<SetMenu>().AsQueryable().BuildMock());
             mockSetMenuRepo
                 .Setup(r =>
                     r.AnyAsync(
@@ -63,16 +65,34 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 .ReturnsAsync(true);
             _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
 
-            _mockMessageService
-                .Setup(m => m.GetMessage(MessageKeys.SetMenu.CodeExists))
-                .Returns("Code already exists");
+            var mockMenuItemRepo = new Mock<IGenericRepository<MenuItem>>();
+            mockMenuItemRepo
+                .Setup(r =>
+                    r.CountAsync(
+                        It.IsAny<System.Linq.Expressions.Expression<System.Func<MenuItem, bool>>>()
+                    )
+                )
+                .ReturnsAsync(1);
+            _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuItemRepo.Object);
+
+            mockSetMenuRepo.Setup(r => r.AddAsync(It.IsAny<SetMenu>()));
+            _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            _mockCacheService
+                .Setup(c =>
+                    c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())
+                )
+                .Returns(Task.CompletedTask);
+
+            var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
+            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorType.Should().Be(ResultErrorType.Conflict);
+            result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
@@ -81,10 +101,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             // Arrange
             var userId = Guid.NewGuid();
             var menuItemId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
-                Code: "SET001",
                 Name: "Combo 1",
-                SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 15.00m,
                 CostPrice: 10.00m,
                 Description: "Test combo",
@@ -98,6 +118,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(new List<SetMenu>().AsQueryable().AsQueryable().BuildMock());
             mockSetMenuRepo
                 .Setup(r =>
                     r.AnyAsync(
@@ -121,6 +142,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 .Setup(m => m.GetMessage(MessageKeys.MenuItem.NotFound))
                 .Returns("Menu item not found");
 
+            var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
+            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
+
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -135,10 +160,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             // Arrange
             var userId = Guid.NewGuid();
             var menuItemId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
-                Code: "SET001",
                 Name: "Combo 1",
-                SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 15.00m,
                 CostPrice: 10.00m,
                 Description: "Test combo",
@@ -152,6 +177,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(new List<SetMenu>().AsQueryable().AsQueryable().BuildMock());
             mockSetMenuRepo
                 .Setup(r =>
                     r.AnyAsync(
@@ -179,13 +205,16 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 .Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
+            var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
+            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
+
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Code.Should().Be("SET001");
             result.Data.Name.Should().Be("Combo 1");
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
             _mockCacheService.Verify(
@@ -200,10 +229,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             // Arrange
             var userId = Guid.NewGuid();
             var menuItemId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
-                Code: "SET002",
                 Name: "Dinner Combo",
-                SetType: SetType.SET_MORNING,
+                CategoryId: categoryId,
                 Price: 25.00m,
                 CostPrice: 18.00m,
                 Description: "Premium dinner combo",
@@ -217,6 +246,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(new List<SetMenu>().AsQueryable().AsQueryable().BuildMock());
             mockSetMenuRepo
                 .Setup(r =>
                     r.AnyAsync(
@@ -244,6 +274,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 .Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
+            var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
+            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
+
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -251,7 +285,6 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             result.IsSuccess.Should().BeTrue();
             result.Data.Price.Should().Be(25.00m);
             result.Data.CostPrice.Should().Be(18.00m);
-            result.Data.SetType.Should().Be(SetType.SET_MORNING);
             result.Data.Items.Should().NotBeEmpty();
         }
     }

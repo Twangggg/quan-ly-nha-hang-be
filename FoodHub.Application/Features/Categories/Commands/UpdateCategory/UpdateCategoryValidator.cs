@@ -9,7 +9,10 @@ namespace FoodHub.Application.Features.Categories.Commands.UpdateCategory
         public UpdateCategoryValidator(IStringLocalizer<ErrorMessages> localizer)
         {
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage(localizer["Category.NameRequired"]);
+                .NotEmpty().WithMessage(localizer["Category.NameRequired"])
+                .MaximumLength(100).WithMessage(localizer["Category.NameMaxLength"]);
+
+
 
             RuleFor(x => x.Type)
                 .IsInEnum().WithMessage(localizer["Category.TypeInvalid"]);

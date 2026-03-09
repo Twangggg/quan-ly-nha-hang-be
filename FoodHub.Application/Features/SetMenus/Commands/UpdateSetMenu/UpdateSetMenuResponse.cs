@@ -1,5 +1,4 @@
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
 {
@@ -8,7 +7,6 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
         public Guid SetMenuId { get; set; }
         public required string Code { get; set; }
         public required string Name { get; set; }
-        public SetType SetType { get; set; }
         public string? ImageUrl { get; set; }
         public string? Description { get; set; }
         public decimal Price { get; set; }

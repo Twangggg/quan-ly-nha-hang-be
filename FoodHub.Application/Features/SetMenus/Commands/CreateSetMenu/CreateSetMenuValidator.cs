@@ -9,16 +9,12 @@ namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
 
         public CreateSetMenuValidator()
         {
-            RuleFor(x => x.Code)
-                .NotEmpty().WithMessage("Code is required.")
-                .MaximumLength(50).WithMessage("Code must not exceed 50 characters.");
-
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name is required.")
                 .MaximumLength(150).WithMessage("Name must not exceed 150 characters.");
 
-            RuleFor(x => x.SetType)
-                .IsInEnum().WithMessage("Invalid set type.");
+            RuleFor(x => x.CategoryId)
+                .NotEmpty().WithMessage("Category ID is required.");
 
             RuleFor(x => x.ImageUrl)
                 .MaximumLength(255).When(x => !string.IsNullOrEmpty(x.ImageUrl))

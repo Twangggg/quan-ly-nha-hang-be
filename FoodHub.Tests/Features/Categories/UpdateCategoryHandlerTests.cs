@@ -32,13 +32,22 @@ namespace FoodHub.Tests.Features.Categories
         {
             // Arrange
             var categoryId = Guid.NewGuid();
-            var category = new Category { CategoryId = categoryId, Name = "Old Name", CategoryType = CategoryType.Normal };
-            var command = new UpdateCategoryCommand(categoryId, "New Name", CategoryType.SpecialGroup);
+            var category = new Category { CategoryId = categoryId, Name = "Old Name", CodePrefix = "OLD", CategoryType = CategoryType.Normal };
+            var command = new UpdateCategoryCommand(categoryId, "New Name", CategoryType.Combo);
 
             var categories = new List<Category> { category }.AsQueryable().BuildMock();
             var repo = new Mock<IGenericRepository<Category>>();
             repo.Setup(r => r.Query()).Returns(categories);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(repo.Object);
+
+            var mockMenuItemRepo = new Mock<IGenericRepository<MenuItem>>();
+            mockMenuItemRepo.Setup(r => r.Query()).Returns(new List<MenuItem>().AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuItemRepo.Object);
+
+            var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(new List<SetMenu>().AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
+
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockCache.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             _mockCache.Setup(c => c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -50,9 +59,11 @@ namespace FoodHub.Tests.Features.Categories
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Name.Should().Be("New Name");
-            result.Data.Type.Should().Be(CategoryType.SpecialGroup);
+            result.Data.CodePrefix.Should().Be("OLD");
+            result.Data.Type.Should().Be((int)CategoryType.Combo);
             category.Name.Should().Be("New Name");
-            category.CategoryType.Should().Be(CategoryType.SpecialGroup);
+            category.CodePrefix.Should().Be("OLD");
+            category.CategoryType.Should().Be(CategoryType.Combo);
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
             _mockCache.Verify(c => c.RemoveAsync(CacheKey.CategoryList, It.IsAny<CancellationToken>()), Times.Once);
             _mockCache.Verify(c => c.RemoveAsync(string.Format(CacheKey.CategoryById, categoryId), It.IsAny<CancellationToken>()), Times.Once);

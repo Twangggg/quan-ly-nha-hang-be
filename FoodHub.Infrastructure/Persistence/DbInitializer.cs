@@ -116,31 +116,63 @@ namespace FoodHub.Infrastructure.Persistence
 
             if (!_context.Categories.Any() && !_context.MenuItems.Any())
             {
-                var foodCategory = new Category
+                var appCategory = new Category
                 {
                     CategoryId = Guid.NewGuid(),
-                    Name = "Main Dishes",
+                    Name = "Khai vị",
+                    CodePrefix = "APP",
                     CategoryType = CategoryType.Normal,
                     CreatedAt = DateTime.UtcNow,
+                    IsActive = true,
+                };
+
+                var mainCategory = new Category
+                {
+                    CategoryId = Guid.NewGuid(),
+                    Name = "Món chính",
+                    CodePrefix = "MAIN",
+                    CategoryType = CategoryType.Normal,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true,
                 };
 
                 var drinkCategory = new Category
                 {
                     CategoryId = Guid.NewGuid(),
-                    Name = "Drinks",
+                    Name = "Đồ uống",
+                    CodePrefix = "DRK",
                     CategoryType = CategoryType.Normal,
                     CreatedAt = DateTime.UtcNow,
+                    IsActive = true,
+                };
+
+                var dessertCategory = new Category
+                {
+                    CategoryId = Guid.NewGuid(),
+                    Name = "Tráng miệng",
+                    CodePrefix = "DES",
+                    CategoryType = CategoryType.Normal,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true,
                 };
 
                 var comboCategory = new Category
                 {
                     CategoryId = Guid.NewGuid(),
-                    Name = "Combo Sets",
-                    CategoryType = CategoryType.SpecialGroup,
+                    Name = "Combo",
+                    CodePrefix = "COMBO",
+                    CategoryType = CategoryType.Combo,
                     CreatedAt = DateTime.UtcNow,
+                    IsActive = true,
                 };
 
-                _context.Categories.AddRange(foodCategory, drinkCategory, comboCategory);
+                _context.Categories.AddRange(
+                    appCategory,
+                    mainCategory,
+                    drinkCategory,
+                    dessertCategory,
+                    comboCategory
+                );
                 _context.SaveChanges();
 
                 var menuItems = new List<MenuItem>
@@ -148,57 +180,76 @@ namespace FoodHub.Infrastructure.Persistence
                     new MenuItem
                     {
                         MenuItemId = Guid.NewGuid(),
-                        Code = "FOOD001",
-                        Name = "Grilled Chicken Rice",
-                        ImageUrl = "images/chicken_rice.jpg",
-                        Description = "Grilled chicken served with fragrant rice",
-                        CategoryId = foodCategory.CategoryId,
+                        Code = "APP-001",
+                        ItemNumber = 1,
+                        Name = "Chả giò tôm thịt",
+                        ImageUrl = "",
+                        Description = "Crispy spring rolls with shrimp and pork",
+                        CategoryId = appCategory.CategoryId,
+                        Station = Station.HotKitchen,
+                        ExpectedTime = 10,
+                        Price = 45000,
+                        CostPrice = 20000,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new MenuItem
+                    {
+                        MenuItemId = Guid.NewGuid(),
+                        Code = "MAIN-001",
+                        ItemNumber = 1,
+                        Name = "Cơm gà xối mỡ",
+                        ImageUrl = "",
+                        Description = "Fried chicken rice",
+                        CategoryId = mainCategory.CategoryId,
                         Station = Station.HotKitchen,
                         ExpectedTime = 15,
-                        Price = 50000,
+                        Price = 55000,
                         CostPrice = 30000,
                         CreatedAt = DateTime.UtcNow,
                     },
                     new MenuItem
                     {
                         MenuItemId = Guid.NewGuid(),
-                        Code = "FOOD002",
-                        Name = "Beef Noodle Soup",
-                        ImageUrl = "images/beef_noodle.jpg",
+                        Code = "MAIN-002",
+                        ItemNumber = 2,
+                        Name = "Phở bò truyền thống",
+                        ImageUrl = "",
                         Description = "Traditional beef noodle soup",
-                        CategoryId = foodCategory.CategoryId,
+                        CategoryId = mainCategory.CategoryId,
                         Station = Station.HotKitchen,
                         ExpectedTime = 12,
-                        Price = 45000,
-                        CostPrice = 25000,
+                        Price = 65000,
+                        CostPrice = 35000,
                         CreatedAt = DateTime.UtcNow,
                     },
                     new MenuItem
                     {
                         MenuItemId = Guid.NewGuid(),
-                        Code = "DRINK001",
-                        Name = "Lemon Tea",
-                        ImageUrl = "images/lemon_tea.jpg",
-                        Description = "Refreshing iced lemon tea",
+                        Code = "DRK-007",
+                        ItemNumber = 7,
+                        Name = "Cocktail đặc biệt",
+                        ImageUrl = "",
+                        Description = "Signature house cocktail",
                         CategoryId = drinkCategory.CategoryId,
                         Station = Station.Bar,
-                        ExpectedTime = 3,
-                        Price = 20000,
-                        CostPrice = 8000,
+                        ExpectedTime = 5,
+                        Price = 75000,
+                        CostPrice = 30000,
                         CreatedAt = DateTime.UtcNow,
                     },
                     new MenuItem
                     {
                         MenuItemId = Guid.NewGuid(),
-                        Code = "COMBO001",
-                        Name = "Chicken Combo Set",
-                        ImageUrl = "images/chicken_combo.jpg",
-                        Description = "Chicken rice + drink combo",
-                        CategoryId = comboCategory.CategoryId,
-                        Station = Station.HotKitchen,
-                        ExpectedTime = 18,
-                        Price = 65000,
-                        CostPrice = 40000,
+                        Code = "DES-003",
+                        ItemNumber = 3,
+                        Name = "Chè khúc bạch",
+                        ImageUrl = "",
+                        Description = "Milk jelly with lychee",
+                        CategoryId = dessertCategory.CategoryId,
+                        Station = Station.Bar,
+                        ExpectedTime = 3,
+                        Price = 35000,
+                        CostPrice = 15000,
                         CreatedAt = DateTime.UtcNow,
                     },
                 };
@@ -209,12 +260,16 @@ namespace FoodHub.Infrastructure.Persistence
 
             if (!_context.SetMenus.Any())
             {
-                var setMenu = new SetMenu
+                var comboCategory = _context.Categories.First(c => c.Name == "Combo");
+
+                var setMenu1 = new SetMenu
                 {
                     SetMenuId = Guid.NewGuid(),
-                    Code = "SET001",
-                    Name = "Lunch Set",
-                    Price = 70000,
+                    Code = "COMBO-01",
+                    ItemNumber = 1,
+                    CategoryId = comboCategory.CategoryId,
+                    Name = "Combo Ăn Trưa",
+                    Price = 99000,
                     IsOutOfStock = false,
                     CreatedAt = DateTime.UtcNow,
                 };
@@ -222,48 +277,41 @@ namespace FoodHub.Infrastructure.Persistence
                 var setMenu2 = new SetMenu
                 {
                     SetMenuId = Guid.NewGuid(),
-                    Code = "SET002",
-                    Name = "Dinner Set",
-                    Price = 85000,
+                    Code = "COMBO-02",
+                    ItemNumber = 2,
+                    CategoryId = comboCategory.CategoryId,
+                    Name = "Combo Gia Đình",
+                    Price = 250000,
                     IsOutOfStock = false,
                     CreatedAt = DateTime.UtcNow,
                 };
 
-                var setMenuItem21 = new SetMenuItem
+                _context.SetMenus.AddRange(setMenu1, setMenu2);
+                _context.SaveChanges();
+
+                // Add some items to the first combo
+                var chickenRice = _context.MenuItems.First(mi => mi.Code == "MAIN-001");
+                var specialDrink = _context.MenuItems.First(mi => mi.Code == "DRK-007");
+
+                var setMenuItem1 = new SetMenuItem
                 {
                     SetMenuItemId = Guid.NewGuid(),
-                    SetMenuId = setMenu2.SetMenuId,
-                    MenuItemId = _context.MenuItems.First(mi => mi.Code == "FOOD002").MenuItemId,
+                    SetMenuId = setMenu1.SetMenuId,
+                    MenuItemId = chickenRice.MenuItemId,
                     Quantity = 1,
-                };
-
-                var setMenuItem22 = new SetMenuItem
-                {
-                    SetMenuItemId = Guid.NewGuid(),
-                    SetMenuId = setMenu2.SetMenuId,
-                    MenuItemId = _context.MenuItems.First(mi => mi.Code == "DRINK001").MenuItemId,
-                    Quantity = 1,
-                };
-
-                var setMenu3 = new SetMenu
-                {
-                    SetMenuId = Guid.NewGuid(),
-                    Code = "SET003",
-                    Name = "Family Set",
-                    Price = 150000,
-                    IsOutOfStock = false,
                     CreatedAt = DateTime.UtcNow,
                 };
 
-                var setMenuItem31 = new SetMenuItem
+                var setMenuItem2 = new SetMenuItem
                 {
                     SetMenuItemId = Guid.NewGuid(),
-                    SetMenuId = setMenu3.SetMenuId,
-                    MenuItemId = _context.MenuItems.First(mi => mi.Code == "FOOD001").MenuItemId,
-                    Quantity = 2,
+                    SetMenuId = setMenu1.SetMenuId,
+                    MenuItemId = specialDrink.MenuItemId,
+                    Quantity = 1,
+                    CreatedAt = DateTime.UtcNow,
                 };
 
-                _context.SetMenus.AddRange(setMenu, setMenu2, setMenu3);
+                _context.SetMenuItems.AddRange(setMenuItem1, setMenuItem2);
                 _context.SaveChanges();
             }
 
@@ -333,9 +381,9 @@ namespace FoodHub.Infrastructure.Persistence
             if (!_context.Orders.Any())
             {
                 var admin = _context.Employees.First(e => e.EmployeeCode == "M001001");
-                var chickenRice = _context.MenuItems.First(mi => mi.Code == "FOOD001");
-                var beefNoodle = _context.MenuItems.First(mi => mi.Code == "FOOD002");
-                var lemonTea = _context.MenuItems.First(mi => mi.Code == "DRINK001");
+                var chickenRice = _context.MenuItems.First(mi => mi.Code == "MAIN-001");
+                var beefNoodle = _context.MenuItems.First(mi => mi.Code == "MAIN-002");
+                var specialDrink = _context.MenuItems.First(mi => mi.Code == "DRK-007");
 
                 // Table IDs that match FE expectation (ending with 01, 02)
                 var table01Id = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -348,7 +396,7 @@ namespace FoodHub.Infrastructure.Persistence
                     OrderType = OrderType.DineIn,
                     Status = OrderStatus.Serving,
                     TableId = table02Id,
-                    TotalAmount = 70000 + 45000 + 20000,
+                    TotalAmount = chickenRice.Price + specialDrink.Price,
                     CreatedByEmployee = admin,
                     CreatedAt = DateTime.UtcNow.AddHours(-1),
                 };
@@ -374,32 +422,14 @@ namespace FoodHub.Infrastructure.Persistence
                     {
                         OrderItemId = Guid.NewGuid(),
                         OrderId = order1.OrderId,
-                        MenuItemId = lemonTea.MenuItemId,
-                        ItemCodeSnapshot = lemonTea.Code,
-                        ItemNameSnapshot = lemonTea.Name,
-                        StationSnapshot = lemonTea.Station.ToString(),
+                        MenuItemId = specialDrink.MenuItemId,
+                        ItemCodeSnapshot = specialDrink.Code,
+                        ItemNameSnapshot = specialDrink.Name,
+                        StationSnapshot = specialDrink.Station.ToString(),
                         Status = OrderItemStatus.Completed,
                         Quantity = 1,
-                        UnitPriceSnapshot = lemonTea.Price,
+                        UnitPriceSnapshot = specialDrink.Price,
                         CreatedAt = order1.CreatedAt,
-                    }
-                );
-
-                // Add more Preparing items
-                order1.OrderItems.Add(
-                    new OrderItem
-                    {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order1.OrderId,
-                        MenuItemId = beefNoodle.MenuItemId,
-                        ItemCodeSnapshot = beefNoodle.Code,
-                        ItemNameSnapshot = beefNoodle.Name,
-                        StationSnapshot = beefNoodle.Station.ToString(),
-                        Status = OrderItemStatus.Preparing,
-                        Quantity = 2,
-                        UnitPriceSnapshot = beefNoodle.Price,
-                        ItemNote = "No onions",
-                        CreatedAt = order1.CreatedAt.AddMinutes(5),
                     }
                 );
 
@@ -410,7 +440,7 @@ namespace FoodHub.Infrastructure.Persistence
                     OrderType = OrderType.DineIn,
                     Status = OrderStatus.Serving,
                     TableId = table01Id,
-                    TotalAmount = 45000 + 50000,
+                    TotalAmount = beefNoodle.Price,
                     CreatedByEmployee = admin,
                     CreatedAt = DateTime.UtcNow.AddMinutes(-30),
                 };
@@ -431,31 +461,13 @@ namespace FoodHub.Infrastructure.Persistence
                     }
                 );
 
-                // Add more Preparing items
-                order2.OrderItems.Add(
-                    new OrderItem
-                    {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order2.OrderId,
-                        MenuItemId = chickenRice.MenuItemId,
-                        ItemCodeSnapshot = chickenRice.Code,
-                        ItemNameSnapshot = chickenRice.Name,
-                        StationSnapshot = chickenRice.Station.ToString(),
-                        Status = OrderItemStatus.Preparing,
-                        Quantity = 3,
-                        UnitPriceSnapshot = chickenRice.Price,
-                        ItemNote = "Extra spicy",
-                        CreatedAt = order2.CreatedAt.AddMinutes(2),
-                    }
-                );
-
                 var order3 = new Order
                 {
                     OrderId = Guid.NewGuid(),
                     OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0003",
                     OrderType = OrderType.Takeaway,
                     Status = OrderStatus.Serving,
-                    TotalAmount = 20000 + 90000,
+                    TotalAmount = specialDrink.Price,
                     CreatedByEmployee = admin,
                     CreatedAt = DateTime.UtcNow.AddMinutes(-10),
                 };
@@ -465,54 +477,19 @@ namespace FoodHub.Infrastructure.Persistence
                     {
                         OrderItemId = Guid.NewGuid(),
                         OrderId = order3.OrderId,
-                        MenuItemId = lemonTea.MenuItemId,
-                        ItemCodeSnapshot = lemonTea.Code,
-                        ItemNameSnapshot = lemonTea.Name,
-                        StationSnapshot = lemonTea.Station.ToString(),
+                        MenuItemId = specialDrink.MenuItemId,
+                        ItemCodeSnapshot = specialDrink.Code,
+                        ItemNameSnapshot = specialDrink.Name,
+                        StationSnapshot = specialDrink.Station.ToString(),
                         Status = OrderItemStatus.Ready,
                         Quantity = 1,
-                        UnitPriceSnapshot = lemonTea.Price,
+                        UnitPriceSnapshot = specialDrink.Price,
                         CreatedAt = order3.CreatedAt,
-                    }
-                );
-
-                // Add more Preparing items
-                order3.OrderItems.Add(
-                    new OrderItem
-                    {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order3.OrderId,
-                        MenuItemId = beefNoodle.MenuItemId,
-                        ItemCodeSnapshot = beefNoodle.Code,
-                        ItemNameSnapshot = beefNoodle.Name,
-                        StationSnapshot = beefNoodle.Station.ToString(),
-                        Status = OrderItemStatus.Preparing,
-                        Quantity = 1,
-                        UnitPriceSnapshot = beefNoodle.Price,
-                        CreatedAt = order3.CreatedAt.AddMinutes(1),
-                    }
-                );
-
-                order3.OrderItems.Add(
-                    new OrderItem
-                    {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order3.OrderId,
-                        MenuItemId = chickenRice.MenuItemId,
-                        ItemCodeSnapshot = chickenRice.Code,
-                        ItemNameSnapshot = chickenRice.Name,
-                        StationSnapshot = chickenRice.Station.ToString(),
-                        Status = OrderItemStatus.Preparing,
-                        Quantity = 1,
-                        UnitPriceSnapshot = chickenRice.Price,
-                        CreatedAt = order3.CreatedAt.AddMinutes(2),
                     }
                 );
 
                 _context.Orders.AddRange(order1, order2, order3);
                 _context.SaveChanges();
-
-                Console.WriteLine($"[TESTING] Seeded Order1 ID: {order1.OrderId}");
             }
 
             _context.SaveChanges();
