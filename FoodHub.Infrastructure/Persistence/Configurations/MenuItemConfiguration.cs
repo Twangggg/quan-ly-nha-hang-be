@@ -17,8 +17,10 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.MenuItemId).HasColumnName("menu_item_id");
 
             builder.Property(e => e.Code).HasColumnName("code").HasMaxLength(50).IsRequired();
+            builder.Property(e => e.ItemNumber).HasColumnName("item_number");
 
             builder.HasIndex(e => e.Code).IsUnique().HasFilter("deleted_at IS NULL");
+            builder.HasIndex(e => new { e.CategoryId, e.ItemNumber }).IsUnique().HasFilter("deleted_at IS NULL");
 
             builder.Property(e => e.Name).HasColumnName("name").HasMaxLength(150).IsRequired();
 

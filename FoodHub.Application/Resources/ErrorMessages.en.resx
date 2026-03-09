@@ -481,11 +481,17 @@
     <data name="Area.Inactive" xml:space="preserve">
     <value>Cannot perform this action because the area is inactive.</value>
   </data>
-  <!-- Checkout Errors -->
-  <data name="Order.AlreadyPaid" xml:space="preserve">
+    <!-- Checkout Errors -->
+    <data name="Order.AlreadyPaid" xml:space="preserve">
     <value>This order has already been paid.</value>
   </data>
-  <data name="Order.InsufficientAmount" xml:space="preserve">
+    <data name="Order.InsufficientAmount" xml:space="preserve">
     <value>The payment amount is insufficient.</value>
+      </data>
+    <data name="Category.NotFound" xml:space="preserve">
+    <value>Category not found.</value>
+  </data>
+    <data name="Category.InvalidType" xml:space="preserve">
+    <value>The category type is invalid for this menu type.</value>
   </data>
 </root>

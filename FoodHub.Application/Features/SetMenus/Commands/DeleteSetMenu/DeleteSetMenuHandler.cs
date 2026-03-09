@@ -3,7 +3,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
+
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,7 +63,6 @@ namespace FoodHub.Application.Features.SetMenus.Commands.DeleteSetMenu
                 SetMenuId = setMenu.SetMenuId,
                 Code = setMenu.Code,
                 Name = setMenu.Name,
-                SetType = setMenu.SetType,
                 ImageUrl = setMenu.ImageUrl,
                 Description = setMenu.Description,
                 CostPrice = setMenu.CostPrice,

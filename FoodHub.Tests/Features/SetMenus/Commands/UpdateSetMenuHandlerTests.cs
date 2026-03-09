@@ -4,7 +4,7 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
+
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -38,10 +38,11 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
         {
             // Arrange
             var setMenuId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
-                SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
@@ -67,10 +68,11 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
         {
             // Arrange
             var setMenuId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
-                SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
@@ -102,10 +104,11 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             // Arrange
             var setMenuId = Guid.NewGuid();
             var menuItemId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
-                SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
@@ -155,10 +158,11 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             var userId = Guid.NewGuid();
             var setMenuId = Guid.NewGuid();
             var menuItemId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new UpdateSetMenuCommand(
                 SetMenuId: setMenuId,
                 Name: "Updated Combo",
-                SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 20.00m,
                 CostPrice: 15.00m,
                 Description: "Updated description",
@@ -171,7 +175,6 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 SetMenuId = setMenuId,
                 Code = "SET001",
                 Name = "Combo 1",
-                SetType = SetType.SET_MORNING,
                 Price = 15.00m,
                 CostPrice = 10.00m,
             };

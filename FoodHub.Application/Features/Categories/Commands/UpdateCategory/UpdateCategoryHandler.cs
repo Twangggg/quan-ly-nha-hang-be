@@ -47,7 +47,8 @@ namespace FoodHub.Application.Features.Categories.Commands.UpdateCategory
             {
                 CategoryId = category.CategoryId,
                 Name = category.Name,
-                Type = category.CategoryType,
+                CodePrefix = category.CodePrefix,
+                Type = (int)category.CategoryType,
                 CreatedAt = category.CreatedAt,
                 UpdatedAt = category.UpdatedAt
             };

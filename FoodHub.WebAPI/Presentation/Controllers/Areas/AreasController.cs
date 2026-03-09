@@ -112,16 +112,16 @@ namespace FoodHub.Presentation.Controllers
         }
 
         /// <summary>
-        /// Thay đổi trạng thái hoạt động của khu vực.
+        /// Cập nhật trạng thái hoạt động của khu vực.
         /// </summary>
         /// <param name="id">Mã khu vực.</param>
-        /// <param name="request">Dữ liệu trạng thái mới.</param>
+        /// <param name="isActive">Trạng thái (true: hoạt động, false: dừng hoạt động).</param>
         [HttpPatch("{id}/status")]
         [HasPermission(Permissions.Areas.Update)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateAreaStatus(Guid id, [FromBody] UpdateAreaStatusRequest request)
+        public async Task<IActionResult> UpdateAreaStatus(Guid id, [FromQuery] bool isActive)
         {
-            var result = await _mediator.Send(new UpdateAreaStatusCommand(id, request.IsActive));
+            var result = await _mediator.Send(new UpdateAreaStatusCommand(id, isActive));
             return HandleResult(result);
         }
 

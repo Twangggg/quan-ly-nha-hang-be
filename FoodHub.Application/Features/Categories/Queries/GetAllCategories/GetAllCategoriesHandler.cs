@@ -41,7 +41,8 @@ namespace FoodHub.Application.Features.Categories.Queries.GetAllCategories
             // 1. Apply Global Search
             var searchableFields = new List<Expression<Func<Category, string?>>>
             {
-                c => c.Name
+                c => c.Name,
+                c => c.CodePrefix
             };
             query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
 
@@ -57,6 +58,8 @@ namespace FoodHub.Application.Features.Categories.Queries.GetAllCategories
             var sortMapping = new Dictionary<string, Expression<Func<Category, object?>>>
             {
                 { "name", c => c.Name },
+                { "codePrefix", c => c.CodePrefix },
+                { "type", c => c.CategoryType },
                 { "createdAt", c => c.CreatedAt }
             };
 

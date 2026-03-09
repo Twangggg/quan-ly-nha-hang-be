@@ -16,7 +16,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         public Guid CategoryId { get; set; }
         public string CategoryName { get; set; } = null!;
 
-        public Station Station { get; set; }
+        public int Station { get; set; }
         public int ExpectedTime { get; set; } // Minutes
 
         public decimal Price { get; set; }

@@ -43,6 +43,7 @@ namespace FoodHub.Tests.Features.Categories
             {
                 CategoryId = categoryId,
                 Name = "Cached Category",
+                CodePrefix = "CC",
                 Type = (int)CategoryType.Normal
             };
 
@@ -68,12 +69,14 @@ namespace FoodHub.Tests.Features.Categories
             {
                 CategoryId = categoryId,
                 Name = "Test Category",
+                CodePrefix = "TC",
                 CategoryType = CategoryType.Normal
             };
             var mappedResponse = new GetCategoryByIdResponse
             {
                 CategoryId = categoryId,
                 Name = "Test Category",
+                CodePrefix = "TC",
                 Type = (int)CategoryType.Normal
             };
 

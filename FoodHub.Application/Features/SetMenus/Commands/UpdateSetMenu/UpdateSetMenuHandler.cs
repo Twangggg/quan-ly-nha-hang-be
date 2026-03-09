@@ -4,6 +4,7 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
+
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -53,12 +54,22 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
                 return Result<UpdateSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.NotFound), ResultErrorType.BadRequest);
             }
 
+            var category = await _unitOfWork.Repository<Category>().GetByIdAsync(request.CategoryId);
+            if (category == null)
+                return Result<UpdateSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.NotFound), ResultErrorType.NotFound);
+
+            if (!category.IsActive)
+                return Result<UpdateSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.Inactive, category.Name), ResultErrorType.BadRequest);
+
+            if (category.CategoryType != CategoryType.Combo)
+                return Result<UpdateSetMenuResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.InvalidType, category.Name), ResultErrorType.BadRequest);
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 // 3. Update SetMenu properties
                 setMenu.Name = request.Name;
-                setMenu.SetType = request.SetType;
+                setMenu.CategoryId = request.CategoryId;
                 setMenu.Price = request.Price;
                 setMenu.ImageUrl = request.ImageUrl;
                 setMenu.Description = request.Description;
@@ -113,7 +124,6 @@ namespace FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu
                     SetMenuId = setMenu.SetMenuId,
                     Code = setMenu.Code,
                     Name = setMenu.Name,
-                    SetType = setMenu.SetType,
                     ImageUrl = setMenu.ImageUrl,
                     Description = setMenu.Description,
                     CostPrice = setMenu.CostPrice,

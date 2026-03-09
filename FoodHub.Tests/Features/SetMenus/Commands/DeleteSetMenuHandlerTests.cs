@@ -4,7 +4,7 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Features.SetMenus.Commands.DeleteSetMenu;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
+
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -91,7 +91,6 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 SetMenuId = setMenuId,
                 Code = "SET001",
                 Name = "Combo 1",
-                SetType = SetType.SET_LUNCH,
                 Price = 15.00m,
                 CostPrice = 10.00m,
                 Description = "Test combo",

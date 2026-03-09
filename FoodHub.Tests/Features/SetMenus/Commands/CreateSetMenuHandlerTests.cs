@@ -4,7 +4,7 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
+
 using Moq;
 using Xunit;
 
@@ -37,10 +37,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
-                Code: "SET001",
                 Name: "Combo 1",
-                SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 15.00m,
                 CostPrice: 10.00m,
                 Description: "Test combo",
@@ -81,10 +81,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             // Arrange
             var userId = Guid.NewGuid();
             var menuItemId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
-                Code: "SET001",
                 Name: "Combo 1",
-                SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 15.00m,
                 CostPrice: 10.00m,
                 Description: "Test combo",
@@ -135,10 +135,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             // Arrange
             var userId = Guid.NewGuid();
             var menuItemId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
-                Code: "SET001",
                 Name: "Combo 1",
-                SetType: SetType.SET_LUNCH,
+                CategoryId: categoryId,
                 Price: 15.00m,
                 CostPrice: 10.00m,
                 Description: "Test combo",
@@ -185,7 +185,6 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.Code.Should().Be("SET001");
             result.Data.Name.Should().Be("Combo 1");
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
             _mockCacheService.Verify(
@@ -200,10 +199,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             // Arrange
             var userId = Guid.NewGuid();
             var menuItemId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
             var command = new CreateSetMenuCommand(
-                Code: "SET002",
                 Name: "Dinner Combo",
-                SetType: SetType.SET_MORNING,
+                CategoryId: categoryId,
                 Price: 25.00m,
                 CostPrice: 18.00m,
                 Description: "Premium dinner combo",
@@ -251,7 +250,6 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             result.IsSuccess.Should().BeTrue();
             result.Data.Price.Should().Be(25.00m);
             result.Data.CostPrice.Should().Be(18.00m);
-            result.Data.SetType.Should().Be(SetType.SET_MORNING);
             result.Data.Items.Should().NotBeEmpty();
         }
     }

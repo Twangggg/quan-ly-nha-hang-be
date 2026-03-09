@@ -1,4 +1,6 @@
 using FluentValidation;
+using FoodHub.Domain.Enums;
+
 
 namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
 {
@@ -21,7 +23,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
                 .NotEmpty().WithMessage("Category is required.");
 
             RuleFor(x => x.Station)
-                .IsInEnum().WithMessage("Invalid station.");
+                .Must(x => Enum.IsDefined(typeof(Station), x)).WithMessage("Invalid station.");
 
             RuleFor(x => x.ExpectedTime)
             .NotEmpty()

@@ -4,5 +4,5 @@ using MediatR;
 
 namespace FoodHub.Application.Features.Categories.Commands.CreateCategory
 {
-    public record CreateCategoryCommand(string Name, CategoryType Type) : IRequest<Result<CreateCategoryResponse>>;
+    public record CreateCategoryCommand(string Name, string CodePrefix, CategoryType Type) : IRequest<Result<CreateCategoryResponse>>;
 }
