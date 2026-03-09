@@ -4,7 +4,7 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Features.SetMenus.Commands.UpdateSetMenu;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-
+using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -177,6 +177,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 Name = "Combo 1",
                 Price = 15.00m,
                 CostPrice = 10.00m,
+                CategoryId = categoryId,
             };
 
             _mockCurrentUserService.Setup(s => s.Role).Returns("Manager");
@@ -196,6 +197,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 )
                 .ReturnsAsync(1);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuItemRepo.Object);
+
+            var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
+            mockCategoryRepo.Setup(r => r.GetByIdAsync(categoryId)).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", IsActive = true, CategoryType = CategoryType.Combo });
+            _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
 
             var mockSetMenuItemRepo = new Mock<IGenericRepository<SetMenuItem>>();
             mockSetMenuItemRepo
