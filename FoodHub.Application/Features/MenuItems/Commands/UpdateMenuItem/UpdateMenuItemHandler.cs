@@ -114,7 +114,17 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
                     );
             }
 
-            await _unitOfWork.SaveChangeAsync();
+            try
+            {
+                await _unitOfWork.SaveChangeAsync();
+            }
+            catch (DbUpdateException)
+            {
+                return Result<UpdateMenuItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Common.DatabaseConflict),
+                    ResultErrorType.BadRequest
+                );
+            }
 
             await _cacheService.RemoveByPatternAsync("menuitem:list", cancellationToken);
             await _cacheService.RemoveAsync(
