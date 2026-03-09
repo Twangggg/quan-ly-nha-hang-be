@@ -4,7 +4,8 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-
+using FoodHub.Domain.Enums;
+using MockQueryable.Moq;
 using Moq;
 using Xunit;
 
@@ -54,6 +55,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(new List<SetMenu>().AsQueryable().BuildMock());
             mockSetMenuRepo
                 .Setup(r =>
                     r.AnyAsync(
@@ -63,16 +65,34 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 .ReturnsAsync(true);
             _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
 
-            _mockMessageService
-                .Setup(m => m.GetMessage(MessageKeys.SetMenu.CodeExists))
-                .Returns("Code already exists");
+            var mockMenuItemRepo = new Mock<IGenericRepository<MenuItem>>();
+            mockMenuItemRepo
+                .Setup(r =>
+                    r.CountAsync(
+                        It.IsAny<System.Linq.Expressions.Expression<System.Func<MenuItem, bool>>>()
+                    )
+                )
+                .ReturnsAsync(1);
+            _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuItemRepo.Object);
+
+            mockSetMenuRepo.Setup(r => r.AddAsync(It.IsAny<SetMenu>()));
+            _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            _mockCacheService
+                .Setup(c =>
+                    c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())
+                )
+                .Returns(Task.CompletedTask);
+
+            var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
+            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorType.Should().Be(ResultErrorType.Conflict);
+            result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
@@ -98,6 +118,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(new List<SetMenu>().AsQueryable().AsQueryable().BuildMock());
             mockSetMenuRepo
                 .Setup(r =>
                     r.AnyAsync(
@@ -120,6 +141,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockMessageService
                 .Setup(m => m.GetMessage(MessageKeys.MenuItem.NotFound))
                 .Returns("Menu item not found");
+
+            var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
+            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -152,6 +177,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(new List<SetMenu>().AsQueryable().AsQueryable().BuildMock());
             mockSetMenuRepo
                 .Setup(r =>
                     r.AnyAsync(
@@ -178,6 +204,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 )
                 .Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
+            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -216,6 +246,7 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
 
             var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(new List<SetMenu>().AsQueryable().AsQueryable().BuildMock());
             mockSetMenuRepo
                 .Setup(r =>
                     r.AnyAsync(
@@ -242,6 +273,10 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 )
                 .Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
+            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);

@@ -39,6 +39,15 @@ namespace FoodHub.Tests.Features.Categories
             var repo = new Mock<IGenericRepository<Category>>();
             repo.Setup(r => r.Query()).Returns(categories);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(repo.Object);
+
+            var mockMenuItemRepo = new Mock<IGenericRepository<MenuItem>>();
+            mockMenuItemRepo.Setup(r => r.Query()).Returns(new List<MenuItem>().AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuItemRepo.Object);
+
+            var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            mockSetMenuRepo.Setup(r => r.Query()).Returns(new List<SetMenu>().AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
+
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockCache.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             _mockCache.Setup(c => c.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);

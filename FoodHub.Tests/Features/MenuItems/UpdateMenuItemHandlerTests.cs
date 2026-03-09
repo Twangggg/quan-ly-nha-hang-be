@@ -80,9 +80,10 @@ namespace FoodHub.Tests.Features.MenuItems
             menuItemRepo.Setup(r => r.Query()).Returns(menuItems);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(menuItemRepo.Object);
 
-            var categories = new List<Category> { new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC" } }.AsQueryable().BuildMock();
+            var categories = new List<Category> { new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC", IsActive = true, CategoryType = CategoryType.Normal } }.AsQueryable().BuildMock();
             var categoryRepo = new Mock<IGenericRepository<Category>>();
             categoryRepo.Setup(r => r.Query()).Returns(categories);
+            categoryRepo.Setup(r => r.GetByIdAsync(categoryId)).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC", IsActive = true, CategoryType = CategoryType.Normal });
             _mockUow.Setup(u => u.Repository<Category>()).Returns(categoryRepo.Object);
 
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -228,9 +229,10 @@ namespace FoodHub.Tests.Features.MenuItems
             menuItemRepo.Setup(r => r.Query()).Returns(menuItems);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(menuItemRepo.Object);
 
-            var categories = new List<Category> { new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC" } }.AsQueryable().BuildMock();
+            var categories = new List<Category> { new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC", IsActive = true, CategoryType = CategoryType.Normal } }.AsQueryable().BuildMock();
             var categoryRepo = new Mock<IGenericRepository<Category>>();
             categoryRepo.Setup(r => r.Query()).Returns(categories);
+            categoryRepo.Setup(r => r.GetByIdAsync(categoryId)).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Món chính", CodePrefix = "MC", IsActive = true, CategoryType = CategoryType.Normal });
             _mockUow.Setup(u => u.Repository<Category>()).Returns(categoryRepo.Object);
 
             _mockMessage.Setup(m => m.GetMessage(MessageKeys.MenuItem.UpdateCostForbidden)).Returns("Only Manager or Cashier can update cost price");
