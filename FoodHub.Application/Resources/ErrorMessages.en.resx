@@ -494,4 +494,7 @@
     <data name="Category.InvalidType" xml:space="preserve">
     <value>The category type is invalid for this menu type.</value>
   </data>
+    <data name="Category.CannotChangeTypeNotEmpty" xml:space="preserve">
+    <value>Cannot change category type while there are items inside.</value>
+  </data>
 </root>

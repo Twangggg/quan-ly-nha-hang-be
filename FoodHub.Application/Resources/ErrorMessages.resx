@@ -546,4 +546,7 @@
   <data name="Category.InvalidType" xml:space="preserve">
     <value>Loại danh mục không hợp lệ cho loại thực đơn này.</value>
   </data>
+  <data name="Category.CannotChangeTypeNotEmpty" xml:space="preserve">
+    <value>Không thể đổi loại danh mục khi đang có món ăn bên trong.</value>
+  </data>
 </root>

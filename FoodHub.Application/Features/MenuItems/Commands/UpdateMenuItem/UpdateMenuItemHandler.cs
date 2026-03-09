@@ -10,7 +10,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
 {
-    public class UpdateMenuItemHandler : IRequestHandler<UpdateMenuItemCommand, Result<UpdateMenuItemResponse>>
+    public class UpdateMenuItemHandler
+        : IRequestHandler<UpdateMenuItemCommand, Result<UpdateMenuItemResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -18,7 +19,13 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
 
-        public UpdateMenuItemHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService)
+        public UpdateMenuItemHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ICurrentUserService currentUserService,
+            IMessageService messageService,
+            ICacheService cacheService
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -27,14 +34,20 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             _cacheService = cacheService;
         }
 
-        public async Task<Result<UpdateMenuItemResponse>> Handle(UpdateMenuItemCommand request, CancellationToken cancellationToken)
+        public async Task<Result<UpdateMenuItemResponse>> Handle(
+            UpdateMenuItemCommand request,
+            CancellationToken cancellationToken
+        )
         {
             var repo = _unitOfWork.Repository<MenuItem>();
 
             var menuItem = await repo.Query()
                 .Include(mi => mi.Category)
                 .FirstOrDefaultAsync(mi => mi.MenuItemId == request.MenuItemId, cancellationToken);
-            if (menuItem is null) return Result<UpdateMenuItemResponse>.NotFound(_messageService.GetMessage(MessageKeys.MenuItem.NotFound));
+            if (menuItem is null)
+                return Result<UpdateMenuItemResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.MenuItem.NotFound)
+                );
 
             var name = request.Name.Trim();
             var imageUrl = request.ImageUrl.Trim();
@@ -47,13 +60,35 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
 
             var category = await _unitOfWork.Repository<Category>().GetByIdAsync(categoryId);
             if (category == null)
-                return Result<UpdateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.NotFound));
+                return Result<UpdateMenuItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Category.NotFound)
+                );
 
             if (!category.IsActive)
-                return Result<UpdateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.Inactive));
+                return Result<UpdateMenuItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Category.Inactive)
+                );
 
             if (category.CategoryType != CategoryType.Normal)
-                return Result<UpdateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.Category.InvalidType));
+                return Result<UpdateMenuItemResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Category.InvalidType)
+                );
+
+            if (menuItem.CategoryId != categoryId)
+            {
+                var nextItemNumber = 1;
+                var hasItems = await repo.Query()
+                    .AnyAsync(m => m.CategoryId == categoryId, cancellationToken);
+                if (hasItems)
+                {
+                    nextItemNumber =
+                        await repo.Query()
+                            .Where(m => m.CategoryId == categoryId)
+                            .MaxAsync(m => m.ItemNumber, cancellationToken) + 1;
+                }
+                menuItem.ItemNumber = nextItemNumber;
+                menuItem.Code = $"{category.CodePrefix}-{nextItemNumber:D3}";
+            }
 
             menuItem.Name = name;
             menuItem.ImageUrl = imageUrl;
@@ -64,20 +99,28 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
             menuItem.Price = price;
 
             menuItem.UpdatedAt = DateTime.UtcNow;
-            menuItem.UpdatedBy = Guid.TryParse(_currentUserService.UserId, out var userId) ? userId : null;
+            menuItem.UpdatedBy = Guid.TryParse(_currentUserService.UserId, out var userId)
+                ? userId
+                : null;
 
             if (costPrice.HasValue)
             {
                 if (_currentUserService.Role is "Manager" or "Cashier")
                     menuItem.CostPrice = costPrice.Value;
-                else return Result<UpdateMenuItemResponse>.Failure(_messageService.GetMessage(MessageKeys.MenuItem.UpdateCostForbidden), ResultErrorType.Forbidden);
+                else
+                    return Result<UpdateMenuItemResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.MenuItem.UpdateCostForbidden),
+                        ResultErrorType.Forbidden
+                    );
             }
-
 
             await _unitOfWork.SaveChangeAsync();
 
             await _cacheService.RemoveByPatternAsync("menuitem:list", cancellationToken);
-            await _cacheService.RemoveAsync(string.Format(CacheKey.MenuItemById, request.MenuItemId), cancellationToken);
+            await _cacheService.RemoveAsync(
+                string.Format(CacheKey.MenuItemById, request.MenuItemId),
+                cancellationToken
+            );
 
             var response = _mapper.Map<UpdateMenuItemResponse>(menuItem);
             return Result<UpdateMenuItemResponse>.Success(response);
