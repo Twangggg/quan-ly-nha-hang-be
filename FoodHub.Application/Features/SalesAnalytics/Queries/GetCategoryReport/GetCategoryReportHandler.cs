@@ -58,8 +58,6 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetCategoryReport
                 .Repository<OrderItem>()
                 .Query()
                 .AsNoTracking()
-                .Include(oi => oi.MenuItem)
-                    .ThenInclude(mi => mi.Category)
                 .Where(oi =>
                     oi.Order.Status == OrderStatus.Paid || oi.Order.Status == OrderStatus.Completed
                 );
