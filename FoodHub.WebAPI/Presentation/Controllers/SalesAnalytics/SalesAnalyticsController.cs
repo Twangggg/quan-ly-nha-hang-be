@@ -1,7 +1,7 @@
 using System.Net.Mime;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Features.Reports.Queries.GetDailyReport;
+using FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -11,13 +11,14 @@ namespace FoodHub.Presentation.Controllers
     /// <summary>
     /// Báo cáo kinh doanh (doanh thu, đơn hàng).
     /// </summary>
-    [Tags("Báo cáo (Reports)")]
+    [Tags("Phân tích & Thống kê (SalesAnalytics)")]
+    [Route("api/v{version:apiVersion}/sales-analytics")]
     [RateLimit(maxRequests: 60, windowMinutes: 1, blockMinutes: 5)]
-    public class ReportsController : ApiControllerBase
+    public class SalesAnalyticsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
 
-        public ReportsController(IMediator mediator)
+        public SalesAnalyticsController(IMediator mediator)
         {
             _mediator = mediator;
         }
@@ -34,13 +35,14 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="date">Ngày cần xem (yyyy-MM-dd). Mặc định: hôm nay theo giờ VN.</param>
         /// <param name="movingAverageDays">Số ngày dùng để tính target. Mặc định: 30.</param>
         /// <response code="200">Trả về báo cáo ngày thành công.</response>
-        [HttpGet("daily")]
-        [HasPermission(Permissions.Reports.View)]
+        [HttpGet("summary")]
+        [HasPermission(Permissions.SalesAnalytics.View)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(Result<GetDailyReportResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetDailyReport(
             [FromQuery] DateOnly? date,
-            [FromQuery] int movingAverageDays = 30)
+            [FromQuery] int movingAverageDays = 30
+        )
         {
             var query = new GetDailyReportQuery
             {

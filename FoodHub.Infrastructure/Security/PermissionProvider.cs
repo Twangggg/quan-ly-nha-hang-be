@@ -66,7 +66,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Tables.View,
                 Permissions.Areas.View,
                 Permissions.Billing.Checkout,
-                Permissions.Reports.View,
+                Permissions.SalesAnalytics.View,
             };
         }
 

@@ -1,4 +1,4 @@
-namespace FoodHub.Application.Features.Reports.Queries.GetDailyReport
+namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
 {
     public class GetDailyReportResponse
     {

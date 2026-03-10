@@ -1,7 +1,7 @@
 using FoodHub.Application.Common.Models;
 using MediatR;
 
-namespace FoodHub.Application.Features.Reports.Queries.GetDailyReport
+namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
 {
     public class GetDailyReportQuery : IRequest<Result<GetDailyReportResponse>>
     {

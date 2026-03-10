@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FoodHub.Application.Features.Reports.Queries.GetDailyReport;
+using FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -12,11 +12,13 @@ using MockQueryable.Moq;
 using Moq;
 using Xunit;
 
-namespace FoodHub.Tests.Features.Reports
+namespace FoodHub.Tests.Features.SalesAnalytics
 {
     public class GetDailyReportHandlerTests
     {
-        private static readonly TimeZoneInfo VnTz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+        private static readonly TimeZoneInfo VnTz = TimeZoneInfo.FindSystemTimeZoneById(
+            "Asia/Ho_Chi_Minh"
+        );
 
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ILogger<GetDailyReportHandler>> _mockLogger;
@@ -33,14 +35,15 @@ namespace FoodHub.Tests.Features.Reports
 
         /// Tạo DateTime UTC tương ứng với giờ VN (HH:mm ngày d).
         private static DateTime VnToUtc(DateOnly d, int hour = 0, int minute = 0) =>
-            TimeZoneInfo.ConvertTimeToUtc(
-                d.ToDateTime(new TimeOnly(hour, minute)), VnTz);
+            TimeZoneInfo.ConvertTimeToUtc(d.ToDateTime(new TimeOnly(hour, minute)), VnTz);
 
         private void SetupOrderRepo(IEnumerable<FoodHub.Domain.Entities.Order> orders)
         {
             var mockRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
             mockRepo.Setup(r => r.Query()).Returns(orders.AsQueryable().BuildMock());
-            _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(mockRepo.Object);
+            _mockUow
+                .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
+                .Returns(mockRepo.Object);
         }
 
         // ── Tests ─────────────────────────────────────────────────────────────
@@ -53,10 +56,25 @@ namespace FoodHub.Tests.Features.Reports
 
             var orders = new List<FoodHub.Domain.Entities.Order>
             {
-                new() { Status = OrderStatus.Paid,      TotalAmount = 200_000, PaidAt = VnToUtc(reportDate, 9) },
-                new() { Status = OrderStatus.Completed, TotalAmount = 350_000, PaidAt = VnToUtc(reportDate, 14) },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 200_000,
+                    PaidAt = VnToUtc(reportDate, 9),
+                },
+                new()
+                {
+                    Status = OrderStatus.Completed,
+                    TotalAmount = 350_000,
+                    PaidAt = VnToUtc(reportDate, 14),
+                },
                 // Order from previous day - should NOT be counted
-                new() { Status = OrderStatus.Paid,      TotalAmount = 100_000, PaidAt = VnToUtc(reportDate.AddDays(-1), 20) },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 100_000,
+                    PaidAt = VnToUtc(reportDate.AddDays(-1), 20),
+                },
             };
             SetupOrderRepo(orders);
 
@@ -80,9 +98,24 @@ namespace FoodHub.Tests.Features.Reports
 
             var orders = new List<FoodHub.Domain.Entities.Order>
             {
-                new() { Status = OrderStatus.Paid,      TotalAmount = 100_000, PaidAt = VnToUtc(reportDate, 10) },
-                new() { Status = OrderStatus.Cancelled, TotalAmount = 0,       PaidAt = VnToUtc(reportDate, 11) },
-                new() { Status = OrderStatus.Cancelled, TotalAmount = 0,       PaidAt = VnToUtc(reportDate, 12) },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 100_000,
+                    PaidAt = VnToUtc(reportDate, 10),
+                },
+                new()
+                {
+                    Status = OrderStatus.Cancelled,
+                    TotalAmount = 0,
+                    PaidAt = VnToUtc(reportDate, 11),
+                },
+                new()
+                {
+                    Status = OrderStatus.Cancelled,
+                    TotalAmount = 0,
+                    PaidAt = VnToUtc(reportDate, 12),
+                },
             };
             SetupOrderRepo(orders);
 
@@ -124,9 +157,24 @@ namespace FoodHub.Tests.Features.Reports
             // 3 ngày trước có doanh thu: 100k, 200k, 300k → avg = 200k
             var orders = new List<FoodHub.Domain.Entities.Order>
             {
-                new() { Status = OrderStatus.Paid, TotalAmount = 100_000, PaidAt = VnToUtc(reportDate.AddDays(-1), 10) },
-                new() { Status = OrderStatus.Paid, TotalAmount = 200_000, PaidAt = VnToUtc(reportDate.AddDays(-2), 10) },
-                new() { Status = OrderStatus.Paid, TotalAmount = 300_000, PaidAt = VnToUtc(reportDate.AddDays(-3), 10) },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 100_000,
+                    PaidAt = VnToUtc(reportDate.AddDays(-1), 10),
+                },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 200_000,
+                    PaidAt = VnToUtc(reportDate.AddDays(-2), 10),
+                },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 300_000,
+                    PaidAt = VnToUtc(reportDate.AddDays(-3), 10),
+                },
             };
             SetupOrderRepo(orders);
 
@@ -148,9 +196,19 @@ namespace FoodHub.Tests.Features.Reports
             var orders = new List<FoodHub.Domain.Entities.Order>
             {
                 // Ngày báo cáo - chỉ tính vào TotalRevenue, không phải target
-                new() { Status = OrderStatus.Paid, TotalAmount = 999_999, PaidAt = VnToUtc(reportDate, 9) },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 999_999,
+                    PaidAt = VnToUtc(reportDate, 9),
+                },
                 // Ngày trước - tính vào moving average
-                new() { Status = OrderStatus.Paid, TotalAmount = 100_000, PaidAt = VnToUtc(reportDate.AddDays(-1), 9) },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 100_000,
+                    PaidAt = VnToUtc(reportDate.AddDays(-1), 9),
+                },
             };
             SetupOrderRepo(orders);
 
@@ -172,9 +230,19 @@ namespace FoodHub.Tests.Features.Reports
             var orders = new List<FoodHub.Domain.Entities.Order>
             {
                 // Today: 800k
-                new() { Status = OrderStatus.Paid, TotalAmount = 800_000, PaidAt = VnToUtc(reportDate, 10) },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 800_000,
+                    PaidAt = VnToUtc(reportDate, 10),
+                },
                 // Yesterday: 1_000_000 → target = 1_000_000 → rate = 80%
-                new() { Status = OrderStatus.Paid, TotalAmount = 1_000_000, PaidAt = VnToUtc(reportDate.AddDays(-1), 10) },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 1_000_000,
+                    PaidAt = VnToUtc(reportDate.AddDays(-1), 10),
+                },
             };
             SetupOrderRepo(orders);
 
@@ -197,7 +265,12 @@ namespace FoodHub.Tests.Features.Reports
 
             var orders = new List<FoodHub.Domain.Entities.Order>
             {
-                new() { Status = OrderStatus.Paid, TotalAmount = 500_000, PaidAt = earlyMorningVnInUtc },
+                new()
+                {
+                    Status = OrderStatus.Paid,
+                    TotalAmount = 500_000,
+                    PaidAt = earlyMorningVnInUtc,
+                },
             };
             SetupOrderRepo(orders);
 
