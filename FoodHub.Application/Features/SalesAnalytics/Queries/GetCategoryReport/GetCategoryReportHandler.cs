@@ -57,6 +57,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetCategoryReport
             var itemsQuery = _unitOfWork
                 .Repository<OrderItem>()
                 .Query()
+                .AsNoTracking()
                 .Include(oi => oi.MenuItem)
                     .ThenInclude(mi => mi.Category)
                 .Where(oi =>
@@ -101,6 +102,12 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetCategoryReport
                     .OrderByDescending(c => c.TotalRevenue)
                     .ToList(),
             };
+
+            _logger.LogInformation(
+                "Successfully retrieved category report with {Count} categories, TotalRevenue={Total}",
+                response.Items.Count,
+                totalRevenue
+            );
 
             return Result<GetCategoryReportResponse>.Success(response);
         }

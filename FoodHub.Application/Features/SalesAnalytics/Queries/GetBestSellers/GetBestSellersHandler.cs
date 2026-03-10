@@ -34,6 +34,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers
             var ordersQuery = _unitOfWork
                 .Repository<Order>()
                 .Query()
+                .AsNoTracking()
                 .Where(o => o.Status == OrderStatus.Paid || o.Status == OrderStatus.Completed);
 
             if (request.StartDate.HasValue)
@@ -64,6 +65,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers
             var orderItemsList = await _unitOfWork
                 .Repository<OrderItem>()
                 .Query()
+                .AsNoTracking()
                 .Where(oi => validOrderIds.Contains(oi.OrderId))
                 .Where(oi =>
                     oi.Status != OrderItemStatus.Cancelled && oi.Status != OrderItemStatus.Rejected

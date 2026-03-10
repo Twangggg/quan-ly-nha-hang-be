@@ -213,5 +213,22 @@ namespace FoodHub.Application.Constants
             public const string DeactivateForbidden = "Area.DeactivateForbidden";
             public const string Inactive = "Area.Inactive";
         }
+
+        public static class SalesAnalytics
+        {
+            public const string MonthMustBeBetween1And12 = "SalesAnalytics.MonthMustBeBetween1And12";
+            public const string YearMustBePositive = "SalesAnalytics.YearMustBePositive";
+            public const string TopMustBeGreaterThanZero = "SalesAnalytics.TopMustBeGreaterThanZero";
+            public const string TopMustNotExceed100 = "SalesAnalytics.TopMustNotExceed100";
+            public const string MovingAverageDaysMustBePositive = "SalesAnalytics.MovingAverageDaysMustBePositive";
+            public const string MovingAverageDaysMustNotExceed365 = "SalesAnalytics.MovingAverageDaysMustNotExceed365";
+            public const string EndDateMustBeAfterStartDate = "SalesAnalytics.EndDateMustBeAfterStartDate";
+            public const string DateNotInFuture = "SalesAnalytics.DateNotInFuture";
+            public const string CannotCombineDateWithYearMonth = "SalesAnalytics.CannotCombineDateWithYearMonth";
+            public const string YearRequiredWithMonth = "SalesAnalytics.YearRequiredWithMonth";
+            public const string MonthRequiredWithYear = "SalesAnalytics.MonthRequiredWithYear";
+            public const string StartDateRequiredWithEndDate = "SalesAnalytics.StartDateRequiredWithEndDate";
+            public const string EndDateRequiredWithStartDate = "SalesAnalytics.EndDateRequiredWithStartDate";
+        }
     }
 }

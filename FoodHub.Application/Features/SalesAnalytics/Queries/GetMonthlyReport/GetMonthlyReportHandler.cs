@@ -55,6 +55,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetMonthlyReport
             var allOrdersThisMonth = await _unitOfWork
                 .Repository<Order>()
                 .Query()
+                .AsNoTracking()
                 .Where(o => o.PaidAt >= startUtc && o.PaidAt < endUtc)
                 .Select(o => new { o.TotalAmount, o.Status })
                 .ToListAsync(cancellationToken);

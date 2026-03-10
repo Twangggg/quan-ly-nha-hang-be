@@ -32,6 +32,13 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
             CancellationToken cancellationToken
         )
         {
+            _logger.LogInformation(
+                "Getting revenue chart for Date={Date}, Year={Year}, Month={Month}",
+                request.Date,
+                request.Year,
+                request.Month
+            );
+
             var response = new GetRevenueChartResponse();
 
             if (request.Date.HasValue)
@@ -47,6 +54,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
                 var orders = await _unitOfWork
                     .Repository<Order>()
                     .Query()
+                    .AsNoTracking()
                     .Where(o =>
                         o.PaidAt >= startUtc
                         && o.PaidAt < endUtc
@@ -83,6 +91,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
                 var orders = await _unitOfWork
                     .Repository<Order>()
                     .Query()
+                    .AsNoTracking()
                     .Where(o =>
                         o.PaidAt >= startUtc
                         && o.PaidAt < endUtc
@@ -105,6 +114,11 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
                     );
                 }
             }
+
+            _logger.LogInformation(
+                "Successfully generated revenue chart with {Count} points",
+                response.Points.Count
+            );
 
             return Result<GetRevenueChartResponse>.Success(response);
         }

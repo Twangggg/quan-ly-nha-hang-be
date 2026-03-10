@@ -48,6 +48,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
             var allOrdersToday = await _unitOfWork
                 .Repository<Order>()
                 .Query()
+                .AsNoTracking()
                 .Where(o => o.PaidAt >= startUtc && o.PaidAt < endUtc)
                 .Select(o => new { o.TotalAmount, o.Status })
                 .ToListAsync(cancellationToken);
@@ -113,6 +114,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
             var ordersInWindow = await _unitOfWork
                 .Repository<Order>()
                 .Query()
+                .AsNoTracking()
                 .Where(o =>
                     o.PaidAt >= windowStartUtc
                     && o.PaidAt < windowEndUtc

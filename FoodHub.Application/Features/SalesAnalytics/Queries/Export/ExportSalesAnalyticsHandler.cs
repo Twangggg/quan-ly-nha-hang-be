@@ -7,6 +7,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.SalesAnalytics.Queries.Export
 {
@@ -20,15 +21,19 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.Export
         private readonly IMediator _mediator;
         private readonly ISalesExcelService _excelService;
 
+        private readonly ILogger<ExportSalesAnalyticsHandler> _logger;
+
         public ExportSalesAnalyticsHandler(
             IUnitOfWork unitOfWork,
             IMediator mediator,
-            ISalesExcelService excelService
+            ISalesExcelService excelService,
+            ILogger<ExportSalesAnalyticsHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _mediator = mediator;
             _excelService = excelService;
+            _logger = logger;
         }
 
         public async Task<Result<byte[]>> Handle(
@@ -73,10 +78,17 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.Export
             }
 
             // Fetch Summary Data (Calculated manually for range flexibility)
+            _logger.LogInformation(
+                "Starting export sales analytics report for range: {StartDate} to {EndDate}",
+                startDate,
+                endDate
+            );
+
             var (startUtc, endUtc) = ToUtcRange(startDate, endDate);
             var ordersInRange = await _unitOfWork
                 .Repository<Order>()
                 .Query()
+                .AsNoTracking()
                 .Where(o => o.PaidAt >= startUtc && o.PaidAt < endUtc)
                 .Select(o => new { o.Status, o.TotalAmount })
                 .ToListAsync(cancellationToken);
@@ -114,6 +126,11 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.Export
                 summary,
                 bestSellersResult.Data?.Items ?? new(),
                 categoriesResult.Data?.Items ?? new()
+            );
+
+            _logger.LogInformation(
+                "Sales analytics exported successfully, file size: {Size} bytes",
+                fileContent.Length
             );
 
             return Result<byte[]>.Success(fileContent);

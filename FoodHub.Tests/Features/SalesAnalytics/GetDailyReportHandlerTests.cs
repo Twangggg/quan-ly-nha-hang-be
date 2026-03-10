@@ -58,12 +58,14 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             {
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 200_000,
                     PaidAt = VnToUtc(reportDate, 9),
                 },
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Completed,
                     TotalAmount = 350_000,
                     PaidAt = VnToUtc(reportDate, 14),
@@ -71,6 +73,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
                 // Order from previous day - should NOT be counted
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 100_000,
                     PaidAt = VnToUtc(reportDate.AddDays(-1), 20),
@@ -100,18 +103,21 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             {
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 100_000,
                     PaidAt = VnToUtc(reportDate, 10),
                 },
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Cancelled,
                     TotalAmount = 0,
                     PaidAt = VnToUtc(reportDate, 11),
                 },
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Cancelled,
                     TotalAmount = 0,
                     PaidAt = VnToUtc(reportDate, 12),
@@ -159,18 +165,21 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             {
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 100_000,
                     PaidAt = VnToUtc(reportDate.AddDays(-1), 10),
                 },
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 200_000,
                     PaidAt = VnToUtc(reportDate.AddDays(-2), 10),
                 },
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 300_000,
                     PaidAt = VnToUtc(reportDate.AddDays(-3), 10),
@@ -198,6 +207,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
                 // Ngày báo cáo - chỉ tính vào TotalRevenue, không phải target
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 999_999,
                     PaidAt = VnToUtc(reportDate, 9),
@@ -205,6 +215,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
                 // Ngày trước - tính vào moving average
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 100_000,
                     PaidAt = VnToUtc(reportDate.AddDays(-1), 9),
@@ -232,6 +243,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
                 // Today: 800k
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 800_000,
                     PaidAt = VnToUtc(reportDate, 10),
@@ -239,6 +251,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
                 // Yesterday: 1_000_000 → target = 1_000_000 → rate = 80%
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 1_000_000,
                     PaidAt = VnToUtc(reportDate.AddDays(-1), 10),
@@ -267,6 +280,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             {
                 new()
                 {
+                    OrderId = Guid.NewGuid(),
                     Status = OrderStatus.Paid,
                     TotalAmount = 500_000,
                     PaidAt = earlyMorningVnInUtc,
