@@ -42,6 +42,8 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
             // Chuyển ngày VN → UTC range ─────────────────────────────────
             var (startUtc, endUtc) = ToUtcRange(reportDate);
 
+            _logger.LogInformation("Getting daily report for date: {Date}", reportDate);
+
             // Query orders trong ngày ────────────────────────────────────
             var allOrdersToday = await _unitOfWork
                 .Repository<Order>()
