@@ -20,7 +20,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ILogger<GetRevenueChartHandler>> _mockLogger;
         private readonly GetRevenueChartHandler _handler;
-        private static readonly TimeZoneInfo VnTz = TimeZoneInfo.FindSystemTimeZoneById(
+        private static readonly TimeZoneInfo _vnTz = TimeZoneInfo.FindSystemTimeZoneById(
             "Asia/Ho_Chi_Minh"
         );
 
@@ -46,7 +46,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             // Arrange
             var date = new DateOnly(2026, 3, 10);
             var dtVn = date.ToDateTime(new TimeOnly(10, 0));
-            var dtUtc = TimeZoneInfo.ConvertTimeToUtc(dtVn, VnTz);
+            var dtUtc = TimeZoneInfo.ConvertTimeToUtc(dtVn, _vnTz);
 
             var orders = new List<FoodHub.Domain.Entities.Order>
             {
@@ -79,7 +79,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             var year = 2026;
             var month = 3;
             var dtVn = new DateTime(year, month, 15, 12, 0, 0);
-            var dtUtc = TimeZoneInfo.ConvertTimeToUtc(dtVn, VnTz);
+            var dtUtc = TimeZoneInfo.ConvertTimeToUtc(dtVn, _vnTz);
 
             var orders = new List<FoodHub.Domain.Entities.Order>
             {

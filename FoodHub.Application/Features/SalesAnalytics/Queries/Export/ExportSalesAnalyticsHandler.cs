@@ -14,7 +14,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.Export
     public class ExportSalesAnalyticsHandler
         : IRequestHandler<ExportSalesAnalyticsQuery, Result<byte[]>>
     {
-        private static readonly TimeZoneInfo VietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
+        private static readonly TimeZoneInfo _vietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
             "Asia/Ho_Chi_Minh"
         );
         private readonly IUnitOfWork _unitOfWork;
@@ -71,7 +71,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.Export
             }
             else
             {
-                var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, VietnamTz);
+                var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _vietnamTz);
                 startDate = DateOnly.FromDateTime(now);
                 endDate = startDate;
                 reportTitle = $"Báo cáo doanh thu ngày {startDate:dd/MM/yyyy}";
@@ -142,8 +142,8 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.Export
             var endLocal = end.AddDays(1).ToDateTime(TimeOnly.MinValue);
 
             return (
-                TimeZoneInfo.ConvertTimeToUtc(startLocal, VietnamTz),
-                TimeZoneInfo.ConvertTimeToUtc(endLocal, VietnamTz)
+                TimeZoneInfo.ConvertTimeToUtc(startLocal, _vietnamTz),
+                TimeZoneInfo.ConvertTimeToUtc(endLocal, _vietnamTz)
             );
         }
     }

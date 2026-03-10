@@ -11,7 +11,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
     public class GetRevenueChartHandler
         : IRequestHandler<GetRevenueChartQuery, Result<GetRevenueChartResponse>>
     {
-        private static readonly TimeZoneInfo VietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
+        private static readonly TimeZoneInfo _vietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
             "Asia/Ho_Chi_Minh"
         );
 
@@ -48,8 +48,8 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
                 var startLocal = date.ToDateTime(TimeOnly.MinValue);
                 var endLocal = date.AddDays(1).ToDateTime(TimeOnly.MinValue);
 
-                var startUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal, VietnamTz);
-                var endUtc = TimeZoneInfo.ConvertTimeToUtc(endLocal, VietnamTz);
+                var startUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal, _vietnamTz);
+                var endUtc = TimeZoneInfo.ConvertTimeToUtc(endLocal, _vietnamTz);
 
                 var orders = await _unitOfWork
                     .Repository<Order>()
@@ -69,7 +69,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
                     var hourLabel = $"{i:D2}:00";
                     var hourlyRevenue = orders
                         .Where(o =>
-                            TimeZoneInfo.ConvertTimeFromUtc(o.PaidAt!.Value, VietnamTz).Hour == i
+                            TimeZoneInfo.ConvertTimeFromUtc(o.PaidAt!.Value, _vietnamTz).Hour == i
                         )
                         .Sum(o => o.TotalAmount);
 
@@ -85,8 +85,8 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
                 var startLocal = new DateTime(request.Year.Value, request.Month.Value, 1);
                 var endLocal = startLocal.AddMonths(1);
 
-                var startUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal, VietnamTz);
-                var endUtc = TimeZoneInfo.ConvertTimeToUtc(endLocal, VietnamTz);
+                var startUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal, _vietnamTz);
+                var endUtc = TimeZoneInfo.ConvertTimeToUtc(endLocal, _vietnamTz);
 
                 var orders = await _unitOfWork
                     .Repository<Order>()
@@ -105,7 +105,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
                     var dayLabel = $"{i:D2}/{request.Month.Value:D2}";
                     var dailyRevenue = orders
                         .Where(o =>
-                            TimeZoneInfo.ConvertTimeFromUtc(o.PaidAt!.Value, VietnamTz).Day == i
+                            TimeZoneInfo.ConvertTimeFromUtc(o.PaidAt!.Value, _vietnamTz).Day == i
                         )
                         .Sum(o => o.TotalAmount);
 

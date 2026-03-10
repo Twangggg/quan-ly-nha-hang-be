@@ -12,7 +12,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
         : IRequestHandler<GetDailyReportQuery, Result<GetDailyReportResponse>>
     {
         // Múi giờ nhà hàng: Asia/Ho_Chi_Minh (+7)
-        private static readonly TimeZoneInfo VietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
+        private static readonly TimeZoneInfo _vietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
             "Asia/Ho_Chi_Minh"
         );
 
@@ -40,7 +40,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
             var reportDate =
                 request.Date
                 ?? DateOnly.FromDateTime(
-                    TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, VietnamTz)
+                    TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _vietnamTz)
                 );
 
             var movingAvgDays = request.MovingAverageDays > 0 ? request.MovingAverageDays : 30;
@@ -168,8 +168,8 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
             var startLocal = date.ToDateTime(TimeOnly.MinValue);
             var endLocal = date.AddDays(1).ToDateTime(TimeOnly.MinValue);
 
-            var startUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal, VietnamTz);
-            var endUtc = TimeZoneInfo.ConvertTimeToUtc(endLocal, VietnamTz);
+            var startUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal, _vietnamTz);
+            var endUtc = TimeZoneInfo.ConvertTimeToUtc(endLocal, _vietnamTz);
 
             return (startUtc, endUtc);
         }

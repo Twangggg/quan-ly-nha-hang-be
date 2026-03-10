@@ -16,7 +16,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
 {
     public class GetDailyReportHandlerTests
     {
-        private static readonly TimeZoneInfo VnTz = TimeZoneInfo.FindSystemTimeZoneById(
+        private static readonly TimeZoneInfo _vnTz = TimeZoneInfo.FindSystemTimeZoneById(
             "Asia/Ho_Chi_Minh"
         );
 
@@ -51,7 +51,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
 
         /// Tạo DateTime UTC tương ứng với giờ VN (HH:mm ngày d).
         private static DateTime VnToUtc(DateOnly d, int hour = 0, int minute = 0) =>
-            TimeZoneInfo.ConvertTimeToUtc(d.ToDateTime(new TimeOnly(hour, minute)), VnTz);
+            TimeZoneInfo.ConvertTimeToUtc(d.ToDateTime(new TimeOnly(hour, minute)), _vnTz);
 
         private void SetupOrderRepo(IEnumerable<FoodHub.Domain.Entities.Order> orders)
         {

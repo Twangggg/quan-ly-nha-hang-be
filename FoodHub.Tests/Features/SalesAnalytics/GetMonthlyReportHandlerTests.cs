@@ -20,7 +20,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ILogger<GetMonthlyReportHandler>> _mockLogger;
         private readonly GetMonthlyReportHandler _handler;
-        private static readonly TimeZoneInfo VnTz = TimeZoneInfo.FindSystemTimeZoneById(
+        private static readonly TimeZoneInfo _vnTz = TimeZoneInfo.FindSystemTimeZoneById(
             "Asia/Ho_Chi_Minh"
         );
 
@@ -42,7 +42,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
 
         private static DateTime VnToUtc(int year, int month, int day, int hour = 0)
         {
-            return TimeZoneInfo.ConvertTimeToUtc(new DateTime(year, month, day, hour, 0, 0), VnTz);
+            return TimeZoneInfo.ConvertTimeToUtc(new DateTime(year, month, day, hour, 0, 0), _vnTz);
         }
 
         [Fact]

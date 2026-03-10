@@ -11,7 +11,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers
     public class GetBestSellersHandler
         : IRequestHandler<GetBestSellersQuery, Result<GetBestSellersResponse>>
     {
-        private static readonly TimeZoneInfo VietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
+        private static readonly TimeZoneInfo _vietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
             "Asia/Ho_Chi_Minh"
         );
 
@@ -71,14 +71,14 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers
             if (request.StartDate.HasValue)
             {
                 var startVn = request.StartDate.Value.ToDateTime(TimeOnly.MinValue);
-                var startUtc = TimeZoneInfo.ConvertTimeToUtc(startVn, VietnamTz);
+                var startUtc = TimeZoneInfo.ConvertTimeToUtc(startVn, _vietnamTz);
                 ordersQuery = ordersQuery.Where(o => o.PaidAt >= startUtc);
             }
 
             if (request.EndDate.HasValue)
             {
                 var endVn = request.EndDate.Value.ToDateTime(TimeOnly.MaxValue);
-                var endUtc = TimeZoneInfo.ConvertTimeToUtc(endVn, VietnamTz);
+                var endUtc = TimeZoneInfo.ConvertTimeToUtc(endVn, _vietnamTz);
                 ordersQuery = ordersQuery.Where(o => o.PaidAt <= endUtc);
             }
 
@@ -165,7 +165,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers
 
             // Set Cache: Nếu EndDate >= today thì cache 3 phút, ngược lại cache 1 tiếng
             var todayVn = DateOnly.FromDateTime(
-                TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, VietnamTz)
+                TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _vietnamTz)
             );
             var cacheExpiration =
                 endDate >= todayVn ? TimeSpan.FromMinutes(3) : TimeSpan.FromHours(1);

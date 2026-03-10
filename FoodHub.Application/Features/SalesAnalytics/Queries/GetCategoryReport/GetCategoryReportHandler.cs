@@ -11,7 +11,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetCategoryReport
     public class GetCategoryReportHandler
         : IRequestHandler<GetCategoryReportQuery, Result<GetCategoryReportResponse>>
     {
-        private static readonly TimeZoneInfo VietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
+        private static readonly TimeZoneInfo _vietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
             "Asia/Ho_Chi_Minh"
         );
 
@@ -42,14 +42,14 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetCategoryReport
             DateTime? startUtc = request.StartDate.HasValue
                 ? TimeZoneInfo.ConvertTimeToUtc(
                     request.StartDate.Value.ToDateTime(TimeOnly.MinValue),
-                    VietnamTz
+                    _vietnamTz
                 )
                 : null;
 
             DateTime? endUtc = request.EndDate.HasValue
                 ? TimeZoneInfo.ConvertTimeToUtc(
                     request.EndDate.Value.AddDays(1).ToDateTime(TimeOnly.MinValue),
-                    VietnamTz
+                    _vietnamTz
                 )
                 : null;
 

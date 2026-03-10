@@ -12,7 +12,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetMonthlyReport
         : IRequestHandler<GetMonthlyReportQuery, Result<GetMonthlyReportResponse>>
     {
         // Múi giờ nhà hàng: Asia/Ho_Chi_Minh (+7)
-        private static readonly TimeZoneInfo VietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
+        private static readonly TimeZoneInfo _vietnamTz = TimeZoneInfo.FindSystemTimeZoneById(
             "Asia/Ho_Chi_Minh"
         );
 
@@ -34,7 +34,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetMonthlyReport
         )
         {
             // Xác định tháng/năm báo cáo (Mặc định là thời điểm hiện tại giờ VN)
-            var nowVn = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, VietnamTz);
+            var nowVn = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _vietnamTz);
             var year = request.Year ?? nowVn.Year;
             var month = request.Month ?? nowVn.Month;
 
@@ -95,10 +95,10 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetMonthlyReport
         private static (DateTime startUtc, DateTime endUtc) GetMonthlyUtcRange(int year, int month)
         {
             var firstDayVn = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Unspecified);
-            var startUtc = TimeZoneInfo.ConvertTimeToUtc(firstDayVn, VietnamTz);
+            var startUtc = TimeZoneInfo.ConvertTimeToUtc(firstDayVn, _vietnamTz);
 
             var lastDayVn = firstDayVn.AddMonths(1);
-            var endUtc = TimeZoneInfo.ConvertTimeToUtc(lastDayVn, VietnamTz);
+            var endUtc = TimeZoneInfo.ConvertTimeToUtc(lastDayVn, _vietnamTz);
 
             return (startUtc, endUtc);
         }
