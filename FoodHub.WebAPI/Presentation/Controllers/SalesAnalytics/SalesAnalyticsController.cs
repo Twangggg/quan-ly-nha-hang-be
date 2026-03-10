@@ -1,6 +1,7 @@
 using System.Net.Mime;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Features.SalesAnalytics.Queries.Export;
 using FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers;
 using FoodHub.Application.Features.SalesAnalytics.Queries.GetCategoryReport;
 using FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport;
@@ -158,6 +159,45 @@ namespace FoodHub.Presentation.Controllers
             };
             var result = await _mediator.Send(query);
             return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Xuất báo cáo doanh thu ra file Excel.
+        /// </summary>
+        /// <param name="date">Ngày báo cáo (yyyy-MM-dd).</param>
+        /// <param name="year">Năm báo cáo.</param>
+        /// <param name="month">Tháng báo cáo (1-12).</param>
+        /// <param name="startDate">Ngày bắt đầu (yyyy-MM-dd).</param>
+        /// <param name="endDate">Ngày kết thúc (yyyy-MM-dd).</param>
+        [HttpGet("export")]
+        [HasPermission(Permissions.SalesAnalytics.View)]
+        [Produces(MediaTypeNames.Application.Octet)]
+        public async Task<IActionResult> ExportExcel(
+            [FromQuery] DateOnly? date,
+            [FromQuery] int? year,
+            [FromQuery] int? month,
+            [FromQuery] DateOnly? startDate,
+            [FromQuery] DateOnly? endDate
+        )
+        {
+            var query = new ExportSalesAnalyticsQuery
+            {
+                Date = date,
+                Year = year,
+                Month = month,
+                StartDate = startDate,
+                EndDate = endDate,
+            };
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return HandleResult(result);
+
+            return File(
+                result.Data!,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"Sales_Report_{DateTime.Now:yyyyMMdd}.xlsx"
+            );
         }
     }
 }
