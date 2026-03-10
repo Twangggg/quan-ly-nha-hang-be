@@ -22,13 +22,29 @@ namespace FoodHub.Tests.Features.SalesAnalytics
 
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ILogger<GetDailyReportHandler>> _mockLogger;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly GetDailyReportHandler _handler;
 
         public GetDailyReportHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockLogger = new Mock<ILogger<GetDailyReportHandler>>();
-            _handler = new GetDailyReportHandler(_mockUow.Object, _mockLogger.Object);
+            _mockCache = new Mock<ICacheService>();
+            // Setup GetAsync to always return null by default so DB logic runs
+            _mockCache
+                .Setup(c =>
+                    c.GetAsync<GetDailyReportResponse>(
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
+                .ReturnsAsync((GetDailyReportResponse?)null);
+
+            _handler = new GetDailyReportHandler(
+                _mockUow.Object,
+                _mockLogger.Object,
+                _mockCache.Object
+            );
         }
 
         // ── Helpers ──────────────────────────────────────────────────────────

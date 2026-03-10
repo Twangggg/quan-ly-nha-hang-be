@@ -19,13 +19,28 @@ namespace FoodHub.Tests.Features.SalesAnalytics
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ILogger<GetBestSellersHandler>> _mockLogger;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly GetBestSellersHandler _handler;
 
         public GetBestSellersHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockLogger = new Mock<ILogger<GetBestSellersHandler>>();
-            _handler = new GetBestSellersHandler(_mockUow.Object, _mockLogger.Object);
+            _mockCache = new Mock<ICacheService>();
+            _mockCache
+                .Setup(c =>
+                    c.GetAsync<GetBestSellersResponse>(
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()
+                    )
+                )
+                .ReturnsAsync((GetBestSellersResponse?)null);
+
+            _handler = new GetBestSellersHandler(
+                _mockUow.Object,
+                _mockLogger.Object,
+                _mockCache.Object
+            );
         }
 
         private void SetupRepos(

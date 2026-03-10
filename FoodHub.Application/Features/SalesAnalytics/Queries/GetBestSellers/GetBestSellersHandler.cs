@@ -17,11 +17,17 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers
 
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<GetBestSellersHandler> _logger;
+        private readonly ICacheService _cacheService;
 
-        public GetBestSellersHandler(IUnitOfWork unitOfWork, ILogger<GetBestSellersHandler> logger)
+        public GetBestSellersHandler(
+            IUnitOfWork unitOfWork,
+            ILogger<GetBestSellersHandler> logger,
+            ICacheService cacheService
+        )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<GetBestSellersResponse>> Handle(
@@ -29,7 +35,32 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers
             CancellationToken cancellationToken
         )
         {
-            _logger.LogInformation("Getting best sellers report");
+            var top = request.Top > 0 ? request.Top : 10;
+            var endDate = request.EndDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+            var startDate = request.StartDate ?? endDate.AddDays(-30);
+
+            _logger.LogInformation(
+                "Getting top {Top} best sellers from {StartDate} to {EndDate}",
+                top,
+                startDate,
+                endDate
+            );
+
+            // Cache
+            var cacheKey = $"BestSellers_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}_{top}";
+            var cachedData = await _cacheService.GetAsync<GetBestSellersResponse>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cachedData != null)
+            {
+                _logger.LogInformation(
+                    "Return best sellers from cache for range {StartDate} to {EndDate}",
+                    startDate,
+                    endDate
+                );
+                return Result<GetBestSellersResponse>.Success(cachedData);
+            }
 
             var ordersQuery = _unitOfWork
                 .Repository<Order>()
@@ -130,9 +161,22 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers
                 bestSellers.Count
             );
 
-            return Result<GetBestSellersResponse>.Success(
-                new GetBestSellersResponse { Items = bestSellers }
+            var responseData = new GetBestSellersResponse { Items = bestSellers };
+
+            // Set Cache: Nếu EndDate >= today thì cache 3 phút, ngược lại cache 1 tiếng
+            var todayVn = DateOnly.FromDateTime(
+                TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, VietnamTz)
             );
+            var cacheExpiration =
+                endDate >= todayVn ? TimeSpan.FromMinutes(3) : TimeSpan.FromHours(1);
+            await _cacheService.SetAsync(
+                cacheKey,
+                responseData,
+                cacheExpiration,
+                cancellationToken
+            );
+
+            return Result<GetBestSellersResponse>.Success(responseData);
         }
     }
 }

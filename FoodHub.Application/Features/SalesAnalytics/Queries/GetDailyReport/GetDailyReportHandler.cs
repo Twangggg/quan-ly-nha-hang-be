@@ -18,11 +18,17 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
 
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<GetDailyReportHandler> _logger;
+        private readonly ICacheService _cacheService;
 
-        public GetDailyReportHandler(IUnitOfWork unitOfWork, ILogger<GetDailyReportHandler> logger)
+        public GetDailyReportHandler(
+            IUnitOfWork unitOfWork,
+            ILogger<GetDailyReportHandler> logger,
+            ICacheService cacheService
+        )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<GetDailyReportResponse>> Handle(
@@ -38,6 +44,23 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
                 );
 
             var movingAvgDays = request.MovingAverageDays > 0 ? request.MovingAverageDays : 30;
+
+            // Cache 
+            var cacheKey = $"DailyReport_{reportDate:yyyy_MM_dd}";
+            var cachedData = await _cacheService.GetAsync<GetDailyReportResponse>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cachedData != null)
+            {
+                _logger.LogInformation(
+                    "Return daily report from cache for date: {Date}",
+                    reportDate
+                );
+                return Result<GetDailyReportResponse>.Success(cachedData);
+            }
+
+            _logger.LogInformation("Getting daily report for date from DB: {Date}", reportDate);
 
             // Chuyển ngày VN → UTC range ─────────────────────────────────
             var (startUtc, endUtc) = ToUtcRange(reportDate);
