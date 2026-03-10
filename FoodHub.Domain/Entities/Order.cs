@@ -8,6 +8,7 @@ namespace FoodHub.Domain.Entities
     public class Order : BaseEntity
     {
         public Guid OrderId { get; set; }
+        public int TransactionCode { get; set; } // Auto-increment for PayOS mapping
         public string OrderCode { get; set; } = null!; // ORD-YYYYMMDD-XXXX
         public OrderType OrderType { get; set; }
         public OrderStatus Status { get; set; }
@@ -56,6 +57,35 @@ namespace FoodHub.Domain.Entities
             }
 
             UpdatedAt = DateTime.UtcNow;
+            return DomainResult.Success();
+        }
+
+        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived)
+        {
+            if (Status != OrderStatus.Serving)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidStatusForCheckout);
+            }
+
+            if (paymentMethod == Enums.PaymentMethod.Cash)
+            {
+                if ((amountReceived ?? 0) < TotalAmount)
+                {
+                    return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
+                }
+                AmountPaid = amountReceived;
+            }
+            else
+            {
+                // CreditCard, BankTransfer: assume full payment
+                AmountPaid = TotalAmount;
+            }
+
+            Status = OrderStatus.Paid;
+            PaymentMethod = paymentMethod;
+            PaidAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+
             return DomainResult.Success();
         }
 

@@ -56,7 +56,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 );
             }
 
-            if (order.Status == OrderStatus.Completed)
+            if (order.Status != OrderStatus.Serving)
             {
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.Order.InvalidAction)

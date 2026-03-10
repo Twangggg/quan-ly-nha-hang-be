@@ -3,17 +3,20 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodHub.Migrations
+namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260309101744_AddPayOSTransactionCode")]
+    partial class AddPayOSTransactionCode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -941,89 +944,6 @@ namespace FoodHub.Migrations
                     b.ToTable("refresh_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("FoodHub.Domain.Entities.Reservation", b =>
-                {
-                    b.Property<Guid>("ReservationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("reservation_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("customer_name");
-
-                    b.Property<string>("CustomerPhone")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("customer_phone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<int>("GuestCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("guest_count");
-
-                    b.Property<bool>("HasChildren")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("has_children");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("note");
-
-                    b.Property<int>("PartyType")
-                        .HasColumnType("integer")
-                        .HasColumnName("party_type");
-
-                    b.Property<DateOnly>("ReservationDate")
-                        .HasColumnType("date")
-                        .HasColumnName("reservation_date");
-
-                    b.Property<TimeSpan>("ReservationTime")
-                        .HasColumnType("interval")
-                        .HasColumnName("reservation_time");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
-                        .HasColumnName("status");
-
-                    b.Property<Guid>("TableId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("table_id");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("ReservationId")
-                        .HasName("pk_reservations");
-
-                    b.HasIndex("TableId")
-                        .HasDatabaseName("ix_reservations_table_id");
-
-                    b.ToTable("reservations", (string)null);
-                });
-
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
                 {
                     b.Property<Guid>("SetMenuId")
@@ -1160,10 +1080,6 @@ namespace FoodHub.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("table_id");
-
-                    b.Property<int>("Area")
-                        .HasColumnType("integer")
-                        .HasColumnName("area");
 
                     b.Property<int>("Capacity")
                         .ValueGeneratedOnAdd()
@@ -1386,18 +1302,6 @@ namespace FoodHub.Migrations
                     b.Navigation("Employee");
                 });
 
-            modelBuilder.Entity("FoodHub.Domain.Entities.Reservation", b =>
-                {
-                    b.HasOne("FoodHub.Domain.Entities.Table", "Table")
-                        .WithMany("Reservations")
-                        .HasForeignKey("TableId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_reservations_tables_table_id");
-
-                    b.Navigation("Table");
-                });
-
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenuItem", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.MenuItem", "MenuItem")
@@ -1470,8 +1374,6 @@ namespace FoodHub.Migrations
             modelBuilder.Entity("FoodHub.Domain.Entities.Table", b =>
                 {
                     b.Navigation("Orders");
-
-                    b.Navigation("Reservations");
                 });
 #pragma warning restore 612, 618
         }

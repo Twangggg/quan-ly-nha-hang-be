@@ -21,6 +21,7 @@ namespace FoodHub.Infrastructure.Persistence
         
         // Tables
         public DbSet<Table> Tables { get; set; } = null!;
+        public DbSet<Reservation> Reservations { get; set; } = null!;
 
         // Menu Management
         public DbSet<MenuItem> MenuItems { get; set; } = null!;

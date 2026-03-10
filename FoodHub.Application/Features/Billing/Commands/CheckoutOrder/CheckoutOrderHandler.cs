@@ -1,8 +1,10 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
@@ -12,70 +14,58 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CheckoutOrderHandler> _logger;
         private readonly IMessageService _messageService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CheckoutOrderHandler(IUnitOfWork unitOfWork, ILogger<CheckoutOrderHandler> logger, IMessageService messageService)
+        public CheckoutOrderHandler(
+            IUnitOfWork unitOfWork,
+            ILogger<CheckoutOrderHandler> logger,
+            IMessageService messageService,
+            ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _messageService = messageService;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<Guid>> Handle(CheckoutOrderCommand request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Processing checkout for OrderId: {OrderId}", request.OrderId);
 
-            var order = await _unitOfWork.Repository<Domain.Entities.Order>().GetByIdAsync(request.OrderId);
-            
-            if (order == null)
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
                 return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.NotFound, new { Id = request.OrderId }),
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
+            }
+
+            var order = await _unitOfWork
+                .Repository<Domain.Entities.Order>()
+                .Query()
+                .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
+
+            if (order == null)
+            {
+                _logger.LogWarning("Order not found for checkout. OrderId: {OrderId}", request.OrderId);
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.NotFound),
                     ResultErrorType.NotFound
                 );
             }
 
-            if (order.Status == OrderStatus.Paid || order.Status == OrderStatus.Completed || order.Status == OrderStatus.Cancelled)
+            // Rich Domain Model: delegate business logic to entity
+            var domainResult = order.Checkout(request.PaymentMethod, request.AmountReceived);
+            if (!domainResult.IsSuccess)
             {
-                var actionStatus = order.Status == OrderStatus.Paid ? MessageKeys.Order.AlreadyPaid : MessageKeys.Order.InvalidStatusForCancel; // Using existing keys
+                _logger.LogWarning("Checkout failed for OrderId: {OrderId}. Reason: {ErrorCode}", request.OrderId, domainResult.ErrorCode);
                 return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus, new { Status = order.Status.ToString() }),
+                    _messageService.GetMessage(
+                        domainResult.ErrorCode ?? MessageKeys.Order.InvalidAction
+                    ),
                     ResultErrorType.BadRequest
                 );
             }
-
-            // Must be Serving
-            if (order.Status != OrderStatus.Serving)
-            {
-                 return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus, new { Status = order.Status.ToString() }),
-                    ResultErrorType.BadRequest
-                );
-            }
-
-            // TotalAmount should be positive but handled just in case
-            if (request.PaymentMethod == PaymentMethod.Cash)
-            {
-                if ((request.AmountPaid ?? 0) < order.TotalAmount)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.Order.InsufficientAmount),
-                        ResultErrorType.BadRequest
-                    );
-                }
-                order.AmountPaid = request.AmountPaid;
-            }
-            else if (request.PaymentMethod == PaymentMethod.QRCode)
-            {
-                // Mock QR: We assume full payment for Mock
-                order.AmountPaid = order.TotalAmount;
-            }
-
-            // Update Order
-            order.Status = OrderStatus.Paid;
-            order.PaymentMethod = request.PaymentMethod;
-            order.PaidAt = DateTime.UtcNow;
-
-            _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
 
             // Update Table to Cleaning if DineIn
             if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
@@ -88,7 +78,31 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 }
             }
 
-            await _unitOfWork.SaveChangeAsync(cancellationToken);
+            // Audit Log
+            var auditLog = new OrderAuditLog
+            {
+                LogId = Guid.NewGuid(),
+                OrderId = order.OrderId,
+                EmployeeId = auditorId,
+                Action = AuditLogActions.CheckoutOrder,
+                CreatedAt = DateTime.UtcNow,
+                NewValue = $"{{\"paymentMethod\": \"{request.PaymentMethod}\", \"totalAmount\": {order.TotalAmount}, \"amountPaid\": {order.AmountPaid}}}",
+            };
+
+            await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+            _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+
+            try
+            {
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database error occurred while checking out OrderId {OrderId}", request.OrderId);
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError)
+                );
+            }
 
             _logger.LogInformation("Successfully completed checkout for OrderId: {OrderId}", request.OrderId);
 

@@ -11,7 +11,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         string ImageUrl,
         string? Description,
         Guid CategoryId,
-        int Station,
+        Station Station,
         int ExpectedTime,
         decimal PriceDineIn,
         decimal PriceTakeAway,

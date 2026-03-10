@@ -21,7 +21,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 .IsInEnum()
                 .WithMessage(_messageService.GetMessage(MessageKeys.Common.InvalidFormat, new { Field = "PaymentMethod" }));
 
-            RuleFor(v => v.AmountPaid)
+            RuleFor(v => v.AmountReceived)
                 .GreaterThanOrEqualTo(0)
                 .When(v => v.PaymentMethod == PaymentMethod.Cash)
                 .WithMessage(_messageService.GetMessage(MessageKeys.Order.InvalidQuantity));
