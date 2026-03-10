@@ -44,22 +44,29 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
 
             _logger.LogInformation("Getting daily report for date: {Date}", reportDate);
 
-            // Query orders trong ngày ────────────────────────────────────
-            var allOrdersToday = await _unitOfWork
+            // Query aggregration trực tiếp trên DB ────────────────────────────────────
+            var aggResult = await _unitOfWork
                 .Repository<Order>()
                 .Query()
                 .AsNoTracking()
                 .Where(o => o.PaidAt >= startUtc && o.PaidAt < endUtc)
-                .Select(o => new { o.TotalAmount, o.Status })
-                .ToListAsync(cancellationToken);
+                .GroupBy(o => 1) // Fake group by to wrap aggregates
+                .Select(g => new
+                {
+                    TotalRevenue = g.Where(o =>
+                            o.Status == OrderStatus.Paid || o.Status == OrderStatus.Completed
+                        )
+                        .Sum(o => o.TotalAmount),
+                    TotalOrders = g.Count(o =>
+                        o.Status == OrderStatus.Paid || o.Status == OrderStatus.Completed
+                    ),
+                    CancelledOrders = g.Count(o => o.Status == OrderStatus.Cancelled),
+                })
+                .FirstOrDefaultAsync(cancellationToken);
 
-            var paidOrCompleted = allOrdersToday
-                .Where(o => o.Status == OrderStatus.Paid || o.Status == OrderStatus.Completed)
-                .ToList();
-
-            var totalRevenue = paidOrCompleted.Sum(o => o.TotalAmount);
-            var totalOrders = paidOrCompleted.Count;
-            var cancelledOrders = allOrdersToday.Count(o => o.Status == OrderStatus.Cancelled);
+            var totalRevenue = aggResult?.TotalRevenue ?? 0m;
+            var totalOrders = aggResult?.TotalOrders ?? 0;
+            var cancelledOrders = aggResult?.CancelledOrders ?? 0;
 
             // Tính moving average target ─────────────────────────────────
             decimal? dailyTarget = await CalculateMovingAverageAsync(
@@ -110,8 +117,11 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
             var (windowStartUtc, _) = ToUtcRange(windowStart);
             var (_, windowEndUtc) = ToUtcRange(windowEnd);
 
-            // Lấy tất cả đơn Paid/Completed trong window
-            var ordersInWindow = await _unitOfWork
+            // Hằng số múi giờ VN (UTC+7)
+            const int vnOffsetHours = 7;
+
+            // Lấy doanh thu theo từng ngày VN dùng logic AddHours để được EF Core translate
+            var dailyRevenues = await _unitOfWork
                 .Repository<Order>()
                 .Query()
                 .AsNoTracking()
@@ -120,21 +130,9 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
                     && o.PaidAt < windowEndUtc
                     && (o.Status == OrderStatus.Paid || o.Status == OrderStatus.Completed)
                 )
-                .Select(o => new { o.PaidAt, o.TotalAmount })
-                .ToListAsync(cancellationToken);
-
-            if (!ordersInWindow.Any())
-                return null;
-
-            // Group by ngày VN để tính daily revenue
-            var dailyRevenues = ordersInWindow
-                .GroupBy(o =>
-                    DateOnly.FromDateTime(
-                        TimeZoneInfo.ConvertTimeFromUtc(o.PaidAt!.Value, VietnamTz)
-                    )
-                )
+                .GroupBy(o => o.PaidAt!.Value.AddHours(vnOffsetHours).Date)
                 .Select(g => g.Sum(o => o.TotalAmount))
-                .ToList();
+                .ToListAsync(cancellationToken);
 
             return dailyRevenues.Any() ? Math.Round(dailyRevenues.Average(), 0) : null;
         }

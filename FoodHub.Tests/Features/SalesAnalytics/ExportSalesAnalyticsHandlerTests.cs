@@ -12,6 +12,7 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -23,6 +24,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<IMediator> _mockMediator;
         private readonly Mock<ISalesExcelService> _mockExcelService;
+        private readonly Mock<ILogger<ExportSalesAnalyticsHandler>> _mockLogger;
         private readonly ExportSalesAnalyticsHandler _handler;
 
         public ExportSalesAnalyticsHandlerTests()
@@ -30,10 +32,12 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             _mockUow = new Mock<IUnitOfWork>();
             _mockMediator = new Mock<IMediator>();
             _mockExcelService = new Mock<ISalesExcelService>();
+            _mockLogger = new Mock<ILogger<ExportSalesAnalyticsHandler>>();
             _handler = new ExportSalesAnalyticsHandler(
                 _mockUow.Object,
                 _mockMediator.Object,
-                _mockExcelService.Object
+                _mockExcelService.Object,
+                _mockLogger.Object
             );
         }
 

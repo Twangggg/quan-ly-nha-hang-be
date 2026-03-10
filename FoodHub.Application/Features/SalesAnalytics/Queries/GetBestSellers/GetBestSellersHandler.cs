@@ -51,72 +51,78 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers
                 ordersQuery = ordersQuery.Where(o => o.PaidAt <= endUtc);
             }
 
-            var validOrderIds = await ordersQuery
-                .Select(o => o.OrderId)
-                .ToListAsync(cancellationToken);
+            var validOrdersQuery = ordersQuery.Select(o => o.OrderId);
 
-            if (!validOrderIds.Any())
+            if (!await validOrdersQuery.AnyAsync(cancellationToken))
             {
                 _logger.LogInformation("No orders found for best sellers report");
                 return Result<GetBestSellersResponse>.Success(new GetBestSellersResponse());
             }
 
-            // Optimize: Query order items only for valid orders, select only needed fields
-            var orderItemsList = await _unitOfWork
+            var orderItemsQuery = _unitOfWork
                 .Repository<OrderItem>()
                 .Query()
                 .AsNoTracking()
-                .Where(oi => validOrderIds.Contains(oi.OrderId))
+                .Where(oi => validOrdersQuery.Contains(oi.OrderId))
                 .Where(oi =>
                     oi.Status != OrderItemStatus.Cancelled && oi.Status != OrderItemStatus.Rejected
-                )
-                .Select(oi => new
+                );
+
+            var totalRevenueAllRecords = await orderItemsQuery.SumAsync(
+                oi =>
+                    oi.Quantity
+                    * (
+                        oi.UnitPriceSnapshot
+                        + oi.OptionGroups.SelectMany(og => og.OptionValues)
+                            .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity)
+                    ),
+                cancellationToken
+            );
+
+            var bestSellersRaw = await orderItemsQuery
+                .GroupBy(oi => new
                 {
                     oi.MenuItemId,
                     oi.ItemNameSnapshot,
-                    oi.Quantity,
-                    oi.UnitPriceSnapshot,
-                    OptionsTotal = oi
-                        .OptionGroups.SelectMany(og => og.OptionValues)
-                        .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity),
-                    CostPrice = oi.MenuItem.CostPrice, // Current cost price
                     CategoryName = oi.MenuItem.Category.Name,
+                    oi.MenuItem.CostPrice,
                 })
+                .Select(g => new
+                {
+                    ItemName = g.Key.ItemNameSnapshot,
+                    CategoryName = g.Key.CategoryName,
+                    CostPrice = g.Key.CostPrice,
+                    TotalQuantity = g.Sum(x => x.Quantity),
+                    ItemTotalRevenue = g.Sum(x =>
+                        x.Quantity
+                        * (
+                            x.UnitPriceSnapshot
+                            + x.OptionGroups.SelectMany(og => og.OptionValues)
+                                .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity)
+                        )
+                    ),
+                })
+                .OrderByDescending(x => x.TotalQuantity)
+                .ThenByDescending(x => x.ItemTotalRevenue)
+                .Take(request.Top)
                 .ToListAsync(cancellationToken);
 
-            var totalRevenueAllRecords = orderItemsList.Sum(oi =>
-                oi.Quantity * (oi.UnitPriceSnapshot + oi.OptionsTotal)
-            );
-
-            var bestSellers = orderItemsList
-                .GroupBy(oi => oi.MenuItemId)
-                .Select(g =>
+            var bestSellers = bestSellersRaw
+                .Select(x => new BestSellerDto
                 {
-                    var firstItem = g.First();
-                    var totalQuantity = g.Sum(x => x.Quantity);
-                    var itemTotalRevenue = g.Sum(x =>
-                        x.Quantity * (x.UnitPriceSnapshot + x.OptionsTotal)
-                    );
-                    var totalCost = totalQuantity * firstItem.CostPrice;
-                    var grossProfit = itemTotalRevenue - totalCost;
-                    var revenuePercentage =
+                    ItemName = x.ItemName,
+                    CategoryName = x.CategoryName,
+                    QuantitySold = x.TotalQuantity,
+                    TotalRevenue = x.ItemTotalRevenue,
+                    RevenuePercentage =
                         totalRevenueAllRecords > 0
-                            ? (double)itemTotalRevenue / (double)totalRevenueAllRecords * 100
-                            : 0;
-
-                    return new BestSellerDto
-                    {
-                        ItemName = firstItem.ItemNameSnapshot,
-                        CategoryName = firstItem.CategoryName,
-                        QuantitySold = totalQuantity,
-                        TotalRevenue = itemTotalRevenue,
-                        RevenuePercentage = Math.Round(revenuePercentage, 2),
-                        GrossProfit = grossProfit,
-                    };
+                            ? Math.Round(
+                                (double)x.ItemTotalRevenue / (double)totalRevenueAllRecords * 100,
+                                2
+                            )
+                            : 0,
+                    GrossProfit = x.ItemTotalRevenue - (x.TotalQuantity * x.CostPrice),
                 })
-                .OrderByDescending(x => x.QuantitySold)
-                .ThenByDescending(x => x.TotalRevenue)
-                .Take(request.Top)
                 .ToList();
 
             _logger.LogInformation(

@@ -153,12 +153,24 @@ namespace FoodHub.Tests.Features.SalesAnalytics
                     PaidAt = DateTime.UtcNow,
                 },
             };
+            var category = new Category { Name = "Food", CodePrefix = "F" };
+            var menuItem = new MenuItem
+            {
+                MenuItemId = Guid.NewGuid(),
+                Name = "Test",
+                Code = "T1",
+                ImageUrl = "",
+                CostPrice = 10000,
+                Category = category,
+            };
+
             var orderItems = new List<OrderItem>
             {
                 new()
                 {
                     OrderId = orders[0].OrderId,
-                    MenuItemId = Guid.NewGuid(),
+                    MenuItemId = menuItem.MenuItemId,
+                    MenuItem = menuItem,
                     Quantity = 5,
                     ItemNameSnapshot = "Test",
                     ItemCodeSnapshot = "T1",

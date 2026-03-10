@@ -11,7 +11,9 @@ public class GetBestSellersQueryValidator : AbstractValidator<GetBestSellersQuer
         // Top phải trong khoảng 1–100
         RuleFor(x => x.Top)
             .GreaterThan(0)
-            .WithMessage(messageService.GetMessage(MessageKeys.SalesAnalytics.TopMustBeGreaterThanZero));
+            .WithMessage(
+                messageService.GetMessage(MessageKeys.SalesAnalytics.TopMustBeGreaterThanZero)
+            );
 
         RuleFor(x => x.Top)
             .LessThanOrEqualTo(100)
@@ -21,7 +23,9 @@ public class GetBestSellersQueryValidator : AbstractValidator<GetBestSellersQuer
         RuleFor(x => x.EndDate)
             .GreaterThanOrEqualTo(x => x.StartDate!.Value)
             .When(x => x.StartDate.HasValue && x.EndDate.HasValue)
-            .WithMessage(messageService.GetMessage(MessageKeys.SalesAnalytics.EndDateMustBeAfterStartDate));
+            .WithMessage(
+                messageService.GetMessage(MessageKeys.SalesAnalytics.EndDateMustBeAfterStartDate)
+            );
 
         // StartDate không được ở tương lai
         RuleFor(x => x.StartDate)
@@ -33,6 +37,22 @@ public class GetBestSellersQueryValidator : AbstractValidator<GetBestSellersQuer
         RuleFor(x => x.StartDate)
             .NotNull()
             .When(x => x.EndDate.HasValue)
-            .WithMessage(messageService.GetMessage(MessageKeys.SalesAnalytics.StartDateRequiredWithEndDate));
+            .WithMessage(
+                messageService.GetMessage(MessageKeys.SalesAnalytics.StartDateRequiredWithEndDate)
+            );
+
+        // StartDate và EndDate không được cách nhau quá 365 ngày
+        RuleFor(x => x.EndDate)
+            .Must(
+                (query, endDate) =>
+                    (
+                        endDate!.Value.ToDateTime(TimeOnly.MinValue)
+                        - query.StartDate!.Value.ToDateTime(TimeOnly.MinValue)
+                    ).TotalDays <= 365
+            )
+            .When(x => x.StartDate.HasValue && x.EndDate.HasValue)
+            .WithMessage(
+                messageService.GetMessage(MessageKeys.SalesAnalytics.MaxDateRangeExceeded)
+            );
     }
 }
