@@ -3,6 +3,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.DeactivateIngredient;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -20,7 +21,11 @@ namespace FoodHub.Tests.Features.Inventory
             _mockUow = new Mock<IUnitOfWork>();
             _mockMessage = new Mock<IMessageService>();
 
-            _handler = new DeactivateIngredientHandler(_mockUow.Object, _mockMessage.Object);
+            _handler = new DeactivateIngredientHandler(
+                _mockUow.Object,
+                _mockMessage.Object,
+                Mock.Of<ILogger<DeactivateIngredientHandler>>()
+            );
         }
 
         [Fact]

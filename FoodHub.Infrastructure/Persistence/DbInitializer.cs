@@ -315,6 +315,40 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
+            // Seed Ingredients for Inventory module
+            if (!_context.Ingredients.Any())
+            {
+                var ingredients = new List<Ingredient>
+                {
+                    Ingredient.Create("ING-001", "Thịt bò", "kg", 5, "Thịt bò tươi cho món chính"),
+                    Ingredient.Create("ING-002", "Ức gà", "kg", 8, "Ức gà fillet không da"),
+                    Ingredient.Create("ING-003", "Rau xà lách", "kg", 3, "Rau xà lách Đà Lạt"),
+                    Ingredient.Create("ING-004", "Khoai tây", "kg", 10, "Khoai tây Hà Lan"),
+                    Ingredient.Create("ING-005", "Hành tây", "kg", 6, "Hành tây tím"),
+                    Ingredient.Create("ING-006", "Sữa tươi", "l", 12, "Sữa tươi tiệt trùng"),
+                };
+
+                // Cập nhật tồn kho và giá vốn ban đầu
+                var seedStock = new (string Code, decimal Quantity, decimal Cost)[]
+                {
+                    ("ING-001", 25, 180000),
+                    ("ING-002", 30, 120000),
+                    ("ING-003", 12, 45000),
+                    ("ING-004", 40, 35000),
+                    ("ING-005", 18, 28000),
+                    ("ING-006", 24, 32000),
+                };
+
+                foreach (var ingredient in ingredients)
+                {
+                    var stockInfo = seedStock.First(s => s.Code == ingredient.Code);
+                    ingredient.UpdateStock(stockInfo.Quantity, stockInfo.Cost);
+                }
+
+                _context.Ingredients.AddRange(ingredients);
+                _context.SaveChanges();
+            }
+
             // Ensure the tables and areas exist before seeding orders, since orders reference tables
             if (!_context.Areas.Any())
             {

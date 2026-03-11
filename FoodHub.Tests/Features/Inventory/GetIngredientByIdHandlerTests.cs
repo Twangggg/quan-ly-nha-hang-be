@@ -4,6 +4,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredientById;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -23,7 +24,12 @@ namespace FoodHub.Tests.Features.Inventory
             _mockMapper = new Mock<IMapper>();
             _mockMessage = new Mock<IMessageService>();
 
-            _handler = new GetIngredientByIdHandler(_mockUow.Object, _mockMapper.Object, _mockMessage.Object);
+            _handler = new GetIngredientByIdHandler(
+                _mockUow.Object,
+                _mockMapper.Object,
+                _mockMessage.Object,
+                Mock.Of<ILogger<GetIngredientByIdHandler>>()
+            );
         }
 
         [Fact]

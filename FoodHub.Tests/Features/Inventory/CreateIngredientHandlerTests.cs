@@ -96,12 +96,12 @@ namespace FoodHub.Tests.Features.Inventory
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Tên nguyên liệu đã tồn tại");
         }
-    }
 
-    // Helper matcher to avoid brittle ToString checks
-    private static bool ExpressionTargetsCode(Expression<Func<Ingredient, bool>> expr)
-    {
-        // Look for property access of Ingredient.Code in the expression tree
-        return expr.Body.ToString().Contains("Code");
+        // Helper matcher to avoid brittle ToString checks
+        private static bool ExpressionTargetsCode(Expression<Func<Ingredient, bool>> expr)
+        {
+            // Look for property access of Ingredient.Code in the expression tree
+            return expr.Body.ToString().Contains("Code");
+        }
     }
 }

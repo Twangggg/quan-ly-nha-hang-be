@@ -5,6 +5,7 @@ using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredients;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -22,7 +23,11 @@ namespace FoodHub.Tests.Features.Inventory
             _mockUow = new Mock<IUnitOfWork>();
             _mockMapper = new Mock<IMapper>();
 
-            _handler = new GetIngredientsHandler(_mockUow.Object, _mockMapper.Object);
+            _handler = new GetIngredientsHandler(
+                _mockUow.Object,
+                _mockMapper.Object,
+                Mock.Of<ILogger<GetIngredientsHandler>>()
+            );
         }
 
         [Fact]
