@@ -52,6 +52,7 @@ namespace FoodHub.Application.Constants
         public static class Billing
         {
             public const string Checkout = "Permissions.Billing.Checkout";
+            public const string ViewHistory = "Permissions.Billing.ViewHistory";
         }
         public static class Kds
         {

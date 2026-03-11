@@ -9,6 +9,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Order> builder)
         {
             builder.HasKey(o => o.OrderId);
+            builder.Property(o => o.TransactionCode).ValueGeneratedOnAdd();
             builder.Property(o => o.OrderCode).HasMaxLength(30).IsRequired();
             builder.HasIndex(o => o.OrderCode).IsUnique();
             builder.Property(o => o.OrderType).IsRequired();

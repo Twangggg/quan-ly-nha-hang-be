@@ -25,6 +25,7 @@ namespace FoodHub.Infrastructure.Persistence
 
         // Billing
         // (Invoices and Payments removed)
+        public DbSet<Reservation> Reservations { get; set; } = null!;
 
         // Menu Management
         public DbSet<MenuItem> MenuItems { get; set; } = null!;
