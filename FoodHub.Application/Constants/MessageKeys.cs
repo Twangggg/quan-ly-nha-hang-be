@@ -239,5 +239,23 @@ namespace FoodHub.Application.Constants
                 "SalesAnalytics.EndDateRequiredWithStartDate";
             public const string MaxDateRangeExceeded = "SalesAnalytics.MaxDateRangeExceeded";
         }
+
+        public static class Ingredient
+        {
+            public const string NotFound = "Ingredient.NotFound";
+            public const string CodeExists = "Ingredient.CodeExists";
+            public const string NameExists = "Ingredient.NameExists";
+            public const string UsedInRecipe = "Ingredient.UsedInRecipe";
+
+            // Validator keys
+            public const string IdRequired = "Ingredient.IdRequired";
+            public const string CodeRequired = "Ingredient.CodeRequired";
+            public const string CodeMaxLength = "Ingredient.CodeMaxLength";
+            public const string NameRequired = "Ingredient.NameRequired";
+            public const string NameMaxLength = "Ingredient.NameMaxLength";
+            public const string UnitRequired = "Ingredient.UnitRequired";
+            public const string UnitMaxLength = "Ingredient.UnitMaxLength";
+            public const string ThresholdMin = "Ingredient.ThresholdMin";
+        }
     }
 }

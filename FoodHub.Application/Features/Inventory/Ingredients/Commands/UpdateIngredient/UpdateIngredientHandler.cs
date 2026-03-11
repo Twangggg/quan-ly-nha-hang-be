@@ -1,0 +1,109 @@
+using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
+using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Entities;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngredient
+{
+    public class UpdateIngredientHandler
+        : IRequestHandler<UpdateIngredientCommand, Result<UpdateIngredientResponse>>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMessageService _messageService;
+        private readonly ILogger<UpdateIngredientHandler> _logger;
+
+        public UpdateIngredientHandler(
+            IUnitOfWork unitOfWork,
+            IMessageService messageService,
+            ILogger<UpdateIngredientHandler> logger
+        )
+        {
+            _unitOfWork = unitOfWork;
+            _messageService = messageService;
+            _logger = logger;
+        }
+
+        public async Task<Result<UpdateIngredientResponse>> Handle(
+            UpdateIngredientCommand request,
+            CancellationToken cancellationToken
+        )
+        {
+            _logger.LogInformation(
+                "Start handling UpdateIngredient for {IngredientId}",
+                request.IngredientId
+            );
+
+            try
+            {
+                var repo = _unitOfWork.Repository<Ingredient>();
+
+                var ingredient = await repo.Query()
+                    .FirstOrDefaultAsync(
+                        x => x.IngredientId == request.IngredientId,
+                        cancellationToken
+                    );
+
+                if (ingredient == null)
+                {
+                    _logger.LogWarning("Ingredient {IngredientId} not found", request.IngredientId);
+                    return Result<UpdateIngredientResponse>.NotFound(
+                        _messageService.GetMessage(MessageKeys.Ingredient.NotFound)
+                    );
+                }
+
+                // Check name duplicate (excluding current)
+                var nameExists = await repo.AnyAsync(x =>
+                    x.Name.ToLower() == request.Name.ToLower() && x.IngredientId != request.IngredientId
+                );
+
+                if (nameExists)
+                {
+                    return Result<UpdateIngredientResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Ingredient.NameExists),
+                        ResultErrorType.Conflict
+                    );
+                }
+
+                ingredient.Update(
+                    request.Name,
+                    request.Unit,
+                    request.LowStockThreshold,
+                    request.Description,
+                    request.IsActive
+                );
+
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+                var response = new UpdateIngredientResponse
+                {
+                    IngredientId = ingredient.IngredientId,
+                    Name = ingredient.Name,
+                    Unit = ingredient.Unit,
+                    LowStockThreshold = ingredient.LowStockThreshold,
+                    CurrentStock = ingredient.CurrentStock,
+                    StockStatus = ingredient.StockStatus,
+                    IsActive = ingredient.IsActive,
+                    UpdatedAt = ingredient.UpdatedAt,
+                };
+
+                _logger.LogInformation(
+                    "End handling UpdateIngredient for {IngredientId}",
+                    request.IngredientId
+                );
+                return Result<UpdateIngredientResponse>.Success(response);
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Database error while updating ingredient {IngredientId}",
+                    request.IngredientId
+                );
+                throw;
+            }
+        }
+    }
+}

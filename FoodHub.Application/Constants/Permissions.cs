@@ -83,5 +83,13 @@ namespace FoodHub.Application.Constants
         {
             public const string View = "Permissions.SalesAnalytics.View";
         }
+
+        public static class Inventory
+        {
+            public const string View = "Permissions.Inventory.View";
+            public const string Create = "Permissions.Inventory.Create";
+            public const string Update = "Permissions.Inventory.Update";
+            public const string Deactivate = "Permissions.Inventory.Deactivate";
+        }
     }
 }
