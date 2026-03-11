@@ -134,11 +134,18 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                             );
 
                         existingItem.Quantity += secondItem.Quantity;
-                        existingItem.ItemNote = string.IsNullOrEmpty(existingItem.ItemNote)
-                            ? secondItem.ItemNote
-                            : $"{existingItem.ItemNote}; {secondItem.ItemNote}";
+                        // Merge notes properly (avoid null/empty concatenation)
+                        if (!string.IsNullOrEmpty(secondItem.ItemNote))
+                        {
+                            existingItem.ItemNote = string.IsNullOrEmpty(existingItem.ItemNote)
+                                ? secondItem.ItemNote
+                                : $"{existingItem.ItemNote}; {secondItem.ItemNote}";
+                        }
                         existingItem.UpdatedAt = DateTime.UtcNow;
                         repoOrderItem.Update(existingItem);
+
+                        // Delete the merged item from second order
+                        repoOrderItem.Delete(secondItem);
                     }
                     else
                     {
@@ -191,6 +198,22 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                         firstOrder.OrderCode,
                         firstOrder.TotalAmount
                     );
+
+                var mergedOrderItems = await repoOrderItem.Query()
+                    .Include(moi => moi.OptionGroups)
+                    .ThenInclude(og => og.OptionValues)
+                    .Where(moi => moi.OrderId == firstOrder.OrderId)
+                    .ToListAsync(cancellationToken);
+
+                var mergedOrder = new MergeOrderResponse
+                {
+                    MergedOrderId = firstOrder.OrderId,
+                    MergedOrderCode = firstOrder.OrderCode,
+                    Items = mergedOrderItems
+                };
+
+                var response = _mapper.Map<MergeOrderResponse>(firstOrder);
+                return Result<MergeOrderResponse>.Success(response);
             }
             catch (Exception ex)
             {
@@ -203,9 +226,6 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                         );
                 throw;
             }
-
-            var response = _mapper.Map<MergeOrderResponse>(firstOrder);
-            return Result<MergeOrderResponse>.Success(response);
         }
         private bool AreOptionsEqual(
             ICollection<OrderItemOptionGroup> options1,
