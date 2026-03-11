@@ -21,8 +21,10 @@ namespace FoodHub.Domain.Entities
         public bool HasChildren { get; set; }
         public string? Note { get; set; }
         
-        // Trạng thái & Bàn
+        // Khu vực, Trạng thái & Bàn
         public ReservationStatus Status { get; set; }
+        public Guid? AreaId { get; set; }
+        public virtual Area? Area { get; set; }
         public Guid TableId { get; set; }
         public virtual Table Table { get; set; } = null!;
     }
