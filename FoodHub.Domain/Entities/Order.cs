@@ -15,6 +15,7 @@ namespace FoodHub.Domain.Entities
 
         // Nullable because it is required only for DINE_IN
         public Guid? TableId { get; set; }
+        public Guid? ReservationId { get; set; }
 
         public string? Note { get; set; }
         public decimal TotalAmount { get; set; }
@@ -26,6 +27,7 @@ namespace FoodHub.Domain.Entities
 
         // Navigation properties
         public virtual Table? Table { get; set; }
+        public virtual Reservation? Reservation { get; set; }
 
         // Billing
         public PaymentMethod? PaymentMethod { get; set; }

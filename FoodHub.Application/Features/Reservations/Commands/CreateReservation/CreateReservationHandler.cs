@@ -67,7 +67,8 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
                 HasChildren = request.HasChildren,
                 Note = request.Note,
                 Status = ReservationStatus.Booked,
-                TableId = request.TableId
+                TableId = request.TableId,
+                AreaId = table.AreaId
             };
 
             await _unitOfWork.Repository<Reservation>().AddAsync(reservation);

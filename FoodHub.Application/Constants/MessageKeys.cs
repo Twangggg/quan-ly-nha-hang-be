@@ -213,5 +213,13 @@ namespace FoodHub.Application.Constants
             public const string DeactivateForbidden = "Area.DeactivateForbidden";
             public const string Inactive = "Area.Inactive";
         }
+
+        public static class Reservation
+        {
+            public const string NotFound = "Reservation.NotFound";
+            public const string InvalidStatusForCheckIn = "Reservation.InvalidStatusForCheckIn";
+            public const string TableOccupied = "Reservation.TableOccupied";
+            public const string AlreadyCheckedIn = "Reservation.AlreadyCheckedIn";
+        }
     }
 }
