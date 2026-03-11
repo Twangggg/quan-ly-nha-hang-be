@@ -53,6 +53,7 @@ namespace FoodHub.Application.Constants
         {
             public const string Checkout = "Permissions.Billing.Checkout";
         }
+
         public static class Kds
         {
             public const string View = "Permissions.Kds.View";
@@ -76,6 +77,11 @@ namespace FoodHub.Application.Constants
             public const string Create = "Permissions.Areas.Create";
             public const string Update = "Permissions.Areas.Update";
             public const string Delete = "Permissions.Areas.Delete";
+        }
+
+        public static class SalesAnalytics
+        {
+            public const string View = "Permissions.SalesAnalytics.View";
         }
     }
 }
