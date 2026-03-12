@@ -37,7 +37,7 @@ namespace FoodHub.Tests.Features.Inventory
         public async Task Handle_Should_ReturnSuccess_When_IngredientCreated()
         {
             // Arrange
-            var command = new CreateIngredientCommand("ING001", "Hành tây", "Kg", 5, 0, 0, "Hành tây Đà Lạt");
+            var command = new CreateIngredientCommand("ING001", "Hành tây", "Kg", 5, "Hành tây Đà Lạt");
 
             var mockRepo = new Mock<IGenericRepository<Ingredient>>();
             mockRepo.Setup(r => r.AnyAsync(It.IsAny<Expression<Func<Ingredient, bool>>>()))
@@ -63,7 +63,7 @@ namespace FoodHub.Tests.Features.Inventory
         public async Task Handle_Should_ReturnFailure_When_CodeExists()
         {
             // Arrange
-            var command = new CreateIngredientCommand("ING001", "Hành tây", "Kg", 5, 0, 0);
+            var command = new CreateIngredientCommand("ING001", "Hành tây", "Kg", 5);
 
             var mockRepo = new Mock<IGenericRepository<Ingredient>>();
 
@@ -86,7 +86,7 @@ namespace FoodHub.Tests.Features.Inventory
         public async Task Handle_Should_ReturnFailure_When_NameExists()
         {
             // Arrange
-            var command = new CreateIngredientCommand("ING002", "Hành tây", "Kg", 5, 0, 0);
+            var command = new CreateIngredientCommand("ING002", "Hành tây", "Kg", 5);
 
             var mockRepo = new Mock<IGenericRepository<Ingredient>>();
 

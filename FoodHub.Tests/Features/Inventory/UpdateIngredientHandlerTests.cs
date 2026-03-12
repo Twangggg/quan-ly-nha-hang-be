@@ -37,7 +37,7 @@ namespace FoodHub.Tests.Features.Inventory
         public async Task Handle_Should_ReturnNotFound_When_IngredientDoesNotExist()
         {
             // Arrange
-            var command = new UpdateIngredientCommand(Guid.NewGuid(), "ING001", "Muối", "Kg", 1, 0, 0, null, true);
+            var command = new UpdateIngredientCommand(Guid.NewGuid(), "ING001", "Muối", "Kg", 1, null, true);
 
             var repo = new Mock<IGenericRepository<Ingredient>>();
             repo.Setup(r => r.Query()).Returns(new List<Ingredient>().AsQueryable().BuildMock());
@@ -58,10 +58,10 @@ namespace FoodHub.Tests.Features.Inventory
         {
             // Arrange
             var ingredientId = Guid.NewGuid();
-            var command = new UpdateIngredientCommand(ingredientId, "ING001", "Đường", "Kg", 5, ingredient.CurrentStock, ingredient.CostPrice, null, true);
-
             var ingredient = Ingredient.Create("ING001", "Muối", "Kg", 2, 0, 0);
             typeof(Ingredient).GetProperty("IngredientId")!.SetValue(ingredient, ingredientId);
+
+            var command = new UpdateIngredientCommand(ingredientId, "ING001", "Đường", "Kg", 5, ingredient.Description, true);
 
             var repo = new Mock<IGenericRepository<Ingredient>>();
             repo.Setup(r => r.Query()).Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
@@ -97,7 +97,7 @@ namespace FoodHub.Tests.Features.Inventory
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-            var command = new UpdateIngredientCommand(ingredientId, "ING003", "Hành lá", "Bó", 10, ingredient.CurrentStock, ingredient.CostPrice, "Rau thơm", false);
+            var command = new UpdateIngredientCommand(ingredientId, "ING003", "Hành lá", "Bó", 10, "Rau thơm", false);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -109,6 +109,7 @@ namespace FoodHub.Tests.Features.Inventory
             ingredient.Unit.Should().Be("Bó");
             ingredient.LowStockThreshold.Should().Be(10);
             ingredient.IsActive.Should().BeFalse();
+            ingredient.Description.Should().Be("Rau thơm");
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
     }
