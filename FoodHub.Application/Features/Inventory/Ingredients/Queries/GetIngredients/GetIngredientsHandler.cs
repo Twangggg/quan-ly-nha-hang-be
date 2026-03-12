@@ -7,8 +7,8 @@ using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredients
 {

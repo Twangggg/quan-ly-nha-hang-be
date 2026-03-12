@@ -38,7 +38,6 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                 .GreaterThanOrEqualTo(0)
                 .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.ThresholdMin));
 
-            // Quantity and cost are managed via stock operations, not through this command.
         }
     }
 }

@@ -1,9 +1,9 @@
+using System.Linq.Expressions;
 using FluentAssertions;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngredient;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using Moq;
-using System.Linq.Expressions;
 using Xunit;
 
 namespace FoodHub.Tests.Features.Inventory
@@ -33,7 +33,7 @@ namespace FoodHub.Tests.Features.Inventory
             var mockRepo = new Mock<IGenericRepository<Ingredient>>();
             mockRepo.Setup(r => r.AnyAsync(It.IsAny<Expression<Func<Ingredient, bool>>>()))
                 .ReturnsAsync(false);
-            
+
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(mockRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
@@ -45,7 +45,7 @@ namespace FoodHub.Tests.Features.Inventory
             result.Data.Should().NotBeNull();
             result.Data!.Name.Should().Be("Hành tây");
             result.Data.Code.Should().Be("ING001");
-            
+
             _mockUow.Verify(u => u.Repository<Ingredient>().AddAsync(It.IsAny<Ingredient>()), Times.Once);
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -57,11 +57,11 @@ namespace FoodHub.Tests.Features.Inventory
             var command = new CreateIngredientCommand("ING001", "Hành tây", "Kg", 5, 0, 0);
 
             var mockRepo = new Mock<IGenericRepository<Ingredient>>();
-            
+
             // First call for Code check returns true
             mockRepo.Setup(r => r.AnyAsync(It.Is<Expression<Func<Ingredient, bool>>>(e => ExpressionTargetsCode(e))))
                 .ReturnsAsync(true);
-                
+
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(mockRepo.Object);
             _mockMessage.Setup(m => m.GetMessage("Ingredient.CodeExists")).Returns("Mã nguyên liệu đã tồn tại");
 
@@ -72,7 +72,7 @@ namespace FoodHub.Tests.Features.Inventory
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Mã nguyên liệu đã tồn tại");
         }
-        
+
         [Fact]
         public async Task Handle_Should_ReturnFailure_When_NameExists()
         {
@@ -80,12 +80,12 @@ namespace FoodHub.Tests.Features.Inventory
             var command = new CreateIngredientCommand("ING002", "Hành tây", "Kg", 5, 0, 0);
 
             var mockRepo = new Mock<IGenericRepository<Ingredient>>();
-            
+
             // First call for Code check returns false
             mockRepo.SetupSequence(r => r.AnyAsync(It.IsAny<Expression<Func<Ingredient, bool>>>()))
                 .ReturnsAsync(false) // Code check
                 .ReturnsAsync(true); // Name check
-                
+
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(mockRepo.Object);
             _mockMessage.Setup(m => m.GetMessage("Ingredient.NameExists")).Returns("Tên nguyên liệu đã tồn tại");
 
