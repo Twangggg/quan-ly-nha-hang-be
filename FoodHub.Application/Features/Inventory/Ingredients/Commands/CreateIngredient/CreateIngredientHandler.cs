@@ -46,7 +46,9 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                 var repo = _unitOfWork.Repository<Ingredient>();
 
                 // Check if Code exists
-                var codeExists = await repo.AnyAsync(x => x.Code.ToLower() == request.Code.ToLower());
+                var codeExists = await repo.AnyAsync(x =>
+                    x.Code.ToLower() == request.Code.ToLower()
+                );
                 if (codeExists)
                 {
                     return Result<CreateIngredientResponse>.Failure(
@@ -56,7 +58,9 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                 }
 
                 // Check if Name exists
-                var nameExists = await repo.AnyAsync(x => x.Name.ToLower() == request.Name.ToLower());
+                var nameExists = await repo.AnyAsync(x =>
+                    x.Name.ToLower() == request.Name.ToLower()
+                );
                 if (nameExists)
                 {
                     return Result<CreateIngredientResponse>.Failure(
@@ -86,7 +90,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     Name = ingredient.Name,
                     Unit = ingredient.Unit,
                     LowStockThreshold = ingredient.LowStockThreshold,
-                    StockStatus = ingredient.StockStatus,
+                    StockStatus = ingredient.GetStockStatus(),
                     CreatedAt = ingredient.CreatedAt,
                 };
 

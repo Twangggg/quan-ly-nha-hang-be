@@ -1,5 +1,6 @@
 using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngredient
 {
@@ -10,7 +11,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
         public string Unit { get; set; } = string.Empty;
         public decimal LowStockThreshold { get; set; }
         public decimal CurrentStock { get; set; }
-        public string StockStatus { get; set; } = string.Empty;
+        public StockStatus StockStatus { get; set; }
         public bool IsActive { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

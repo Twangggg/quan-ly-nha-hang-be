@@ -1,5 +1,6 @@
 using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngredient
 {
@@ -10,7 +11,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
         public string Name { get; set; } = string.Empty;
         public string Unit { get; set; } = string.Empty;
         public decimal LowStockThreshold { get; set; }
-        public string StockStatus { get; set; } = string.Empty;
+        public StockStatus StockStatus { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

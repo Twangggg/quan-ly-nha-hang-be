@@ -1,12 +1,13 @@
 using System;
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
 {
     public class Ingredient : BaseEntity
     {
-        private Ingredient() { } 
+        private Ingredient() { }
 
         public Guid IngredientId { get; private set; }
         public string Code { get; private set; } = string.Empty;
@@ -95,12 +96,14 @@ namespace FoodHub.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public string StockStatus =>
-            CurrentStock switch
+        public StockStatus GetStockStatus()
+        {
+            return CurrentStock switch
             {
-                0 => "Hết hàng",
-                var stock when stock <= LowStockThreshold => "Sắp hết",
-                _ => "Đủ hàng",
+                0 => StockStatus.OutOfStock,
+                var stock when stock <= LowStockThreshold => StockStatus.LowStock,
+                _ => StockStatus.Normal,
             };
+        }
     }
 }

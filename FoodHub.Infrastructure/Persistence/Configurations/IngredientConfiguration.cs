@@ -28,8 +28,6 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
             builder.Property(e => e.IsActive).HasColumnName("is_active");
 
-            // Ignore calculated property
-            builder.Ignore(e => e.StockStatus);
 
             // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");

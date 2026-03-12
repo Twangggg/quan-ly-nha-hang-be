@@ -318,31 +318,84 @@ namespace FoodHub.Infrastructure.Persistence
             // Seed Ingredients for Inventory module
             if (!_context.Ingredients.Any())
             {
-                var ingredients = new List<Ingredient>
+                var seedIngredients = new[]
                 {
-                    Ingredient.Create("ING-001", "Thịt bò", "kg", 5, "Thịt bò tươi cho món chính"),
-                    Ingredient.Create("ING-002", "Ức gà", "kg", 8, "Ức gà fillet không da"),
-                    Ingredient.Create("ING-003", "Rau xà lách", "kg", 3, "Rau xà lách Đà Lạt"),
-                    Ingredient.Create("ING-004", "Khoai tây", "kg", 10, "Khoai tây Hà Lan"),
-                    Ingredient.Create("ING-005", "Hành tây", "kg", 6, "Hành tây tím"),
-                    Ingredient.Create("ING-006", "Sữa tươi", "l", 12, "Sữa tươi tiệt trùng"),
+                    new
+                    {
+                        Code = "ING-001",
+                        Name = "Thịt bò",
+                        Unit = "kg",
+                        LowStockThreshold = 10m,
+                        Description = "Thịt bò tươi cho món chính",
+                        Stock = 25m,
+                        Cost = 180000m,
+                    },
+                    new
+                    {
+                        Code = "ING-002",
+                        Name = "Ức gà",
+                        Unit = "kg",
+                        LowStockThreshold = 12m,
+                        Description = "Ức gà fillet không da",
+                        Stock = 30m,
+                        Cost = 120000m,
+                    },
+                    new
+                    {
+                        Code = "ING-003",
+                        Name = "Rau xà lách",
+                        Unit = "kg",
+                        LowStockThreshold = 5m,
+                        Description = "Rau xà lách Đà Lạt",
+                        Stock = 12m,
+                        Cost = 45000m,
+                    },
+                    new
+                    {
+                        Code = "ING-004",
+                        Name = "Khoai tây",
+                        Unit = "kg",
+                        LowStockThreshold = 15m,
+                        Description = "Khoai tây Hà Lan",
+                        Stock = 40m,
+                        Cost = 35000m,
+                    },
+                    new
+                    {
+                        Code = "ING-005",
+                        Name = "Hành tây",
+                        Unit = "kg",
+                        LowStockThreshold = 8m,
+                        Description = "Hành tây tím",
+                        Stock = 18m,
+                        Cost = 28000m,
+                    },
+                    new
+                    {
+                        Code = "ING-006",
+                        Name = "Sữa tươi",
+                        Unit = "l",
+                        LowStockThreshold = 20m,
+                        Description = "Sữa tươi tiệt trùng",
+                        Stock = 24m,
+                        Cost = 32000m,
+                    },
                 };
 
-                // Cập nhật tồn kho và giá vốn ban đầu
-                var seedStock = new (string Code, decimal Quantity, decimal Cost)[]
-                {
-                    ("ING-001", 25, 180000),
-                    ("ING-002", 30, 120000),
-                    ("ING-003", 12, 45000),
-                    ("ING-004", 40, 35000),
-                    ("ING-005", 18, 28000),
-                    ("ING-006", 24, 32000),
-                };
+                var ingredients = new List<Ingredient>();
 
-                foreach (var ingredient in ingredients)
+                foreach (var seed in seedIngredients)
                 {
-                    var stockInfo = seedStock.First(s => s.Code == ingredient.Code);
-                    ingredient.UpdateStock(stockInfo.Quantity, stockInfo.Cost);
+                    var ingredient = Ingredient.Create(
+                        seed.Code,
+                        seed.Name,
+                        seed.Unit,
+                        seed.LowStockThreshold,
+                        seed.Description
+                    );
+
+                    ingredient.UpdateStock(seed.Stock, seed.Cost);
+                    ingredients.Add(ingredient);
                 }
 
                 _context.Ingredients.AddRange(ingredients);

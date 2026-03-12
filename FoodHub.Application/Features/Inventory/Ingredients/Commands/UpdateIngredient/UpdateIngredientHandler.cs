@@ -84,7 +84,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                     Unit = ingredient.Unit,
                     LowStockThreshold = ingredient.LowStockThreshold,
                     CurrentStock = ingredient.CurrentStock,
-                    StockStatus = ingredient.StockStatus,
+                    StockStatus = ingredient.GetStockStatus(),
                     IsActive = ingredient.IsActive,
                     UpdatedAt = ingredient.UpdatedAt,
                 };
