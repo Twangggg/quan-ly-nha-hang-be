@@ -16,7 +16,6 @@ namespace FoodHub.Domain.Entities
         public TimeSpan ReservationTime { get; set; }
         
         // Chi tiết
-        public PartyType PartyType { get; set; }
         public int GuestCount { get; set; }
         public string? Note { get; set; }
         

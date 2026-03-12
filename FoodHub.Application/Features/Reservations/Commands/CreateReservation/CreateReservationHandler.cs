@@ -74,7 +74,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
                     CustomerPhone = request.CustomerPhone,
                     ReservationDate = request.ReservationDate,
                     ReservationTime = request.ReservationTime,
-                    PartyType = request.PartyType,
                     GuestCount = request.GuestCount,
                     Note = request.Note,
                     Status = ReservationStatus.Booked,
