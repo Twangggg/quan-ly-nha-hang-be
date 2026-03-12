@@ -30,13 +30,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                 .GreaterThanOrEqualTo(0)
                 .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.ThresholdMin));
 
-            RuleFor(x => x.CurrentStock)
-                .GreaterThanOrEqualTo(0)
-                .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.StockMin));
-
-            RuleFor(x => x.CostPrice)
-                .GreaterThanOrEqualTo(0)
-                .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.CostMin));
+            // Stock and cost are system-managed; creation starts at zero.
         }
     }
 }

@@ -15,6 +15,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
         public decimal CostPrice { get; set; }
         public StockStatus StockStatus { get; set; }
         public bool IsActive { get; set; }
+        public string? Description { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
 }

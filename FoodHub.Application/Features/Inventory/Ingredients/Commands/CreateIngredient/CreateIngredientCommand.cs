@@ -8,8 +8,6 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
         string Name,
         string Unit,
         decimal LowStockThreshold,
-        decimal CurrentStock,
-        decimal CostPrice,
         string? Description = null
     ) : IRequest<Result<CreateIngredientResponse>>;
 }

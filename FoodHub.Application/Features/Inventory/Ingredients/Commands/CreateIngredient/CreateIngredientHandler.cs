@@ -69,13 +69,15 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     );
                 }
 
+                // Prevent manual initialization of stock and cost; both start at zero and are
+                // managed through stock operations elsewhere in the system.
                 var ingredient = Ingredient.Create(
                     request.Code,
                     request.Name,
                     request.Unit,
                     request.LowStockThreshold,
-                    request.CurrentStock,
-                    request.CostPrice,
+                    0,
+                    0,
                     request.Description
                 );
 
@@ -95,6 +97,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     CostPrice = ingredient.CostPrice,
                     LowStockThreshold = ingredient.LowStockThreshold,
                     StockStatus = ingredient.GetStockStatus(),
+                    Description = ingredient.Description,
                     CreatedAt = ingredient.CreatedAt,
                 };
 

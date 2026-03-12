@@ -9,8 +9,6 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
         string Name,
         string Unit,
         decimal LowStockThreshold,
-        decimal CurrentStock,
-        decimal CostPrice,
         string? Description,
         bool IsActive,
         Guid? RouteId = null

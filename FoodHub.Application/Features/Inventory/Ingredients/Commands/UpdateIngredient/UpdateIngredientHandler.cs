@@ -83,6 +83,8 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                     );
                 }
 
+                // Disallow direct edits of quantity and cost; those are controlled via stock flows
+                // (e.g., receiving or adjustments). Keep existing values intact here.
                 ingredient.Update(
                     request.Name,
                     request.Unit,
@@ -90,8 +92,8 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                     request.Description,
                     request.IsActive,
                     request.Code,
-                    request.CurrentStock,
-                    request.CostPrice
+                    ingredient.CurrentStock,
+                    ingredient.CostPrice
                 );
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -104,8 +106,10 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                     Unit = ingredient.Unit,
                     LowStockThreshold = ingredient.LowStockThreshold,
                     CurrentStock = ingredient.CurrentStock,
+                    CostPrice = ingredient.CostPrice,
                     StockStatus = ingredient.GetStockStatus(),
                     IsActive = ingredient.IsActive,
+                    Description = ingredient.Description,
                     UpdatedAt = ingredient.UpdatedAt,
                 };
 

@@ -14,6 +14,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
         public decimal CostPrice { get; set; }
         public decimal LowStockThreshold { get; set; }
         public StockStatus StockStatus { get; set; }
+        public string? Description { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }
