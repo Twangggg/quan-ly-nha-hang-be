@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace FoodHub.WebAPI.Presentation.BackgroundJobs
+namespace FoodHub.Infrastructure.BackgroundJobs
 {
     public class ReservationCancellationService : BackgroundService
     {
@@ -48,13 +48,12 @@ namespace FoodHub.WebAPI.Presentation.BackgroundJobs
             using var scope = _serviceProvider.CreateScope();
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-            // Tính mốc thời gian: quá 30 phút so với giờ hẹn hôm nay
+            // Calculate the threshold: 30 minutes past today's reservation time
             var today = DateOnly.FromDateTime(DateTime.Now);
             var overdueTime = DateTime.Now.TimeOfDay.Subtract(TimeSpan.FromMinutes(30));
 
-            // Lấy tất cả bàn đã đặt nhưng khách chưa đến (Status = Booked) của ngày hôm nay, và đã trễ 30 phút
+            // Get all booked tables where customers haven't arrived (Status = Booked) for today, and are 30 minutes overdue
             var overdueReservations = await unitOfWork.Repository<Reservation>().Query()
-                .Include(r => r.Order)
                 .Where(r => r.Status == ReservationStatus.Booked
                             && r.ReservationDate == today
                             && r.ReservationTime <= overdueTime)
@@ -69,16 +68,9 @@ namespace FoodHub.WebAPI.Presentation.BackgroundJobs
 
             foreach (var reservation in overdueReservations)
             {
-                _logger.LogInformation("Cancelling Reservation {ReservationId} (Time: {Time}). Khách chưa đến sau 30 phút.", reservation.ReservationId, reservation.ReservationTime);
+                _logger.LogInformation("Cancelling Reservation {ReservationId} (Time: {Time}). Customer did not check-in after 30 minutes.", reservation.ReservationId, reservation.ReservationTime);
                 
                 reservation.Status = ReservationStatus.Cancelled;
-
-                // Nếu có Pre-order (đặt món/combo trước), huỷ luôn Order
-                if (reservation.Order != null && reservation.Order.Status == OrderStatus.Pending)
-                {
-                    reservation.Order.Status = OrderStatus.Cancelled;
-                    reservation.Order.Note = (reservation.Order.Note + " [Auto-cancelled due to late arrival]").Trim();
-                }
             }
 
             await unitOfWork.SaveChangeAsync(cancellationToken);
