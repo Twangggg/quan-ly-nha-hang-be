@@ -16,6 +16,12 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                 .Must(command => command.RouteId == null || command.RouteId == command.IngredientId)
                 .WithMessage(messageService.GetMessage(MessageKeys.Common.IdMismatch));
 
+            RuleFor(x => x.Code)
+                .NotEmpty()
+                .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.CodeRequired))
+                .MaximumLength(20)
+                .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.CodeMaxLength));
+
             RuleFor(x => x.Name)
                 .NotEmpty()
                 .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.NameRequired))
@@ -31,6 +37,14 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
             RuleFor(x => x.LowStockThreshold)
                 .GreaterThanOrEqualTo(0)
                 .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.ThresholdMin));
+
+            RuleFor(x => x.CurrentStock)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.StockMin));
+
+            RuleFor(x => x.CostPrice)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.CostMin));
         }
     }
 }

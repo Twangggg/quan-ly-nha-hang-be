@@ -11,8 +11,8 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredie
         public string Unit { get; set; } = string.Empty;
         public decimal CurrentStock { get; set; }
         public decimal LowStockThreshold { get; set; }
-        public string StockStatus { get; set; } = string.Empty;
         public decimal CostPrice { get; set; }
+        public string StockStatus { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
     }

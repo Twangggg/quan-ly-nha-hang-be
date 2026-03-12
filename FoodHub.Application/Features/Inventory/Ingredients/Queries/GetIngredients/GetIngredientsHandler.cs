@@ -56,6 +56,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredie
                 var filterMapping = new Dictionary<string, Expression<Func<Ingredient, object?>>>
                 {
                     { "isActive", x => x.IsActive },
+                    { "unit", x => x.Unit },
                 };
                 query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 

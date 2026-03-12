@@ -1,3 +1,4 @@
+using System;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
@@ -54,9 +55,24 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                     );
                 }
 
+                // Check code duplicate (excluding current)
+                var codeExists = await repo.AnyAsync(x =>
+                    x.Code.ToLower() == request.Code.ToLower()
+                    && x.IngredientId != request.IngredientId
+                );
+
+                if (codeExists)
+                {
+                    return Result<UpdateIngredientResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Ingredient.CodeExists),
+                        ResultErrorType.Conflict
+                    );
+                }
+
                 // Check name duplicate (excluding current)
                 var nameExists = await repo.AnyAsync(x =>
-                    x.Name.ToLower() == request.Name.ToLower() && x.IngredientId != request.IngredientId
+                    x.Name.ToLower() == request.Name.ToLower()
+                    && x.IngredientId != request.IngredientId
                 );
 
                 if (nameExists)
@@ -72,7 +88,10 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                     request.Unit,
                     request.LowStockThreshold,
                     request.Description,
-                    request.IsActive
+                    request.IsActive,
+                    request.Code,
+                    request.CurrentStock,
+                    request.CostPrice
                 );
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -80,6 +99,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                 var response = new UpdateIngredientResponse
                 {
                     IngredientId = ingredient.IngredientId,
+                    Code = ingredient.Code,
                     Name = ingredient.Name,
                     Unit = ingredient.Unit,
                     LowStockThreshold = ingredient.LowStockThreshold,

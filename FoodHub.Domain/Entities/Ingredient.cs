@@ -47,7 +47,10 @@ namespace FoodHub.Domain.Entities
             string unit,
             decimal lowStockThreshold,
             string? description,
-            bool isActive
+            bool isActive,
+            string code,
+            decimal currentStock,
+            decimal costPrice
         )
         {
             Name = name;
@@ -55,6 +58,9 @@ namespace FoodHub.Domain.Entities
             LowStockThreshold = lowStockThreshold;
             Description = description;
             IsActive = isActive;
+            Code = code;
+            CurrentStock = currentStock;
+            CostPrice = costPrice;
             UpdatedAt = DateTime.UtcNow;
 
             return DomainResult.Success();
