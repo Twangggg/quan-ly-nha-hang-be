@@ -74,6 +74,8 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     request.Name,
                     request.Unit,
                     request.LowStockThreshold,
+                    request.CurrentStock,
+                    request.CostPrice,
                     request.Description
                 );
 
@@ -89,6 +91,8 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     Code = ingredient.Code,
                     Name = ingredient.Name,
                     Unit = ingredient.Unit,
+                    CurrentStock = ingredient.CurrentStock,
+                    CostPrice = ingredient.CostPrice,
                     LowStockThreshold = ingredient.LowStockThreshold,
                     StockStatus = ingredient.GetStockStatus(),
                     CreatedAt = ingredient.CreatedAt,

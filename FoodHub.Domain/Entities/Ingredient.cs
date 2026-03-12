@@ -24,6 +24,8 @@ namespace FoodHub.Domain.Entities
             string name,
             string unit,
             decimal lowStockThreshold,
+            decimal currentStock,
+            decimal costPrice,
             string? description = null
         )
         {
@@ -34,8 +36,8 @@ namespace FoodHub.Domain.Entities
                 Name = name,
                 Unit = unit,
                 LowStockThreshold = lowStockThreshold,
-                CurrentStock = 0,
-                CostPrice = 0,
+                CurrentStock = currentStock,
+                CostPrice = costPrice,
                 Description = description,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,

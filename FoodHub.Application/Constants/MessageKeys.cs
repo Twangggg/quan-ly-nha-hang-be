@@ -256,6 +256,8 @@ namespace FoodHub.Application.Constants
             public const string UnitRequired = "Ingredient.UnitRequired";
             public const string UnitMaxLength = "Ingredient.UnitMaxLength";
             public const string ThresholdMin = "Ingredient.ThresholdMin";
+            public const string CostMin = "Ingredient.CostMin";
+            public const string StockMin = "Ingredient.StockMin";
         }
     }
 }

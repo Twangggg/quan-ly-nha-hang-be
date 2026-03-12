@@ -36,8 +36,8 @@ namespace FoodHub.Tests.Features.Inventory
             // Arrange
             var ingredients = new List<Ingredient>
             {
-                Ingredient.Create("ING001", "Muối", "Kg", 1),
-                Ingredient.Create("ING002", "Đường", "Kg", 2)
+                Ingredient.Create("ING001", "Muối", "Kg", 1, 0, 0),
+                Ingredient.Create("ING002", "Đường", "Kg", 2, 0, 0)
             };
 
             var pagination = new PaginationParams { PageNumber = 1, PageSize = 10 };

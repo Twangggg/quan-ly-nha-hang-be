@@ -57,7 +57,7 @@ namespace FoodHub.Tests.Features.Inventory
         {
             // Arrange
             var ingredientId = Guid.NewGuid();
-            var ingredient = Ingredient.Create("ING005", "Tiêu", "Gram", 50, "Tiêu sọ");
+            var ingredient = Ingredient.Create("ING005", "Tiêu", "Gram", 50, 0, 0, "Tiêu sọ");
             typeof(Ingredient).GetProperty("IngredientId")!.SetValue(ingredient, ingredientId);
 
             var repo = new Mock<IGenericRepository<Ingredient>>();

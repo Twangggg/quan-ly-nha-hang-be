@@ -53,7 +53,7 @@ namespace FoodHub.Tests.Features.Inventory
         {
             // Arrange
             var ingredientId = Guid.NewGuid();
-            var ingredient = Ingredient.Create("ING003", "Bột mì", "Kg", 5);
+            var ingredient = Ingredient.Create("ING003", "Bột mì", "Kg", 5, 0, 0);
             typeof(Ingredient).GetProperty("IngredientId")!.SetValue(ingredient, ingredientId);
 
             var repo = new Mock<IGenericRepository<Ingredient>>();
@@ -85,7 +85,7 @@ namespace FoodHub.Tests.Features.Inventory
         {
             // Arrange
             var ingredientId = Guid.NewGuid();
-            var ingredient = Ingredient.Create("ING004", "Bột ngọt", "Kg", 2);
+            var ingredient = Ingredient.Create("ING004", "Bột ngọt", "Kg", 2, 0, 0);
             typeof(Ingredient).GetProperty("IngredientId")!.SetValue(ingredient, ingredientId);
 
             var repo = new Mock<IGenericRepository<Ingredient>>();

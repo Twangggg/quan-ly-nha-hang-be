@@ -391,6 +391,8 @@ namespace FoodHub.Infrastructure.Persistence
                         seed.Name,
                         seed.Unit,
                         seed.LowStockThreshold,
+                        seed.Stock,
+                        seed.Cost,
                         seed.Description
                     );
 
