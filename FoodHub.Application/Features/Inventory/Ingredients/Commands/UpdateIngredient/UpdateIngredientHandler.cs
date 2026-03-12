@@ -14,17 +14,20 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<UpdateIngredientHandler> _logger;
 
         public UpdateIngredientHandler(
             IUnitOfWork unitOfWork,
             IMessageService messageService,
-            ILogger<UpdateIngredientHandler> logger
+            ILogger<UpdateIngredientHandler> logger,
+            ICurrentUserService currentUserService
         )
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _logger = logger;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<UpdateIngredientResponse>> Handle(
@@ -85,6 +88,11 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
 
                 // Disallow direct edits of quantity and cost; those are controlled via stock flows
                 // (e.g., receiving or adjustments). Keep existing values intact here.
+                Guid? auditorId = null;
+                if (Guid.TryParse(_currentUserService.UserId, out var parsedUserId))
+                {
+                    auditorId = parsedUserId;
+                }
                 ingredient.Update(
                     request.Name,
                     request.Unit,
@@ -93,7 +101,8 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                     request.IsActive,
                     request.Code,
                     ingredient.CurrentStock,
-                    ingredient.CostPrice
+                    ingredient.CostPrice,
+                    auditorId
                 );
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -111,6 +120,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                     IsActive = ingredient.IsActive,
                     Description = ingredient.Description,
                     UpdatedAt = ingredient.UpdatedAt,
+                    UpdatedBy = ingredient.UpdatedBy,
                 };
 
                 _logger.LogInformation(

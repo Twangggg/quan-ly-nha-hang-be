@@ -12,6 +12,7 @@ namespace FoodHub.Tests.Features.Inventory
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICacheService> _mockCache;
+        private readonly Mock<ICurrentUserService> _mockCurrentUser;
         private readonly Mock<IMessageService> _mockMessage;
         private readonly CreateIngredientHandler _handler;
 
@@ -20,8 +21,16 @@ namespace FoodHub.Tests.Features.Inventory
             _mockUow = new Mock<IUnitOfWork>();
             _mockCache = new Mock<ICacheService>();
             _mockMessage = new Mock<IMessageService>();
+            _mockCurrentUser = new Mock<ICurrentUserService>();
+            _mockCurrentUser.SetupGet(x => x.UserId).Returns((string?)null);
 
-            _handler = new CreateIngredientHandler(_mockUow.Object, _mockMessage.Object, _mockCache.Object, Mock.Of<Microsoft.Extensions.Logging.ILogger<CreateIngredientHandler>>());
+            _handler = new CreateIngredientHandler(
+                _mockUow.Object,
+                _mockMessage.Object,
+                _mockCache.Object,
+                Mock.Of<Microsoft.Extensions.Logging.ILogger<CreateIngredientHandler>>(),
+                _mockCurrentUser.Object
+            );
         }
 
         [Fact]

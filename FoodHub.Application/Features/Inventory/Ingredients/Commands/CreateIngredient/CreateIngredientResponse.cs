@@ -16,5 +16,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
         public StockStatus StockStatus { get; set; }
         public string? Description { get; set; }
         public DateTime CreatedAt { get; set; }
+        public Guid? CreatedBy { get; set; }
+        public Guid? UpdatedBy { get; set; }
     }
 }

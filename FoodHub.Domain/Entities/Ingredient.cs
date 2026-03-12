@@ -26,7 +26,8 @@ namespace FoodHub.Domain.Entities
             decimal lowStockThreshold,
             decimal currentStock,
             decimal costPrice,
-            string? description = null
+            string? description = null,
+            Guid? createdBy = null
         )
         {
             return new Ingredient
@@ -41,6 +42,8 @@ namespace FoodHub.Domain.Entities
                 Description = description,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
+                CreatedBy = createdBy,
+                UpdatedBy = createdBy,
             };
         }
 
@@ -52,7 +55,8 @@ namespace FoodHub.Domain.Entities
             bool isActive,
             string code,
             decimal currentStock,
-            decimal costPrice
+            decimal costPrice,
+            Guid? updatedBy = null
         )
         {
             Name = name;
@@ -64,6 +68,7 @@ namespace FoodHub.Domain.Entities
             CurrentStock = currentStock;
             CostPrice = costPrice;
             UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
 
             return DomainResult.Success();
         }

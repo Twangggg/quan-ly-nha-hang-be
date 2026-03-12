@@ -17,5 +17,6 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
         public bool IsActive { get; set; }
         public string? Description { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public Guid? UpdatedBy { get; set; }
     }
 }

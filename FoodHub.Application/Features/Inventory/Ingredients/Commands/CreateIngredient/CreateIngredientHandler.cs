@@ -15,19 +15,22 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<CreateIngredientHandler> _logger;
 
         public CreateIngredientHandler(
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICacheService cacheService,
-            ILogger<CreateIngredientHandler> logger
+            ILogger<CreateIngredientHandler> logger,
+            ICurrentUserService currentUserService
         )
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _cacheService = cacheService;
             _logger = logger;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<CreateIngredientResponse>> Handle(
@@ -71,6 +74,11 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
 
                 // Prevent manual initialization of stock and cost; both start at zero and are
                 // managed through stock operations elsewhere in the system.
+                Guid? auditorId = null;
+                if (Guid.TryParse(_currentUserService.UserId, out var parsedUserId))
+                {
+                    auditorId = parsedUserId;
+                }
                 var ingredient = Ingredient.Create(
                     request.Code,
                     request.Name,
@@ -78,7 +86,8 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     request.LowStockThreshold,
                     0,
                     0,
-                    request.Description
+                    request.Description,
+                    auditorId
                 );
 
                 await repo.AddAsync(ingredient);
@@ -99,6 +108,8 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     StockStatus = ingredient.GetStockStatus(),
                     Description = ingredient.Description,
                     CreatedAt = ingredient.CreatedAt,
+                    CreatedBy = ingredient.CreatedBy,
+                    UpdatedBy = ingredient.UpdatedBy,
                 };
 
                 _logger.LogInformation(
