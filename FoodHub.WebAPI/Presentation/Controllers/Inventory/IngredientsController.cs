@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Features.Inventory.Ingredients.Commands.ActivateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.DeactivateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngredient;
@@ -99,6 +100,18 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> DeactivateIngredient(Guid id)
         {
             var result = await _mediator.Send(new DeactivateIngredientCommand(id));
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Kích hoạt lại nguyên liệu.
+        /// </summary>
+        [HttpPatch("{id}/activate")]
+        [HasPermission(Permissions.Inventory.Update)]
+        [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ActivateIngredient(Guid id)
+        {
+            var result = await _mediator.Send(new ActivateIngredientCommand(id));
             return HandleResult(result);
         }
     }
