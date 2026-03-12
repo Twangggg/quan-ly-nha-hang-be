@@ -7,9 +7,9 @@ namespace FoodHub.Domain.Entities
 {
     public class Ingredient : BaseEntity
     {
-        private Ingredient() { }
+        protected Ingredient() { }
 
-        public Guid IngredientId { get; private set; }
+        public virtual Guid IngredientId { get; private set; }
         public string Code { get; private set; } = string.Empty;
         public string Name { get; private set; } = string.Empty;
         public string Unit { get; private set; } = string.Empty;
@@ -91,7 +91,7 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
-        public DomainResult Deactivate(bool isUsedInRecipe)
+        public virtual DomainResult Deactivate(bool isUsedInRecipe)
         {
             if (isUsedInRecipe)
             {

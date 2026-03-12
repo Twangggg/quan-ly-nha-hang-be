@@ -65,8 +65,9 @@ namespace FoodHub.Tests.Features.Inventory
 
             var repo = new Mock<IGenericRepository<Ingredient>>();
             repo.Setup(r => r.Query()).Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
-            repo.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Ingredient, bool>>>()))
-                .ReturnsAsync(true);
+            repo.SetupSequence(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Ingredient, bool>>>()))
+                .ReturnsAsync(false) // First call: Check code (no duplicate)
+                .ReturnsAsync(true);  // Second call: Check name (duplicate)
 
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
             _mockMessage.Setup(m => m.GetMessage("Ingredient.NameExists")).Returns("Tên nguyên liệu đã tồn tại");

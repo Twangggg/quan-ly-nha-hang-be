@@ -24,6 +24,12 @@ namespace FoodHub.Tests.Features.Inventory
             _mockMapper = new Mock<IMapper>();
             _mockMessage = new Mock<IMessageService>();
 
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Ingredient, GetIngredientByIdResponse>();
+            });
+            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(config);
+
             _handler = new GetIngredientByIdHandler(
                 _mockUow.Object,
                 _mockMapper.Object,
