@@ -1,6 +1,7 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Reservations.Commands.CreateReservation;
 using FoodHub.Application.Features.Reservations.Queries.GetAvailableTables;
+using FoodHub.Application.Features.Areas.Queries.GetPublicAreas;
 using FoodHub.Presentation.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -45,6 +46,18 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         public async Task<IActionResult> CreateReservation([FromBody] CreateReservationCommand command)
         {
             var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Lấy danh sách các khu vực đang hoạt động cho khách chọn.
+        /// </summary>
+        /// <response code="200">Danh sách các khu vực.</response>
+        [HttpGet("areas")]
+        [ProducesResponseType(typeof(Result<List<GetPublicAreasResponse>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAreas()
+        {
+            var result = await _mediator.Send(new GetPublicAreasQuery());
             return HandleResult(result);
         }
     }
