@@ -5,6 +5,7 @@ using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Services.Hubs;
 using FoodHub.Presentation.Middleware;
 using FoodHub.WebAPI.Presentation.Extensions;
+using FoodHub.WebAPI.Presentation.BackgroundJobs;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
@@ -37,6 +38,7 @@ try
     builder.Services.AddSwaggerDocumentation(); // Tài liệu API Swagger
     builder.Services.AddWebServices(builder.Configuration); // Redis, Rate Limiting, Versioning...
     builder.Services.AddHealthCheckServices(builder.Configuration); // Health Check (DB, Cache)
+    builder.Services.AddHostedService<ReservationCancellationService>(); // Tự động huỷ đặt bàn trễ
 
     var app = builder.Build();
 

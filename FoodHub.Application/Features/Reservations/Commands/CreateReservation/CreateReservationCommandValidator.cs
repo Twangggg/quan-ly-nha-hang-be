@@ -1,31 +1,38 @@
 using FluentValidation;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
 {
     public class CreateReservationCommandValidator : AbstractValidator<CreateReservationCommand>
     {
-        public CreateReservationCommandValidator()
+        private readonly IMessageService _messageService;
+
+        public CreateReservationCommandValidator(IMessageService messageService)
         {
+            _messageService = messageService;
+
             RuleFor(x => x.CustomerName)
-                .NotEmpty().WithMessage("Tên khách hàng là bắt buộc.")
-                .MaximumLength(100).WithMessage("Tên khách hàng không quá 100 kí tự.");
+                .NotEmpty().WithMessage(_messageService.GetMessage(MessageKeys.Profile.FullNameRequired))
+                .MaximumLength(100).WithMessage(_messageService.GetMessage(MessageKeys.Profile.FullNameMaxLength));
 
             RuleFor(x => x.CustomerPhone)
-                .NotEmpty().WithMessage("Số điện thoại là bắt buộc.")
-                .MaximumLength(20).WithMessage("Số điện thoại không hợp lệ.");
+                .NotEmpty().WithMessage(_messageService.GetMessage(MessageKeys.Profile.PhoneRequired))
+                .MaximumLength(20).WithMessage(_messageService.GetMessage(MessageKeys.Profile.PhoneInvalid));
 
             RuleFor(x => x.GuestCount)
-                .GreaterThan(0).WithMessage("Số lượng khách phải lớn hơn 0.");
+                .GreaterThan(0).WithMessage(_messageService.GetMessage(MessageKeys.Order.InvalidQuantity));
 
-            RuleFor(x => x.TableId)
-                .NotEmpty().WithMessage("Vui lòng chọn bàn.");
+            RuleFor(x => x.AreaId)
+                .NotEmpty().WithMessage(_messageService.GetMessage(MessageKeys.Common.IdRequired));
 
             // AC-PR-01 & AC-PR-02: Validate time constraints
             RuleFor(x => x)
                 .Must(x => IsValidReservationTime(x.ReservationDate, x.ReservationTime))
-                .WithMessage("Thời gian nhận bàn không hợp lệ. Không được đặt ngày quá khứ. Nếu đặt hôm nay phải cách hiện tại ít nhất 45 phút.");
+                .WithMessage(_messageService.GetMessage(MessageKeys.Reservation.InvalidTime))
+                .Must(x => x.ReservationTime >= new TimeSpan(9, 0, 0) && x.ReservationTime <= new TimeSpan(20, 0, 0))
+                .WithMessage(_messageService.GetMessage(MessageKeys.Reservation.InvalidTime));
         }
 
         private bool IsValidReservationTime(DateOnly date, TimeSpan time)

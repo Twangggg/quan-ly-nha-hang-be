@@ -32,16 +32,10 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
 
             var allTables = await query.ToListAsync(cancellationToken);
 
-            // Check overlapping reservations (chênh lệch dưới 2 tiếng)
-            var bufferHours = 2;
-            var minTime = request.ReservationTime.Subtract(TimeSpan.FromHours(bufferHours));
-            var maxTime = request.ReservationTime.Add(TimeSpan.FromHours(bufferHours));
-
+            // Check overlapping reservations: Nếu bàn đã có người đặt (Booked) hoặc đang ngồi (CheckIn) trong ngày hôm đó thì không còn trống
             var overlappingReservations = await _unitOfWork.Repository<Reservation>().Query()
                 .Where(r => r.ReservationDate == request.ReservationDate 
-                            && r.Status == ReservationStatus.Booked
-                            && r.ReservationTime > minTime 
-                            && r.ReservationTime < maxTime)
+                            && (r.Status == ReservationStatus.Booked || r.Status == ReservationStatus.CheckIn))
                 .Select(r => r.TableId)
                 .Distinct()
                 .ToListAsync(cancellationToken);

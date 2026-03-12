@@ -18,7 +18,6 @@ namespace FoodHub.Domain.Entities
         // Chi tiết
         public PartyType PartyType { get; set; }
         public int GuestCount { get; set; }
-        public bool HasChildren { get; set; }
         public string? Note { get; set; }
         
         // Khu vực, Trạng thái & Bàn
@@ -27,5 +26,9 @@ namespace FoodHub.Domain.Entities
         public virtual Area? Area { get; set; }
         public Guid TableId { get; set; }
         public virtual Table Table { get; set; } = null!;
+        
+        // Order đặt trước
+        public Guid? OrderId { get; set; }
+        public virtual Order? Order { get; set; }
     }
 }

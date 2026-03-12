@@ -16,7 +16,6 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(r => r.ReservationTime).IsRequired();
             builder.Property(r => r.PartyType).IsRequired();
             builder.Property(r => r.GuestCount).IsRequired();
-            builder.Property(r => r.HasChildren).IsRequired().HasDefaultValue(false);
             builder.Property(r => r.Note).HasMaxLength(500);
             builder.Property(r => r.Status).IsRequired();
 

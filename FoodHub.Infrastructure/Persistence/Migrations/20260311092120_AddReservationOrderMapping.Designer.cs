@@ -3,17 +3,20 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodHub.Migrations
+namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260311092120_AddReservationOrderMapping")]
+    partial class AddReservationOrderMapping
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1062,6 +1065,12 @@ namespace FoodHub.Migrations
                     b.Property<int>("GuestCount")
                         .HasColumnType("integer")
                         .HasColumnName("guest_count");
+
+                    b.Property<bool>("HasChildren")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("has_children");
 
                     b.Property<string>("Note")
                         .HasMaxLength(500)
