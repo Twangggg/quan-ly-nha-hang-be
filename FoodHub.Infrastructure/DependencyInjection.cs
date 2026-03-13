@@ -76,6 +76,9 @@ namespace FoodHub.Infrastructure
             // SignalR Service
             services.AddScoped<ISignalRService, SignalRService>();
 
+            // Excel Export Service
+            services.AddScoped<ISalesExcelService, SalesExcelService>();
+
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();

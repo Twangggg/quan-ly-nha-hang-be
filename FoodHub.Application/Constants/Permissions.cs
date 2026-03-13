@@ -54,6 +54,7 @@ namespace FoodHub.Application.Constants
             public const string Checkout = "Permissions.Billing.Checkout";
             public const string ViewHistory = "Permissions.Billing.ViewHistory";
         }
+
         public static class Kds
         {
             public const string View = "Permissions.Kds.View";
@@ -82,6 +83,18 @@ namespace FoodHub.Application.Constants
         public static class Reservations
         {
             public const string CheckIn = "Permissions.Reservations.CheckIn";
+        }
+        public static class SalesAnalytics
+        {
+            public const string View = "Permissions.SalesAnalytics.View";
+        }
+
+        public static class Inventory
+        {
+            public const string View = "Permissions.Inventory.View";
+            public const string Create = "Permissions.Inventory.Create";
+            public const string Update = "Permissions.Inventory.Update";
+            public const string Deactivate = "Permissions.Inventory.Deactivate";
         }
     }
 }

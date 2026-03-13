@@ -549,4 +549,42 @@
   <data name="Category.CannotChangeTypeNotEmpty" xml:space="preserve">
     <value>Không thể đổi loại danh mục khi đang có món ăn bên trong.</value>
   </data>
+
+  <!-- Ingredient Errors -->
+  <data name="Ingredient.NotFound" xml:space="preserve">
+    <value>Không tìm thấy nguyên liệu.</value>
+  </data>
+  <data name="Ingredient.CodeExists" xml:space="preserve">
+    <value>Mã nguyên liệu đã tồn tại.</value>
+  </data>
+  <data name="Ingredient.NameExists" xml:space="preserve">
+    <value>Tên nguyên liệu đã tồn tại.</value>
+  </data>
+  <data name="Ingredient.UsedInRecipe" xml:space="preserve">
+    <value>Không thể vô hiệu hóa nguyên liệu đang được sử dụng trong công thức.</value>
+  </data>
+  <data name="Ingredient.IdRequired" xml:space="preserve">
+    <value>Mã định danh nguyên liệu là bắt buộc.</value>
+  </data>
+  <data name="Ingredient.CodeRequired" xml:space="preserve">
+    <value>Mã nguyên liệu là bắt buộc.</value>
+  </data>
+  <data name="Ingredient.CodeMaxLength" xml:space="preserve">
+    <value>Mã nguyên liệu không được quá 20 ký tự.</value>
+  </data>
+  <data name="Ingredient.NameRequired" xml:space="preserve">
+    <value>Tên nguyên liệu là bắt buộc.</value>
+  </data>
+  <data name="Ingredient.NameMaxLength" xml:space="preserve">
+    <value>Tên nguyên liệu không được quá 100 ký tự.</value>
+  </data>
+  <data name="Ingredient.UnitRequired" xml:space="preserve">
+    <value>Đơn vị tính là bắt buộc.</value>
+  </data>
+  <data name="Ingredient.UnitMaxLength" xml:space="preserve">
+    <value>Đơn vị tính không được quá 20 ký tự.</value>
+  </data>
+  <data name="Ingredient.ThresholdMin" xml:space="preserve">
+    <value>Ngưỡng cảnh báo tồn kho phải lớn hơn hoặc bằng 0.</value>
+  </data>
 </root>
