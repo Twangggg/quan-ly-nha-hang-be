@@ -259,5 +259,28 @@ namespace FoodHub.Application.Constants
             public const string CostMin = "Ingredient.CostMin";
             public const string StockMin = "Ingredient.StockMin";
         }
+
+        public static class InventorySettings
+        {
+            public const string ExpiryWarningDaysMin =
+                "InventorySettings.ExpiryWarningDaysMin";
+            public const string DefaultLowStockThresholdMin =
+                "InventorySettings.DefaultLowStockThresholdMin";
+            public const string MaxCostRecalcDaysRange =
+                "InventorySettings.MaxCostRecalcDaysRange";
+            public const string UpdateSuccess = "InventorySettings.UpdateSuccess";
+        }
+
+        public static class OpeningStock
+        {
+            public const string ItemsRequired = "OpeningStock.ItemsRequired";
+            public const string IngredientIdRequired = "OpeningStock.IngredientIdRequired";
+            public const string QuantityMin = "OpeningStock.QuantityMin";
+            public const string CostPriceMin = "OpeningStock.CostPriceMin";
+            public const string DuplicateIngredient = "OpeningStock.DuplicateIngredient";
+            public const string ConfirmOverwrite = "OpeningStock.ConfirmOverwrite";
+            public const string IngredientNotFound = "OpeningStock.IngredientNotFound";
+            public const string ImportSuccess = "OpeningStock.ImportSuccess";
+        }
     }
 }

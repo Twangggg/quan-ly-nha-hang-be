@@ -44,7 +44,9 @@ namespace FoodHub.Tests.Features.Inventory
                 .ReturnsAsync(false);
 
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(mockRepo.Object);
+            _mockUow.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+            _mockUow.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -56,7 +58,9 @@ namespace FoodHub.Tests.Features.Inventory
             result.Data.Code.Should().Be("ING001");
 
             _mockUow.Verify(u => u.Repository<Ingredient>().AddAsync(It.IsAny<Ingredient>()), Times.Once);
+            _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _mockUow.Verify(u => u.CommitTransactionAsync(), Times.Once);
         }
 
         [Fact]

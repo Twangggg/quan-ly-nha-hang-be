@@ -90,33 +90,44 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     auditorId
                 );
 
-                await repo.AddAsync(ingredient);
-                await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.BeginTransactionAsync();
 
-                // Invalidate cache if needed
-                // await _cacheService.RemoveAsync(CacheKey.IngredientList, cancellationToken);
-
-                var response = new CreateIngredientResponse
+                try
                 {
-                    IngredientId = ingredient.IngredientId,
-                    Code = ingredient.Code,
-                    Name = ingredient.Name,
-                    Unit = ingredient.Unit,
-                    CurrentStock = ingredient.CurrentStock,
-                    CostPrice = ingredient.CostPrice,
-                    LowStockThreshold = ingredient.LowStockThreshold,
-                    StockStatus = ingredient.GetStockStatus(),
-                    Description = ingredient.Description,
-                    CreatedAt = ingredient.CreatedAt,
-                    CreatedBy = ingredient.CreatedBy,
-                    UpdatedBy = ingredient.UpdatedBy,
-                };
+                    await repo.AddAsync(ingredient);
+                    await _unitOfWork.SaveChangeAsync(cancellationToken);
+                    await _unitOfWork.CommitTransactionAsync();
 
-                _logger.LogInformation(
-                    "End handling CreateIngredient for IngredientId={IngredientId}",
-                    ingredient.IngredientId
-                );
-                return Result<CreateIngredientResponse>.Success(response);
+                    // Invalidate cache if needed
+                    // await _cacheService.RemoveAsync(CacheKey.IngredientList, cancellationToken);
+
+                    var response = new CreateIngredientResponse
+                    {
+                        IngredientId = ingredient.IngredientId,
+                        Code = ingredient.Code,
+                        Name = ingredient.Name,
+                        Unit = ingredient.Unit,
+                        CurrentStock = ingredient.CurrentStock,
+                        CostPrice = ingredient.CostPrice,
+                        LowStockThreshold = ingredient.LowStockThreshold,
+                        StockStatus = ingredient.GetStockStatus(),
+                        Description = ingredient.Description,
+                        CreatedAt = ingredient.CreatedAt,
+                        CreatedBy = ingredient.CreatedBy,
+                        UpdatedBy = ingredient.UpdatedBy,
+                    };
+
+                    _logger.LogInformation(
+                        "End handling CreateIngredient for IngredientId={IngredientId}",
+                        ingredient.IngredientId
+                    );
+                    return Result<CreateIngredientResponse>.Success(response);
+                }
+                catch
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    throw;
+                }
             }
             catch (DbUpdateException ex)
             {
