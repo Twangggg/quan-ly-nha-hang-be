@@ -31,6 +31,13 @@ namespace FoodHub.Domain.Entities
             return TableNumber.ToString();
         }
 
+        /// <summary>
+        /// Dùng để chuyển trạng thái bàn về Available sau khi đã kiểm tra điều kiện (không có order nào đang phục vụ)
+        /// Bắt buộc phải include Orders và kiểm tra trạng thái của các order trước khi gọi phương thức này để đảm bảo tính đúng đắn của trạng thái bàn
+        /// </summary>
+        /// <returns>
+        /// true nếu bàn đã được chuyển về trạng thái Available thành công, false nếu không thể chuyển do có order đang phục vụ
+        /// </returns>
         public bool SetAvailable()
         {
             if (!CanAvailable())

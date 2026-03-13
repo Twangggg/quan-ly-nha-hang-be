@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
@@ -15,13 +17,15 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ILogger<SplitOrderHandler> _logger;
+        private readonly IMapper _mapper;
 
-        public SplitOrderHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService, ILogger<SplitOrderHandler> logger
+        public SplitOrderHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService, IMapper mapper, ILogger<SplitOrderHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _mapper = mapper;
             _logger = logger;
         }
 
@@ -58,7 +62,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
             }
             if (sourceOrder.Status != OrderStatus.Completed)
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.OrderNotReadyForCompletion, request.SourceOrderId);
+                var errorMessage = _messageService.GetMessage(MessageKeys.Order.StatusNotCompleted, request.SourceOrderId);
                 return Result<SplitOrderResponse>.Failure(errorMessage);
             }
 
@@ -213,16 +217,17 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                     }
                 }
 
+                newOrder.TotalAmount = newOrder.OrderItems.Sum(oi => oi.GetTotalPrice());
+                await repoOrder.AddAsync(newOrder);
+
                 // Recalculate total amounts
-                sourceOrder.RecalculateTotalAmount();
+                sourceOrder.TotalAmount -= newOrder.TotalAmount;
                 sourceOrder.UpdatedAt = DateTime.UtcNow;
                 sourceOrder.UpdatedBy = auditorId;
                 repoOrder.Update(sourceOrder);
 
-                newOrder.RecalculateTotalAmount();
-                await repoOrder.AddAsync(newOrder);
-
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation(
                     "Successfully split Order {SourceOrderCode} into {NewOrderCode}. Source Amount: {SourceAmount}, New Amount: {NewAmount}",
@@ -253,12 +258,12 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                     SourceOrderId = sourceOrder.OrderId,
                     SourceOrderCode = sourceOrder.OrderCode,
                     SourceOrderTotalAmount = sourceOrder.TotalAmount,
-                    SourceOrderItems = sourceOrderItems,
+                    SourceOrderItems = _mapper.Map<List<SplitOrderItemDto>>(sourceOrderItems),
 
                     NewOrderId = newOrder.OrderId,
                     NewOrderCode = newOrder.OrderCode,
                     NewOrderTotalAmount = newOrder.TotalAmount,
-                    NewOrderItems = newOrderItems
+                    NewOrderItems = _mapper.Map<List<SplitOrderItemDto>>(newOrderItems)
                 };
 
                 return Result<SplitOrderResponse>.Success(response);

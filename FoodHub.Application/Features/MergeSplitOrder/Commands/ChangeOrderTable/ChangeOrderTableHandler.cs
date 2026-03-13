@@ -54,13 +54,18 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
             }
             if (currentOrder.Status != OrderStatus.Serving)
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.InvalidStatus, new { Status = currentOrder.Status });
+                var errorMessage = _messageService.GetMessage(MessageKeys.Order.StatusNotServing, new { Status = currentOrder.Status });
                 return Result<ChangeOrderTableResponse>.Failure(errorMessage, ResultErrorType.BadRequest);
             }
 
             var newTable = await repoTable.Query()
                 .FirstOrDefaultAsync(t => t.TableId == request.TableId, cancellationToken);
-            var oldTable = currentOrder.Table;
+
+            // Truy vấn rời oldTable và include danh sách Orders đang phục vụ tại bàn đó
+            var oldTable = await repoTable.Query()
+                .Include(t => t.Orders)
+                .FirstOrDefaultAsync(t => t.TableId == currentOrder.TableId, cancellationToken);
+
             if (newTable is null || oldTable is null)
             {
                 var errorMessage = _messageService.GetMessage(MessageKeys.Table.NotFound);
@@ -86,6 +91,9 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
                 currentOrder.UpdatedAt = DateTime.UtcNow;
                 currentOrder.UpdatedBy = auditorId;
                 repoOrder.Update(currentOrder);
+
+                // Remove order from old table's orders collection
+                oldTable.Orders.Remove(currentOrder);
 
                 // Update old table status to Available
                 if (oldTable.SetAvailable())

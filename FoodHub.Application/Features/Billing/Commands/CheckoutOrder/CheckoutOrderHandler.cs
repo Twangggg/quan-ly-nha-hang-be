@@ -94,7 +94,9 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 {
                     var table = await _unitOfWork
                         .Repository<Domain.Entities.Table>()
-                        .GetByIdAsync(order.TableId.Value);
+                        .Query()
+                        .Include(t => t.Orders)
+                        .FirstOrDefaultAsync(t => t.TableId == order.TableId, cancellationToken);
                     if (table != null)
                     {
                         if (table.SetAvailable())

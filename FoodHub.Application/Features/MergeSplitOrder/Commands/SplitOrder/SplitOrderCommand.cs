@@ -6,10 +6,10 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
 {
     public record SplitOrderCommand(
         Guid SourceOrderId,
-        List<SplitOrderItemDto> ItemsToSplit
+        List<SplitOrderItemCommand> ItemsToSplit
     ) : IRequest<Result<SplitOrderResponse>>, IMustBeActive;
 
-    public record SplitOrderItemDto(
+    public record SplitOrderItemCommand(
         Guid OrderItemId,
         int QuantityToSplit
     );

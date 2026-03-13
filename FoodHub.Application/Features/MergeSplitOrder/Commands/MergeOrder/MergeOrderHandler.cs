@@ -17,17 +17,20 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ILogger<MergeOrderHandler> _logger;
+        private readonly IMapper _mapper;
 
         public MergeOrderHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            IMapper mapper,
             ILogger<MergeOrderHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
             _logger = logger;
+            _mapper = mapper;
         }
 
         public async Task<Result<MergeOrderResponse>> Handle(MergeOrderCommand request, CancellationToken cancellationToken)
@@ -164,14 +167,11 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                 }
 
                 // Recalculate total amount for the first order after merging items
-                var allFirstOrderItems = await repoOrderItem.Query()
-                    .Include(oi => oi.OptionGroups)
-                    .ThenInclude(og => og.OptionValues)
-                    .Where(oi => oi.OrderId == firstOrder.OrderId)
-                    .ToListAsync(cancellationToken);
+                decimal newTotalAmount = firstOrderItems.Sum(oi => oi.GetTotalPrice())
+                                         + secondOrderItems.Sum(oi => oi.GetTotalPrice());
 
                 // Assuming GetTotalPrice() calculates the total price of the item including options
-                firstOrder.TotalAmount = allFirstOrderItems.Sum(oi => oi.GetTotalPrice());
+                firstOrder.TotalAmount = newTotalAmount;
                 firstOrder.UpdatedAt = DateTime.UtcNow;
                 firstOrder.UpdatedBy = auditorId;
 
@@ -201,7 +201,9 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                     );
 
                     // Free up the second order's table if it exists
-                    var secondTable = secondOrder.Table;
+                    var secondTable = await repoTable.Query()
+                        .Include(o => o.Orders)
+                        .FirstOrDefaultAsync(t => t.TableId == secondOrder.TableId, cancellationToken);
                     if (secondTable != null && secondTable.SetAvailable())
                     {
                         secondTable.UpdatedAt = DateTime.UtcNow;
@@ -231,7 +233,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                     MergedOrderId = firstOrder.OrderId,
                     MergedOrderCode = firstOrder.OrderCode,
                     MergedOrderTotalAmount = firstOrder.TotalAmount,
-                    Items = mergedOrderItems
+                    Items = _mapper.Map<List<OrderItemDto>>(mergedOrderItems)
                 };
 
                 var response = mergedOrder;

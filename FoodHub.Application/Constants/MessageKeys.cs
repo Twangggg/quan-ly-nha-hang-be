@@ -127,6 +127,7 @@ namespace FoodHub.Application.Constants
             public const string ItemsNotFinished = "Order.ItemsNotFinished";
             public const string StatusNotServing = "Order.StatusNotServing";
             public const string InvalidStatus = "Order.InvalidStatus";
+            public const string StatusNotCompleted = "Order.StatusNotCompleted";
         }
 
         public static class OrderItem

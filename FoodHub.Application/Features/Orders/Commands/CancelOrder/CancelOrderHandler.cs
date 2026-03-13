@@ -93,8 +93,9 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
             {
                 var table = await _unitOfWork
-                    .Repository<Domain.Entities.Table>()
-                    .GetByIdAsync(order.TableId.Value);
+                    .Repository<Domain.Entities.Table>().Query()
+                    .Include(t => t.Orders)
+                    .FirstOrDefaultAsync(t => t.TableId == order.TableId, cancellationToken);
                 if (table != null)
                 {
                     //table.MarkAsAvailable();
