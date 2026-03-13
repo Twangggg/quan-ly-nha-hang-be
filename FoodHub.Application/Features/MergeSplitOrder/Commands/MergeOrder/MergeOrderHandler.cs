@@ -16,20 +16,17 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
-        private readonly IMapper _mapper;
         private readonly ILogger<MergeOrderHandler> _logger;
 
         public MergeOrderHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
-            IMapper mapper,
             ILogger<MergeOrderHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
-            _mapper = mapper;
             _logger = logger;
         }
 
@@ -38,6 +35,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
             // Log the incoming request details
             var repoOrder = _unitOfWork.Repository<Order>();
             var repoOrderItem = _unitOfWork.Repository<OrderItem>();
+            var repoTable = _unitOfWork.Repository<Table>();
 
             Guid? auditorId = null;
             if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
@@ -54,6 +52,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 
             // Validate first order
             var firstOrder = await repoOrder.Query()
+                .Include(o => o.Table)
                 .FirstOrDefaultAsync(o => o.OrderId == request.FirstOrder, cancellationToken);
             if (firstOrder is null)
             {
@@ -73,6 +72,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 
             // Validate second order
             var secondOrder = await repoOrder.Query()
+                .Include(o => o.Table)
                 .FirstOrDefaultAsync(o => o.OrderId == request.SecondOrder, cancellationToken);
 
             if (secondOrder is null)
@@ -190,7 +190,28 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                 secondOrder.Note = $"Merged into Order {firstOrder.OrderCode}";
                 repoOrder.Update(secondOrder);
 
+                // Update table status if necessary (e.g., if the second order's table is different and needs to be freed up)
+                if (secondOrder.TableId != firstOrder.TableId)
+                {
+                    // log the table status updates for debugging
+                    _logger.LogInformation(
+                        "Updating table status for Table {TableId} from Order {SecondOrderCode}",
+                        secondOrder.TableId,
+                        secondOrder.OrderCode
+                    );
+
+                    // Free up the second order's table if it exists
+                    var secondTable = secondOrder.Table;
+                    if (secondTable != null && secondTable.SetAvailable())
+                    {
+                        secondTable.UpdatedAt = DateTime.UtcNow;
+                        secondTable.UpdatedBy = auditorId;
+                        repoTable.Update(secondTable);
+                    }
+                }
+
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation(
                         "Successfully merged Order {SecondOrderCode} into {FirstOrderCode}. New TotalAmount: {TotalAmount}",
@@ -209,10 +230,11 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                 {
                     MergedOrderId = firstOrder.OrderId,
                     MergedOrderCode = firstOrder.OrderCode,
+                    MergedOrderTotalAmount = firstOrder.TotalAmount,
                     Items = mergedOrderItems
                 };
 
-                var response = _mapper.Map<MergeOrderResponse>(firstOrder);
+                var response = mergedOrder;
                 return Result<MergeOrderResponse>.Success(response);
             }
             catch (Exception ex)

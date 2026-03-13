@@ -97,7 +97,12 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
                     .GetByIdAsync(order.TableId.Value);
                 if (table != null)
                 {
-                    table.MarkAsAvailable();
+                    //table.MarkAsAvailable();
+                    if (table.SetAvailable())
+                    {
+                        table.UpdatedAt = DateTime.UtcNow;
+                        table.UpdatedBy = auditorId;
+                    }
                     _unitOfWork.Repository<Domain.Entities.Table>().Update(table);
 
                     // Ngắt kết nối đơn hàng với bàn sau khi đã giải phóng bàn xong

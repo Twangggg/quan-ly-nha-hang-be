@@ -15,7 +15,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                 .NotEmpty().WithMessage("Source order ID is required.");
 
             RuleFor(x => x.ItemsToSplit)
-                .NotEmpty().WithMessage("At least one item must be selected for splitting.")
+                .NotEmpty().WithMessage("At least one item must be selected for splitting.");
 
             RuleForEach(x => x.ItemsToSplit)
                 .ChildRules(items =>

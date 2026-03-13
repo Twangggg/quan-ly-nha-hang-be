@@ -1,19 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AutoMapper;
+using FluentValidation;
 using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Domain.Entities;
 
 namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
 {
-    public class ChangeOrderTableValidator : IMapFrom<Order>
+    public class ChangeOrderTableValidator : AbstractValidator<ChangeOrderTableCommand>
     {
-        public void Mapping(Profile profile)
-        {
-            profile.CreateMap<Order, ChangeOrderTableValidator>();
+        public ChangeOrderTableValidator() {
+            RuleFor(r => r.OrderId)
+                .NotEmpty().WithMessage("Order ID is required.");
+            RuleFor(r => r.TableId)
+                .NotEmpty().WithMessage("Table ID is required.");
         }
     }
 }

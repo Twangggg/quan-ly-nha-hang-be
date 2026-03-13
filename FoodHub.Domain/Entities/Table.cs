@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FoodHub.Domain.Common;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
@@ -25,6 +19,37 @@ namespace FoodHub.Domain.Entities
         public void MarkAsAvailable()
         {
             Status = TableStatus.Available;
+        }
+
+        public string GetTableName()
+        {
+            if (Area != null && !string.IsNullOrEmpty(Area.CodePrefix))
+            {
+                return $"{Area.CodePrefix}_{TableNumber}";
+            }
+
+            return TableNumber.ToString();
+        }
+
+        public bool SetAvailable()
+        {
+            if (!CanAvailable())
+            {
+                return false; // Cannot set to available if there are active orders
+            }
+
+            Status = TableStatus.Available;
+            return true;
+        }
+
+        public bool CanAvailable()
+        {
+            if (Orders.Any(o => o.Status == OrderStatus.Serving))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
