@@ -132,6 +132,9 @@
   <data name="OpeningStock.ImportSuccess" xml:space="preserve">
     <value>Opening stock imported successfully.</value>
   </data>
+  <data name="OpeningStock.AlreadyLocked" xml:space="preserve">
+    <value>Opening stock has already been locked and can no longer be edited.</value>
+  </data>
   <data name="Ingredient.InvalidOpeningStockQuantity" xml:space="preserve">
     <value>Opening stock quantity must be greater than or equal to 0.</value>
   </data>

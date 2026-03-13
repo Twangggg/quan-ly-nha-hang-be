@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Exceptions;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
@@ -13,18 +14,21 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
         : IRequestHandler<ImportOpeningStockCommand, Result<ImportOpeningStockResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<ImportOpeningStockHandler> _logger;
 
         public ImportOpeningStockHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             IMessageService messageService,
             ICurrentUserService currentUserService,
             ILogger<ImportOpeningStockHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _messageService = messageService;
             _currentUserService = currentUserService;
             _logger = logger;
@@ -43,12 +47,34 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
 
             var ingredientIds = request.Items.Select(x => x.IngredientId).Distinct().ToList();
             var actorId = ParseActorId();
+            var settingsRepo = _unitOfWork.Repository<InventorySettings>();
 
             var ingredients = await _unitOfWork
                 .Repository<Ingredient>()
                 .Query()
                 .Where(x => ingredientIds.Contains(x.IngredientId) && x.IsActive)
                 .ToListAsync(cancellationToken);
+
+            var settings = await settingsRepo
+                .Query()
+                .FirstOrDefaultAsync(
+                    x => x.SettingsKey == InventorySettings.DefaultSettingsKey,
+                    cancellationToken
+                );
+
+            if (
+                settings is not null
+                && (
+                    settings.OpeningStockStatus == Domain.Enums.OpeningStockStatus.Completed
+                    || settings.LockedAt.HasValue
+                )
+            )
+            {
+                _logger.LogWarning("ImportOpeningStock rejected because opening stock is locked");
+                throw new BusinessException(
+                    _messageService.GetMessage(MessageKeys.OpeningStock.AlreadyLocked)
+                );
+            }
 
             if (ingredients.Count != ingredientIds.Count)
             {
@@ -78,6 +104,12 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
             try
             {
                 var transactionCount = 0;
+
+                if (settings is null)
+                {
+                    settings = InventorySettings.CreateDefault(actorId);
+                    await settingsRepo.AddAsync(settings);
+                }
 
                 foreach (var item in request.Items)
                 {
@@ -118,7 +150,9 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
                     }
                 }
 
+                settings.CompleteOpeningStock(actorId);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveAsync(CacheKey.InventorySettings, cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
 
                 var response = new ImportOpeningStockResponse
