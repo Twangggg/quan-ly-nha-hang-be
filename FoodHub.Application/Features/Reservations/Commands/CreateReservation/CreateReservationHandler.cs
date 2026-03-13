@@ -1,3 +1,4 @@
+using System.Linq;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -21,60 +22,71 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
 
         public async Task<Result<Guid>> Handle(CreateReservationCommand request, CancellationToken cancellationToken)
         {
-            // Kiểm tra bàn tồn tại và ACTIVE (Không bị xóa và không OutOfService)
+            _logger.LogInformation(
+                "Creating reservation request for Table {TableId} on {ReservationDate} at {ReservationTime} for {GuestCount} guests",
+                request.TableId,
+                request.ReservationDate,
+                request.ReservationTime,
+                request.GuestCount
+            );
+
             var table = await _unitOfWork.Repository<Table>()
                 .Query()
-                .FirstOrDefaultAsync(t => t.TableId == request.TableId && t.Status != TableStatus.OutOfService, cancellationToken);
+                .FirstOrDefaultAsync(
+                    t => t.TableId == request.TableId && t.Status != TableStatus.OutOfService,
+                    cancellationToken
+                );
 
             if (table == null)
             {
-                return Result<Guid>.Failure("Bàn không tồn tại hoặc đã ngưng hoạt động.", ResultErrorType.NotFound);
+                return Result<Guid>.Failure(
+                    "Ban khong ton tai hoac da ngung hoat dong.",
+                    ResultErrorType.NotFound
+                );
             }
 
-            // Kiểm tra sức chứa
-            if (table.Capacity < request.GuestCount)
+            var reservation = Reservation.CreateBooked(
+                request.CustomerName,
+                request.CustomerPhone,
+                request.ReservationDate,
+                request.ReservationTime,
+                request.PartyType,
+                request.GuestCount,
+                request.HasChildren,
+                request.Note,
+                request.TableId,
+                table.AreaId
+            );
+
+            if (!reservation.CanFitTable(table))
             {
-                return Result<Guid>.Failure("Bàn không đủ sức chứa cho số lượng khách.", ResultErrorType.BadRequest);
+                return Result<Guid>.Failure(
+                    "Ban khong du suc chua cho so luong khach.",
+                    ResultErrorType.BadRequest
+                );
             }
 
-            // Check overlapping (cùng ngày, cách nhau dưới 2h, status = Booked)
-            var bufferHours = 2;
-            var minTime = request.ReservationTime.Subtract(TimeSpan.FromHours(bufferHours));
-            var maxTime = request.ReservationTime.Add(TimeSpan.FromHours(bufferHours));
+            var existingReservations = await _unitOfWork.Repository<Reservation>()
+                .Query()
+                .Where(r => r.TableId == request.TableId && r.ReservationDate == request.ReservationDate)
+                .ToListAsync(cancellationToken);
 
-            var isOverlapped = await _unitOfWork.Repository<Reservation>().Query()
-                .AnyAsync(r => r.TableId == request.TableId 
-                               && r.ReservationDate == request.ReservationDate 
-                               && r.Status == ReservationStatus.Booked
-                               && r.ReservationTime > minTime 
-                               && r.ReservationTime < maxTime, 
-                          cancellationToken);
-
-            if (isOverlapped)
+            if (existingReservations.Any(existingReservation => reservation.OverlapsWith(existingReservation)))
             {
-                return Result<Guid>.Failure("Bàn đã được đặt trong khoảng thời gian này.", ResultErrorType.Conflict);
+                return Result<Guid>.Failure(
+                    "Ban da duoc dat trong khoang thoi gian nay.",
+                    ResultErrorType.Conflict
+                );
             }
-
-            var reservation = new Reservation
-            {
-                ReservationId = Guid.NewGuid(),
-                CustomerName = request.CustomerName,
-                CustomerPhone = request.CustomerPhone,
-                ReservationDate = request.ReservationDate,
-                ReservationTime = request.ReservationTime,
-                PartyType = request.PartyType,
-                GuestCount = request.GuestCount,
-                HasChildren = request.HasChildren,
-                Note = request.Note,
-                Status = ReservationStatus.Booked,
-                TableId = request.TableId,
-                AreaId = table.AreaId
-            };
 
             await _unitOfWork.Repository<Reservation>().AddAsync(reservation);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            _logger.LogInformation("Successfully created Reservation ID {ReservationId} for Table {TableId}", reservation.ReservationId, request.TableId);
+            _logger.LogInformation(
+                "Successfully created Reservation ID {ReservationId} for Table {TableId}",
+                reservation.ReservationId,
+                request.TableId
+            );
 
             return Result<Guid>.Success(reservation.ReservationId);
         }
