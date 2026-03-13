@@ -53,10 +53,7 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Queries.GetOpening
                     CostPrice = x.CostPrice,
                 });
 
-            var pagedResult = await query.ToPagedResultAsync(
-                request.Pagination,
-                cancellationToken
-            );
+            var pagedResult = await query.ToPagedResultAsync(request.Pagination, cancellationToken);
 
             _logger.LogInformation(
                 "End handling GetOpeningStockList with {Count} items out of {TotalCount}",

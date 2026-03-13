@@ -81,7 +81,9 @@ namespace FoodHub.Application.Features.Inventory.Settings.Queries.GetInventorySe
             return Result<GetInventorySettingsResponse>.Success(response);
         }
 
-        private static System.Linq.Expressions.Expression<Func<InventorySettings, GetInventorySettingsResponse>> MapToResponse()
+        private static System.Linq.Expressions.Expression<
+            Func<InventorySettings, GetInventorySettingsResponse>
+        > MapToResponse()
         {
             return x => new GetInventorySettingsResponse
             {
