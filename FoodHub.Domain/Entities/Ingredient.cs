@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
@@ -18,6 +19,8 @@ namespace FoodHub.Domain.Entities
         public decimal CostPrice { get; private set; }
         public string? Description { get; private set; }
         public bool IsActive { get; private set; } = true;
+        public virtual ICollection<InventoryTransaction> InventoryTransactions { get; private set; } =
+            new List<InventoryTransaction>();
 
         public static Ingredient Create(
             string code,
@@ -87,6 +90,35 @@ namespace FoodHub.Domain.Entities
 
             CurrentStock += quantity;
             UpdatedAt = DateTime.UtcNow;
+
+            return DomainResult.Success();
+        }
+
+        public DomainResult SetOpeningStock(
+            decimal quantity,
+            decimal? costPrice = null,
+            Guid? updatedBy = null
+        )
+        {
+            if (quantity < 0)
+            {
+                return DomainResult.Failure(DomainErrors.Ingredient.InvalidOpeningStockQuantity);
+            }
+
+            if (costPrice.HasValue && costPrice.Value < 0)
+            {
+                return DomainResult.Failure(DomainErrors.Ingredient.InvalidOpeningStockCost);
+            }
+
+            CurrentStock = quantity;
+
+            if (costPrice.HasValue)
+            {
+                CostPrice = costPrice.Value;
+            }
+
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
 
             return DomainResult.Success();
         }

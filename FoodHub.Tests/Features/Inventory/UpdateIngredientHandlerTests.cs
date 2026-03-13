@@ -96,7 +96,9 @@ namespace FoodHub.Tests.Features.Inventory
                 .ReturnsAsync(false);
 
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
+            _mockUow.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+            _mockUow.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
 
             var command = new UpdateIngredientCommand(ingredientId, "ING003", "Hành lá", "Bó", 10, "Rau thơm", false);
 
@@ -111,7 +113,9 @@ namespace FoodHub.Tests.Features.Inventory
             ingredient.LowStockThreshold.Should().Be(10);
             ingredient.IsActive.Should().BeFalse();
             ingredient.Description.Should().Be("Rau thơm");
+            _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _mockUow.Verify(u => u.CommitTransactionAsync(), Times.Once);
         }
     }
 }

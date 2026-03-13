@@ -322,63 +322,63 @@ namespace FoodHub.Infrastructure.Persistence
                 {
                     new
                     {
-                        Code = "ING-001",
+                        Code = "THITBO",
                         Name = "Thịt bò",
                         Unit = "kg",
                         LowStockThreshold = 10m,
                         Description = "Thịt bò tươi cho món chính",
-                        Stock = 25m,
-                        Cost = 180000m,
+                        Stock = 0m,
+                        Cost = 0m,
                     },
                     new
                     {
-                        Code = "ING-002",
+                        Code = "UCGA",
                         Name = "Ức gà",
                         Unit = "kg",
                         LowStockThreshold = 12m,
                         Description = "Ức gà fillet không da",
-                        Stock = 30m,
-                        Cost = 120000m,
+                        Stock = 0m,
+                        Cost = 0m,
                     },
                     new
                     {
-                        Code = "ING-003",
+                        Code = "RAUXALACH",
                         Name = "Rau xà lách",
                         Unit = "kg",
                         LowStockThreshold = 5m,
                         Description = "Rau xà lách Đà Lạt",
-                        Stock = 12m,
-                        Cost = 45000m,
+                        Stock = 0m,
+                        Cost = 0m,
                     },
                     new
                     {
-                        Code = "ING-004",
+                        Code = "KHOAITAY",
                         Name = "Khoai tây",
                         Unit = "kg",
                         LowStockThreshold = 15m,
                         Description = "Khoai tây Hà Lan",
-                        Stock = 40m,
-                        Cost = 35000m,
+                        Stock = 0m,
+                        Cost = 0m,
                     },
                     new
                     {
-                        Code = "ING-005",
+                        Code = "HANHTAY",
                         Name = "Hành tây",
                         Unit = "kg",
                         LowStockThreshold = 8m,
                         Description = "Hành tây tím",
-                        Stock = 18m,
-                        Cost = 28000m,
+                        Stock = 0m,
+                        Cost = 0m,
                     },
                     new
                     {
-                        Code = "ING-006",
+                        Code = "SUATUOI",
                         Name = "Sữa tươi",
                         Unit = "l",
                         LowStockThreshold = 20m,
                         Description = "Sữa tươi tiệt trùng",
-                        Stock = 24m,
-                        Cost = 32000m,
+                        Stock = 0m,
+                        Cost = 0m,
                     },
                 };
 

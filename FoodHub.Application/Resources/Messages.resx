@@ -119,4 +119,55 @@
   <data name="Profile.UpdateSuccess" xml:space="preserve">
     <value>Cập nhật thông tin thành công.</value>
   </data>
+  <data name="InventorySettings.UpdateSuccess" xml:space="preserve">
+    <value>Cap nhat cau hinh kho thanh cong.</value>
+  </data>
+  <data name="InventorySettings.ExpiryWarningDaysMin" xml:space="preserve">
+    <value>So ngay canh bao phai lon hon hoac bang 1.</value>
+  </data>
+  <data name="InventorySettings.DefaultLowStockThresholdMin" xml:space="preserve">
+    <value>Nguong canh bao ton kho khong duoc am.</value>
+  </data>
+  <data name="InventorySettings.MaxCostRecalcDaysRange" xml:space="preserve">
+    <value>So ngay tinh lai gia von phai nam trong khoang 1 den 365.</value>
+  </data>
+  <data name="InventorySettings.InvalidExpiryWarningDays" xml:space="preserve">
+    <value>So ngay canh bao phai lon hon hoac bang 1.</value>
+  </data>
+  <data name="InventorySettings.InvalidLowStockThreshold" xml:space="preserve">
+    <value>Nguong canh bao ton kho khong duoc am.</value>
+  </data>
+  <data name="InventorySettings.InvalidMaxCostRecalcDays" xml:space="preserve">
+    <value>So ngay tinh lai gia von phai nam trong khoang 1 den 365.</value>
+  </data>
+  <data name="OpeningStock.ItemsRequired" xml:space="preserve">
+    <value>Danh sach ton dau ky khong duoc de trong.</value>
+  </data>
+  <data name="OpeningStock.IngredientIdRequired" xml:space="preserve">
+    <value>IngredientId la bat buoc.</value>
+  </data>
+  <data name="OpeningStock.QuantityMin" xml:space="preserve">
+    <value>So luong ton dau ky phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="OpeningStock.CostPriceMin" xml:space="preserve">
+    <value>Don gia nhap phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="OpeningStock.DuplicateIngredient" xml:space="preserve">
+    <value>Danh sach ton dau ky khong duoc trung nguyen lieu.</value>
+  </data>
+  <data name="OpeningStock.ConfirmOverwrite" xml:space="preserve">
+    <value>Mot hoac nhieu nguyen lieu da co ton kho. Vui long xac nhan ghi de.</value>
+  </data>
+  <data name="OpeningStock.IngredientNotFound" xml:space="preserve">
+    <value>Khong tim thay mot hoac nhieu nguyen lieu dang hoat dong.</value>
+  </data>
+  <data name="OpeningStock.ImportSuccess" xml:space="preserve">
+    <value>Nhap so du ban dau thanh cong.</value>
+  </data>
+  <data name="Ingredient.InvalidOpeningStockQuantity" xml:space="preserve">
+    <value>So luong ton dau ky phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="Ingredient.InvalidOpeningStockCost" xml:space="preserve">
+    <value>Don gia nhap phai lon hon hoac bang 0.</value>
+  </data>
 </root>

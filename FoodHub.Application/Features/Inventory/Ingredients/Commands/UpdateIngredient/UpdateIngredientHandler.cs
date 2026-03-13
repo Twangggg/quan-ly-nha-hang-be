@@ -93,41 +93,52 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                 {
                     auditorId = parsedUserId;
                 }
-                ingredient.Update(
-                    request.Name,
-                    request.Unit,
-                    request.LowStockThreshold,
-                    request.Description,
-                    request.IsActive,
-                    request.Code,
-                    ingredient.CurrentStock,
-                    ingredient.CostPrice,
-                    auditorId
-                );
+                await _unitOfWork.BeginTransactionAsync();
 
-                await _unitOfWork.SaveChangeAsync(cancellationToken);
-
-                var response = new UpdateIngredientResponse
+                try
                 {
-                    IngredientId = ingredient.IngredientId,
-                    Code = ingredient.Code,
-                    Name = ingredient.Name,
-                    Unit = ingredient.Unit,
-                    LowStockThreshold = ingredient.LowStockThreshold,
-                    CurrentStock = ingredient.CurrentStock,
-                    CostPrice = ingredient.CostPrice,
-                    StockStatus = ingredient.GetStockStatus(),
-                    IsActive = ingredient.IsActive,
-                    Description = ingredient.Description,
-                    UpdatedAt = ingredient.UpdatedAt,
-                    UpdatedBy = ingredient.UpdatedBy,
-                };
+                    ingredient.Update(
+                        request.Name,
+                        request.Unit,
+                        request.LowStockThreshold,
+                        request.Description,
+                        request.IsActive,
+                        request.Code,
+                        ingredient.CurrentStock,
+                        ingredient.CostPrice,
+                        auditorId
+                    );
 
-                _logger.LogInformation(
-                    "End handling UpdateIngredient for {IngredientId}",
-                    request.IngredientId
-                );
-                return Result<UpdateIngredientResponse>.Success(response);
+                    await _unitOfWork.SaveChangeAsync(cancellationToken);
+                    await _unitOfWork.CommitTransactionAsync();
+
+                    var response = new UpdateIngredientResponse
+                    {
+                        IngredientId = ingredient.IngredientId,
+                        Code = ingredient.Code,
+                        Name = ingredient.Name,
+                        Unit = ingredient.Unit,
+                        LowStockThreshold = ingredient.LowStockThreshold,
+                        CurrentStock = ingredient.CurrentStock,
+                        CostPrice = ingredient.CostPrice,
+                        StockStatus = ingredient.GetStockStatus(),
+                        IsActive = ingredient.IsActive,
+                        Description = ingredient.Description,
+                        UpdatedAt = ingredient.UpdatedAt,
+                        UpdatedBy = ingredient.UpdatedBy,
+                    };
+
+                    _logger.LogInformation(
+                        "End handling UpdateIngredient for {IngredientId}",
+                        request.IngredientId
+                    );
+                    return Result<UpdateIngredientResponse>.Success(response);
+                }
+                catch
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    throw;
+                }
             }
             catch (DbUpdateException ex)
             {
