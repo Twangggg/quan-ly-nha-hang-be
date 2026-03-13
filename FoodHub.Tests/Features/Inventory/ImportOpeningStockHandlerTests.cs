@@ -1,0 +1,148 @@
+using FluentAssertions;
+using FoodHub.Application.Common.Exceptions;
+using FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpeningStock;
+using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Entities;
+using MockQueryable.Moq;
+using Moq;
+
+namespace FoodHub.Tests.Features.Inventory
+{
+    public class ImportOpeningStockHandlerTests
+    {
+        private readonly Mock<IUnitOfWork> _mockUow;
+        private readonly Mock<IMessageService> _mockMessage;
+        private readonly Mock<ICurrentUserService> _mockCurrentUser;
+        private readonly Mock<IGenericRepository<Ingredient>> _ingredientRepo;
+        private readonly Mock<IGenericRepository<InventoryTransaction>> _transactionRepo;
+        private readonly ImportOpeningStockHandler _handler;
+
+        public ImportOpeningStockHandlerTests()
+        {
+            _mockUow = new Mock<IUnitOfWork>();
+            _mockMessage = new Mock<IMessageService>();
+            _mockCurrentUser = new Mock<ICurrentUserService>();
+            _ingredientRepo = new Mock<IGenericRepository<Ingredient>>();
+            _transactionRepo = new Mock<IGenericRepository<InventoryTransaction>>();
+
+            _mockUow.Setup(x => x.Repository<Ingredient>()).Returns(_ingredientRepo.Object);
+            _mockUow.Setup(x => x.Repository<InventoryTransaction>()).Returns(_transactionRepo.Object);
+
+            _handler = new ImportOpeningStockHandler(
+                _mockUow.Object,
+                _mockMessage.Object,
+                _mockCurrentUser.Object,
+                Mock.Of<Microsoft.Extensions.Logging.ILogger<ImportOpeningStockHandler>>()
+            );
+        }
+
+        [Fact]
+        public async Task Handle_Should_ImportOpeningStock_And_CommitTransaction()
+        {
+            var ingredient = Ingredient.Create("ING001", "Salt", "Kg", 0, 0, 0, null);
+            var items = new List<OpeningStockItemDto>
+            {
+                new() { IngredientId = ingredient.IngredientId, Quantity = 5, CostPrice = 2 },
+            };
+
+            _ingredientRepo
+                .Setup(x => x.Query())
+                .Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
+            _mockUow.Setup(x => x.BeginTransactionAsync()).Returns(Task.CompletedTask);
+            _mockUow.Setup(x => x.CommitTransactionAsync()).Returns(Task.CompletedTask);
+            _mockUow.Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var result = await _handler.Handle(
+                new ImportOpeningStockCommand(items, true),
+                CancellationToken.None
+            );
+
+            result.IsSuccess.Should().BeTrue();
+            ingredient.CurrentStock.Should().Be(5);
+            ingredient.CostPrice.Should().Be(2);
+            _mockUow.Verify(x => x.BeginTransactionAsync(), Times.Once);
+            _mockUow.Verify(x => x.CommitTransactionAsync(), Times.Once);
+            _transactionRepo.Verify(x => x.AddAsync(It.IsAny<InventoryTransaction>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ThrowBusinessException_When_OverwriteNotConfirmed()
+        {
+            var ingredient = Ingredient.Create("ING001", "Salt", "Kg", 0, 10, 1, null);
+            _ingredientRepo
+                .Setup(x => x.Query())
+                .Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
+            _mockMessage
+                .Setup(x => x.GetMessage("OpeningStock.ConfirmOverwrite"))
+                .Returns("confirm overwrite");
+
+            var action = async () =>
+                await _handler.Handle(
+                    new ImportOpeningStockCommand(
+                        new List<OpeningStockItemDto>
+                        {
+                            new() { IngredientId = ingredient.IngredientId, Quantity = 5, CostPrice = 2 },
+                        },
+                        false
+                    ),
+                    CancellationToken.None
+                );
+
+            await action.Should().ThrowAsync<BusinessException>().WithMessage("confirm overwrite");
+        }
+
+        [Fact]
+        public async Task Handle_Should_ThrowNotFoundException_When_IngredientMissing()
+        {
+            _ingredientRepo
+                .Setup(x => x.Query())
+                .Returns(new List<Ingredient>().AsQueryable().BuildMock());
+            _mockMessage
+                .Setup(x => x.GetMessage("OpeningStock.IngredientNotFound"))
+                .Returns("not found");
+
+            var action = async () =>
+                await _handler.Handle(
+                    new ImportOpeningStockCommand(
+                        new List<OpeningStockItemDto>
+                        {
+                            new() { IngredientId = Guid.NewGuid(), Quantity = 5, CostPrice = 2 },
+                        },
+                        true
+                    ),
+                    CancellationToken.None
+                );
+
+            await action.Should().ThrowAsync<NotFoundException>().WithMessage("not found");
+        }
+
+        [Fact]
+        public async Task Handle_Should_Rollback_When_SaveFails()
+        {
+            var ingredient = Ingredient.Create("ING001", "Salt", "Kg", 0, 0, 0, null);
+            _ingredientRepo
+                .Setup(x => x.Query())
+                .Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
+            _mockUow.Setup(x => x.BeginTransactionAsync()).Returns(Task.CompletedTask);
+            _mockUow.Setup(x => x.RollbackTransactionAsync()).Returns(Task.CompletedTask);
+            _mockUow
+                .Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("save failed"));
+
+            var action = async () =>
+                await _handler.Handle(
+                    new ImportOpeningStockCommand(
+                        new List<OpeningStockItemDto>
+                        {
+                            new() { IngredientId = ingredient.IngredientId, Quantity = 5, CostPrice = 2 },
+                        },
+                        true
+                    ),
+                    CancellationToken.None
+                );
+
+            await action.Should().ThrowAsync<Exception>().WithMessage("save failed");
+            _mockUow.Verify(x => x.RollbackTransactionAsync(), Times.Once);
+        }
+    }
+}
