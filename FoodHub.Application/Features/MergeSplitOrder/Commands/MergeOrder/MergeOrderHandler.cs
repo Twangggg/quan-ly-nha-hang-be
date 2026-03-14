@@ -204,11 +204,19 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                     var secondTable = await repoTable.Query()
                         .Include(o => o.Orders)
                         .FirstOrDefaultAsync(t => t.TableId == secondOrder.TableId, cancellationToken);
-                    if (secondTable != null && secondTable.SetAvailable())
+                    if (secondTable != null)
                     {
-                        secondTable.UpdatedAt = DateTime.UtcNow;
-                        secondTable.UpdatedBy = auditorId;
-                        repoTable.Update(secondTable);
+                        // Exclude soft-deleted orders from availability checks
+                        secondTable.Orders = secondTable.Orders
+                            .Where(o => o.DeletedAt == null)
+                            .ToList();
+
+                        if (secondTable.SetAvailable())
+                        {
+                            secondTable.UpdatedAt = DateTime.UtcNow;
+                            secondTable.UpdatedBy = auditorId;
+                            repoTable.Update(secondTable);
+                        }
                     }
                 }
 
