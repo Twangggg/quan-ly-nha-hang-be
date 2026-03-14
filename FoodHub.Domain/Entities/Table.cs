@@ -1,3 +1,4 @@
+using System;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
@@ -32,11 +33,15 @@ namespace FoodHub.Domain.Entities
         }
 
         /// <summary>
-        /// Dùng để chuyển trạng thái bàn về Available sau khi đã kiểm tra điều kiện (không có order nào đang phục vụ)
-        /// Bắt buộc phải include Orders và kiểm tra trạng thái của các order trước khi gọi phương thức này để đảm bảo tính đúng đắn của trạng thái bàn
+        /// Dùng để chuyển trạng thái bàn về Available sau khi đã kiểm tra điều kiện (không có order nào đang phục vụ).
+        /// Bắt buộc phải include Orders và kiểm tra trạng thái của các order trước khi gọi phương thức này để đảm bảo tính đúng đắn của trạng thái bàn.
         /// </summary>
+        /// <remarks>
+        /// This method assumes that the Orders navigation property has been loaded (eagerly or via lazy loading).
+        /// If Orders is not loaded correctly, an <see cref="InvalidOperationException"/> may be thrown from <see cref="CanAvailable"/>.
+        /// </remarks>
         /// <returns>
-        /// true nếu bàn đã được chuyển về trạng thái Available thành công, false nếu không thể chuyển do có order đang phục vụ
+        /// true nếu bàn đã được chuyển về trạng thái Available thành công, false nếu không thể chuyển do có order đang phục vụ.
         /// </returns>
         public bool SetAvailable()
         {
@@ -49,9 +54,30 @@ namespace FoodHub.Domain.Entities
             return true;
         }
 
+        /// <summary>
+        /// Kiểm tra xem bàn có thể chuyển về trạng thái Available hay không (không có order nào đang phục vụ).
+        /// </summary>
+        /// <remarks>
+        /// Yêu cầu Orders đã được load đầy đủ (Include hoặc lazy loading). Nếu Orders không được load đúng cách,
+        /// phương thức này sẽ ném <see cref="InvalidOperationException"/> để tránh trả về kết quả sai.
+        /// </remarks>
         public bool CanAvailable()
         {
-            if (Orders.Any(o => o.Status == OrderStatus.Serving))
+            if (Orders == null)
+            {
+                throw new InvalidOperationException("Orders navigation property must be loaded before calling CanAvailable.");
+            }
+
+            // If there are no orders but the table is not in the default Available state,
+            // it is likely that Orders has not been loaded from the database.
+            if (!Orders.Any() && Status != TableStatus.Available)
+            {
+                throw new InvalidOperationException("Orders navigation property may not be loaded. Ensure Orders are eagerly loaded before calling CanAvailable.");
+            }
+
+            var hasServingOrders = Orders.Any(o => o.Status == OrderStatus.Serving);
+
+            if (hasServingOrders)
             {
                 return false;
             }
