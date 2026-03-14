@@ -66,7 +66,6 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTable
                 auditorId = parsedId;
             }
 
-            //table.TableNumber = request.TableNumber;
             table.Capacity = request.Capacity;
             table.AreaId = request.AreaId;
             table.UpdatedAt = DateTime.UtcNow;
