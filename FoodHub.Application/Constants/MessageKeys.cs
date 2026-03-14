@@ -203,7 +203,7 @@ namespace FoodHub.Application.Constants
             public const string CodeExists = "Table.CodeExists";
             public const string UpdateForbidden = "Table.UpdateForbidden";
             public const string UpdateFail = "Table.UpdateFail";
-            public const string SameAsCurrentTable = "Order.SameAsCurrentTable";
+            public const string SameAsCurrentTable = "Table.SameAsCurrentTable";
         }
 
         public static class Area
