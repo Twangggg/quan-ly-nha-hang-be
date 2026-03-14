@@ -99,13 +99,6 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
 
             var ingredientMap = ingredients.ToDictionary(x => x.IngredientId);
             var transactionRepo = _unitOfWork.Repository<InventoryTransaction>();
-            var settingsRepo = _unitOfWork.Repository<InventorySettings>();
-            var settings = await settingsRepo
-                .Query()
-                .FirstOrDefaultAsync(
-                    x => x.SettingsKey == InventorySettings.DefaultSettingsKey,
-                    cancellationToken
-                );
 
             await _unitOfWork.BeginTransactionAsync();
 
