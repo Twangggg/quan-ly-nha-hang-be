@@ -14,6 +14,7 @@ namespace FoodHub.Tests.Features.Inventory
         private readonly Mock<ICacheService> _mockCache;
         private readonly Mock<ICurrentUserService> _mockCurrentUser;
         private readonly Mock<IMessageService> _mockMessage;
+        private readonly Mock<IGenericRepository<Ingredient>> _mockRepo;
         private readonly CreateIngredientHandler _handler;
 
         public CreateIngredientHandlerTests()
@@ -22,7 +23,10 @@ namespace FoodHub.Tests.Features.Inventory
             _mockCache = new Mock<ICacheService>();
             _mockMessage = new Mock<IMessageService>();
             _mockCurrentUser = new Mock<ICurrentUserService>();
+            _mockRepo = new Mock<IGenericRepository<Ingredient>>();
+
             _mockCurrentUser.SetupGet(x => x.UserId).Returns((string?)null);
+            _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(_mockRepo.Object);
 
             _handler = new CreateIngredientHandler(
                 _mockUow.Object,
@@ -34,87 +38,69 @@ namespace FoodHub.Tests.Features.Inventory
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnSuccess_When_IngredientCreated()
+        public async Task Handle_Should_ReturnSuccess_WithGeneratedCode_When_IngredientCreated()
         {
-            // Arrange
-            var command = new CreateIngredientCommand("ING001", "Hành tây", "Kg", 5, "Hành tây Đà Lạt");
+            var command = new CreateIngredientCommand(null, "Hanh tay", "Kg", 5, "Hanh tay Da Lat");
 
-            var mockRepo = new Mock<IGenericRepository<Ingredient>>();
-            mockRepo.Setup(r => r.AnyAsync(It.IsAny<Expression<Func<Ingredient, bool>>>()))
-                .ReturnsAsync(false);
+            _mockRepo.Setup(r => r.CountAsync(It.IsAny<Expression<Func<Ingredient, bool>>>()))
+                .ReturnsAsync(0);
 
-            _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(mockRepo.Object);
             _mockUow.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockUow.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
 
-            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data!.Name.Should().Be("Hành tây");
-            result.Data.Code.Should().Be("ING001");
+            result.Data!.Name.Should().Be("Hanh tay");
+            result.Data.Code.Should().Be("HANHTAY-1");
 
-            _mockUow.Verify(u => u.Repository<Ingredient>().AddAsync(It.IsAny<Ingredient>()), Times.Once);
+            _mockRepo.Verify(r => r.AddAsync(It.Is<Ingredient>(x => x.Code == "HANHTAY-1")), Times.Once);
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
             _mockUow.Verify(u => u.CommitTransactionAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnFailure_When_CodeExists()
+        public async Task Handle_Should_UseNextGlobalSequence_When_PreviousIngredientsExist()
         {
-            // Arrange
-            var command = new CreateIngredientCommand("ING001", "Hành tây", "Kg", 5);
+            var command = new CreateIngredientCommand("IGNORED", "Hanh tay", "Kg", 5);
 
-            var mockRepo = new Mock<IGenericRepository<Ingredient>>();
+            _mockRepo.Setup(r => r.CountAsync(It.IsAny<Expression<Func<Ingredient, bool>>>()))
+                .ReturnsAsync(1);
 
-            // First call for Code check returns true
-            mockRepo.Setup(r => r.AnyAsync(It.Is<Expression<Func<Ingredient, bool>>>(e => ExpressionTargetsCode(e))))
-                .ReturnsAsync(true);
+            _mockUow.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
+            _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+            _mockUow.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
 
-            _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(mockRepo.Object);
-            _mockMessage.Setup(m => m.GetMessage("Ingredient.CodeExists")).Returns("Mã nguyên liệu đã tồn tại");
-
-            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // Assert
-            result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be("Mã nguyên liệu đã tồn tại");
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            result.Data!.Code.Should().Be("HANHTAY-2");
+            _mockRepo.Verify(r => r.AddAsync(It.Is<Ingredient>(x => x.Code == "HANHTAY-2")), Times.Once);
         }
 
         [Fact]
         public async Task Handle_Should_ReturnFailure_When_NameExists()
         {
-            // Arrange
-            var command = new CreateIngredientCommand("ING002", "Hành tây", "Kg", 5);
+            var command = new CreateIngredientCommand(null, "Hanh tay", "Kg", 5);
 
-            var mockRepo = new Mock<IGenericRepository<Ingredient>>();
+            _mockRepo
+                .Setup(r => r.AnyAsync(It.IsAny<Expression<Func<Ingredient, bool>>>()))
+                .ReturnsAsync(true);
 
-            // First call for Code check returns false
-            mockRepo.SetupSequence(r => r.AnyAsync(It.IsAny<Expression<Func<Ingredient, bool>>>()))
-                .ReturnsAsync(false) // Code check
-                .ReturnsAsync(true); // Name check
+            _mockMessage
+                .Setup(m => m.GetMessage("Ingredient.NameExists"))
+                .Returns("Ten nguyen lieu da ton tai");
 
-            _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(mockRepo.Object);
-            _mockMessage.Setup(m => m.GetMessage("Ingredient.NameExists")).Returns("Tên nguyên liệu đã tồn tại");
-
-            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // Assert
             result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be("Tên nguyên liệu đã tồn tại");
-        }
-
-        // Helper matcher to avoid brittle ToString checks
-        private static bool ExpressionTargetsCode(Expression<Func<Ingredient, bool>> expr)
-        {
-            // Look for property access of Ingredient.Code in the expression tree
-            return expr.Body.ToString().Contains("Code");
+            result.Error.Should().Be("Ten nguyen lieu da ton tai");
+            _mockRepo.Verify(r => r.AddAsync(It.IsAny<Ingredient>()), Times.Never);
+            _mockRepo.Verify(r => r.CountAsync(It.IsAny<Expression<Func<Ingredient, bool>>>()), Times.Never);
         }
     }
 }

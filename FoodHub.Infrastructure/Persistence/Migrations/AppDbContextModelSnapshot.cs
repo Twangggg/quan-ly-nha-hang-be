@@ -860,6 +860,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("payment_method");
 
+                    b.Property<Guid?>("ReservationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reservation_id");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer")
                         .HasColumnName("status");
@@ -871,6 +875,13 @@ namespace FoodHub.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(15,2)")
                         .HasColumnName("total_amount");
+
+                    b.Property<int>("TransactionCode")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("transaction_code");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TransactionCode"));
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -895,6 +906,11 @@ namespace FoodHub.Migrations
 
                     b.HasIndex("OrderType")
                         .HasDatabaseName("ix_orders_order_type");
+
+                    b.HasIndex("ReservationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_orders_reservation_id")
+                        .HasFilter("reservation_id IS NOT NULL");
 
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_orders_status")
@@ -1252,6 +1268,96 @@ namespace FoodHub.Migrations
                     b.ToTable("refresh_tokens", (string)null);
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.Reservation", b =>
+                {
+                    b.Property<Guid>("ReservationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("reservation_id");
+
+                    b.Property<Guid?>("AreaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("area_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("customer_name");
+
+                    b.Property<string>("CustomerPhone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("customer_phone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("GuestCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("guest_count");
+
+                    b.Property<bool>("HasChildren")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("has_children");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<int>("PartyType")
+                        .HasColumnType("integer")
+                        .HasColumnName("party_type");
+
+                    b.Property<DateOnly>("ReservationDate")
+                        .HasColumnType("date")
+                        .HasColumnName("reservation_date");
+
+                    b.Property<TimeSpan>("ReservationTime")
+                        .HasColumnType("interval")
+                        .HasColumnName("reservation_time");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TableId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("table_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("ReservationId")
+                        .HasName("pk_reservations");
+
+                    b.HasIndex("AreaId")
+                        .HasDatabaseName("ix_reservations_area_id");
+
+                    b.HasIndex("TableId")
+                        .HasDatabaseName("ix_reservations_table_id");
+
+                    b.ToTable("reservations", (string)null);
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
                 {
                     b.Property<Guid>("SetMenuId")
@@ -1525,6 +1631,12 @@ namespace FoodHub.Migrations
                         .HasForeignKey("CreatedBy")
                         .HasConstraintName("fk_orders_employees_created_by");
 
+                    b.HasOne("FoodHub.Domain.Entities.Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_orders_reservations_reservation_id");
+
                     b.HasOne("FoodHub.Domain.Entities.Table", "Table")
                         .WithMany("Orders")
                         .HasForeignKey("TableId")
@@ -1532,6 +1644,8 @@ namespace FoodHub.Migrations
                         .HasConstraintName("fk_orders_tables_table_id");
 
                     b.Navigation("CreatedByEmployee");
+
+                    b.Navigation("Reservation");
 
                     b.Navigation("Table");
                 });
@@ -1632,6 +1746,26 @@ namespace FoodHub.Migrations
                         .HasConstraintName("fk_refresh_tokens_employees_employee_id");
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.Reservation", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.Area", "Area")
+                        .WithMany()
+                        .HasForeignKey("AreaId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_reservations_areas_area_id");
+
+                    b.HasOne("FoodHub.Domain.Entities.Table", "Table")
+                        .WithMany("Reservations")
+                        .HasForeignKey("TableId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reservations_tables_table_id");
+
+                    b.Navigation("Area");
+
+                    b.Navigation("Table");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
@@ -1739,6 +1873,8 @@ namespace FoodHub.Migrations
             modelBuilder.Entity("FoodHub.Domain.Entities.Table", b =>
                 {
                     b.Navigation("Orders");
+
+                    b.Navigation("Reservations");
                 });
 #pragma warning restore 612, 618
         }

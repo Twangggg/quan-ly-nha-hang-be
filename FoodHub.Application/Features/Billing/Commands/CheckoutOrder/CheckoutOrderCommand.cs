@@ -10,7 +10,6 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
         [JsonIgnore]
         public Guid OrderId { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
-
         [JsonPropertyName("amountReceived")]
         public decimal? AmountPaid { get; set; }
     }

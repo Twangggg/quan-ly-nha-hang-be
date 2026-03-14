@@ -8,12 +8,14 @@ namespace FoodHub.Domain.Entities
     public class Order : BaseEntity
     {
         public Guid OrderId { get; set; }
+        public int TransactionCode { get; set; } // Auto-increment for PayOS mapping
         public string OrderCode { get; set; } = null!; // ORD-YYYYMMDD-XXXX
         public OrderType OrderType { get; set; }
         public OrderStatus Status { get; set; }
 
         // Nullable because it is required only for DINE_IN
         public Guid? TableId { get; set; }
+        public Guid? ReservationId { get; set; }
 
         public string? Note { get; set; }
         public decimal TotalAmount { get; set; }
@@ -25,6 +27,7 @@ namespace FoodHub.Domain.Entities
 
         // Navigation properties
         public virtual Table? Table { get; set; }
+        public virtual Reservation? Reservation { get; set; }
 
         // Billing
         public PaymentMethod? PaymentMethod { get; set; }
@@ -92,6 +95,35 @@ namespace FoodHub.Domain.Entities
             }
 
             UpdatedAt = DateTime.UtcNow;
+            return DomainResult.Success();
+        }
+
+        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived)
+        {
+            if (Status != OrderStatus.Serving)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidStatusForCheckout);
+            }
+
+            if (paymentMethod == Enums.PaymentMethod.Cash)
+            {
+                if ((amountReceived ?? 0) < TotalAmount)
+                {
+                    return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
+                }
+                AmountPaid = amountReceived;
+            }
+            else
+            {
+                // CreditCard, BankTransfer: assume full payment
+                AmountPaid = TotalAmount;
+            }
+
+            Status = OrderStatus.Paid;
+            PaymentMethod = paymentMethod;
+            PaidAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+
             return DomainResult.Success();
         }
 

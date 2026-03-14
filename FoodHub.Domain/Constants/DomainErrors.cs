@@ -6,9 +6,10 @@ namespace FoodHub.Domain.Constants
         {
             public const string InvalidStatusForCancel = "Order.InvalidStatusForCancel";
             public const string OrderNotReadyForCompletion = "Order.OrderNotReadyForCompletion";
+            public const string InvalidStatusForCheckout = "Order.InvalidStatusForCheckout";
+            public const string InsufficientAmount = "Order.InsufficientAmount";
             public const string NotFound = "Order.NotFound";
             public const string InvalidActionWithStatus = "Order.InvalidActionWithStatus";
-            public const string InsufficientAmount = "Order.InsufficientAmount";
             public const string ItemsNotFinished = "Order.ItemsNotFinished";
         }
 

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Tests.Features.Inventory
 {
@@ -30,6 +31,17 @@ namespace FoodHub.Tests.Features.Inventory
             settings.DefaultLowStockThreshold.Should().Be(25);
             settings.AutoDeductOnCompleted.Should().BeFalse();
             settings.MaxCostRecalcDays.Should().Be(60);
+        }
+
+        [Fact]
+        public void CompleteOpeningStock_Should_SetCompletedStatus_AndLockTimestamp()
+        {
+            var settings = InventorySettings.CreateDefault();
+
+            settings.CompleteOpeningStock();
+
+            settings.OpeningStockStatus.Should().Be(OpeningStockStatus.Completed);
+            settings.LockedAt.Should().NotBeNull();
         }
     }
 }

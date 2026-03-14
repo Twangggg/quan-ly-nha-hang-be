@@ -4,7 +4,7 @@ using MediatR;
 namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngredient
 {
     public record CreateIngredientCommand(
-        string Code,
+        string? Code,
         string Name,
         string Unit,
         decimal LowStockThreshold,
