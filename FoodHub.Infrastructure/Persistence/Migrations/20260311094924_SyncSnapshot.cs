@@ -13,7 +13,7 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
         {
             // Drop columns/indexes that might still exist but are being replaced
             // Note: Many of these were supposed to be handled by previous migrations but were out of sync in Snapshot.
-            
+
             /*
             migrationBuilder.AddColumn<Guid>(
                 name: "category_id",

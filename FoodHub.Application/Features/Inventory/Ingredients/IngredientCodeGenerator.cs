@@ -1,13 +1,13 @@
-using FoodHub.Application.Interfaces;
-using FoodHub.Domain.Entities;
 using System.Globalization;
 using System.Text;
+using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Entities;
 
 namespace FoodHub.Application.Features.Inventory.Ingredients
 {
     public static class IngredientCodeGenerator
     {
-        private const int MaxIngredientCodeLength = 20;
+        private const int _maxIngredientCodeLength = 20;
 
         public static async Task<string> GenerateAsync(
             IGenericRepository<Ingredient> repo,
@@ -44,19 +44,19 @@ namespace FoodHub.Application.Features.Inventory.Ingredients
                 code = "INGREDIENT";
             }
 
-            return code.Length <= MaxIngredientCodeLength
+            return code.Length <= _maxIngredientCodeLength
                 ? code
-                : code[..MaxIngredientCodeLength];
+                : code[.._maxIngredientCodeLength];
         }
 
         private static string AppendSuffix(string baseCode, int suffix)
         {
             var suffixText = $"-{suffix.ToString(CultureInfo.InvariantCulture)}";
-            var maxBaseLength = MaxIngredientCodeLength - suffixText.Length;
+            var maxBaseLength = _maxIngredientCodeLength - suffixText.Length;
 
             if (maxBaseLength <= 0)
             {
-                return suffixText[..MaxIngredientCodeLength];
+                return suffixText[.._maxIngredientCodeLength];
             }
 
             var truncatedBase = baseCode.Length <= maxBaseLength

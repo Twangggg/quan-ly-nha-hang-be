@@ -64,7 +64,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             if (!domainResult.IsSuccess)
             {
                 _logger.LogWarning("Checkout failed for OrderId: {OrderId}. Reason: {ErrorCode}", request.OrderId, domainResult.ErrorCode);
-                
+
                 if (domainResult.ErrorCode == DomainErrors.Order.InvalidActionWithStatus)
                 {
                     return Result<Guid>.Failure(
@@ -75,7 +75,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                         ResultErrorType.BadRequest
                     );
                 }
-                
+
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(
                         domainResult.ErrorCode ?? MessageKeys.Order.InvalidAction

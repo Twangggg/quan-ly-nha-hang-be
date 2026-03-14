@@ -64,7 +64,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CreateQrPayment
                 );
             }
 
-            try 
+            try
             {
                 var paymentLink = await _paymentService.CreatePaymentLinkAsync(order, cancellationToken);
                 return Result<PaymentLinkResponse>.Success(paymentLink);
@@ -73,7 +73,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CreateQrPayment
             {
                 _logger.LogError(ex, "Failed to create payment link for order {OrderId}", request.OrderId);
                 return Result<PaymentLinkResponse>.Failure(
-                    "Cannot create PayOS payment link.", 
+                    "Cannot create PayOS payment link.",
                     ResultErrorType.BadRequest
                 );
             }

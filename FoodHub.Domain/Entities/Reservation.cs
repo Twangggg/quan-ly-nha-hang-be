@@ -1,6 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Enums;
-using System.Diagnostics.CodeAnalysis;
 
 namespace FoodHub.Domain.Entities
 {

@@ -38,9 +38,9 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
             var maxTime = request.ReservationTime.Add(TimeSpan.FromHours(bufferHours));
 
             var overlappingReservations = await _unitOfWork.Repository<Reservation>().Query()
-                .Where(r => r.ReservationDate == request.ReservationDate 
+                .Where(r => r.ReservationDate == request.ReservationDate
                             && r.Status == ReservationStatus.Booked
-                            && r.ReservationTime > minTime 
+                            && r.ReservationTime > minTime
                             && r.ReservationTime < maxTime)
                 .Select(r => r.TableId)
                 .Distinct()

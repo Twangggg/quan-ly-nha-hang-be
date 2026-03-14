@@ -32,7 +32,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
         {
             var now = DateTime.Now;
             var today = DateOnly.FromDateTime(now);
-            
+
             if (date < today) return false;
 
             if (date == today)

@@ -35,7 +35,7 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
             _logger.LogInformation("Processing PayOS Webhook...");
 
             long orderCode;
-            try 
+            try
             {
                 orderCode = await _paymentService.VerifyWebhookDataAsync(request.WebhookBody);
             }
@@ -55,7 +55,7 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
 
             await _cacheService.SetAsync(lockKey, "locked", TimeSpan.FromSeconds(10), cancellationToken);
 
-            try 
+            try
             {
                 var order = await _unitOfWork.Repository<Order>()
                     .Query()
@@ -64,7 +64,7 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                 if (order == null)
                 {
                     _logger.LogWarning("Order with TransactionCode {OrderCode} not found for webhook.", orderCode);
-                    return Result<bool>.Success(true); 
+                    return Result<bool>.Success(true);
                 }
 
                 if (order.Status == OrderStatus.Paid || order.Status == OrderStatus.Cancelled)
@@ -94,7 +94,7 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
 
                 await _signalRService.NotifyOrderStatusChangedAsync(order.OrderId, order.Status.ToString());
-                
+
                 _logger.LogInformation("Successfully processed webhook for OrderId: {OrderId}", order.OrderId);
                 return Result<bool>.Success(true);
             }
