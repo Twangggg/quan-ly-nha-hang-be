@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.Extensions.Logging;
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;

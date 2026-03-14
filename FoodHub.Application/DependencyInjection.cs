@@ -1,5 +1,5 @@
-using AutoMapper;
 using System.Reflection;
+using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using FoodHub.Application.Common.Behaviors;

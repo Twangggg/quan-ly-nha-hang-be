@@ -1,12 +1,11 @@
 using AutoMapper;
-using Microsoft.Extensions.Logging;
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.SetMenus.Queries.GetSetMenus;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
