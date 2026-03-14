@@ -30,5 +30,16 @@ namespace FoodHub.Domain.Entities
                 EmployeeId = employeeId,
             };
         }
+
+        public void Revoke(DateTime? revokedAt = null)
+        {
+            if (IsRevoked)
+            {
+                return;
+            }
+
+            IsRevoked = true;
+            UpdatedAt = revokedAt ?? DateTime.UtcNow;
+        }
     }
 }

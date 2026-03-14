@@ -1,10 +1,10 @@
+using System.Text.Json;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using Microsoft.Extensions.Options;
 using PayOS;
 using PayOS.Models.V2.PaymentRequests;
 using PayOS.Models.Webhooks;
-using System.Text.Json;
 
 namespace FoodHub.Infrastructure.Services
 {
@@ -28,7 +28,7 @@ namespace FoodHub.Infrastructure.Services
         public async Task<PaymentLinkResponse> CreatePaymentLinkAsync(Order order, CancellationToken token = default)
         {
             var amount = (long)Math.Max(1000, order.TotalAmount); // minimum amount rule for test
-            
+
             var request = new CreatePaymentLinkRequest
             {
                 OrderCode = order.TransactionCode,
@@ -51,10 +51,10 @@ namespace FoodHub.Infrastructure.Services
         {
             var webhook = JsonSerializer.Deserialize<Webhook>(webhookBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (webhook == null) throw new ArgumentException("Invalid webhook data");
-            
+
             var verifiedData = await _payOs.Webhooks.VerifyAsync(webhook);
             if (verifiedData == null) throw new UnauthorizedAccessException("Webhook verification failed");
-            
+
             return verifiedData.OrderCode;
         }
     }

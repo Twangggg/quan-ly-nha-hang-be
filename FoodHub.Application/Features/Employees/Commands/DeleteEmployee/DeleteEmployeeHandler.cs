@@ -6,6 +6,7 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
 {
@@ -45,6 +46,25 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
             if (employee == null)
             {
                 return Result<DeleteEmployeeResponse>.NotFound(_messageService.GetMessage(MessageKeys.Employee.NotFound));
+            }
+
+            if (!employee.IsActive())
+            {
+                return Result<DeleteEmployeeResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.NotActive),
+                    ResultErrorType.BadRequest
+                );
+            }
+
+            var refreshTokens = await _unitOfWork
+                .Repository<RefreshToken>()
+                .Query()
+                .Where(rt => rt.EmployeeId == employee.EmployeeId && !rt.IsRevoked)
+                .ToListAsync(cancellationToken);
+
+            foreach (var token in refreshTokens)
+            {
+                token.Revoke();
             }
 
             employee.DeleteEmployee(auditorId);

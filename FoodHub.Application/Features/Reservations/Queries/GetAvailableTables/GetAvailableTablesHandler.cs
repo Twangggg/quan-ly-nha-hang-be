@@ -21,10 +21,8 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
             var query = _unitOfWork.Repository<Table>().Query()
                 .Where(t => t.Status != TableStatus.OutOfService);
 
-            // Lọc theo sức chứa
             query = query.Where(t => t.Capacity >= request.GuestCount);
 
-            // Lọc theo khu vực nếu có
             if (request.AreaId.HasValue)
             {
                 query = query.Where(t => t.AreaId == request.AreaId.Value);
@@ -32,10 +30,15 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
 
             var allTables = await query.ToListAsync(cancellationToken);
 
-            // Check overlapping reservations: Nếu bàn đã có người đặt (Booked) hoặc đang ngồi (CheckIn) trong ngày hôm đó thì không còn trống
+            var bufferHours = Reservation.DefaultOverlapBufferHours;
+            var minTime = request.ReservationTime.Subtract(TimeSpan.FromHours(bufferHours));
+            var maxTime = request.ReservationTime.Add(TimeSpan.FromHours(bufferHours));
+
             var overlappingReservations = await _unitOfWork.Repository<Reservation>().Query()
-                .Where(r => r.ReservationDate == request.ReservationDate 
-                            && (r.Status == ReservationStatus.Booked || r.Status == ReservationStatus.CheckIn))
+                .Where(r => r.ReservationDate == request.ReservationDate
+                    && (r.Status == ReservationStatus.Booked || r.Status == ReservationStatus.CheckIn)
+                    && r.ReservationTime > minTime
+                    && r.ReservationTime < maxTime)
                 .Select(r => r.TableId)
                 .Distinct()
                 .ToListAsync(cancellationToken);

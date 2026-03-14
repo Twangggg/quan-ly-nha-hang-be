@@ -68,5 +68,27 @@ namespace FoodHub.Domain.Constants
             public const string InvalidInvoiceStatus = "Payment.InvalidInvoiceStatus";
             public const string AmountExceedsRemaining = "Payment.AmountExceedsRemaining";
         }
+
+        public static class Ingredient
+        {
+            public const string NotFound = "Ingredient.NotFound";
+            public const string DuplicateCode = "Ingredient.DuplicateCode";
+            public const string DuplicateName = "Ingredient.DuplicateName";
+            public const string UsedInRecipe = "Ingredient.UsedInRecipe";
+            public const string InsufficientStock = "Ingredient.InsufficientStock";
+            public const string InvalidOpeningStockQuantity =
+                "Ingredient.InvalidOpeningStockQuantity";
+            public const string InvalidOpeningStockCost = "Ingredient.InvalidOpeningStockCost";
+        }
+
+        public static class InventorySettings
+        {
+            public const string InvalidExpiryWarningDays =
+                "InventorySettings.InvalidExpiryWarningDays";
+            public const string InvalidLowStockThreshold =
+                "InventorySettings.InvalidLowStockThreshold";
+            public const string InvalidMaxCostRecalcDays =
+                "InventorySettings.InvalidMaxCostRecalcDays";
+        }
     }
 }

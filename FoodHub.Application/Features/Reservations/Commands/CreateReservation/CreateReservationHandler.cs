@@ -18,7 +18,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
         private readonly ICacheService _cacheService;
 
         public CreateReservationHandler(
-            IUnitOfWork unitOfWork, 
+            IUnitOfWork unitOfWork,
             ILogger<CreateReservationHandler> logger,
             IMessageService messageService,
             ICacheService cacheService)
@@ -31,63 +31,87 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
 
         public async Task<Result<CreateReservationResponse>> Handle(CreateReservationCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation(
+                "Creating reservation request for Area {AreaId} on {ReservationDate} at {ReservationTime} for {GuestCount} guests",
+                request.AreaId,
+                request.ReservationDate,
+                request.ReservationTime,
+                request.GuestCount
+            );
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // Tìm các bàn khả dụng trong khu vực, đủ sức chứa, không lỗi
                 var tables = await _unitOfWork.Repository<Table>()
                     .Query()
-                    .Include(t => t.Area)
-                    .Where(t => t.AreaId == request.AreaId && t.Status != TableStatus.OutOfService && t.Capacity >= request.GuestCount)
-                    .OrderBy(t => t.Capacity) // Ưu tiên bàn nhỏ nhất đủ chỗ
+                    .Where(t => t.AreaId == request.AreaId
+                        && t.Status != TableStatus.OutOfService
+                        && t.Capacity >= request.GuestCount)
+                    .OrderBy(t => t.Capacity)
                     .ToListAsync(cancellationToken);
 
                 if (!tables.Any())
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    return Result<CreateReservationResponse>.Failure(_messageService.GetMessage(MessageKeys.Table.NotFound), ResultErrorType.NotFound);
+                    return Result<CreateReservationResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Table.NotFound),
+                        ResultErrorType.NotFound
+                    );
                 }
 
-                // Check overlapping: Nếu bàn đã có người đặt (Booked) hoặc đang ngồi (CheckIn) trong ngày hôm đó thì không cho đặt nữa
                 var tableIds = tables.Select(t => t.TableId).ToList();
+                var candidateReservations = tables.ToDictionary(
+                    table => table.TableId,
+                    table => Reservation.CreateBooked(
+                        request.CustomerName,
+                        request.CustomerPhone,
+                        request.ReservationDate,
+                        request.ReservationTime,
+                        request.PartyType,
+                        request.GuestCount,
+                        request.HasChildren,
+                        request.Note,
+                        table.TableId,
+                        table.AreaId
+                    )
+                );
 
-                var overlappedTableIds = await _unitOfWork.Repository<Reservation>().Query()
+                var existingReservations = await _unitOfWork.Repository<Reservation>()
+                    .Query()
                     .Where(r => tableIds.Contains(r.TableId)
-                                && r.ReservationDate == request.ReservationDate 
-                                && (r.Status == ReservationStatus.Booked || r.Status == ReservationStatus.CheckIn))
-                    .Select(r => r.TableId)
+                        && r.ReservationDate == request.ReservationDate
+                        && (r.Status == ReservationStatus.Booked || r.Status == ReservationStatus.CheckIn))
                     .ToListAsync(cancellationToken);
 
-                var selectedTable = tables.FirstOrDefault(t => !overlappedTableIds.Contains(t.TableId));
+                var selectedTable = tables.FirstOrDefault(table =>
+                    existingReservations.All(existingReservation =>
+                        existingReservation.TableId != table.TableId
+                        || !candidateReservations[table.TableId].OverlapsWith(existingReservation)
+                    )
+                );
 
                 if (selectedTable == null)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    return Result<CreateReservationResponse>.Failure(_messageService.GetMessage(MessageKeys.Reservation.Overlapped), ResultErrorType.Conflict);
+                    return Result<CreateReservationResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Reservation.Overlapped),
+                        ResultErrorType.Conflict
+                    );
                 }
 
+                var reservation = candidateReservations[selectedTable.TableId];
 
-                var reservation = new Reservation
-                {
-                    ReservationId = Guid.NewGuid(),
-                    CustomerName = request.CustomerName,
-                    CustomerPhone = request.CustomerPhone,
-                    ReservationDate = request.ReservationDate,
-                    ReservationTime = request.ReservationTime,
-                    GuestCount = request.GuestCount,
-                    Note = request.Note,
-                    Status = ReservationStatus.Booked,
-                    TableId = selectedTable.TableId,
-                    AreaId = selectedTable.AreaId
-                };
                 await _unitOfWork.Repository<Reservation>().AddAsync(reservation);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
-                
                 await _unitOfWork.CommitTransactionAsync();
 
-                _logger.LogInformation("Successfully created Reservation ID {ReservationId} for Table {TableId}", reservation.ReservationId, selectedTable.TableId);
+                _logger.LogInformation(
+                    "Successfully created Reservation ID {ReservationId} for Table {TableId}",
+                    reservation.ReservationId,
+                    selectedTable.TableId
+                );
 
-                await _cacheService.RemoveByPatternAsync(CacheKey.ReservationList + "*");
+                await _cacheService.RemoveByPatternAsync(CacheKey.ReservationList + "*", cancellationToken);
 
                 return Result<CreateReservationResponse>.Success(new CreateReservationResponse
                 {
@@ -99,7 +123,9 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             {
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(ex, "Error occurred while creating reservation.");
-                return Result<CreateReservationResponse>.Failure(_messageService.GetMessage(MessageKeys.Common.InternalServerError));
+                return Result<CreateReservationResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Common.InternalServerError)
+                );
             }
         }
     }

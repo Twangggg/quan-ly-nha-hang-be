@@ -4,6 +4,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Orders.Commands.CompleteOrder;
 using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -311,6 +312,56 @@ namespace FoodHub.Tests.Features.Order.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             order.TotalAmount.Should().Be(100); // Only completed item
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_OrderHasUnfinishedItems()
+        {
+            var orderId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var command = new CompleteOrderCommand { OrderId = orderId };
+
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
+
+            var order = new FoodHub.Domain.Entities.Order
+            {
+                OrderId = orderId,
+                Status = OrderStatus.Serving,
+                OrderType = OrderType.Takeaway,
+                OrderItems = new List<OrderItem>
+                {
+                    new OrderItem
+                    {
+                        Quantity = 1,
+                        UnitPriceSnapshot = 100,
+                        Status = OrderItemStatus.Preparing,
+                        OptionGroups = new List<OrderItemOptionGroup>(),
+                    },
+                },
+            };
+
+            var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
+            _mockUow
+                .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
+                .Returns(mockOrderRepo.Object);
+
+            mockOrderRepo
+                .Setup(r => r.Query())
+                .Returns(
+                    new List<FoodHub.Domain.Entities.Order> { order }
+                        .AsQueryable()
+                        .BuildMock()
+                );
+
+            _mockMessageService
+                .Setup(m => m.GetMessage(DomainErrors.Order.ItemsNotFinished))
+                .Returns("Items are not finished");
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.IsSuccess.Should().BeFalse();
+            order.Status.Should().Be(OrderStatus.Serving);
+            _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }

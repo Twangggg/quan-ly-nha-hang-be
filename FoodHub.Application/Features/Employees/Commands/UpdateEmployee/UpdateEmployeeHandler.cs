@@ -62,39 +62,37 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
                 );
             }
 
-            if (!string.IsNullOrWhiteSpace(request.FullName))
-                employee.FullName = request.FullName;
-
-            if (request.Username != null)
-                employee.Username = request.Username;
-
-            if (request.Phone != null)
-                employee.Phone = request.Phone;
-
-            if (request.Address != null)
-                employee.Address = request.Address;
-
+            var dateOfBirth = employee.DateOfBirth;
             if (request.DateOfBirth != null)
             {
                 if (string.IsNullOrWhiteSpace(request.DateOfBirth))
                 {
-                    employee.DateOfBirth = null;
+                    dateOfBirth = null;
                 }
                 else if (DateOnly.TryParse(request.DateOfBirth, out var dob))
                 {
-                    employee.DateOfBirth = dob;
+                    dateOfBirth = dob;
                 }
             }
 
-            employee.UpdatedAt = DateTime.UtcNow;
-
+            EmployeeStatus? nextStatus = null;
             if (
                 !string.IsNullOrEmpty(request.Status)
-                && Enum.TryParse<EmployeeStatus>(request.Status, true, out var status)
+                && Enum.TryParse<EmployeeStatus>(request.Status, true, out var parsedStatus)
             )
             {
-                employee.Status = status;
+                nextStatus = parsedStatus;
             }
+
+            employee.UpdateDetails(
+                string.IsNullOrWhiteSpace(request.FullName) ? employee.FullName : request.FullName,
+                request.Username ?? employee.Username,
+                request.Phone ?? employee.Phone,
+                request.Address ?? employee.Address,
+                dateOfBirth,
+                nextStatus,
+                auditorId
+            );
 
             employeeRepository.Update(employee);
 

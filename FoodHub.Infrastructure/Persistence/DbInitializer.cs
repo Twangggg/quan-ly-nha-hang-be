@@ -315,6 +315,95 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
+            // Seed Ingredients for Inventory module
+            if (!_context.Ingredients.Any())
+            {
+                var seedIngredients = new[]
+                {
+                    new
+                    {
+                        Code = "THITBO",
+                        Name = "Thịt bò",
+                        Unit = "kg",
+                        LowStockThreshold = 10m,
+                        Description = "Thịt bò tươi cho món chính",
+                        Stock = 0m,
+                        Cost = 0m,
+                    },
+                    new
+                    {
+                        Code = "UCGA",
+                        Name = "Ức gà",
+                        Unit = "kg",
+                        LowStockThreshold = 12m,
+                        Description = "Ức gà fillet không da",
+                        Stock = 0m,
+                        Cost = 0m,
+                    },
+                    new
+                    {
+                        Code = "RAUXALACH",
+                        Name = "Rau xà lách",
+                        Unit = "kg",
+                        LowStockThreshold = 5m,
+                        Description = "Rau xà lách Đà Lạt",
+                        Stock = 0m,
+                        Cost = 0m,
+                    },
+                    new
+                    {
+                        Code = "KHOAITAY",
+                        Name = "Khoai tây",
+                        Unit = "kg",
+                        LowStockThreshold = 15m,
+                        Description = "Khoai tây Hà Lan",
+                        Stock = 0m,
+                        Cost = 0m,
+                    },
+                    new
+                    {
+                        Code = "HANHTAY",
+                        Name = "Hành tây",
+                        Unit = "kg",
+                        LowStockThreshold = 8m,
+                        Description = "Hành tây tím",
+                        Stock = 0m,
+                        Cost = 0m,
+                    },
+                    new
+                    {
+                        Code = "SUATUOI",
+                        Name = "Sữa tươi",
+                        Unit = "l",
+                        LowStockThreshold = 20m,
+                        Description = "Sữa tươi tiệt trùng",
+                        Stock = 0m,
+                        Cost = 0m,
+                    },
+                };
+
+                var ingredients = new List<Ingredient>();
+
+                foreach (var seed in seedIngredients)
+                {
+                    var ingredient = Ingredient.Create(
+                        seed.Code,
+                        seed.Name,
+                        seed.Unit,
+                        seed.LowStockThreshold,
+                        seed.Stock,
+                        seed.Cost,
+                        seed.Description
+                    );
+
+                    ingredient.UpdateStock(seed.Stock, seed.Cost);
+                    ingredients.Add(ingredient);
+                }
+
+                _context.Ingredients.AddRange(ingredients);
+                _context.SaveChanges();
+            }
+
             // Ensure the tables and areas exist before seeding orders, since orders reference tables
             if (!_context.Areas.Any())
             {

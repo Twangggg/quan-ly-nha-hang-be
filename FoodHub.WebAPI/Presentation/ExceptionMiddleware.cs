@@ -30,6 +30,11 @@ public class ExceptionMiddleware
         try
         {
             await _next(context);
+
+            if (!context.Response.HasStarted)
+            {
+                await HandleAuthStatusCodeAsync(context, messageService);
+            }
         }
         catch (Exception ex)
         {
@@ -79,5 +84,44 @@ public class ExceptionMiddleware
 
         var response = new ErrorResponse(statusCode, message, errors);
         await context.Response.WriteAsJsonAsync(response);
+    }
+
+    private async Task HandleAuthStatusCodeAsync(
+        HttpContext context,
+        IMessageService messageService
+    )
+    {
+        if (!ShouldWriteAuthErrorResponse(context.Response))
+        {
+            return;
+        }
+
+        var statusCode = context.Response.StatusCode;
+        var message = statusCode == StatusCodes.Status401Unauthorized
+            ? messageService.GetMessage(MessageKeys.Common.Unauthorized)
+            : messageService.GetMessage(MessageKeys.Common.Unauthorized);
+
+        context.Response.ContentType = "application/json";
+
+        var response = new ErrorResponse(statusCode, message);
+        await context.Response.WriteAsJsonAsync(response);
+    }
+
+    private static bool ShouldWriteAuthErrorResponse(HttpResponse response)
+    {
+        if (
+            response.StatusCode != StatusCodes.Status401Unauthorized
+            && response.StatusCode != StatusCodes.Status403Forbidden
+        )
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(response.ContentType))
+        {
+            return false;
+        }
+
+        return response.ContentLength is null or 0;
     }
 }

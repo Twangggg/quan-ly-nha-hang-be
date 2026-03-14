@@ -25,6 +25,15 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                    .HasForeignKey(o => o.TableId)
                    .OnDelete(DeleteBehavior.SetNull);
 
+            builder.Property(o => o.ReservationId).HasColumnName("reservation_id");
+            builder.HasOne(o => o.Reservation)
+                   .WithMany()
+                   .HasForeignKey(o => o.ReservationId)
+                   .OnDelete(DeleteBehavior.SetNull);
+            builder.HasIndex(o => o.ReservationId)
+                   .IsUnique()
+                   .HasFilter("reservation_id IS NOT NULL");
+
             builder.Property(o => o.CreatedAt).HasDefaultValueSql("now()");
             builder.Property(o => o.CompletedAt).IsRequired(false);
             builder.Property(o => o.CancelledAt).IsRequired(false);

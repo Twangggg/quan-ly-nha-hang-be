@@ -24,6 +24,9 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             RuleFor(x => x.GuestCount)
                 .GreaterThan(0).WithMessage(_messageService.GetMessage(MessageKeys.Order.InvalidQuantity));
 
+            RuleFor(x => x.PartyType)
+                .IsInEnum().WithMessage(_messageService.GetMessage(MessageKeys.Common.InvalidFormat));
+
             RuleFor(x => x.AreaId)
                 .NotEmpty().WithMessage(_messageService.GetMessage(MessageKeys.Common.IdRequired));
 
@@ -39,7 +42,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
         {
             var now = DateTime.Now;
             var today = DateOnly.FromDateTime(now);
-            
+
             if (date < today) return false;
 
             if (date == today)

@@ -10,7 +10,16 @@ namespace FoodHub.Infrastructure.Persistence
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.CoreEventId.PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning));
+            optionsBuilder.ConfigureWarnings(warnings =>
+            {
+                warnings.Ignore(
+                    Microsoft
+                        .EntityFrameworkCore
+                        .Diagnostics
+                        .CoreEventId
+                        .PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning
+                );
+            });
             base.OnConfiguring(optionsBuilder);
         }
 
@@ -41,6 +50,11 @@ namespace FoodHub.Infrastructure.Persistence
         // Table Management
         public DbSet<Table> Tables { get; set; } = null!;
         public DbSet<Area> Areas { get; set; } = null!;
+
+        // Inventory
+        public DbSet<Ingredient> Ingredients { get; set; } = null!;
+        public DbSet<InventorySettings> InventorySettings { get; set; } = null!;
+        public DbSet<InventoryTransaction> InventoryTransactions { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

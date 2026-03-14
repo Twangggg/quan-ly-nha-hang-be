@@ -11,7 +11,7 @@ namespace FoodHub.Application.Interfaces
     public interface IPaymentService
     {
         Task<PaymentLinkResponse> CreatePaymentLinkAsync(Order order, CancellationToken token = default);
-        
+
         /// <summary>
         /// Verify the webhook data and return the orderCode implicitly or explicitly.
         /// Throws exception if signature is invalid.

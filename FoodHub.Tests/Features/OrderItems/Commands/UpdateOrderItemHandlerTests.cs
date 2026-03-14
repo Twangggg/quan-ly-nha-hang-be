@@ -4,6 +4,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem;
 using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -235,6 +236,70 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_ExistingItemIsNotPreparing()
+        {
+            var userId = Guid.NewGuid();
+            var orderId = Guid.NewGuid();
+            var orderItemId = Guid.NewGuid();
+            var menuItemId = Guid.NewGuid();
+            var command = new UpdateOrderItemCommand
+            {
+                OrderId = orderId,
+                Items = new List<UpdateOrderItemDto>
+                {
+                    new UpdateOrderItemDto(
+                        OrderItemId: orderItemId,
+                        MenuItemId: menuItemId,
+                        Quantity: 2,
+                        ItemNote: "Updated",
+                        SelectedOptions: null
+                    ),
+                },
+            };
+
+            var existingOrder = new Domain.Entities.Order
+            {
+                OrderId = orderId,
+                Status = OrderStatus.Serving,
+                OrderItems = new List<OrderItem>
+                {
+                    new OrderItem
+                    {
+                        OrderItemId = orderItemId,
+                        MenuItemId = menuItemId,
+                        Quantity = 1,
+                        Status = OrderItemStatus.Cooking,
+                        OptionGroups = new List<OrderItemOptionGroup>(),
+                    },
+                },
+            };
+
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
+
+            var mockOrderRepo = new Mock<IGenericRepository<Domain.Entities.Order>>();
+            mockOrderRepo
+                .Setup(r => r.Query())
+                .Returns(
+                    new List<Domain.Entities.Order> { existingOrder }
+                        .AsQueryable()
+                        .BuildMock()
+                );
+            _mockUow
+                .Setup(u => u.Repository<Domain.Entities.Order>())
+                .Returns(mockOrderRepo.Object);
+
+            _mockMessageService
+                .Setup(m => m.GetMessage(DomainErrors.Order.InvalidActionWithStatus))
+                .Returns("Invalid action");
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.IsSuccess.Should().BeFalse();
+            existingOrder.OrderItems.Single().Quantity.Should().Be(1);
+            _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }

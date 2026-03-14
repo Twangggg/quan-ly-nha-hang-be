@@ -42,7 +42,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         /// <response code="400">Dữ liệu không hợp lệ (Lỗi 45 phút, ngày quá khứ, v.v.).</response>
         /// <response code="409">Lỗi trùng lịch đặt.</response>
         [HttpPost]
-        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<CreateReservationResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateReservation([FromBody] CreateReservationCommand command)
         {
             var result = await _mediator.Send(command);
