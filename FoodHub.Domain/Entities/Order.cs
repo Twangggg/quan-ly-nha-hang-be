@@ -21,7 +21,7 @@ namespace FoodHub.Domain.Entities
         public decimal TotalAmount { get; set; }
         public bool IsPriority { get; set; }
 
-        public virtual Employee CreatedByEmployee { get; set; } = null!;
+        public virtual Employee? CreatedByEmployee { get; set; }
         public DateTime? CompletedAt { get; set; }
         public DateTime? CancelledAt { get; set; }
 

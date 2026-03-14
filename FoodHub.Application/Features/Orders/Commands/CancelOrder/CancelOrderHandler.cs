@@ -75,16 +75,11 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
                 );
             }
 
-            var auditLog = new OrderAuditLog
-            {
-                LogId = Guid.NewGuid(),
-                OrderId = order.OrderId,
-                EmployeeId = auditorId,
-                Action = AuditLogActions.CancelOrder,
-                CreatedAt = DateTime.UtcNow,
-                ChangeReason = request.Reason,
-                NewValue = "{\"status\": \"Cancelled\"}",
-            };
+            var auditLog = OrderAuditLog.CreateOrderCancelled(
+                order.OrderId,
+                auditorId,
+                request.Reason
+            );
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
             _unitOfWork.Repository<Domain.Entities.Order>().Update(order);

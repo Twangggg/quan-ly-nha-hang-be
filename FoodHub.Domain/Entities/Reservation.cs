@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Enums;
 
@@ -14,28 +13,23 @@ namespace FoodHub.Domain.Entities
 
         public Guid ReservationId { get; set; }
 
-        // Thông tin khách
-        public string CustomerName { get; set; }
-        public string CustomerPhone { get; set; }
+        public string CustomerName { get; set; } = null!;
+        public string CustomerPhone { get; set; } = null!;
 
-        // Thời gian
         public DateOnly ReservationDate { get; set; }
         public TimeSpan ReservationTime { get; set; }
 
-        // Chi tiết
         public PartyType PartyType { get; set; }
         public int GuestCount { get; set; }
         public bool HasChildren { get; set; }
         public string? Note { get; set; }
 
-        // Khu vực, Trạng thái & Bàn
         public ReservationStatus Status { get; set; }
         public Guid? AreaId { get; set; }
         public virtual Area? Area { get; set; }
         public Guid TableId { get; set; }
         public virtual Table Table { get; set; } = null!;
 
-        [SetsRequiredMembers]
         private Reservation(
             string customerName,
             string customerPhone,
@@ -100,7 +94,7 @@ namespace FoodHub.Domain.Entities
         {
             ArgumentNullException.ThrowIfNull(other);
 
-            if (Status != ReservationStatus.Booked || other.Status != ReservationStatus.Booked)
+            if (!IsActiveForScheduling() || !other.IsActiveForScheduling())
             {
                 return false;
             }
@@ -116,5 +110,8 @@ namespace FoodHub.Domain.Entities
 
             return other.ReservationTime > minTime && other.ReservationTime < maxTime;
         }
+
+        private bool IsActiveForScheduling() =>
+            Status == ReservationStatus.Booked || Status == ReservationStatus.CheckIn;
     }
 }

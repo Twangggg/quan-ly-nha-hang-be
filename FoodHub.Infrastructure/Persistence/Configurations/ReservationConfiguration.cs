@@ -55,14 +55,12 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(r => r.AreaId).HasColumnName("area_id");
             builder.Property(r => r.TableId).IsRequired().HasColumnName("table_id");
 
-            // Audit
             builder.Property(r => r.CreatedAt).HasColumnName("created_at");
             builder.Property(r => r.CreatedBy).HasColumnName("created_by");
             builder.Property(r => r.UpdatedAt).HasColumnName("updated_at");
             builder.Property(r => r.UpdatedBy).HasColumnName("updated_by");
             builder.Property(r => r.DeletedAt).HasColumnName("deleted_at");
 
-            // Relationships
             builder.HasOne(r => r.Area)
                 .WithMany()
                 .HasForeignKey(r => r.AreaId)
@@ -75,7 +73,6 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasConstraintName("fk_reservations_tables_table_id")
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Filter
             builder.HasQueryFilter(r => !r.DeletedAt.HasValue);
         }
     }

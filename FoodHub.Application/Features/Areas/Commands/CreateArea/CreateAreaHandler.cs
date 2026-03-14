@@ -8,7 +8,6 @@ using FoodHub.Application.Features.Areas.Queries.GetAreaById;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Areas.Commands.CreateArea
@@ -41,13 +40,12 @@ namespace FoodHub.Application.Features.Areas.Commands.CreateArea
             CancellationToken cancellationToken
         )
         {
-            var area = new Area
-            {
-                Name = request.Name,
-                CodePrefix = request.CodePrefix,
-                Type = request.Type,
-                Description = request.Description
-            };
+            var area = Area.Create(
+                request.Name,
+                request.CodePrefix,
+                request.Type,
+                request.Description
+            );
 
             await _unitOfWork.Repository<Area>().AddAsync(area);
             await _unitOfWork.SaveChangeAsync(cancellationToken);

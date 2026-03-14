@@ -143,15 +143,14 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             }
 
             // Audit & Save
-            var auditLog = new OrderAuditLog
-            {
-                LogId = Guid.NewGuid(),
-                OrderId = order.OrderId,
-                EmployeeId = userId,
-                Action = AuditLogActions.AddOrderItem,
-                ChangeReason = request.Reason,
-                CreatedAt = DateTime.UtcNow,
-            };
+            var auditLog = OrderAuditLog.CreateOrderItemAdded(
+                order.OrderId,
+                userId,
+                result.Item.OrderItemId,
+                result.IsNew,
+                request.Quantity,
+                request.Reason
+            );
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
