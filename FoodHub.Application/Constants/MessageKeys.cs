@@ -288,6 +288,7 @@ namespace FoodHub.Application.Constants
             public const string ConfirmOverwrite = "OpeningStock.ConfirmOverwrite";
             public const string IngredientNotFound = "OpeningStock.IngredientNotFound";
             public const string ImportSuccess = "OpeningStock.ImportSuccess";
+            public const string AlreadyLocked = "OpeningStock.AlreadyLocked";
         }
     }
 }

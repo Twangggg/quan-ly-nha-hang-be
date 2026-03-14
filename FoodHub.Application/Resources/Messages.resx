@@ -164,6 +164,9 @@
   <data name="OpeningStock.ImportSuccess" xml:space="preserve">
     <value>Nhap so du ban dau thanh cong.</value>
   </data>
+  <data name="OpeningStock.AlreadyLocked" xml:space="preserve">
+    <value>So du dau ky da duoc khoa. Khong the chinh sua them.</value>
+  </data>
   <data name="Ingredient.InvalidOpeningStockQuantity" xml:space="preserve">
     <value>So luong ton dau ky phai lon hon hoac bang 0.</value>
   </data>

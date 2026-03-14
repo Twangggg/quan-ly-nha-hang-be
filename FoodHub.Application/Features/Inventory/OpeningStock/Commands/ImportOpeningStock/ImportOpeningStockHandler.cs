@@ -47,12 +47,34 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
 
             var ingredientIds = request.Items.Select(x => x.IngredientId).Distinct().ToList();
             var actorId = ParseActorId();
+            var settingsRepo = _unitOfWork.Repository<InventorySettings>();
 
             var ingredients = await _unitOfWork
                 .Repository<Ingredient>()
                 .Query()
                 .Where(x => ingredientIds.Contains(x.IngredientId) && x.IsActive)
                 .ToListAsync(cancellationToken);
+
+            var settings = await settingsRepo
+                .Query()
+                .FirstOrDefaultAsync(
+                    x => x.SettingsKey == InventorySettings.DefaultSettingsKey,
+                    cancellationToken
+                );
+
+            if (
+                settings is not null
+                && (
+                    settings.OpeningStockStatus == Domain.Enums.OpeningStockStatus.Completed
+                    || settings.LockedAt.HasValue
+                )
+            )
+            {
+                _logger.LogWarning("ImportOpeningStock rejected because opening stock is locked");
+                throw new BusinessException(
+                    _messageService.GetMessage(MessageKeys.OpeningStock.AlreadyLocked)
+                );
+            }
 
             if (ingredients.Count != ingredientIds.Count)
             {
@@ -76,13 +98,6 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
 
             var ingredientMap = ingredients.ToDictionary(x => x.IngredientId);
             var transactionRepo = _unitOfWork.Repository<InventoryTransaction>();
-            var settingsRepo = _unitOfWork.Repository<InventorySettings>();
-            var settings = await settingsRepo
-                .Query()
-                .FirstOrDefaultAsync(
-                    x => x.SettingsKey == InventorySettings.DefaultSettingsKey,
-                    cancellationToken
-                );
 
             await _unitOfWork.BeginTransactionAsync();
 
@@ -95,6 +110,12 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
                 }
 
                 var transactionCount = 0;
+
+                if (settings is null)
+                {
+                    settings = InventorySettings.CreateDefault(actorId);
+                    await settingsRepo.AddAsync(settings);
+                }
 
                 foreach (var item in request.Items)
                 {
@@ -136,8 +157,8 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
                 }
 
                 settings.CompleteOpeningStock(actorId);
-
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveAsync(CacheKey.InventorySettings, cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
                 await _cacheService.RemoveAsync(CacheKey.InventorySettings, cancellationToken);
 
