@@ -1,6 +1,7 @@
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Features.Inventory.Ingredients;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -48,18 +49,6 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
             {
                 var repo = _unitOfWork.Repository<Ingredient>();
 
-                // Check if Code exists
-                var codeExists = await repo.AnyAsync(x =>
-                    x.Code.ToLower() == request.Code.ToLower()
-                );
-                if (codeExists)
-                {
-                    return Result<CreateIngredientResponse>.Failure(
-                        _messageService.GetMessage(MessageKeys.Ingredient.CodeExists),
-                        ResultErrorType.Conflict
-                    );
-                }
-
                 // Check if Name exists
                 var nameExists = await repo.AnyAsync(x =>
                     x.Name.ToLower() == request.Name.ToLower()
@@ -72,6 +61,8 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     );
                 }
 
+                var generatedCode = await IngredientCodeGenerator.GenerateAsync(repo, request.Name);
+
                 // Prevent manual initialization of stock and cost; both start at zero and are
                 // managed through stock operations elsewhere in the system.
                 Guid? auditorId = null;
@@ -80,7 +71,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     auditorId = parsedUserId;
                 }
                 var ingredient = Ingredient.Create(
-                    request.Code,
+                    generatedCode,
                     request.Name,
                     request.Unit,
                     request.LowStockThreshold,
@@ -140,5 +131,6 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                 throw;
             }
         }
+
     }
 }

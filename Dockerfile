@@ -3,6 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy csproj and restore as distinct layers
+COPY ["nuget.config", "./"]
 COPY ["FoodHub.WebAPI/FoodHub.WebAPI.csproj", "FoodHub.WebAPI/"]
 COPY ["FoodHub.Infrastructure/FoodHub.Infrastructure.csproj", "FoodHub.Infrastructure/"]
 COPY ["FoodHub.Application/FoodHub.Application.csproj", "FoodHub.Application/"]

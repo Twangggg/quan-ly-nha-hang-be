@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Tests.Features.Inventory
 {

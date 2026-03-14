@@ -3,6 +3,7 @@ using CloudinaryDotNet.Actions;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace FoodHub.Infrastructure.Services
@@ -12,11 +13,31 @@ namespace FoodHub.Infrastructure.Services
         private readonly Cloudinary _cloudinary;
         private readonly CloudinarySettings _settings;
         private readonly IMessageService _messageService;
+        private readonly ILogger<CloudinaryService> _logger;
 
-        public CloudinaryService(IOptions<CloudinarySettings> settings, IMessageService messageService)
+        public CloudinaryService(
+            IOptions<CloudinarySettings> settings,
+            IMessageService messageService,
+            ILogger<CloudinaryService> logger
+        )
         {
             _settings = settings.Value;
             _messageService = messageService;
+            _logger = logger;
+
+            if (
+                string.IsNullOrWhiteSpace(_settings.CloudName)
+                || string.IsNullOrWhiteSpace(_settings.ApiKey)
+                || string.IsNullOrWhiteSpace(_settings.ApiSecret)
+            )
+            {
+                _logger.LogError(
+                    "Cloudinary configuration is incomplete. CloudName set: {HasCloudName}, ApiKey set: {HasApiKey}, ApiSecret set: {HasApiSecret}",
+                    !string.IsNullOrWhiteSpace(_settings.CloudName),
+                    !string.IsNullOrWhiteSpace(_settings.ApiKey),
+                    !string.IsNullOrWhiteSpace(_settings.ApiSecret)
+                );
+            }
 
             var account = new Account(
                 _settings.CloudName,
@@ -67,10 +88,40 @@ namespace FoodHub.Infrastructure.Services
                 Overwrite = false
             };
 
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            ImageUploadResult uploadResult;
+            try
+            {
+                uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Cloudinary upload threw an exception for file {FileName} to folder {Folder}",
+                    file.FileName,
+                    folder
+                );
+                throw new Exception(_messageService.GetMessage(MessageKeys.Common.UploadFailed));
+            }
 
             if (uploadResult.Error != null)
             {
+                _logger.LogError(
+                    "Cloudinary upload failed for file {FileName} to folder {Folder}. Error message: {ErrorMessage}",
+                    file.FileName,
+                    folder,
+                    uploadResult.Error.Message
+                );
+                throw new Exception(_messageService.GetMessage(MessageKeys.Common.UploadFailed));
+            }
+
+            if (uploadResult.SecureUrl == null)
+            {
+                _logger.LogError(
+                    "Cloudinary upload returned no SecureUrl for file {FileName} to folder {Folder}",
+                    file.FileName,
+                    folder
+                );
                 throw new Exception(_messageService.GetMessage(MessageKeys.Common.UploadFailed));
             }
 

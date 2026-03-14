@@ -52,6 +52,7 @@ namespace FoodHub.Application.Constants
         public static class Billing
         {
             public const string Checkout = "Permissions.Billing.Checkout";
+            public const string ViewHistory = "Permissions.Billing.ViewHistory";
         }
 
         public static class Kds
@@ -79,6 +80,10 @@ namespace FoodHub.Application.Constants
             public const string Delete = "Permissions.Areas.Delete";
         }
 
+        public static class Reservations
+        {
+            public const string CheckIn = "Permissions.Reservations.CheckIn";
+        }
         public static class SalesAnalytics
         {
             public const string View = "Permissions.SalesAnalytics.View";

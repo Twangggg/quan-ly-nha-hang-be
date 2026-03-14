@@ -1,9 +1,11 @@
 using FluentAssertions;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpeningStock;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
 using Moq;
 
@@ -47,6 +49,7 @@ namespace FoodHub.Tests.Features.Inventory
         public async Task Handle_Should_ImportOpeningStock_And_CommitTransaction()
         {
             var ingredient = Ingredient.Create("ING001", "Salt", "Kg", 0, 0, 0, null);
+            var settings = InventorySettings.CreateDefault();
             var items = new List<OpeningStockItemDto>
             {
                 new() { IngredientId = ingredient.IngredientId, Quantity = 5, CostPrice = 2 },
@@ -71,6 +74,8 @@ namespace FoodHub.Tests.Features.Inventory
             result.IsSuccess.Should().BeTrue();
             ingredient.CurrentStock.Should().Be(5);
             ingredient.CostPrice.Should().Be(2);
+            settings.OpeningStockStatus.Should().Be(OpeningStockStatus.Completed);
+            settings.LockedAt.Should().NotBeNull();
             _mockUow.Verify(x => x.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(x => x.CommitTransactionAsync(), Times.Once);
             _transactionRepo.Verify(x => x.AddAsync(It.IsAny<InventoryTransaction>()), Times.Once);
@@ -85,6 +90,9 @@ namespace FoodHub.Tests.Features.Inventory
         public async Task Handle_Should_ThrowBusinessException_When_OverwriteNotConfirmed()
         {
             var ingredient = Ingredient.Create("ING001", "Salt", "Kg", 0, 10, 1, null);
+            _settingsRepo
+                .Setup(x => x.Query())
+                .Returns(new List<InventorySettings> { InventorySettings.CreateDefault() }.AsQueryable().BuildMock());
             _ingredientRepo
                 .Setup(x => x.Query())
                 .Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
@@ -111,6 +119,9 @@ namespace FoodHub.Tests.Features.Inventory
         [Fact]
         public async Task Handle_Should_ThrowNotFoundException_When_IngredientMissing()
         {
+            _settingsRepo
+                .Setup(x => x.Query())
+                .Returns(new List<InventorySettings> { InventorySettings.CreateDefault() }.AsQueryable().BuildMock());
             _ingredientRepo
                 .Setup(x => x.Query())
                 .Returns(new List<Ingredient>().AsQueryable().BuildMock());
@@ -138,6 +149,9 @@ namespace FoodHub.Tests.Features.Inventory
         public async Task Handle_Should_Rollback_When_SaveFails()
         {
             var ingredient = Ingredient.Create("ING001", "Salt", "Kg", 0, 0, 0, null);
+            _settingsRepo
+                .Setup(x => x.Query())
+                .Returns(new List<InventorySettings> { InventorySettings.CreateDefault() }.AsQueryable().BuildMock());
             _ingredientRepo
                 .Setup(x => x.Query())
                 .Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());

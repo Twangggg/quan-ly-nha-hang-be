@@ -24,6 +24,7 @@ namespace FoodHub.Infrastructure
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
             services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
+            services.Configure<PayOsSettings>(configuration.GetSection("PayOS"));
 
             services.AddDbContext<AppDbContext>(options =>
             {
@@ -70,6 +71,7 @@ namespace FoodHub.Infrastructure
 
             // Cloudinary Service
             services.AddScoped<ICloudinaryService, CloudinaryService>();
+            services.AddScoped<IPaymentService, PayOsService>();
 
             // SignalR Service
             services.AddScoped<ISignalRService, SignalRService>();
