@@ -34,6 +34,11 @@ namespace FoodHub.Domain.Constants
             public const string NotFound = "Category.NotFound";
         }
 
+        public static class Area
+        {
+            public const string AlreadyInactive = "Area.AlreadyInactive";
+        }
+
         public static class SetMenu
         {
             public const string NotFound = "SetMenu.NotFound";
