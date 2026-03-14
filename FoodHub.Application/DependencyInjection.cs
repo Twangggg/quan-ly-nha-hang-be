@@ -1,3 +1,4 @@
+using AutoMapper;
 using System.Reflection;
 using FluentValidation;
 using FluentValidation.AspNetCore;

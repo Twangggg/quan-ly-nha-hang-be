@@ -3,7 +3,6 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -77,8 +76,6 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
             var email = request.Email?.Trim().ToLower() ?? string.Empty;
             var phone = request.Phone?.Trim() ?? string.Empty;
             var address = request.Address?.Trim() ?? string.Empty;
-            var dateOfBirth = request.DateOfBirth ?? default;
-
             // Check duplicate phone number
             var phoneExists = await repo.Query()
                 .AnyAsync(
@@ -105,13 +102,14 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
                 );
             }
 
-            // Update data
-            employee.FullName = fullName;
-            employee.Email = email;
-            employee.Phone = phone;
-            employee.Address = address;
-            employee.DateOfBirth = request.DateOfBirth;
-            employee.UpdatedAt = DateTime.UtcNow;
+            employee.UpdateProfile(
+                fullName,
+                email,
+                phone,
+                address,
+                request.DateOfBirth,
+                currentUserId
+            );
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
             await _cacheService.RemoveByPatternAsync("employee:list", cancellationToken);

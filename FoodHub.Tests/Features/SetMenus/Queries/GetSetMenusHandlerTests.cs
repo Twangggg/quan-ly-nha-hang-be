@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
@@ -107,13 +108,15 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
                 pagination,
                 2
             );
-            _mockMapper
-                .Setup(m => m.ConfigurationProvider)
-                .Returns(
-                    new AutoMapper.MapperConfiguration(cfg =>
-                        cfg.CreateMap<SetMenu, GetSetMenusResponse>()
-                    )
-                );
+            _mockMapper.Setup(m => m.ConfigurationProvider)
+                .Returns(() =>
+                {
+                    var mockLoggerFactory = new Mock<ILoggerFactory>();
+                    mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+                    return new AutoMapper.MapperConfiguration(cfg =>
+                        cfg.CreateMap<SetMenu, GetSetMenusResponse>(), mockLoggerFactory.Object
+                    );
+                });
 
             // Since this handler is very complex with AutoMapper, pagination, etc.,
             // we'll just verify that it tries to get from cache and then from database

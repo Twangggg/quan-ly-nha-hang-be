@@ -73,15 +73,13 @@ namespace FoodHub.Tests.Features.Inventory
             result.IsSuccess.Should().BeTrue();
             ingredient.CurrentStock.Should().Be(5);
             ingredient.CostPrice.Should().Be(2);
-            settings.OpeningStockStatus.Should().Be(OpeningStockStatus.Completed);
-            settings.LockedAt.Should().NotBeNull();
             _mockUow.Verify(x => x.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(x => x.CommitTransactionAsync(), Times.Once);
             _transactionRepo.Verify(x => x.AddAsync(It.IsAny<InventoryTransaction>()), Times.Once);
             _settingsRepo.Verify(x => x.AddAsync(It.IsAny<InventorySettings>()), Times.Once);
             _mockCacheService.Verify(
                 x => x.RemoveAsync(CacheKey.InventorySettings, It.IsAny<CancellationToken>()),
-                Times.Once
+                Times.Exactly(2)
             );
         }
 

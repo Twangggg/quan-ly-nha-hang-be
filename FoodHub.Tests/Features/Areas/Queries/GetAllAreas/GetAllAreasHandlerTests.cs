@@ -89,11 +89,10 @@ namespace FoodHub.Tests.Features.Areas.Queries.GetAllAreas
             _mockUow.Setup(u => u.Repository<Area>()).Returns(repo.Object);
 
             // Giả lập IMapper ProjectTo cho IQueryable
-            var mockMapperConfig = new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<Area, GetAllAreasResponse>();
-            });
-            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(mockMapperConfig);
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
+                cfg.CreateMap<Area, GetAllAreasResponse>(), mockLoggerFactory.Object));
 
             // Cache returns null to simulate cache miss
             _mockCache

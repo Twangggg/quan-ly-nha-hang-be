@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredientById;
@@ -24,10 +25,10 @@ namespace FoodHub.Tests.Features.Inventory
             _mockMapper = new Mock<IMapper>();
             _mockMessage = new Mock<IMessageService>();
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
             var config = new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<Ingredient, GetIngredientByIdResponse>();
-            });
+                cfg.CreateMap<Ingredient, GetIngredientByIdResponse>(), mockLoggerFactory.Object);
             _mockMapper.Setup(m => m.ConfigurationProvider).Returns(config);
 
             _handler = new GetIngredientByIdHandler(

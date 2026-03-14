@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using FluentAssertions;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
@@ -86,8 +87,10 @@ namespace FoodHub.Tests.Features.Employees
             repo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
             _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
-                cfg.CreateMap<Employee, GetEmployeesResponse>()));
+                cfg.CreateMap<Employee, GetEmployeesResponse>(), mockLoggerFactory.Object));
 
             _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetEmployeesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
@@ -117,8 +120,10 @@ namespace FoodHub.Tests.Features.Employees
             repo.Setup(r => r.Query()).Returns(employees);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
             _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
-                cfg.CreateMap<Employee, GetEmployeesResponse>()));
+                cfg.CreateMap<Employee, GetEmployeesResponse>(), mockLoggerFactory.Object));
 
             _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetEmployeesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
