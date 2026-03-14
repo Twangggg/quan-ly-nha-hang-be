@@ -41,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="16.1.1" />
     <Folder Include="Features\KDS\Commands\" />
     <Folder Include="Features\KDS\Queries\" />
   </ItemGroup>
