@@ -6,6 +6,7 @@ namespace FoodHub.Application.Constants
         public const string SubmitOrder = "SUBMIT_ORDER";
         public const string AddOrderItem = "ADD_ORDER_ITEM";
         public const string UpdateOrderItem = "UPDATE_ORDER_ITEM";
+        public const string AdjustOrderItemQuantity = "ADJUST_ORDER_ITEM_QUANTITY";
         public const string CancelOrderItem = "CANCEL_ORDER_ITEM";
         public const string CancelOrder = "CANCEL_ORDER";
         public const string CompleteOrder = "COMPLETE_ORDER";

@@ -4,6 +4,8 @@ using FoodHub.Application.Features.Billing.Commands.CheckoutOrder;
 using FoodHub.Application.Features.Billing.Commands.CreateQrPayment;
 using FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook;
 using FoodHub.Application.Features.Billing.Queries.GetBillingHistory;
+using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
+using FoodHub.Application.Features.Billing.Queries.ExportPreCheckBillPdf;
 using FoodHub.Application.Interfaces;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
@@ -12,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.WebAPI.Presentation.Controllers.Billing
 {
@@ -25,6 +28,50 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Billing
         {
             _mediator = mediator;
             _messageService = messageService;
+        }
+
+        /// <summary>
+        /// Xem trước phiếu tạm tính (Pre-check Bill) cho đơn hàng.
+        /// </summary>
+        /// <remarks>
+        /// Không tạo Invoice. Chỉ trả về dữ liệu để hiển thị phiếu tạm tính trên giao diện.
+        /// Đơn hàng phải ở trạng thái "Serving" và có ít nhất 1 món hợp lệ.
+        /// </remarks>
+        /// <param name="orderId">ID đơn hàng.</param>
+        /// <response code="200">Trả về thông tin phiếu tạm tính.</response>
+        /// <response code="400">Đơn hàng không hợp lệ (sai trạng thái hoặc không có món).</response>
+        /// <response code="404">Không tìm thấy đơn hàng.</response>
+        [HttpGet("orders/{orderId:guid}/pre-check-bill")]
+        [HasPermission(Permissions.Billing.PreCheckBill)]
+        [ProducesResponseType(typeof(Result<GetPreCheckBillResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetPreCheckBill([FromRoute] Guid orderId)
+        {
+            var query = new GetPreCheckBillQuery { OrderId = orderId };
+            var result = await _mediator.Send(query);
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Xuất file PDF phiếu tạm tính cho đơn hàng.
+        /// </summary>
+        /// <param name="orderId">ID đơn hàng.</param>
+        /// <response code="200">Trả về file PDF.</response>
+        [HttpGet("orders/{orderId:guid}/pre-check-bill/pdf")]
+        [HasPermission(Permissions.Billing.PreCheckBill)]
+        [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ExportPreCheckBillPdf([FromRoute] Guid orderId)
+        {
+            var query = new ExportPreCheckBillPdfQuery { OrderId = orderId };
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+            {
+                return HandleResult(result);
+            }
+
+            return File(result.Data!.Content, "application/pdf", result.Data!.FileName);
         }
 
         /// <summary>

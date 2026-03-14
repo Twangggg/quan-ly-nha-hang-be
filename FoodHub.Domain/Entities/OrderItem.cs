@@ -142,5 +142,22 @@ namespace FoodHub.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }
+
+        public DomainResult AdjustQuantity(int newQuantity)
+        {
+            if (Status == OrderItemStatus.Cancelled || Status == OrderItemStatus.Rejected)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            if (newQuantity < 1)
+            {
+                return DomainResult.Failure(DomainErrors.OrderItem.InvalidQuantity);
+            }
+
+            Quantity = newQuantity;
+            UpdatedAt = DateTime.UtcNow;
+            return DomainResult.Success();
+        }
     }
 }

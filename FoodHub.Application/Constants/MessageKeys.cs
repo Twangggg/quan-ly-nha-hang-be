@@ -125,6 +125,7 @@ namespace FoodHub.Application.Constants
             public const string AlreadyPaid = "Order.AlreadyPaid";
             public const string InsufficientAmount = "Order.InsufficientAmount";
             public const string ItemsNotFinished = "Order.ItemsNotFinished";
+            public const string NoValidItems = "Order.NoValidItems";
         }
 
         public static class OrderItem
@@ -287,8 +288,13 @@ namespace FoodHub.Application.Constants
             public const string DuplicateIngredient = "OpeningStock.DuplicateIngredient";
             public const string ConfirmOverwrite = "OpeningStock.ConfirmOverwrite";
             public const string IngredientNotFound = "OpeningStock.IngredientNotFound";
-            public const string ImportSuccess = "OpeningStock.ImportSuccess";
             public const string AlreadyLocked = "OpeningStock.AlreadyLocked";
+            public const string ImportSuccess = "OpeningStock.ImportSuccess";
+        }
+
+        public static class Billing
+        {
+            public const string PdfExportError = "Billing.PdfExportError";
         }
     }
 }
