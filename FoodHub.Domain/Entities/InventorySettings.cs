@@ -83,12 +83,19 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
-        public void CompleteOpeningStock(Guid? updatedBy = null)
+        public DomainResult CompleteOpeningStock(Guid? updatedBy = null)
         {
+            if (OpeningStockStatus == OpeningStockStatus.Completed && LockedAt.HasValue)
+            {
+                return DomainResult.Success();
+            }
+
             OpeningStockStatus = OpeningStockStatus.Completed;
-            LockedAt ??= DateTime.UtcNow;
+            LockedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;
+
+            return DomainResult.Success();
         }
     }
 }

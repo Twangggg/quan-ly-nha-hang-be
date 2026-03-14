@@ -47,8 +47,10 @@ namespace FoodHub.Tests.Features.Areas.Commands.UpdateArea
                 .Setup(m => m.GetMessage(MessageKeys.Area.NotFound))
                 .Returns("Không tìm thấy khu vực");
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
             var mapConfig = new MapperConfiguration(cfg =>
-                cfg.CreateMap<Area, GetAreaByIdResponse>()
+                cfg.CreateMap<Area, GetAreaByIdResponse>(), mockLoggerFactory.Object
             );
             var handler = new UpdateAreaHandler(
                 _mockUow.Object,
@@ -96,8 +98,10 @@ namespace FoodHub.Tests.Features.Areas.Commands.UpdateArea
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockCache.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()));
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
             var mapConfig = new MapperConfiguration(cfg =>
-                cfg.CreateMap<Area, GetAreaByIdResponse>()
+                cfg.CreateMap<Area, GetAreaByIdResponse>(), mockLoggerFactory.Object
             );
             var handler = new UpdateAreaHandler(
                 _mockUow.Object,

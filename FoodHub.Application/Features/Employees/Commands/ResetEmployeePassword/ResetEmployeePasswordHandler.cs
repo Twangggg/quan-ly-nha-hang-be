@@ -5,7 +5,6 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
 {
@@ -78,8 +77,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 ? _passwordService.GenerateRandomPassword()
                 : request.NewPassword;
 
-            employee.PasswordHash = _passwordService.HashPassword(newPassword);
-            employee.UpdatedAt = DateTime.UtcNow;
+            employee.ResetPassword(_passwordService.HashPassword(newPassword), managerGuid);
 
             var refreshTokens = await _unitOfWork
                 .Repository<RefreshToken>()
@@ -89,8 +87,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
 
             foreach (var token in refreshTokens)
             {
-                token.IsRevoked = true;
-                token.UpdatedAt = DateTime.UtcNow;
+                token.Revoke();
             }
 
             var auditLog = new AuditLog

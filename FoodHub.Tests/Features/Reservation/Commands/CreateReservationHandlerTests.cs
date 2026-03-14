@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Reservations.Commands.CreateReservation;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -14,13 +15,34 @@ namespace FoodHub.Tests.Features.Reservations.Commands
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ILogger<CreateReservationHandler>> _mockLogger;
+        private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ICacheService> _mockCacheService;
         private readonly CreateReservationHandler _handler;
 
         public CreateReservationHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockLogger = new Mock<ILogger<CreateReservationHandler>>();
-            _handler = new CreateReservationHandler(_mockUow.Object, _mockLogger.Object);
+            _mockMessageService = new Mock<IMessageService>();
+            _mockCacheService = new Mock<ICacheService>();
+
+            _mockMessageService.Setup(x => x.GetMessage(It.IsAny<string>()))
+                .Returns<string>(key => key);
+            _mockMessageService.Setup(x => x.GetMessage(It.IsAny<string>(), It.IsAny<object[]>()))
+                .Returns<string, object[]>((key, _) => key);
+            _mockUow.Setup(x => x.BeginTransactionAsync()).Returns(Task.CompletedTask);
+            _mockUow.Setup(x => x.CommitTransactionAsync()).Returns(Task.CompletedTask);
+            _mockUow.Setup(x => x.RollbackTransactionAsync()).Returns(Task.CompletedTask);
+            _mockCacheService
+                .Setup(x => x.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            _handler = new CreateReservationHandler(
+                _mockUow.Object,
+                _mockLogger.Object,
+                _mockMessageService.Object,
+                _mockCacheService.Object
+            );
         }
 
         [Fact]
@@ -39,12 +61,13 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _mockUow.Setup(x => x.Repository<Reservation>()).Returns(reservationRepo.Object);
             _mockUow.Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-            var command = CreateCommand(table.TableId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
+            var command = CreateCommand(table.AreaId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeEmpty();
+            result.Data.Should().NotBeNull();
+            result.Data!.TableId.Should().Be(table.TableId);
             reservationRepo.Verify(
                 x => x.AddAsync(
                     It.Is<Reservation>(r =>
@@ -52,6 +75,8 @@ namespace FoodHub.Tests.Features.Reservations.Commands
                         && r.AreaId == table.AreaId
                         && r.Status == ReservationStatus.Booked
                         && r.GuestCount == command.GuestCount
+                        && r.PartyType == command.PartyType
+                        && r.HasChildren == command.HasChildren
                     )
                 ),
                 Times.Once
@@ -75,7 +100,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _mockUow.Setup(x => x.Repository<Reservation>()).Returns(reservationRepo.Object);
             _mockUow.Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-            var command = CreateCommand(table.TableId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
+            var command = CreateCommand(table.AreaId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
 
             await _handler.Handle(command, CancellationToken.None);
 
@@ -84,7 +109,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
                     LogLevel.Information,
                     It.IsAny<EventId>(),
                     It.Is<It.IsAnyType>((v, _) =>
-                        v.ToString()!.Contains("Creating reservation request for Table")
+                        v.ToString()!.Contains("Creating reservation request for Area")
                     ),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()
@@ -94,7 +119,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnBadRequest_When_TableCapacityIsInsufficient()
+        public async Task Handle_Should_ReturnNotFound_When_NoTableMatchesAreaAndCapacity()
         {
             var table = CreateTable(capacity: 2);
             var tableRepo = new Mock<IGenericRepository<Table>>();
@@ -108,12 +133,13 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _mockUow.Setup(x => x.Repository<Table>()).Returns(tableRepo.Object);
             _mockUow.Setup(x => x.Repository<Reservation>()).Returns(reservationRepo.Object);
 
-            var command = CreateCommand(table.TableId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
+            var command = CreateCommand(Guid.NewGuid(), guestCount: 4, reservationTime: TimeSpan.FromHours(18));
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.ErrorType.Should().Be(ResultErrorType.BadRequest);
+            result.ErrorType.Should().Be(ResultErrorType.NotFound);
+            result.Error.Should().Be(MessageKeys.Table.NotFound);
             reservationRepo.Verify(x => x.AddAsync(It.IsAny<Reservation>()), Times.Never);
             _mockUow.Verify(x => x.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
@@ -146,18 +172,19 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _mockUow.Setup(x => x.Repository<Table>()).Returns(tableRepo.Object);
             _mockUow.Setup(x => x.Repository<Reservation>()).Returns(reservationRepo.Object);
 
-            var command = CreateCommand(table.TableId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
+            var command = CreateCommand(table.AreaId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
             result.ErrorType.Should().Be(ResultErrorType.Conflict);
+            result.Error.Should().Be(MessageKeys.Reservation.Overlapped);
             reservationRepo.Verify(x => x.AddAsync(It.IsAny<Reservation>()), Times.Never);
             _mockUow.Verify(x => x.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         private static CreateReservationCommand CreateCommand(
-            Guid tableId,
+            Guid areaId,
             int guestCount,
             TimeSpan reservationTime
         )
@@ -172,7 +199,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
                 GuestCount = guestCount,
                 HasChildren = false,
                 Note = "Test note",
-                TableId = tableId,
+                AreaId = areaId,
             };
         }
 

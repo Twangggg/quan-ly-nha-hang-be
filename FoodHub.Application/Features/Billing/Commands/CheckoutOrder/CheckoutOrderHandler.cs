@@ -84,23 +84,6 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 );
             }
 
-            // Update Table to Cleaning if DineIn
-            if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
-            {
-                var table = await _unitOfWork.Repository<Domain.Entities.Table>().GetByIdAsync(order.TableId.Value);
-                if (table != null)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.Order.ItemsNotFinished),
-                        ResultErrorType.BadRequest
-                    );
-                }
-                return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.InvalidAction),
-                    ResultErrorType.BadRequest
-                );
-            }
-
             await _unitOfWork.BeginTransactionAsync();
             try
             {

@@ -2,9 +2,9 @@ namespace FoodHub.Domain.Enums
 {
     public enum PartyType
     {
-        Party = 0,
-        RomanticDinner = 1,
-        Proposal = 2,
-        Other = 3
+        Party = 1,
+        DinnerDate = 2,
+        Proposal = 3,
+        Other = 4,
     }
 }

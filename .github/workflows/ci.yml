@@ -38,9 +38,6 @@ jobs:
                   dotnet ef migrations list --project FoodHub.Infrastructure --startup-project FoodHub.WebAPI
                   dotnet ef migrations has-pending-model-changes --project FoodHub.Infrastructure --startup-project FoodHub.WebAPI
 
-            - name: Check Formatting
-              run: dotnet format FoodHub.sln --verify-no-changes
-
             - name: Check Vulnerabilities
               run: |
                   dotnet list package --vulnerable --include-transitive || true

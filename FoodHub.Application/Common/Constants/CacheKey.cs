@@ -98,6 +98,9 @@ public static class CacheKey
     public const string AreaList = "area:list:all";
     public const string AreaById = "area:{0}";
 
+    // ==================== RESERVATIONS ====================
+    public const string ReservationList = "reservation:list";
+    public const string ReservationById = "reservation:{0}";
     // ==================== INVENTORY ====================
     public const string InventorySettings = "inventory:settings";
 }
@@ -111,5 +114,6 @@ public static class CacheTTL
     public static readonly TimeSpan Orders = TimeSpan.FromMinutes(5);
     public static readonly TimeSpan Areas = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan Tables = TimeSpan.FromMinutes(10);
+    public static readonly TimeSpan Reservations = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan InventorySettings = TimeSpan.FromMinutes(30);
 }

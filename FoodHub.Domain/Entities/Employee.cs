@@ -4,7 +4,10 @@ namespace FoodHub.Domain.Entities
 {
     public class Employee : BaseEntity
     {
-        // Khóa chính: Tên gọi rõ ràng, dễ hiểu
+        private const int EmployeeEmailMaxLength = 150;
+        private const int EmployeeUsernameMaxLength = 50;
+        private const int EmployeePhoneMaxLength = 15;
+
         public Guid EmployeeId { get; set; }
         public string EmployeeCode { get; set; } = null!;
         public string? Username { get; set; }
@@ -28,9 +31,9 @@ namespace FoodHub.Domain.Entities
             return role == EmployeeRole.Manager;
         }
 
-        public static bool IsDifferentRole(EmployeeRole CurrentRole, EmployeeRole NewRole)
+        public static bool IsDifferentRole(EmployeeRole currentRole, EmployeeRole newRole)
         {
-            return CurrentRole != NewRole;
+            return currentRole != newRole;
         }
 
         public bool IsActive()
@@ -38,8 +41,79 @@ namespace FoodHub.Domain.Entities
             return Status == EmployeeStatus.Active;
         }
 
+        public void UpdateDetails(
+            string fullName,
+            string? username,
+            string? phone,
+            string? address,
+            DateOnly? dateOfBirth,
+            EmployeeStatus? status,
+            Guid? updatedBy = null,
+            DateTime? updatedAt = null
+        )
+        {
+            FullName = fullName;
+            Username = NormalizeOptional(username);
+            Phone = NormalizeOptional(phone);
+            Address = NormalizeOptional(address);
+            DateOfBirth = dateOfBirth;
+
+            if (status.HasValue)
+            {
+                Status = status.Value;
+            }
+
+            UpdatedAt = updatedAt ?? DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+        }
+
+        public void UpdateProfile(
+            string fullName,
+            string email,
+            string? phone,
+            string? address,
+            DateOnly? dateOfBirth,
+            Guid? updatedBy = null,
+            DateTime? updatedAt = null
+        )
+        {
+            FullName = fullName;
+            Email = email;
+            Phone = NormalizeOptional(phone);
+            Address = NormalizeOptional(address);
+            DateOfBirth = dateOfBirth;
+            UpdatedAt = updatedAt ?? DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+        }
+
+        public void ResetPassword(
+            string passwordHash,
+            Guid? updatedBy = null,
+            DateTime? updatedAt = null
+        )
+        {
+            PasswordHash = passwordHash;
+            UpdatedAt = updatedAt ?? DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+        }
+
         public Employee ChangeRole(EmployeeRole newRole)
         {
+            if (!IsActive())
+            {
+                throw new InvalidOperationException("Only active employees can change role.");
+            }
+
+            if (newRole == Role)
+            {
+                throw new InvalidOperationException("New role must be different.");
+            }
+
+            if (newRole == EmployeeRole.Manager)
+            {
+                throw new InvalidOperationException("Promoting to manager is not allowed.");
+            }
+
             var timestamp = DateTime.UtcNow.Ticks;
             var originalEmail = Email;
             var originalUsername = Username;
@@ -50,12 +124,11 @@ namespace FoodHub.Domain.Entities
             if (originalEmail != null)
             {
                 Email =
-                    originalEmail.Length + suffix.Length > 150
-                        ? originalEmail.Substring(0, 150 - suffix.Length) + suffix
+                    originalEmail.Length + suffix.Length > EmployeeEmailMaxLength
+                        ? originalEmail.Substring(0, EmployeeEmailMaxLength - suffix.Length) + suffix
                         : originalEmail + suffix;
             }
 
-            // RELEASE Username and Phone for the new record
             Username = null;
             Phone = null;
 
@@ -79,6 +152,11 @@ namespace FoodHub.Domain.Entities
 
         public void DeleteEmployee(Guid auditorId)
         {
+            if (!IsActive())
+            {
+                throw new InvalidOperationException("Only active employees can be deactivated.");
+            }
+
             var shortId = Guid.NewGuid().ToString("N")[..8];
             var originalEmail = Email;
             var originalPhone = Phone ?? string.Empty;
@@ -90,30 +168,35 @@ namespace FoodHub.Domain.Entities
             if (!string.IsNullOrEmpty(originalEmail))
             {
                 Email =
-                    originalEmail.Length + suffix.Length > 150
-                        ? originalEmail[..(150 - suffix.Length)] + suffix
+                    originalEmail.Length + suffix.Length > EmployeeEmailMaxLength
+                        ? originalEmail[..(EmployeeEmailMaxLength - suffix.Length)] + suffix
                         : originalEmail + suffix;
             }
 
             if (!string.IsNullOrEmpty(originalPhone))
             {
                 Phone =
-                    originalPhone.Length + suffix.Length > 15
-                        ? originalPhone[..(15 - suffix.Length)] + suffix
+                    originalPhone.Length + suffix.Length > EmployeePhoneMaxLength
+                        ? originalPhone[..(EmployeePhoneMaxLength - suffix.Length)] + suffix
                         : originalPhone + suffix;
             }
 
             if (!string.IsNullOrEmpty(originalUsername))
             {
                 Username =
-                    originalUsername.Length + suffix.Length > 50
-                        ? originalUsername[..(50 - suffix.Length)] + suffix
+                    originalUsername.Length + suffix.Length > EmployeeUsernameMaxLength
+                        ? originalUsername[..(EmployeeUsernameMaxLength - suffix.Length)] + suffix
                         : originalUsername + suffix;
             }
 
             UpdatedAt = DateTime.UtcNow;
             DeletedAt = DateTime.UtcNow;
             UpdatedBy = auditorId;
+        }
+
+        private static string? NormalizeOptional(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value;
         }
     }
 }

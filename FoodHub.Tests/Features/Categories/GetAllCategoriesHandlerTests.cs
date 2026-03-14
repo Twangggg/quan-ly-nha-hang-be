@@ -6,9 +6,9 @@ using FoodHub.Application.Features.Categories.Queries.GetAllCategories;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
-
 
 namespace FoodHub.Tests.Features.Categories
 {
@@ -76,8 +76,10 @@ namespace FoodHub.Tests.Features.Categories
             };
 
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
             _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
-                cfg.CreateMap<Category, GetAllCategoriesResponse>()));
+                cfg.CreateMap<Category, GetAllCategoriesResponse>(), mockLoggerFactory.Object));
 
             _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetAllCategoriesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
@@ -107,8 +109,10 @@ namespace FoodHub.Tests.Features.Categories
             repo.Setup(r => r.Query()).Returns(categories);
             _mockUow.Setup(u => u.Repository<Category>()).Returns(repo.Object);
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
             _mockMapper.Setup(m => m.ConfigurationProvider).Returns(new MapperConfiguration(cfg =>
-                cfg.CreateMap<Category, GetAllCategoriesResponse>()));
+                cfg.CreateMap<Category, GetAllCategoriesResponse>(), mockLoggerFactory.Object));
 
             _mockCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<PagedResult<GetAllCategoriesResponse>>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);

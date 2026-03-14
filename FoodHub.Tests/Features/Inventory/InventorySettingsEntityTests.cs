@@ -34,13 +34,14 @@ namespace FoodHub.Tests.Features.Inventory
         }
 
         [Fact]
-        public void CompleteOpeningStock_Should_SetCompletedStatus_AndLockTimestamp()
+        public void CompleteOpeningStock_Should_MarkSettingsAsLocked()
         {
             var settings = InventorySettings.CreateDefault();
 
-            settings.CompleteOpeningStock();
+            var result = settings.CompleteOpeningStock();
 
-            settings.OpeningStockStatus.Should().Be(OpeningStockStatus.Completed);
+            result.IsSuccess.Should().BeTrue();
+            settings.OpeningStockStatus.Should().Be(Domain.Enums.OpeningStockStatus.Completed);
             settings.LockedAt.Should().NotBeNull();
         }
     }

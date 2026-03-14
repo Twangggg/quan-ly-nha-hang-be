@@ -47,8 +47,11 @@ namespace FoodHub.Tests.Features.Inventory
             repo.Setup(r => r.Query()).Returns(ingredients.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
 
-            var mapperConfig = new MapperConfiguration(cfg => cfg.CreateMap<Ingredient, GetIngredientsResponse>());
-            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(mapperConfig);
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+            var config = new MapperConfiguration(cfg =>
+                cfg.CreateMap<Ingredient, GetIngredientsResponse>(), mockLoggerFactory.Object);
+            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(config);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);

@@ -217,6 +217,9 @@ namespace FoodHub.Application.Constants
         public static class Reservation
         {
             public const string NotFound = "Reservation.NotFound";
+            public const string Overlapped = "Reservation.Overlapped";
+            public const string TableCapacityExceeded = "Reservation.TableCapacityExceeded";
+            public const string InvalidTime = "Reservation.InvalidTime";
             public const string InvalidStatusForCheckIn = "Reservation.InvalidStatusForCheckIn";
             public const string TableOccupied = "Reservation.TableOccupied";
             public const string AlreadyCheckedIn = "Reservation.AlreadyCheckedIn";
@@ -288,6 +291,7 @@ namespace FoodHub.Application.Constants
             public const string ConfirmOverwrite = "OpeningStock.ConfirmOverwrite";
             public const string IngredientNotFound = "OpeningStock.IngredientNotFound";
             public const string ImportSuccess = "OpeningStock.ImportSuccess";
+            public const string AlreadyLocked = "OpeningStock.AlreadyLocked";
         }
     }
 }

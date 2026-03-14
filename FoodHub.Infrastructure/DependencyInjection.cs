@@ -90,6 +90,7 @@ namespace FoodHub.Infrastructure
                 sp.GetRequiredService<BackgroundEmailChannel>()
             );
             services.AddHostedService<EmailBackgroundWorker>();
+            services.AddHostedService<ReservationCancellationService>();
 
             return services;
         }
