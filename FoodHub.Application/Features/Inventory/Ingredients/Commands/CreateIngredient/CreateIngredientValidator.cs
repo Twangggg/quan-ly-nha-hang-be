@@ -8,12 +8,6 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
     {
         public CreateIngredientValidator(IMessageService messageService)
         {
-            RuleFor(x => x.Code)
-                .NotEmpty()
-                .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.CodeRequired))
-                .MaximumLength(20)
-                .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.CodeMaxLength));
-
             RuleFor(x => x.Name)
                 .NotEmpty()
                 .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.NameRequired))

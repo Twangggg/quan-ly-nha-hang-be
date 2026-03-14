@@ -4,6 +4,7 @@ using FoodHub.Application.Features.Inventory.Ingredients.Commands.ActivateIngred
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.DeactivateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngredient;
+using FoodHub.Application.Features.Inventory.Ingredients.Queries.GenerateIngredientCode;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredientById;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredients;
 using FoodHub.Application.Interfaces;
@@ -44,9 +45,24 @@ namespace FoodHub.Presentation.Controllers
         }
 
         /// <summary>
+        /// Sinh mã nguyên liệu từ tên để FE có thể preview ngay khi nhập.
+        /// </summary>
+        [HttpGet("generate-code")]
+        [HasPermission(Permissions.Inventory.Create)]
+        [ProducesResponseType(
+            typeof(Result<GenerateIngredientCodeResponse>),
+            StatusCodes.Status200OK
+        )]
+        public async Task<IActionResult> GenerateIngredientCode([FromQuery] string name)
+        {
+            var result = await _mediator.Send(new GenerateIngredientCodeQuery(name));
+            return HandleResult(result);
+        }
+
+        /// <summary>
         /// Lấy thông tin chi tiết nguyên liệu theo ID.
         /// </summary>
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [HasPermission(Permissions.Inventory.View)]
         [ProducesResponseType(typeof(Result<GetIngredientByIdResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetIngredientById(Guid id)
@@ -78,7 +94,7 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Cập nhật nguyên liệu.
         /// </summary>
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         [HasPermission(Permissions.Inventory.Update)]
         [ProducesResponseType(typeof(Result<UpdateIngredientResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateIngredient(
@@ -94,7 +110,7 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Vô hiệu hóa nguyên liệu.
         /// </summary>
-        [HttpPatch("{id}/deactivate")]
+        [HttpPatch("{id:guid}/deactivate")]
         [HasPermission(Permissions.Inventory.Deactivate)]
         [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeactivateIngredient(Guid id)
@@ -106,7 +122,7 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Kích hoạt lại nguyên liệu.
         /// </summary>
-        [HttpPatch("{id}/activate")]
+        [HttpPatch("{id:guid}/activate")]
         [HasPermission(Permissions.Inventory.Update)]
         [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ActivateIngredient(Guid id)
