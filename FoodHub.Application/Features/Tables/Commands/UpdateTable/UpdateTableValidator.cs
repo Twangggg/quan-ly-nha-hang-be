@@ -13,8 +13,6 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTable
         {
             RuleFor(x => x.TableId)
                 .NotEmpty().WithMessage("Table id is required.");
-            RuleFor(x => x.TableNumber)
-                .GreaterThan(0).WithMessage("Table number must be greater than 0.");
             RuleFor(x => x.Capacity)
                 .GreaterThan(0).WithMessage("Capacity must be greater than 0.")
                 .LessThanOrEqualTo(6).WithMessage("Capacity must be less than or equal to 6.");

@@ -26,8 +26,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTableById
         public void Mapping(Profile profile)
         {
             profile.CreateMap<Table, GetTableByIdResponse>()
-                .ForMember(d => d.TableCode, opt => opt.MapFrom(s =>
-                (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix)) ? s.Area.CodePrefix + "_" + s.TableNumber : s.TableNumber.ToString()))
+                .ForMember(d => d.TableCode, opt => opt.MapFrom(s => s.GetTableName()))
                 .ForMember(d => d.AreaName, opt => opt.MapFrom(s => s.Area.Name))
                 .ForMember(d => d.StatusName, opt => opt.MapFrom(s => s.Status.ToString()));
         }
