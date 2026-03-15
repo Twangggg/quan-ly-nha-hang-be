@@ -126,6 +126,9 @@ namespace FoodHub.Application.Constants
             public const string AlreadyPaid = "Order.AlreadyPaid";
             public const string InsufficientAmount = "Order.InsufficientAmount";
             public const string ItemsNotFinished = "Order.ItemsNotFinished";
+            public const string StatusNotServing = "Order.StatusNotServing";
+            public const string InvalidStatus = "Order.InvalidStatus";
+            public const string StatusNotCompleted = "Order.StatusNotCompleted";
             public const string NoValidItems = "Order.NoValidItems";
         }
 
@@ -202,6 +205,7 @@ namespace FoodHub.Application.Constants
             public const string CodeExists = "Table.CodeExists";
             public const string UpdateForbidden = "Table.UpdateForbidden";
             public const string UpdateFail = "Table.UpdateFail";
+            public const string SameAsCurrentTable = "Table.SameAsCurrentTable";
         }
 
         public static class Area

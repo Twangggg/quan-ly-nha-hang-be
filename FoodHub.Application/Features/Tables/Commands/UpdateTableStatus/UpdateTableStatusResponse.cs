@@ -28,7 +28,7 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
                     opt =>
                         opt.MapFrom(s =>
                             (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix))
-                                ? s.Area.CodePrefix + "_" + s.TableNumber
+                                ? s.GetTableName()
                                 : s.TableNumber.ToString()
                         )
                 )
