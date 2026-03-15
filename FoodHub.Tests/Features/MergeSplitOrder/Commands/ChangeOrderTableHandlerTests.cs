@@ -8,6 +8,7 @@ using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
+using EntityOrder = FoodHub.Domain.Entities.Order;
 
 namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
 {
@@ -26,7 +27,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             var oldTableId = Guid.NewGuid();
             var newTableId = Guid.NewGuid();
 
-            var order = new Order
+            var order = new EntityOrder
             {
                 OrderId = orderId,
                 OrderCode = "ORD-001",
@@ -40,21 +41,21 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 TableId = oldTableId,
                 TableNumber = 1,
                 Status = TableStatus.Occupied,
-                Orders = new List<Order> { order },
+                Orders = new List<EntityOrder> { order },
             };
             var newTable = new Table
             {
                 TableId = newTableId,
                 TableNumber = 2,
                 Status = TableStatus.Available,
-                Orders = new List<Order>(),
+                Orders = new List<EntityOrder>(),
             };
 
-            var orderRepo = new Mock<IGenericRepository<Order>>();
+            var orderRepo = new Mock<IGenericRepository<EntityOrder>>();
             orderRepo
                 .Setup(r => r.Query())
-                .Returns(new List<Order> { order }.AsQueryable().BuildMock());
-            _mockUow.Setup(u => u.Repository<Order>()).Returns(orderRepo.Object);
+                .Returns(new List<EntityOrder> { order }.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<EntityOrder>()).Returns(orderRepo.Object);
 
             var tableRepo = new Mock<IGenericRepository<Table>>();
             tableRepo
@@ -101,7 +102,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             var oldTableId = Guid.NewGuid();
             var newTableId = Guid.NewGuid();
 
-            var order = new Order
+            var order = new EntityOrder
             {
                 OrderId = orderId,
                 OrderType = OrderType.DineIn,
@@ -116,22 +117,22 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                     TableId = oldTableId,
                     TableNumber = 1,
                     Status = TableStatus.Occupied,
-                    Orders = new List<Order> { order },
+                    Orders = new List<EntityOrder> { order },
                 },
                 new()
                 {
                     TableId = newTableId,
                     TableNumber = 2,
                     Status = TableStatus.OutOfService,
-                    Orders = new List<Order>(),
+                    Orders = new List<EntityOrder>(),
                 },
             };
 
-            var orderRepo = new Mock<IGenericRepository<Order>>();
+            var orderRepo = new Mock<IGenericRepository<EntityOrder>>();
             orderRepo
                 .Setup(r => r.Query())
-                .Returns(new List<Order> { order }.AsQueryable().BuildMock());
-            _mockUow.Setup(u => u.Repository<Order>()).Returns(orderRepo.Object);
+                .Returns(new List<EntityOrder> { order }.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<EntityOrder>()).Returns(orderRepo.Object);
 
             var tableRepo = new Mock<IGenericRepository<Table>>();
             tableRepo.Setup(r => r.Query()).Returns(tables.AsQueryable().BuildMock());

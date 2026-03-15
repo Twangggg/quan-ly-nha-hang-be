@@ -44,7 +44,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 TableId = secondTableId,
                 TableNumber = 2,
                 Status = TableStatus.Occupied,
-                Orders = new List<Order> { secondOrder },
+                Orders = new List<Domain.Entities.Order> { secondOrder },
             };
 
             var tables = new List<Table>
@@ -54,15 +54,15 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                     TableId = firstTableId,
                     TableNumber = 1,
                     Status = TableStatus.Occupied,
-                    Orders = new List<Order> { firstOrder },
+                    Orders = new List<Domain.Entities.Order> { firstOrder },
                 },
                 secondTable,
             };
 
-            var orders = new List<Order> { firstOrder, secondOrder };
-            var orderRepo = new Mock<IGenericRepository<Order>>();
+            var orders = new List<Domain.Entities.Order> { firstOrder, secondOrder };
+            var orderRepo = new Mock<IGenericRepository<Domain.Entities.Order>>();
             orderRepo.Setup(r => r.Query()).Returns(orders.AsQueryable().BuildMock());
-            _mockUow.Setup(u => u.Repository<Order>()).Returns(orderRepo.Object);
+            _mockUow.Setup(u => u.Repository<Domain.Entities.Order>()).Returns(orderRepo.Object);
 
             var orderItemRepo = new Mock<IGenericRepository<OrderItem>>();
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(orderItemRepo.Object);
@@ -151,8 +151,8 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Never);
         }
 
-        private static FoodHub.Domain.Entities.Order CreateServingOrder(Guid orderId, string code, Guid tableId) =>
-            new FoodHub.Domain.Entities.Order
+        private static Domain.Entities.Order CreateServingOrder(Guid orderId, string code, Guid tableId) =>
+            new()
             {
                 OrderId = orderId,
                 OrderCode = code,
