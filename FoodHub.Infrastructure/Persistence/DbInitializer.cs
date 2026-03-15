@@ -581,6 +581,45 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
+            // Seed an invoice for the first order to demonstrate the relationship and for FE testing
+            if (!_context.Invoices.Any())
+            {
+                var order1 = _context.Orders.Include(o => o.OrderItems).First(o => o.OrderCode.EndsWith("0001"));
+                var invoice1 = new Invoice
+                {
+                    InvoiceId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                    OrderId = order1.OrderId,
+                    InvoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-0001",
+                    SubTotal = order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot),
+                    TaxAmount = order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot) * 0.1m, // Assuming 10% tax
+                    DiscountAmount = 0m,
+                    TotalAmount = order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot) * 1.1m, // Subtotal + Tax
+                    AmountReceived = order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot) * 1.1m,
+                    AmountReturned = 0m,
+                    PaymentMethod = PaymentMethod.Cash,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.Invoices.Add(invoice1);
+                _context.SaveChanges();
+
+                if (!_context.InvoiceItems.Any(ii => ii.InvoiceId == invoice1.InvoiceId))
+                {
+                    var invoiceItems = order1.OrderItems.Select(oi => new InvoiceItem
+                    {
+                        InvoiceId = invoice1.InvoiceId,
+                        ItemName = oi.ItemNameSnapshot,
+                        Quantity = oi.Quantity,
+                        UnitPrice = oi.UnitPriceSnapshot,
+                        TotalPrice = oi.Quantity * oi.UnitPriceSnapshot,
+                        Note = oi.ItemNote,
+                        CreatedAt = DateTime.UtcNow
+                    }).ToList();
+                    _context.InvoiceItems.AddRange(invoiceItems);
+                }
+
+                _context.SaveChanges();
+            }
+
             _context.SaveChanges();
         }
     }
