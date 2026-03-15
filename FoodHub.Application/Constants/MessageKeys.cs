@@ -10,6 +10,7 @@ namespace FoodHub.Application.Constants
             public const string DatabaseUpdateError = "DatabaseUpdateError";
             public const string OperationCancelled = "OperationCancelled";
             public const string Unauthorized = "Unauthorized";
+            public const string Forbidden = "Common.Forbidden";
             public const string InvalidFormat = "Common.InvalidFormat";
             public const string InvalidDate = "Common.InvalidDate";
             public const string InvalidFile = "Common.InvalidFile";
@@ -128,6 +129,7 @@ namespace FoodHub.Application.Constants
             public const string StatusNotServing = "Order.StatusNotServing";
             public const string InvalidStatus = "Order.InvalidStatus";
             public const string StatusNotCompleted = "Order.StatusNotCompleted";
+            public const string NoValidItems = "Order.NoValidItems";
         }
 
         public static class OrderItem
@@ -216,6 +218,91 @@ namespace FoodHub.Application.Constants
             public const string DeleteForbidden = "Area.DeleteForbidden";
             public const string DeactivateForbidden = "Area.DeactivateForbidden";
             public const string Inactive = "Area.Inactive";
+        }
+
+        public static class Reservation
+        {
+            public const string NotFound = "Reservation.NotFound";
+            public const string Overlapped = "Reservation.Overlapped";
+            public const string TableCapacityExceeded = "Reservation.TableCapacityExceeded";
+            public const string InvalidTime = "Reservation.InvalidTime";
+            public const string InvalidStatusForCheckIn = "Reservation.InvalidStatusForCheckIn";
+            public const string TableOccupied = "Reservation.TableOccupied";
+            public const string AlreadyCheckedIn = "Reservation.AlreadyCheckedIn";
+        }
+        public static class SalesAnalytics
+        {
+            public const string MonthMustBeBetween1And12 =
+                "SalesAnalytics.MonthMustBeBetween1And12";
+            public const string YearMustBePositive = "SalesAnalytics.YearMustBePositive";
+            public const string TopMustBeGreaterThanZero =
+                "SalesAnalytics.TopMustBeGreaterThanZero";
+            public const string TopMustNotExceed100 = "SalesAnalytics.TopMustNotExceed100";
+            public const string MovingAverageDaysMustBePositive =
+                "SalesAnalytics.MovingAverageDaysMustBePositive";
+            public const string MovingAverageDaysMustNotExceed365 =
+                "SalesAnalytics.MovingAverageDaysMustNotExceed365";
+            public const string EndDateMustBeAfterStartDate =
+                "SalesAnalytics.EndDateMustBeAfterStartDate";
+            public const string DateNotInFuture = "SalesAnalytics.DateNotInFuture";
+            public const string CannotCombineDateWithYearMonth =
+                "SalesAnalytics.CannotCombineDateWithYearMonth";
+            public const string YearRequiredWithMonth = "SalesAnalytics.YearRequiredWithMonth";
+            public const string MonthRequiredWithYear = "SalesAnalytics.MonthRequiredWithYear";
+            public const string StartDateRequiredWithEndDate =
+                "SalesAnalytics.StartDateRequiredWithEndDate";
+            public const string EndDateRequiredWithStartDate =
+                "SalesAnalytics.EndDateRequiredWithStartDate";
+            public const string MaxDateRangeExceeded = "SalesAnalytics.MaxDateRangeExceeded";
+        }
+
+        public static class Ingredient
+        {
+            public const string NotFound = "Ingredient.NotFound";
+            public const string CodeExists = "Ingredient.CodeExists";
+            public const string NameExists = "Ingredient.NameExists";
+            public const string UsedInRecipe = "Ingredient.UsedInRecipe";
+
+            // Validator keys
+            public const string IdRequired = "Ingredient.IdRequired";
+            public const string CodeRequired = "Ingredient.CodeRequired";
+            public const string CodeMaxLength = "Ingredient.CodeMaxLength";
+            public const string NameRequired = "Ingredient.NameRequired";
+            public const string NameMaxLength = "Ingredient.NameMaxLength";
+            public const string UnitRequired = "Ingredient.UnitRequired";
+            public const string UnitMaxLength = "Ingredient.UnitMaxLength";
+            public const string ThresholdMin = "Ingredient.ThresholdMin";
+            public const string CostMin = "Ingredient.CostMin";
+            public const string StockMin = "Ingredient.StockMin";
+        }
+
+        public static class InventorySettings
+        {
+            public const string ExpiryWarningDaysMin =
+                "InventorySettings.ExpiryWarningDaysMin";
+            public const string DefaultLowStockThresholdMin =
+                "InventorySettings.DefaultLowStockThresholdMin";
+            public const string MaxCostRecalcDaysRange =
+                "InventorySettings.MaxCostRecalcDaysRange";
+            public const string UpdateSuccess = "InventorySettings.UpdateSuccess";
+        }
+
+        public static class OpeningStock
+        {
+            public const string ItemsRequired = "OpeningStock.ItemsRequired";
+            public const string IngredientIdRequired = "OpeningStock.IngredientIdRequired";
+            public const string QuantityMin = "OpeningStock.QuantityMin";
+            public const string CostPriceMin = "OpeningStock.CostPriceMin";
+            public const string DuplicateIngredient = "OpeningStock.DuplicateIngredient";
+            public const string ConfirmOverwrite = "OpeningStock.ConfirmOverwrite";
+            public const string IngredientNotFound = "OpeningStock.IngredientNotFound";
+            public const string AlreadyLocked = "OpeningStock.AlreadyLocked";
+            public const string ImportSuccess = "OpeningStock.ImportSuccess";
+        }
+
+        public static class Billing
+        {
+            public const string PdfExportError = "Billing.PdfExportError";
         }
     }
 }

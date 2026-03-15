@@ -102,8 +102,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
 
             foreach (var token in refreshTokens)
             {
-                token.IsRevoked = true;
-                token.UpdatedAt = DateTime.UtcNow;
+                token.Revoke();
             }
 
             var newEmployee = oldEmployee.ChangeRole(request.NewRole);

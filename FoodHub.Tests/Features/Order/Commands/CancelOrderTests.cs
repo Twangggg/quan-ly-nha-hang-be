@@ -41,7 +41,7 @@ namespace FoodHub.Tests.Features.Order.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnSuccess_When_OrderCancelled_ForDineIn()
+        public async Task Handle_Should_ReturnFailure_When_OrderHasCompletedItems()
         {
             // Arrange
             var orderId = Guid.NewGuid();
@@ -99,39 +99,21 @@ namespace FoodHub.Tests.Features.Order.Commands
                         .BuildMock()
                 );
 
-            // Act
+            _mockMessageService
+                .Setup(m => m.GetMessage("Order.InvalidStatusForCancel"))
+                .Returns("Order cannot be cancelled");
+
             var result = await _handler.Handle(command, CancellationToken.None);
 
-            // Assert
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().BeTrue();
-            order.Status.Should().Be(OrderStatus.Cancelled);
-            order.TableId.Should().BeNull(); // Table released for dine-in
-            order
-                .OrderItems.Where(oi => oi.Status == OrderItemStatus.Preparing)
-                .All(oi => oi.Status == OrderItemStatus.Cancelled)
-                .Should()
-                .BeTrue();
-            order
-                .OrderItems.Where(oi => oi.Status == OrderItemStatus.Cooking)
-                .All(oi => oi.Status == OrderItemStatus.Cancelled)
-                .Should()
-                .BeTrue();
-            order
-                .OrderItems.Where(oi => oi.Status == OrderItemStatus.Ready)
-                .All(oi => oi.Status == OrderItemStatus.Cancelled)
-                .Should()
-                .BeTrue();
-            order
-                .OrderItems.Where(oi => oi.Status == OrderItemStatus.Completed)
-                .All(oi => oi.Status != OrderItemStatus.Cancelled)
-                .Should()
-                .BeTrue();
+            result.IsSuccess.Should().BeFalse();
+            order.Status.Should().Be(OrderStatus.Serving);
+            order.TableId.Should().Be(tableId);
+            order.OrderItems.Select(x => x.Status).Should().Contain(OrderItemStatus.Completed);
             _mockUow.Verify(
                 u => u.Repository<OrderAuditLog>().AddAsync(It.IsAny<OrderAuditLog>()),
-                Times.Once
+                Times.Never
             );
-            _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -185,6 +167,76 @@ namespace FoodHub.Tests.Features.Order.Commands
             order.Status.Should().Be(OrderStatus.Cancelled);
             order.TableId.Should().BeNull(); // No table for takeaway
             order.OrderItems.First().Status.Should().Be(OrderItemStatus.Cancelled);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnSuccess_When_OrderCancelled_ForDineIn_AllItemsCancellable()
+        {
+            var orderId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var tableId = Guid.NewGuid();
+            var command = new CancelOrderCommand
+            {
+                OrderId = orderId,
+                Status = OrderStatus.Cancelled,
+                Reason = "Customer request",
+            };
+
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
+
+            var order = new FoodHub.Domain.Entities.Order
+            {
+                OrderId = orderId,
+                Status = OrderStatus.Serving,
+                OrderType = OrderType.DineIn,
+                TableId = tableId,
+                OrderItems = new List<OrderItem>
+                {
+                    new OrderItem { Status = OrderItemStatus.Preparing },
+                    new OrderItem { Status = OrderItemStatus.Cooking },
+                    new OrderItem { Status = OrderItemStatus.Ready },
+                },
+            };
+
+            var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
+            var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            var mockTableRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Table>>();
+            var table = new FoodHub.Domain.Entities.Table
+            {
+                TableId = tableId,
+                Status = TableStatus.Occupied,
+            };
+
+            _mockUow
+                .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
+                .Returns(mockOrderRepo.Object);
+            _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
+            _mockUow
+                .Setup(u => u.Repository<FoodHub.Domain.Entities.Table>())
+                .Returns(mockTableRepo.Object);
+
+            mockTableRepo.Setup(r => r.GetByIdAsync(tableId)).ReturnsAsync(table);
+            _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            mockOrderRepo
+                .Setup(r => r.Query())
+                .Returns(
+                    new List<FoodHub.Domain.Entities.Order> { order }
+                        .AsQueryable()
+                        .BuildMock()
+                );
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            order.Status.Should().Be(OrderStatus.Cancelled);
+            order.TableId.Should().BeNull();
+            order.OrderItems.Should().OnlyContain(oi => oi.Status == OrderItemStatus.Cancelled);
+            _mockUow.Verify(
+                u => u.Repository<OrderAuditLog>().AddAsync(It.IsAny<OrderAuditLog>()),
+                Times.Once
+            );
+            _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]

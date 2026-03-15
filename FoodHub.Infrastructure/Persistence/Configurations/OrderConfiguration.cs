@@ -9,6 +9,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Order> builder)
         {
             builder.HasKey(o => o.OrderId);
+            builder.Property(o => o.TransactionCode).ValueGeneratedOnAdd();
             builder.Property(o => o.OrderCode).HasMaxLength(30).IsRequired();
             builder.HasIndex(o => o.OrderCode).IsUnique();
             builder.Property(o => o.OrderType).IsRequired();
@@ -23,6 +24,15 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                    .WithMany(t => t.Orders)
                    .HasForeignKey(o => o.TableId)
                    .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Property(o => o.ReservationId).HasColumnName("reservation_id");
+            builder.HasOne(o => o.Reservation)
+                   .WithMany()
+                   .HasForeignKey(o => o.ReservationId)
+                   .OnDelete(DeleteBehavior.SetNull);
+            builder.HasIndex(o => o.ReservationId)
+                   .IsUnique()
+                   .HasFilter("reservation_id IS NOT NULL");
 
             builder.Property(o => o.CreatedAt).HasDefaultValueSql("now()");
             builder.Property(o => o.CompletedAt).IsRequired(false);

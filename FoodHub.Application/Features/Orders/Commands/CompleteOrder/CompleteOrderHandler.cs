@@ -78,15 +78,6 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
                 );
             }
 
-            // Clean up KDS: Mark all non-finished items as Completed
-            var itemsToNotify = new List<OrderItem>();
-            foreach (var item in order.OrderItems.Where(oi => !oi.IsFinished()))
-            {
-                item.Status = OrderItemStatus.Completed;
-                item.UpdatedAt = DateTime.UtcNow;
-                itemsToNotify.Add(item);
-            }
-
             var auditLog = new OrderAuditLog
             {
                 LogId = Guid.NewGuid(),
@@ -114,16 +105,6 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
                 );
                 return Result<CompleteOrderResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError)
-                );
-            }
-
-            // Notify KDS via SignalR
-            foreach (var item in itemsToNotify)
-            {
-                _ = _signalRService.NotifyOrderItemStatusChangedAsync(
-                    item.OrderItemId,
-                    item.Status,
-                    item.StationSnapshot
                 );
             }
 

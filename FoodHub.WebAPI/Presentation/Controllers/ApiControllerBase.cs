@@ -41,5 +41,55 @@ namespace FoodHub.Presentation.Controllers
             var response = new ErrorResponse(statusCode, result.Error ?? "An error occurred");
             return StatusCode(statusCode, response);
         }
+
+        protected IActionResult HandleCreated<T>(Result<T> result, Func<T, string?> locationFunc)
+        {
+            if (result == null) return BadRequest();
+
+            if (!result.IsSuccess)
+            {
+                return HandleResult(result);
+            }
+
+            if (result.Data == null)
+            {
+                return StatusCode(StatusCodes.Status201Created);
+            }
+
+            var location = locationFunc(result.Data);
+            if (string.IsNullOrEmpty(location))
+            {
+                return Created(string.Empty, new { data = result.Data });
+            }
+
+            return Created(location, new { data = result.Data });
+        }
+
+        protected IActionResult HandleFileResult<T>(
+            Result<T> result,
+            Func<T, byte[]> contentFunc,
+            string contentType,
+            Func<T, string?>? fileNameFunc = null
+        )
+        {
+            if (result == null) return BadRequest();
+
+            if (!result.IsSuccess)
+            {
+                return HandleResult(result);
+            }
+
+            if (result.Data == null)
+            {
+                return NoContent();
+            }
+
+            var fileName = fileNameFunc?.Invoke(result.Data);
+            var content = contentFunc(result.Data);
+
+            return string.IsNullOrWhiteSpace(fileName)
+                ? File(content, contentType)
+                : File(content, contentType, fileName);
+        }
     }
 }

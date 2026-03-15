@@ -132,16 +132,27 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
 
                     if (existingItem != null)
                     {
-                        // Update existing
-                        existingItem.Quantity = incomingItem.Quantity;
-                        existingItem.ItemNote = incomingItem.ItemNote;
-                        existingItem.UpdatedAt = DateTime.UtcNow;
-
-                        await ProcessOptionsAsync(
-                            existingItem,
+                        var updatedOptionGroups = await BuildOptionGroupsAsync(
+                            existingItem.OrderItemId,
                             incomingItem.SelectedOptions,
                             cancellationToken
                         );
+
+                        var updateResult = existingItem.UpdateDetails(
+                            incomingItem.Quantity,
+                            incomingItem.ItemNote,
+                            updatedOptionGroups
+                        );
+                        if (!updateResult.IsSuccess)
+                        {
+                            await _unitOfWork.RollbackTransactionAsync();
+                            return Result<UpdateOrderItemResponse>.Failure(
+                                _messageService.GetMessage(
+                                    updateResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
+                                ),
+                                ResultErrorType.BadRequest
+                            );
+                        }
                     }
                     else
                     {
@@ -174,11 +185,15 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                             StationSnapshot = menuItem.Station.ToString(),
                         };
 
-                        await ProcessOptionsAsync(
-                            newItem,
+                        var optionGroups = await BuildOptionGroupsAsync(
+                            newItem.OrderItemId,
                             incomingItem.SelectedOptions,
                             cancellationToken
                         );
+                        foreach (var optionGroup in optionGroups)
+                        {
+                            newItem.OptionGroups.Add(optionGroup);
+                        }
                         order.OrderItems.Add(newItem);
                     }
                 }
@@ -235,17 +250,14 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
             }
         }
 
-        private async Task ProcessOptionsAsync(
-            OrderItem item,
+        private async Task<List<OrderItemOptionGroup>> BuildOptionGroupsAsync(
+            Guid orderItemId,
             List<OrderItemOptionGroupDto>? selectedOptions,
             CancellationToken cancellationToken
         )
         {
-            // Clear existing options
-            item.OptionGroups.Clear();
-
             if (selectedOptions == null || !selectedOptions.Any())
-                return;
+                return new List<OrderItemOptionGroup>();
 
             var optionGroupIds = selectedOptions.Select(og => og.OptionGroupId).ToList();
             var optionItemIds = selectedOptions
@@ -265,6 +277,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                 .Where(oi => optionItemIds.Contains(oi.OptionItemId))
                 .ToDictionaryAsync(oi => oi.OptionItemId, cancellationToken);
 
+            var builtOptionGroups = new List<OrderItemOptionGroup>();
             foreach (var optionGroupDto in selectedOptions)
             {
                 if (optionGroups.TryGetValue(optionGroupDto.OptionGroupId, out var ogDef))
@@ -272,7 +285,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                     var orderItemOptionGroup = new OrderItemOptionGroup
                     {
                         OrderItemOptionGroupId = Guid.NewGuid(),
-                        OrderItemId = item.OrderItemId,
+                        OrderItemId = orderItemId,
                         GroupNameSnapshot = ogDef.Name,
                         GroupTypeSnapshot = ogDef.OptionType.ToString(),
                         IsRequiredSnapshot = ogDef.IsRequired,
@@ -298,9 +311,11 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                             orderItemOptionGroup.OptionValues.Add(orderItemOptionValue);
                         }
                     }
-                    item.OptionGroups.Add(orderItemOptionGroup);
+                    builtOptionGroups.Add(orderItemOptionGroup);
                 }
             }
+
+            return builtOptionGroups;
         }
     }
 }

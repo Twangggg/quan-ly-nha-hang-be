@@ -258,5 +258,46 @@ namespace FoodHub.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }
+
+        public DomainResult UpdateDetails(
+            int quantity,
+            string? itemNote,
+            ICollection<OrderItemOptionGroup> optionGroups
+        )
+        {
+            if (Status != OrderItemStatus.Preparing)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            Quantity = quantity;
+            ItemNote = itemNote;
+            OptionGroups.Clear();
+
+            foreach (var optionGroup in optionGroups)
+            {
+                OptionGroups.Add(optionGroup);
+            }
+
+            UpdatedAt = DateTime.UtcNow;
+            return DomainResult.Success();
+        }
+
+        public DomainResult AdjustQuantity(int newQuantity)
+        {
+            if (Status == OrderItemStatus.Cancelled || Status == OrderItemStatus.Rejected)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            if (newQuantity < 1)
+            {
+                return DomainResult.Failure(DomainErrors.OrderItem.InvalidQuantity);
+            }
+
+            Quantity = newQuantity;
+            UpdatedAt = DateTime.UtcNow;
+            return DomainResult.Success();
+        }
     }
 }

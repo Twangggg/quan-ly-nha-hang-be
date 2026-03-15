@@ -15,16 +15,18 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CheckoutOrderHandler> _logger;
         private readonly IMessageService _messageService;
+        private readonly ICurrentUserService _currentUserService;
 
         public CheckoutOrderHandler(
             IUnitOfWork unitOfWork,
             ILogger<CheckoutOrderHandler> logger,
-            IMessageService messageService
-        )
+            IMessageService messageService,
+            ICurrentUserService currentUserService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _messageService = messageService;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -34,26 +36,35 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
         {
             _logger.LogInformation("Processing checkout for OrderId: {OrderId}", request.OrderId);
 
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            {
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
+            }
+
             var order = await _unitOfWork
                 .Repository<Domain.Entities.Order>()
                 .Query()
                 .Include(o => o.OrderItems)
-                .FirstOrDefaultAsync(o => o.OrderId == request.OrderId);
+                .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
 
             if (order == null)
             {
+                _logger.LogWarning("Order not found for checkout. OrderId: {OrderId}", request.OrderId);
                 return Result<Guid>.Failure(
-                    _messageService.GetMessage(
-                        MessageKeys.Order.NotFound,
-                        new { Id = request.OrderId }
-                    ),
+                    _messageService.GetMessage(MessageKeys.Order.NotFound),
                     ResultErrorType.NotFound
                 );
             }
 
+            // Rich Domain Model: delegate business logic to entity
             var domainResult = order.ProcessCheckout(request.PaymentMethod, request.AmountPaid);
             if (!domainResult.IsSuccess)
             {
+                _logger.LogWarning("Checkout failed for OrderId: {OrderId}. Reason: {ErrorCode}", request.OrderId, domainResult.ErrorCode);
+
                 if (domainResult.ErrorCode == DomainErrors.Order.InvalidActionWithStatus)
                 {
                     return Result<Guid>.Failure(
@@ -64,22 +75,11 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                         ResultErrorType.BadRequest
                     );
                 }
-                if (domainResult.ErrorCode == DomainErrors.Order.InsufficientAmount)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.Order.InsufficientAmount),
-                        ResultErrorType.BadRequest
-                    );
-                }
-                if (domainResult.ErrorCode == DomainErrors.Order.ItemsNotFinished)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.Order.ItemsNotFinished),
-                        ResultErrorType.BadRequest
-                    );
-                }
+
                 return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.InvalidAction),
+                    _messageService.GetMessage(
+                        domainResult.ErrorCode ?? MessageKeys.Order.InvalidAction
+                    ),
                     ResultErrorType.BadRequest
                 );
             }
@@ -87,6 +87,18 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                // Audit Log
+                var auditLog = new OrderAuditLog
+                {
+                    LogId = Guid.NewGuid(),
+                    OrderId = order.OrderId,
+                    EmployeeId = auditorId,
+                    Action = AuditLogActions.CheckoutOrder,
+                    CreatedAt = DateTime.UtcNow,
+                    NewValue = $"{{\"paymentMethod\": \"{request.PaymentMethod}\", \"totalAmount\": {order.TotalAmount}, \"amountPaid\": {order.AmountPaid}}}",
+                };
+
+                await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
                 _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
 
                 // Update Table to Cleaning if DineIn

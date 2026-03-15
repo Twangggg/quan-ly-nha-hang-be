@@ -132,6 +132,9 @@
     <data name="Unauthorized" xml:space="preserve">
     <value>You are not authorized to perform this action.</value>
   </data>
+    <data name="Common.Forbidden" xml:space="preserve">
+    <value>You do not have permission to access this resource.</value>
+  </data>
     <data name="CannotIdentifyManager" xml:space="preserve">
     <value>Cannot identify the manager performing the reset.</value>
   </data>
@@ -496,5 +499,43 @@
   </data>
     <data name="Category.CannotChangeTypeNotEmpty" xml:space="preserve">
     <value>Cannot change category type while there are items inside.</value>
+  </data>
+
+  <!-- Ingredient Errors -->
+  <data name="Ingredient.NotFound" xml:space="preserve">
+    <value>Ingredient not found.</value>
+  </data>
+  <data name="Ingredient.CodeExists" xml:space="preserve">
+    <value>Ingredient code already exists.</value>
+  </data>
+  <data name="Ingredient.NameExists" xml:space="preserve">
+    <value>Ingredient name already exists.</value>
+  </data>
+  <data name="Ingredient.UsedInRecipe" xml:space="preserve">
+    <value>Cannot deactivate an ingredient that is used in a recipe.</value>
+  </data>
+  <data name="Ingredient.IdRequired" xml:space="preserve">
+    <value>Ingredient ID is required.</value>
+  </data>
+  <data name="Ingredient.CodeRequired" xml:space="preserve">
+    <value>Ingredient code is required.</value>
+  </data>
+  <data name="Ingredient.CodeMaxLength" xml:space="preserve">
+    <value>Ingredient code cannot exceed 20 characters.</value>
+  </data>
+  <data name="Ingredient.NameRequired" xml:space="preserve">
+    <value>Ingredient name is required.</value>
+  </data>
+  <data name="Ingredient.NameMaxLength" xml:space="preserve">
+    <value>Ingredient name cannot exceed 100 characters.</value>
+  </data>
+  <data name="Ingredient.UnitRequired" xml:space="preserve">
+    <value>Unit of measure is required.</value>
+  </data>
+  <data name="Ingredient.UnitMaxLength" xml:space="preserve">
+    <value>Unit of measure cannot exceed 20 characters.</value>
+  </data>
+  <data name="Ingredient.ThresholdMin" xml:space="preserve">
+    <value>Low stock threshold must be greater than or equal to 0.</value>
   </data>
 </root>

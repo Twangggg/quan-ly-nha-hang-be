@@ -1,20 +1,22 @@
+using FoodHub.Domain.Constants;
+
 namespace FoodHub.Application.Constants
 {
     public static class AuditLogActions
     {
-        public const string CreateOrder = "CREATE_ORDER";
-        public const string SubmitOrder = "SUBMIT_ORDER";
-        public const string AddOrderItem = "ADD_ORDER_ITEM";
-        public const string UpdateOrderItem = "UPDATE_ORDER_ITEM";
-        public const string CancelOrderItem = "CANCEL_ORDER_ITEM";
-        public const string CancelOrder = "CANCEL_ORDER";
-        public const string CompleteOrder = "COMPLETE_ORDER";
-        public const string MergeOrder = "MERGE_ORDER";
-        public const string SplitOrder = "SPLIT_ORDER";
-        public const string ChangeOrderTable = "CHANGE_ORDER_TABLE";
-        public const string KdsStartCooking = "KDS_START_COOKING";
-        public const string KdsMarkReady = "KDS_MARK_READY";
-        public const string KdsReject = "KDS_REJECT";
-        public const string KdsReturn = "KDS_RETURN";
+        public const string CreateOrder = OrderAuditActions.CreateOrder;
+        public const string SubmitOrder = OrderAuditActions.SubmitOrder;
+        public const string AddOrderItem = OrderAuditActions.AddOrderItem;
+        public const string UpdateOrderItem = OrderAuditActions.UpdateOrderItem;
+        public const string CancelOrderItem = OrderAuditActions.CancelOrderItem;
+        public const string CancelOrder = OrderAuditActions.CancelOrder;
+        public const string CompleteOrder = OrderAuditActions.CompleteOrder;
+        public const string CheckoutOrder = OrderAuditActions.CheckoutOrder;
+        public const string KdsStartCooking = OrderAuditActions.KdsStartCooking;
+        public const string KdsMarkReady = OrderAuditActions.KdsMarkReady;
+        public const string KdsReject = OrderAuditActions.KdsReject;
+        public const string KdsReturn = OrderAuditActions.KdsReturn;
+        public const string CheckInReservation = OrderAuditActions.CheckInReservation;
+        public const string AdjustOrderItemQuantity = OrderAuditActions.AdjustOrderItemQuantity;
     }
 }

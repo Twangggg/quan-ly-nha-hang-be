@@ -8,23 +8,26 @@ namespace FoodHub.Domain.Entities
     public class Order : BaseEntity
     {
         public Guid OrderId { get; set; }
+        public int TransactionCode { get; set; } // Auto-increment for PayOS mapping
         public string OrderCode { get; set; } = null!; // ORD-YYYYMMDD-XXXX
         public OrderType OrderType { get; set; }
         public OrderStatus Status { get; set; }
 
         // Nullable because it is required only for DINE_IN
         public Guid? TableId { get; set; }
+        public Guid? ReservationId { get; set; }
 
         public string? Note { get; set; }
         public decimal TotalAmount { get; set; }
         public bool IsPriority { get; set; }
 
-        public virtual Employee CreatedByEmployee { get; set; } = null!;
+        public virtual Employee? CreatedByEmployee { get; set; }
         public DateTime? CompletedAt { get; set; }
         public DateTime? CancelledAt { get; set; }
 
         // Navigation properties
         public virtual Table? Table { get; set; }
+        public virtual Reservation? Reservation { get; set; }
 
         // Billing
         public PaymentMethod? PaymentMethod { get; set; }
@@ -59,19 +62,15 @@ namespace FoodHub.Domain.Entities
                 }
                 AmountPaid = amountPaid;
             }
-            else if (paymentMethod == FoodHub.Domain.Enums.PaymentMethod.QRCode)
+            else
             {
                 AmountPaid = TotalAmount;
             }
 
-            //if (OrderItems.Any(oi => !oi.IsFinished()))
-            //{
-            //    return DomainResult.Failure(DomainErrors.Order.ItemsNotFinished);
-            //}
-
             Status = OrderStatus.Paid;
             PaymentMethod = paymentMethod;
             PaidAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
 
             return DomainResult.Success();
         }
@@ -85,17 +84,33 @@ namespace FoodHub.Domain.Entities
                 return DomainResult.Failure(DomainErrors.Order.InvalidStatusForCancel);
             }
 
-            Status = OrderStatus.Cancelled;
-            CancelledAt = DateTime.UtcNow;
-
-            foreach (var item in OrderItems)
+            var hasNonCancellableItems = OrderItems.Any(item =>
+                item.Status == OrderItemStatus.Completed
+            );
+            if (hasNonCancellableItems)
             {
-                item.Cancel();
+                return DomainResult.Failure(DomainErrors.Order.InvalidStatusForCancel);
             }
 
+            foreach (var item in OrderItems.Where(item => !item.IsFinished()))
+            {
+                var itemResult = item.Cancel();
+                if (!itemResult.IsSuccess)
+                {
+                    return DomainResult.Failure(
+                        itemResult.ErrorCode ?? DomainErrors.Order.InvalidStatusForCancel
+                    );
+                }
+            }
+
+            Status = OrderStatus.Cancelled;
+            CancelledAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }
+
+        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived)
+            => ProcessCheckout(paymentMethod, amountReceived);
 
         public bool CanComplete() =>
             Status == OrderStatus.Serving && OrderItems.All(oi => oi.IsFinished());
@@ -105,6 +120,11 @@ namespace FoodHub.Domain.Entities
             if (Status != OrderStatus.Serving)
             {
                 return DomainResult.Failure(DomainErrors.Order.OrderNotReadyForCompletion);
+            }
+
+            if (OrderItems.Any(oi => !oi.IsFinished()))
+            {
+                return DomainResult.Failure(DomainErrors.Order.ItemsNotFinished);
             }
 
             Status = OrderStatus.Completed;

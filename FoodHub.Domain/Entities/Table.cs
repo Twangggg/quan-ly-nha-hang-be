@@ -12,6 +12,7 @@ namespace FoodHub.Domain.Entities
         public virtual Area Area { get; set; } = null!;
         public TableStatus Status { get; set; } = TableStatus.Available;
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 
         public void MarkAsCleaning()
         {

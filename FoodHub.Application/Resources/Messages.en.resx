@@ -87,4 +87,58 @@
   <data name="AccountCreatedButEmailFailed" xml:space="preserve">
     <value>Account created successfully but email notification failed. Please notify the employee directly. Code: {0}, Password: {1}</value>
   </data>
+  <data name="InventorySettings.UpdateSuccess" xml:space="preserve">
+    <value>Inventory settings updated successfully.</value>
+  </data>
+  <data name="InventorySettings.ExpiryWarningDaysMin" xml:space="preserve">
+    <value>Expiry warning days must be greater than or equal to 1.</value>
+  </data>
+  <data name="InventorySettings.DefaultLowStockThresholdMin" xml:space="preserve">
+    <value>Default low stock threshold must be greater than or equal to 0.</value>
+  </data>
+  <data name="InventorySettings.MaxCostRecalcDaysRange" xml:space="preserve">
+    <value>Max cost recalculation days must be between 1 and 365.</value>
+  </data>
+  <data name="InventorySettings.InvalidExpiryWarningDays" xml:space="preserve">
+    <value>Expiry warning days must be greater than or equal to 1.</value>
+  </data>
+  <data name="InventorySettings.InvalidLowStockThreshold" xml:space="preserve">
+    <value>Default low stock threshold must be greater than or equal to 0.</value>
+  </data>
+  <data name="InventorySettings.InvalidMaxCostRecalcDays" xml:space="preserve">
+    <value>Max cost recalculation days must be between 1 and 365.</value>
+  </data>
+  <data name="OpeningStock.ItemsRequired" xml:space="preserve">
+    <value>Opening stock items are required.</value>
+  </data>
+  <data name="OpeningStock.IngredientIdRequired" xml:space="preserve">
+    <value>IngredientId is required.</value>
+  </data>
+  <data name="OpeningStock.QuantityMin" xml:space="preserve">
+    <value>Opening stock quantity must be greater than or equal to 0.</value>
+  </data>
+  <data name="OpeningStock.CostPriceMin" xml:space="preserve">
+    <value>Opening stock unit cost must be greater than or equal to 0.</value>
+  </data>
+  <data name="OpeningStock.DuplicateIngredient" xml:space="preserve">
+    <value>Opening stock items must not contain duplicate ingredients.</value>
+  </data>
+  <data name="OpeningStock.ConfirmOverwrite" xml:space="preserve">
+    <value>One or more ingredients already have stock. Please confirm overwrite.</value>
+  </data>
+  <data name="OpeningStock.IngredientNotFound" xml:space="preserve">
+    <value>One or more active ingredients could not be found.</value>
+  </data>
+  <data name="OpeningStock.ImportSuccess" xml:space="preserve">
+    <value>Opening stock imported successfully.</value>
+  </data>
+  <data name="OpeningStock.AlreadyLocked" xml:space="preserve">
+    <value>Opening stock has already been locked and can no longer be edited.</value>
+  </data>
+  <data name="Ingredient.InvalidOpeningStockQuantity" xml:space="preserve">
+    <value>Opening stock quantity must be greater than or equal to 0.</value>
+  </data>
+  <data name="Ingredient.InvalidOpeningStockCost" xml:space="preserve">
+    <value>Opening stock unit cost must be greater than or equal to 0.</value>
+  </data>
 </root>

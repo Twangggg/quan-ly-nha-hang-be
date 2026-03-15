@@ -5,11 +5,9 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
 using MediatR;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -44,7 +42,7 @@ namespace FoodHub.Application.Features.Areas.Commands.UpdateAreaStatus
         )
         {
             _logger.LogInformation(
-                "Bắt đầu cập nhật trạng thái khu vực. AreaId: {AreaId}, IsActive: {IsActive}",
+                "Start updating area status. AreaId: {AreaId}, IsActive: {IsActive}",
                 request.AreaId,
                 request.IsActive
             );
@@ -56,7 +54,7 @@ namespace FoodHub.Application.Features.Areas.Commands.UpdateAreaStatus
             if (area == null)
             {
                 _logger.LogWarning(
-                    "Cập nhật trạng thái thất bại. Khu vực không tồn tại. AreaId: {AreaId}",
+                    "Failed to update area status because the area was not found. AreaId: {AreaId}",
                     request.AreaId
                 );
                 return Result<bool>.Failure(
@@ -66,11 +64,15 @@ namespace FoodHub.Application.Features.Areas.Commands.UpdateAreaStatus
             }
 
             Guid? auditorId = Guid.TryParse(_currentUserService.UserId, out var uid) ? uid : null;
-            area.UpdateStatus(request.IsActive, auditorId);
+            var domainResult = area.UpdateStatus(request.IsActive, auditorId);
+
+            if (!domainResult.IsSuccess)
+            {
+                return Result<bool>.Failure(MapDomainError(domainResult.ErrorCode));
+            }
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-            // Invalidate cache
             await _cacheService.RemoveAsync(CacheKey.AreaList, cancellationToken);
             await _cacheService.RemoveAsync(
                 string.Format(CacheKey.AreaById, request.AreaId),
@@ -78,11 +80,20 @@ namespace FoodHub.Application.Features.Areas.Commands.UpdateAreaStatus
             );
 
             _logger.LogInformation(
-                "Cập nhật trạng thái khu vực thành công. AreaId: {AreaId}, IsActive: {IsActive}",
+                "Updated area status successfully. AreaId: {AreaId}, IsActive: {IsActive}",
                 request.AreaId,
                 request.IsActive
             );
             return Result<bool>.Success(true);
         }
+
+        private string MapDomainError(string? errorCode) =>
+            errorCode switch
+            {
+                DomainErrors.Area.AlreadyInactive => _messageService.GetMessage(
+                    MessageKeys.Area.DeactivateForbidden
+                ),
+                _ => _messageService.GetMessage(MessageKeys.Area.UpdateForbidden),
+            };
     }
 }

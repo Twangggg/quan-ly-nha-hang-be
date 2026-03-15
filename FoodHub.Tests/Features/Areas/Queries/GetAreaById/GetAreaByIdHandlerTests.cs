@@ -90,8 +90,10 @@ namespace FoodHub.Tests.Features.Areas.Queries.GetAreaById
                 .Setup(m => m.GetMessage(MessageKeys.Area.NotFound))
                 .Returns("Không tìm thấy khu vực");
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
             var mapConfig = new MapperConfiguration(cfg =>
-                cfg.CreateMap<Area, GetAreaByIdResponse>()
+                cfg.CreateMap<Area, GetAreaByIdResponse>(), mockLoggerFactory.Object
             );
             var handler = BuildHandler(mapConfig.CreateMapper());
 
@@ -142,8 +144,10 @@ namespace FoodHub.Tests.Features.Areas.Queries.GetAreaById
                 )
             );
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
             var mapConfig = new MapperConfiguration(cfg =>
-                cfg.CreateMap<Area, GetAreaByIdResponse>()
+                cfg.CreateMap<Area, GetAreaByIdResponse>(), mockLoggerFactory.Object
             );
             var handler = BuildHandler(mapConfig.CreateMapper());
 
