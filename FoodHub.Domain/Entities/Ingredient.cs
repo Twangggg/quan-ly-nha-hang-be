@@ -94,6 +94,78 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
+        public DomainResult ReceiveStock(
+            decimal quantity,
+            decimal? unitCost = null,
+            Guid? updatedBy = null
+        )
+        {
+            if (quantity <= 0)
+            {
+                return DomainResult.Failure(DomainErrors.Ingredient.InvalidStockInQuantity);
+            }
+
+            if (unitCost.HasValue && unitCost.Value < 0)
+            {
+                return DomainResult.Failure(DomainErrors.Ingredient.InvalidStockInCost);
+            }
+
+            var previousStock = CurrentStock;
+            var updatedStock = previousStock + quantity;
+
+            if (unitCost.HasValue)
+            {
+                var previousValue = previousStock * CostPrice;
+                var incomingValue = quantity * unitCost.Value;
+                CostPrice = updatedStock == 0 ? 0 : (previousValue + incomingValue) / updatedStock;
+            }
+
+            CurrentStock = updatedStock;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+
+            return DomainResult.Success();
+        }
+
+        public DomainResult ReverseReceivedStock(
+            decimal quantity,
+            decimal? unitCost = null,
+            Guid? updatedBy = null
+        )
+        {
+            if (quantity <= 0)
+            {
+                return DomainResult.Failure(DomainErrors.Ingredient.InvalidStockInQuantity);
+            }
+
+            if (CurrentStock - quantity < 0)
+            {
+                return DomainResult.Failure(DomainErrors.Ingredient.InsufficientStock);
+            }
+
+            var previousStock = CurrentStock;
+            var updatedStock = previousStock - quantity;
+
+            if (unitCost.HasValue)
+            {
+                if (updatedStock == 0)
+                {
+                    CostPrice = 0;
+                }
+                else
+                {
+                    var updatedValue = (previousStock * CostPrice) - (quantity * unitCost.Value);
+                    CostPrice = updatedValue <= 0 ? 0 : updatedValue / updatedStock;
+                }
+            }
+
+            CurrentStock = updatedStock;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+
+            return DomainResult.Success();
+        }
+
         public DomainResult SetOpeningStock(
             decimal quantity,
             decimal? costPrice = null,

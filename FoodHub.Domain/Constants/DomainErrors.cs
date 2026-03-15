@@ -76,6 +76,8 @@ namespace FoodHub.Domain.Constants
             public const string DuplicateName = "Ingredient.DuplicateName";
             public const string UsedInRecipe = "Ingredient.UsedInRecipe";
             public const string InsufficientStock = "Ingredient.InsufficientStock";
+            public const string InvalidStockInQuantity = "Ingredient.InvalidStockInQuantity";
+            public const string InvalidStockInCost = "Ingredient.InvalidStockInCost";
             public const string InvalidOpeningStockQuantity =
                 "Ingredient.InvalidOpeningStockQuantity";
             public const string InvalidOpeningStockCost = "Ingredient.InvalidOpeningStockCost";
@@ -89,6 +91,14 @@ namespace FoodHub.Domain.Constants
                 "InventorySettings.InvalidLowStockThreshold";
             public const string InvalidMaxCostRecalcDays =
                 "InventorySettings.InvalidMaxCostRecalcDays";
+        }
+
+        public static class StockInReceipt
+        {
+            public const string DuplicateIngredient = "StockInReceipt.DuplicateIngredient";
+            public const string InvalidQuantity = "StockInReceipt.InvalidQuantity";
+            public const string InvalidUnitCost = "StockInReceipt.InvalidUnitCost";
+            public const string AlreadyReversed = "StockInReceipt.AlreadyReversed";
         }
     }
 }
