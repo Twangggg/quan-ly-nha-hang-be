@@ -151,8 +151,8 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Never);
         }
 
-        private static Order CreateServingOrder(Guid orderId, string code, Guid tableId) =>
-            new()
+        private static FoodHub.Domain.Entities.Order CreateServingOrder(Guid orderId, string code, Guid tableId) =>
+            new FoodHub.Domain.Entities.Order
             {
                 OrderId = orderId,
                 OrderCode = code,
