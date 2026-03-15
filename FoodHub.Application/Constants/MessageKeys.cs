@@ -259,6 +259,7 @@ namespace FoodHub.Application.Constants
         public static class Ingredient
         {
             public const string NotFound = "Ingredient.NotFound";
+            public const string Inactive = "Ingredient.Inactive";
             public const string CodeExists = "Ingredient.CodeExists";
             public const string NameExists = "Ingredient.NameExists";
             public const string UsedInRecipe = "Ingredient.UsedInRecipe";
@@ -303,6 +304,24 @@ namespace FoodHub.Application.Constants
         public static class Billing
         {
             public const string PdfExportError = "Billing.PdfExportError";
+        }
+
+        public static class StockInReceipt
+        {
+            public const string ReceiptNotFound = "StockInReceipt.ReceiptNotFound";
+            public const string ItemsRequired = "StockInReceipt.ItemsRequired";
+            public const string IngredientIdRequired = "StockInReceipt.IngredientIdRequired";
+            public const string QuantityMin = "StockInReceipt.QuantityMin";
+            public const string UnitCostMin = "StockInReceipt.UnitCostMin";
+            public const string DuplicateIngredient = "StockInReceipt.DuplicateIngredient";
+            public const string NoteMaxLength = "StockInReceipt.NoteMaxLength";
+            public const string BatchCodeMaxLength = "StockInReceipt.BatchCodeMaxLength";
+            public const string ReceivedAtNotInFuture = "StockInReceipt.ReceivedAtNotInFuture";
+            public const string ReverseNotLatestMovement =
+                "StockInReceipt.ReverseNotLatestMovement";
+            public const string ReverseInsufficientStock =
+                "StockInReceipt.ReverseInsufficientStock";
+            public const string AlreadyReversed = "StockInReceipt.AlreadyReversed";
         }
     }
 }

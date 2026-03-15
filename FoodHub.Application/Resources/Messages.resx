@@ -173,4 +173,49 @@
   <data name="Ingredient.InvalidOpeningStockCost" xml:space="preserve">
     <value>Don gia nhap phai lon hon hoac bang 0.</value>
   </data>
+  <data name="Ingredient.InvalidStockInQuantity" xml:space="preserve">
+    <value>So luong nhap kho phai lon hon 0.</value>
+  </data>
+  <data name="Ingredient.InvalidStockInCost" xml:space="preserve">
+    <value>Don gia nhap kho phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="Ingredient.Inactive" xml:space="preserve">
+    <value>Khong the tao phieu nhap cho nguyen lieu da ngung hoat dong.</value>
+  </data>
+  <data name="StockInReceipt.ReceiptNotFound" xml:space="preserve">
+    <value>Khong tim thay phieu nhap kho.</value>
+  </data>
+  <data name="StockInReceipt.ItemsRequired" xml:space="preserve">
+    <value>Phai co it nhat 1 nguyen lieu trong phieu nhap.</value>
+  </data>
+  <data name="StockInReceipt.IngredientIdRequired" xml:space="preserve">
+    <value>Nguyen lieu la bat buoc.</value>
+  </data>
+  <data name="StockInReceipt.QuantityMin" xml:space="preserve">
+    <value>So luong nhap kho phai lon hon 0.</value>
+  </data>
+  <data name="StockInReceipt.UnitCostMin" xml:space="preserve">
+    <value>Don gia nhap kho phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="StockInReceipt.DuplicateIngredient" xml:space="preserve">
+    <value>Nguyen lieu da co trong phieu nhap.</value>
+  </data>
+  <data name="StockInReceipt.NoteMaxLength" xml:space="preserve">
+    <value>Ghi chu khong duoc vuot qua 500 ky tu.</value>
+  </data>
+  <data name="StockInReceipt.BatchCodeMaxLength" xml:space="preserve">
+    <value>So lo khong duoc vuot qua 100 ky tu.</value>
+  </data>
+  <data name="StockInReceipt.ReceivedAtNotInFuture" xml:space="preserve">
+    <value>Ngay nhap kho khong duoc nam trong tuong lai.</value>
+  </data>
+  <data name="StockInReceipt.ReverseNotLatestMovement" xml:space="preserve">
+    <value>Khong the dao phieu nhap vi da co bien dong kho moi hon tren mot hoac nhieu nguyen lieu.</value>
+  </data>
+  <data name="StockInReceipt.ReverseInsufficientStock" xml:space="preserve">
+    <value>Khong the dao phieu nhap vi ton kho hien tai khong du.</value>
+  </data>
+  <data name="StockInReceipt.AlreadyReversed" xml:space="preserve">
+    <value>Phieu nhap kho nay da duoc dao truoc do.</value>
+  </data>
 </root>

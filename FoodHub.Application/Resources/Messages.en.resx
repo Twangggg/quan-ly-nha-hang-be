@@ -141,4 +141,49 @@
   <data name="Ingredient.InvalidOpeningStockCost" xml:space="preserve">
     <value>Opening stock unit cost must be greater than or equal to 0.</value>
   </data>
+  <data name="Ingredient.InvalidStockInQuantity" xml:space="preserve">
+    <value>Stock-in quantity must be greater than 0.</value>
+  </data>
+  <data name="Ingredient.InvalidStockInCost" xml:space="preserve">
+    <value>Stock-in unit cost must be greater than or equal to 0.</value>
+  </data>
+  <data name="Ingredient.Inactive" xml:space="preserve">
+    <value>Cannot create a stock-in receipt for an inactive ingredient.</value>
+  </data>
+  <data name="StockInReceipt.ReceiptNotFound" xml:space="preserve">
+    <value>Stock-in receipt could not be found.</value>
+  </data>
+  <data name="StockInReceipt.ItemsRequired" xml:space="preserve">
+    <value>At least one stock-in item is required.</value>
+  </data>
+  <data name="StockInReceipt.IngredientIdRequired" xml:space="preserve">
+    <value>Ingredient is required.</value>
+  </data>
+  <data name="StockInReceipt.QuantityMin" xml:space="preserve">
+    <value>Stock-in quantity must be greater than 0.</value>
+  </data>
+  <data name="StockInReceipt.UnitCostMin" xml:space="preserve">
+    <value>Stock-in unit cost must be greater than or equal to 0.</value>
+  </data>
+  <data name="StockInReceipt.DuplicateIngredient" xml:space="preserve">
+    <value>An ingredient may only appear once in a stock-in receipt.</value>
+  </data>
+  <data name="StockInReceipt.NoteMaxLength" xml:space="preserve">
+    <value>Note must not exceed 500 characters.</value>
+  </data>
+  <data name="StockInReceipt.BatchCodeMaxLength" xml:space="preserve">
+    <value>Batch code must not exceed 100 characters.</value>
+  </data>
+  <data name="StockInReceipt.ReceivedAtNotInFuture" xml:space="preserve">
+    <value>Stock-in date must not be in the future.</value>
+  </data>
+  <data name="StockInReceipt.ReverseNotLatestMovement" xml:space="preserve">
+    <value>The receipt cannot be reversed because newer inventory movements already exist for one or more ingredients.</value>
+  </data>
+  <data name="StockInReceipt.ReverseInsufficientStock" xml:space="preserve">
+    <value>The receipt cannot be reversed because current stock is not sufficient.</value>
+  </data>
+  <data name="StockInReceipt.AlreadyReversed" xml:space="preserve">
+    <value>This stock-in receipt has already been reversed.</value>
+  </data>
 </root>

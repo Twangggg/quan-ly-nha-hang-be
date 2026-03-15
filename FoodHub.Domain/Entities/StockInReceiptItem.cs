@@ -1,0 +1,54 @@
+namespace FoodHub.Domain.Entities
+{
+    public class StockInReceiptItem : BaseEntity
+    {
+        protected StockInReceiptItem() { }
+
+        public Guid StockInReceiptItemId { get; private set; }
+        public Guid StockInReceiptId { get; private set; }
+        public Guid IngredientId { get; private set; }
+        public decimal Quantity { get; private set; }
+        public decimal? UnitCost { get; private set; }
+        public decimal LineAmount { get; private set; }
+        public DateTime? ExpiryDate { get; private set; }
+        public string? BatchCode { get; private set; }
+
+        public virtual StockInReceipt StockInReceipt { get; private set; } = null!;
+        public virtual Ingredient Ingredient { get; private set; } = null!;
+
+        public static StockInReceiptItem Create(
+            Guid stockInReceiptId,
+            Guid ingredientId,
+            decimal quantity,
+            decimal? unitCost,
+            DateTime? expiryDate,
+            string? batchCode,
+            Guid? createdBy = null
+        )
+        {
+            var amount = unitCost.HasValue ? quantity * unitCost.Value : 0;
+
+            return new StockInReceiptItem
+            {
+                StockInReceiptItemId = Guid.NewGuid(),
+                StockInReceiptId = stockInReceiptId,
+                IngredientId = ingredientId,
+                Quantity = quantity,
+                UnitCost = unitCost,
+                LineAmount = amount,
+                ExpiryDate = expiryDate,
+                BatchCode = string.IsNullOrWhiteSpace(batchCode) ? null : batchCode.Trim(),
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = createdBy,
+                UpdatedBy = createdBy,
+            };
+        }
+
+        public void MarkDeleted(Guid? updatedBy = null)
+        {
+            DeletedAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+        }
+    }
+}
