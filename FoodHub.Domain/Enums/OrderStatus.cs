@@ -5,6 +5,8 @@ namespace FoodHub.Domain.Enums
         Serving = 1,
         Completed = 2,
         Cancelled = 3,
-        Paid = 4
+        Paid = 4,
+        Closed = 5,
+        Merged = 6
     }
 }

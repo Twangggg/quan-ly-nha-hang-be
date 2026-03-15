@@ -4,7 +4,6 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable;
 using FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder;
 using FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder;
-using FoodHub.Application.Interfaces;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
@@ -17,12 +16,10 @@ namespace FoodHub.WebAPI.Presentation.Controllers.MergeSplitOrder
     public class TableOperationsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly IMessageService _messageService;
 
-        public TableOperationsController(IMediator mediator, IMessageService messageService)
+        public TableOperationsController(IMediator mediator)
         {
             _mediator = mediator;
-            _messageService = messageService;
         }
 
         /// <summary>
@@ -32,8 +29,11 @@ namespace FoodHub.WebAPI.Presentation.Controllers.MergeSplitOrder
         [HasPermission(Permissions.Orders.ChangeTable)] // Hoặc cần quyền chuyên biệt
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
         [Produces(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ChangeOrderTableResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ChangeOrderTable(Guid id, [FromBody] ChangeOrderTableCommand command)
         {
             var result = await _mediator.Send(command with { OrderId = id });
@@ -47,8 +47,11 @@ namespace FoodHub.WebAPI.Presentation.Controllers.MergeSplitOrder
         [HasPermission(Permissions.Orders.Merge)] // Hoặc cần quyền chuyên biệt
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
         [Produces(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(MergeOrderResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> MergeOrder(Guid id, [FromBody] MergeOrderCommand command)
         {
             var result = await _mediator.Send(command with { FirstOrder = id });
@@ -62,8 +65,11 @@ namespace FoodHub.WebAPI.Presentation.Controllers.MergeSplitOrder
         [HasPermission(Permissions.Orders.Split)] // Hoặc cần quyền chuyên biệt
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
         [Produces(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SplitOrderResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> SplitOrder(Guid id, [FromBody] SplitOrderCommand command)
         {
             var result = await _mediator.Send(command with { SourceOrderId = id });

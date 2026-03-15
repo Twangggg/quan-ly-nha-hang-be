@@ -9,6 +9,9 @@ namespace FoodHub.Application.Constants
         public const string CancelOrderItem = "CANCEL_ORDER_ITEM";
         public const string CancelOrder = "CANCEL_ORDER";
         public const string CompleteOrder = "COMPLETE_ORDER";
+        public const string MergeOrder = "MERGE_ORDER";
+        public const string SplitOrder = "SPLIT_ORDER";
+        public const string ChangeOrderTable = "CHANGE_ORDER_TABLE";
         public const string KdsStartCooking = "KDS_START_COOKING";
         public const string KdsMarkReady = "KDS_MARK_READY";
         public const string KdsReject = "KDS_REJECT";

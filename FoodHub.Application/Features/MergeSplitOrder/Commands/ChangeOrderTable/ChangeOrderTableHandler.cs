@@ -9,14 +9,20 @@ using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
 {
-    public class ChangeOrderTableHandler : IRequestHandler<ChangeOrderTableCommand, Result<ChangeOrderTableResponse>>
+    public class ChangeOrderTableHandler
+        : IRequestHandler<ChangeOrderTableCommand, Result<ChangeOrderTableResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ILogger<ChangeOrderTableHandler> _logger;
 
-        public ChangeOrderTableHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService, ILogger<ChangeOrderTableHandler> logger)
+        public ChangeOrderTableHandler(
+            IUnitOfWork unitOfWork,
+            ICurrentUserService currentUserService,
+            IMessageService messageService,
+            ILogger<ChangeOrderTableHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
@@ -24,17 +30,21 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
             _logger = logger;
         }
 
-        public async Task<Result<ChangeOrderTableResponse>> Handle(ChangeOrderTableCommand request, CancellationToken cancellationToken)
+        public async Task<Result<ChangeOrderTableResponse>> Handle(
+            ChangeOrderTableCommand request,
+            CancellationToken cancellationToken
+        )
         {
-            // Initialize repositories
-            var repoOrder = _unitOfWork.Repository<Order>();
-            var repoTable = _unitOfWork.Repository<Table>();
-
-            // Attempt to parse user ID for auditing
-            Guid? auditorId = null;
-            if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                auditorId = parsedId;
+                _logger.LogWarning(
+                    "Unauthorized change-table attempt for Order {OrderId}",
+                    request.OrderId
+                );
+                return Result<ChangeOrderTableResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
             }
 
             _logger.LogInformation(
@@ -44,70 +54,129 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
                 auditorId
             );
 
-            var currentOrder = await repoOrder.Query()
-                .Include(oo => oo.Table)
+            var orderRepository = _unitOfWork.Repository<Order>();
+            var tableRepository = _unitOfWork.Repository<Table>();
+            var auditLogRepository = _unitOfWork.Repository<OrderAuditLog>();
+
+            var currentOrder = await orderRepository
+                .Query()
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
+
             if (currentOrder is null)
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.NotFound);
-                return Result<ChangeOrderTableResponse>.NotFound(errorMessage);
+                _logger.LogWarning(
+                    "Change table rejected because Order {OrderId} was not found.",
+                    request.OrderId
+                );
+                return Result<ChangeOrderTableResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.Order.NotFound)
+                );
             }
-            if (currentOrder.Status != OrderStatus.Serving)
+
+            if (currentOrder.OrderType != OrderType.DineIn || !currentOrder.IsActive())
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.StatusNotServing, new { Status = currentOrder.Status });
-                return Result<ChangeOrderTableResponse>.Failure(errorMessage, ResultErrorType.BadRequest);
+                _logger.LogWarning(
+                    "Change table rejected because Order {OrderId} is not an active dine-in order. Status={Status}",
+                    currentOrder.OrderId,
+                    currentOrder.Status
+                );
+                return Result<ChangeOrderTableResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus),
+                    ResultErrorType.BadRequest
+                );
             }
 
-            var newTable = await repoTable.Query()
-                .FirstOrDefaultAsync(t => t.TableId == request.TableId, cancellationToken);
+            if (!currentOrder.TableId.HasValue)
+            {
+                _logger.LogWarning(
+                    "Change table rejected because Order {OrderId} has no current table.",
+                    currentOrder.OrderId
+                );
+                return Result<ChangeOrderTableResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.InvalidAction),
+                    ResultErrorType.BadRequest
+                );
+            }
 
-            // Truy vấn rời oldTable và include danh sách Orders đang phục vụ tại bàn đó
-            var oldTable = await repoTable.Query()
+            var oldTable = await tableRepository
+                .Query()
                 .Include(t => t.Orders)
-                .FirstOrDefaultAsync(t => t.TableId == currentOrder.TableId, cancellationToken);
+                .FirstOrDefaultAsync(t => t.TableId == currentOrder.TableId.Value, cancellationToken);
+
+            var newTable = await tableRepository
+                .Query()
+                .Include(t => t.Orders)
+                .FirstOrDefaultAsync(t => t.TableId == request.TableId, cancellationToken);
 
             if (newTable is null || oldTable is null)
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Table.NotFound);
-                return Result<ChangeOrderTableResponse>.NotFound(errorMessage);
-            }
-            if (oldTable.TableId == newTable.TableId)
-            {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Table.SameAsCurrentTable);
-                return Result<ChangeOrderTableResponse>.Failure(errorMessage, ResultErrorType.BadRequest);
-            }
-            if (newTable.Status != TableStatus.Available)
-            {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.TableAlreadyOccupied);
-                return Result<ChangeOrderTableResponse>.Failure(errorMessage, ResultErrorType.BadRequest);
+                _logger.LogWarning(
+                    "Change table rejected because source or destination table was not found. OldTableId={OldTableId}, NewTableId={NewTableId}",
+                    currentOrder.TableId,
+                    request.TableId
+                );
+                return Result<ChangeOrderTableResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.Table.NotFound)
+                );
             }
 
-            // Begin transaction
+            if (oldTable.TableId == newTable.TableId)
+            {
+                _logger.LogWarning(
+                    "Change table rejected because Order {OrderId} already belongs to Table {TableId}",
+                    currentOrder.OrderId,
+                    newTable.TableId
+                );
+                return Result<ChangeOrderTableResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Table.SameAsCurrentTable),
+                    ResultErrorType.BadRequest
+                );
+            }
+
+            if (newTable.Status != TableStatus.Available)
+            {
+                _logger.LogWarning(
+                    "Change table rejected because destination Table {TableId} is not available. Status={Status}",
+                    newTable.TableId,
+                    newTable.Status
+                );
+                return Result<ChangeOrderTableResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Table.NotAvailable),
+                    ResultErrorType.BadRequest
+                );
+            }
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // Update order's table
-                currentOrder.TableId = newTable.TableId;
-                currentOrder.UpdatedAt = DateTime.UtcNow;
-                currentOrder.UpdatedBy = auditorId;
-                repoOrder.Update(currentOrder);
+                var now = DateTime.UtcNow;
 
-                // Remove order from old table's orders collection
+                currentOrder.ChangeTable(newTable.TableId, now, auditorId);
+                orderRepository.Update(currentOrder);
                 oldTable.Orders.Remove(currentOrder);
 
-                // Update old table status to Available
                 if (oldTable.SetAvailable())
                 {
-                    oldTable.UpdatedAt = DateTime.UtcNow;
+                    oldTable.UpdatedAt = now;
                     oldTable.UpdatedBy = auditorId;
-                    repoTable.Update(oldTable);
+                    tableRepository.Update(oldTable);
                 }
 
-                // Update new table status to Occupied
-                newTable.Status = TableStatus.Occupied;
-                newTable.UpdatedAt = DateTime.UtcNow;
-                newTable.UpdatedBy = auditorId;
-                repoTable.Update(newTable);
+                newTable.MarkAsOccupied(auditorId, now);
+                tableRepository.Update(newTable);
+
+                await auditLogRepository.AddAsync(
+                    new OrderAuditLog
+                    {
+                        LogId = Guid.NewGuid(),
+                        OrderId = currentOrder.OrderId,
+                        EmployeeId = auditorId,
+                        Action = AuditLogActions.ChangeOrderTable,
+                        CreatedAt = now,
+                        NewValue =
+                            $"{{\"oldTableId\":\"{oldTable.TableId}\",\"newTableId\":\"{newTable.TableId}\"}}",
+                    }
+                );
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
@@ -119,17 +188,17 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
                     newTable.GetTableName()
                 );
 
-                var response = new ChangeOrderTableResponse
-                {
-                    OrderId = currentOrder.OrderId,
-                    OrderCode = currentOrder.OrderCode,
-                    OldTableId = oldTable.TableId,
-                    OldTableName = oldTable.GetTableName(),
-                    NewTableId = newTable.TableId,
-                    NewTableName = newTable.GetTableName()
-                };
-
-                return Result<ChangeOrderTableResponse>.Success(response);
+                return Result<ChangeOrderTableResponse>.Success(
+                    new ChangeOrderTableResponse
+                    {
+                        OrderId = currentOrder.OrderId,
+                        OrderCode = currentOrder.OrderCode,
+                        OldTableId = oldTable.TableId,
+                        OldTableName = oldTable.GetTableName(),
+                        NewTableId = newTable.TableId,
+                        NewTableName = newTable.GetTableName(),
+                    }
+                );
             }
             catch (Exception ex)
             {

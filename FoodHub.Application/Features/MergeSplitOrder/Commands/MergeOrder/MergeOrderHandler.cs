@@ -24,7 +24,8 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
             ICurrentUserService currentUserService,
             IMessageService messageService,
             IMapper mapper,
-            ILogger<MergeOrderHandler> logger)
+            ILogger<MergeOrderHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
@@ -33,17 +34,34 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
             _mapper = mapper;
         }
 
-        public async Task<Result<MergeOrderResponse>> Handle(MergeOrderCommand request, CancellationToken cancellationToken)
+        public async Task<Result<MergeOrderResponse>> Handle(
+            MergeOrderCommand request,
+            CancellationToken cancellationToken
+        )
         {
-            // Log the incoming request details
-            var repoOrder = _unitOfWork.Repository<Order>();
-            var repoOrderItem = _unitOfWork.Repository<OrderItem>();
-            var repoTable = _unitOfWork.Repository<Table>();
-
-            Guid? auditorId = null;
-            if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                auditorId = parsedId;
+                _logger.LogWarning(
+                    "Unauthorized merge attempt for orders {FirstOrderId} and {SecondOrderId}",
+                    request.FirstOrder,
+                    request.SecondOrder
+                );
+                return Result<MergeOrderResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
+            }
+
+            if (request.FirstOrder == request.SecondOrder)
+            {
+                _logger.LogWarning(
+                    "Merge rejected because source and destination order are the same. OrderId={OrderId}",
+                    request.FirstOrder
+                );
+                return Result<MergeOrderResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.InvalidAction),
+                    ResultErrorType.BadRequest
+                );
             }
 
             _logger.LogInformation(
@@ -53,248 +71,153 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                 auditorId
             );
 
-            // Validate first order
-            var firstOrder = await repoOrder.Query()
-                .Include(o => o.Table)
+            var orderRepository = _unitOfWork.Repository<Order>();
+            var orderItemRepository = _unitOfWork.Repository<OrderItem>();
+            var tableRepository = _unitOfWork.Repository<Table>();
+            var auditLogRepository = _unitOfWork.Repository<OrderAuditLog>();
+
+            var firstOrder = await orderRepository
+                .Query()
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.OptionGroups)
+                        .ThenInclude(og => og.OptionValues)
                 .FirstOrDefaultAsync(o => o.OrderId == request.FirstOrder, cancellationToken);
+
             if (firstOrder is null)
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.NotFound, request.FirstOrder);
-                return Result<MergeOrderResponse>.NotFound(errorMessage);
-            }
-            if (firstOrder.OrderType != OrderType.DineIn)
-            {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.InvalidType, request.FirstOrder);
-                return Result<MergeOrderResponse>.Failure(errorMessage);
-            }
-            if (firstOrder.Status != OrderStatus.Serving)
-            {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.StatusNotServing, request.FirstOrder);
-                return Result<MergeOrderResponse>.Failure(errorMessage);
+                _logger.LogWarning("Primary order {OrderId} was not found for merge.", request.FirstOrder);
+                return Result<MergeOrderResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.Order.NotFound, request.FirstOrder)
+                );
             }
 
-            // Validate second order
-            var secondOrder = await repoOrder.Query()
-                .Include(o => o.Table)
+            var secondOrder = await orderRepository
+                .Query()
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.OptionGroups)
+                        .ThenInclude(og => og.OptionValues)
                 .FirstOrDefaultAsync(o => o.OrderId == request.SecondOrder, cancellationToken);
 
             if (secondOrder is null)
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.NotFound, request.SecondOrder);
-                return Result<MergeOrderResponse>.NotFound(errorMessage);
-            }
-            if (secondOrder.OrderType != OrderType.DineIn)
-            {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.InvalidType, request.SecondOrder);
-                return Result<MergeOrderResponse>.Failure(errorMessage);
-            }
-            if (secondOrder.Status != OrderStatus.Serving)
-            {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.StatusNotServing, request.SecondOrder);
-                return Result<MergeOrderResponse>.Failure(errorMessage);
+                _logger.LogWarning("Secondary order {OrderId} was not found for merge.", request.SecondOrder);
+                return Result<MergeOrderResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.Order.NotFound, request.SecondOrder)
+                );
             }
 
-            // Begin transaction for merging orders
+            if (
+                firstOrder.OrderType != OrderType.DineIn
+                || secondOrder.OrderType != OrderType.DineIn
+                || !firstOrder.IsActive()
+                || !secondOrder.IsActive()
+            )
+            {
+                _logger.LogWarning(
+                    "Merge rejected because orders are not active dine-in orders. FirstStatus={FirstStatus}, SecondStatus={SecondStatus}",
+                    firstOrder.Status,
+                    secondOrder.Status
+                );
+                return Result<MergeOrderResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus),
+                    ResultErrorType.BadRequest
+                );
+            }
+
             await _unitOfWork.BeginTransactionAsync();
+
             try
             {
-                // Load all items from both orders with their options
-                var orderItems = await repoOrderItem.Query()
-                .Include(oi => oi.OptionGroups)
-                .ThenInclude(og => og.OptionValues)
-                .Where(oi => oi.OrderId == firstOrder.OrderId || oi.OrderId == secondOrder.OrderId)
-                .ToListAsync(cancellationToken);
+                var now = DateTime.UtcNow;
+                var mergeResult = firstOrder.MergeFrom(secondOrder, now, auditorId);
 
-                var firstOrderItems = orderItems.Where(foi => foi.OrderId == firstOrder.OrderId).ToList();
-                var secondOrderItems = orderItems.Where(soi => soi.OrderId == secondOrder.OrderId).ToList();
-
-                _logger.LogInformation(
-                        "Merging {SecondItemCount} items from Order {SecondOrderCode} into Order {FirstOrderCode}",
-                        secondOrderItems.Count,
-                        secondOrder.OrderCode,
-                        firstOrder.OrderCode
+                if (!mergeResult.IsSuccess || mergeResult.Value is null)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    _logger.LogWarning(
+                        "Domain merge rejected for orders {FirstOrderId} and {SecondOrderId}. Error={Error}",
+                        request.FirstOrder,
+                        request.SecondOrder,
+                        mergeResult.ErrorCode
                     );
-
-                // Merge items from second order into first order
-                foreach (var secondItem in secondOrderItems)
-                {
-                    // Try to find an existing item in the first order that matches the second item (same MenuItemId, Status, ItemNote, and Options)
-                    var existingItem = firstOrderItems
-                        .FirstOrDefault(foi => foi.MenuItemId == secondItem.MenuItemId
-                        && foi.Status == secondItem.Status
-                        && (foi.ItemNote?.Equals(secondItem.ItemNote) ?? secondItem.ItemNote == null)
-                        && AreOptionsEqual(foi.OptionGroups, secondItem.OptionGroups));
-
-                    // If a matching item exists, merge quantities and notes; otherwise, move the item to the first order
-                    if (existingItem != null)
-                    {
-                        _logger.LogDebug(
-                                "Merging item {ItemName}: Quantity {OldQty} + {AddQty} = {NewQty}",
-                                secondItem.ItemNameSnapshot,
-                                existingItem.Quantity,
-                                secondItem.Quantity,
-                                existingItem.Quantity + secondItem.Quantity
-                            );
-
-                        existingItem.Quantity += secondItem.Quantity;
-                        // Merge notes properly (avoid null/empty concatenation)
-                        if (!string.IsNullOrEmpty(secondItem.ItemNote))
-                        {
-                            existingItem.ItemNote = string.IsNullOrEmpty(existingItem.ItemNote)
-                                ? secondItem.ItemNote
-                                : $"{existingItem.ItemNote}; {secondItem.ItemNote}";
-                        }
-                        existingItem.UpdatedAt = DateTime.UtcNow;
-                        repoOrderItem.Update(existingItem);
-
-                        // Delete the merged item from second order
-                        repoOrderItem.Delete(secondItem);
-                    }
-                    else
-                    {
-                        _logger.LogDebug(
-                                "Moving item {ItemName} (Quantity: {Qty}) to Order {OrderCode}",
-                                secondItem.ItemNameSnapshot,
-                                secondItem.Quantity,
-                                firstOrder.OrderCode
-                            );
-
-                        // Update the OrderId to move the item to the first order
-                        secondItem.OrderId = firstOrder.OrderId;
-                        secondItem.UpdatedAt = DateTime.UtcNow;
-                        repoOrderItem.Update(secondItem);
-                    }
-                }
-
-                // Recalculate total amount for the first order after merging items
-                decimal newTotalAmount = firstOrderItems.Sum(oi => oi.GetTotalPrice())
-                                         + secondOrderItems.Sum(oi => oi.GetTotalPrice());
-
-                // Assuming GetTotalPrice() calculates the total price of the item including options
-                firstOrder.TotalAmount = newTotalAmount;
-                firstOrder.UpdatedAt = DateTime.UtcNow;
-                firstOrder.UpdatedBy = auditorId;
-
-                // Merge notes from both orders
-                if (!string.IsNullOrEmpty(secondOrder.Note))
-                {
-                    firstOrder.Note = string.IsNullOrEmpty(firstOrder.Note)
-                        ? secondOrder.Note
-                        : $"{firstOrder.Note}; {secondOrder.Note}";
-                }
-                repoOrder.Update(firstOrder);
-
-                // Mark the second order as deleted (soft delete)
-                secondOrder.DeletedAt = DateTime.UtcNow;
-                secondOrder.UpdatedBy = auditorId;
-                secondOrder.Note = $"Merged into Order {firstOrder.OrderCode}";
-                repoOrder.Update(secondOrder);
-
-                // Update table status if necessary (e.g., if the second order's table is different and needs to be freed up)
-                if (secondOrder.TableId != firstOrder.TableId)
-                {
-                    // log the table status updates for debugging
-                    _logger.LogInformation(
-                        "Updating table status for Table {TableId} from Order {SecondOrderCode}",
-                        secondOrder.TableId,
-                        secondOrder.OrderCode
+                    return Result<MergeOrderResponse>.Failure(
+                        _messageService.GetMessage(
+                            mergeResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
+                        ),
+                        ResultErrorType.BadRequest
                     );
+                }
 
-                    // Free up the second order's table if it exists
-                    var secondTable = await repoTable.Query()
-                        .Include(o => o.Orders)
-                        .FirstOrDefaultAsync(t => t.TableId == secondOrder.TableId, cancellationToken);
-                    if (secondTable != null)
+                foreach (var deletedItem in mergeResult.Value.DeletedSourceItems)
+                {
+                    orderItemRepository.Delete(deletedItem);
+                }
+
+                orderRepository.Update(firstOrder);
+                orderRepository.Update(secondOrder);
+
+                if (secondOrder.TableId.HasValue && secondOrder.TableId != firstOrder.TableId)
+                {
+                    var secondTable = await tableRepository
+                        .Query()
+                        .Include(t => t.Orders)
+                        .FirstOrDefaultAsync(
+                            t => t.TableId == secondOrder.TableId.Value,
+                            cancellationToken
+                        );
+
+                    if (secondTable != null && secondTable.SetAvailable())
                     {
-                        // Exclude soft-deleted orders from availability checks
-                        secondTable.Orders = secondTable.Orders
-                            .Where(o => o.DeletedAt == null)
-                            .ToList();
-
-                        if (secondTable.SetAvailable())
-                        {
-                            secondTable.UpdatedAt = DateTime.UtcNow;
-                            secondTable.UpdatedBy = auditorId;
-                            repoTable.Update(secondTable);
-                        }
+                        secondTable.UpdatedAt = now;
+                        secondTable.UpdatedBy = auditorId;
+                        tableRepository.Update(secondTable);
                     }
                 }
+
+                await auditLogRepository.AddAsync(
+                    new OrderAuditLog
+                    {
+                        LogId = Guid.NewGuid(),
+                        OrderId = firstOrder.OrderId,
+                        EmployeeId = auditorId,
+                        Action = AuditLogActions.MergeOrder,
+                        CreatedAt = now,
+                        NewValue =
+                            $"{{\"mergedFromOrderId\":\"{secondOrder.OrderId}\",\"mergedOrderCode\":\"{firstOrder.OrderCode}\"}}",
+                    }
+                );
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation(
-                        "Successfully merged Order {SecondOrderCode} into {FirstOrderCode}. New TotalAmount: {TotalAmount}",
-                        secondOrder.OrderCode,
-                        firstOrder.OrderCode,
-                        firstOrder.TotalAmount
-                    );
+                    "Successfully merged Order {SecondOrderCode} into {FirstOrderCode}. New TotalAmount={TotalAmount}",
+                    secondOrder.OrderCode,
+                    firstOrder.OrderCode,
+                    firstOrder.TotalAmount
+                );
 
-                var mergedOrderItems = await repoOrderItem.Query()
-                    .Include(moi => moi.OptionGroups)
-                    .ThenInclude(og => og.OptionValues)
-                    .Where(moi => moi.OrderId == firstOrder.OrderId)
-                    .ToListAsync(cancellationToken);
-
-                var mergedOrder = new MergeOrderResponse
-                {
-                    MergedOrderId = firstOrder.OrderId,
-                    MergedOrderCode = firstOrder.OrderCode,
-                    MergedOrderTotalAmount = firstOrder.TotalAmount,
-                    Items = _mapper.Map<List<OrderItemDto>>(mergedOrderItems)
-                };
-
-                var response = mergedOrder;
-                return Result<MergeOrderResponse>.Success(response);
+                return Result<MergeOrderResponse>.Success(
+                    new MergeOrderResponse
+                    {
+                        MergedOrderId = firstOrder.OrderId,
+                        MergedOrderCode = firstOrder.OrderCode,
+                        MergedOrderTotalAmount = firstOrder.TotalAmount,
+                        Items = _mapper.Map<List<OrderItemDto>>(firstOrder.OrderItems.ToList()),
+                    }
+                );
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(
                     ex,
-                            "Failed to merge Order {SecondOrderId} into {FirstOrderId}",
-                            request.SecondOrder,
-                            request.FirstOrder
-                        );
+                    "Failed to merge Order {SecondOrderId} into {FirstOrderId}",
+                    request.SecondOrder,
+                    request.FirstOrder
+                );
                 throw;
             }
-        }
-        private bool AreOptionsEqual(
-            ICollection<OrderItemOptionGroup> options1,
-            ICollection<OrderItemOptionGroup> options2)
-        {
-            // Quick check: if the counts of option groups are different, they can't be equal
-            if (options1.Count != options2.Count)
-                return false;
-
-            // For each option group in the first item, try to find a matching group in the second item
-            foreach (var og1 in options1)
-            {
-                // Find a matching option group in the second item based on GroupNameSnapshot
-                var og2 = options2.FirstOrDefault(og =>
-                    og.GroupNameSnapshot.Equals(og1.GroupNameSnapshot)
-                );
-                if (og2 == null)
-                    return false;
-
-                // If a matching group is found, compare their option values
-                if (og1.OptionValues.Count != og2.OptionValues.Count)
-                    return false;
-
-                // For each option value in the first group, try to find a matching value in the second group
-                foreach (var ov1 in og1.OptionValues)
-                {
-                    var ov2 = og2.OptionValues.FirstOrDefault(ov =>
-                        ov.LabelSnapshot == ov1.LabelSnapshot
-                        && ov.ExtraPriceSnapshot == ov1.ExtraPriceSnapshot
-                        && ov.Quantity == ov1.Quantity
-                    );
-                    if (ov2 == null)
-                        return false;
-                }
-            }
-
-            return true;
         }
     }
 }

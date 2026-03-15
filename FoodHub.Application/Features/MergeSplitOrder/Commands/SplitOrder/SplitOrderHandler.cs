@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
@@ -19,7 +18,12 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
         private readonly ILogger<SplitOrderHandler> _logger;
         private readonly IMapper _mapper;
 
-        public SplitOrderHandler(IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IMessageService messageService, IMapper mapper, ILogger<SplitOrderHandler> logger
+        public SplitOrderHandler(
+            IUnitOfWork unitOfWork,
+            ICurrentUserService currentUserService,
+            IMessageService messageService,
+            IMapper mapper,
+            ILogger<SplitOrderHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
@@ -29,46 +33,65 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
             _logger = logger;
         }
 
-        public async Task<Result<SplitOrderResponse>> Handle(SplitOrderCommand request, CancellationToken cancellationToken)
+        public async Task<Result<SplitOrderResponse>> Handle(
+            SplitOrderCommand request,
+            CancellationToken cancellationToken
+        )
         {
-            // Log the incoming request details
-            var repoOrder = _unitOfWork.Repository<Order>();
-            var repoOrderItem = _unitOfWork.Repository<OrderItem>();
-
-            // Attempt to parse user ID for auditing
-            Guid? auditorId = null;
-            if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
+            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                auditorId = parsedId;
+                _logger.LogWarning(
+                    "Unauthorized split attempt for Order {SourceOrderId}",
+                    request.SourceOrderId
+                );
+                return Result<SplitOrderResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
+                );
             }
 
             _logger.LogInformation(
-                "Starting split operation: SourceOrder={SourceOrderId}, ItemsToSplit={ItemCount}, User={UserId}",
+                "Starting split operation: SourceOrder={SourceOrderId}, DestinationOrder={DestinationOrderId}, DestinationTable={DestinationTableId}, ItemCount={ItemCount}, User={UserId}",
                 request.SourceOrderId,
+                request.DestinationOrderId,
+                request.DestinationTableId,
                 request.ItemsToSplit.Count,
                 auditorId
             );
 
-            // Validate source order
-            var sourceOrder = await repoOrder.Query()
+            var orderRepository = _unitOfWork.Repository<Order>();
+            var orderItemRepository = _unitOfWork.Repository<OrderItem>();
+            var tableRepository = _unitOfWork.Repository<Table>();
+            var auditLogRepository = _unitOfWork.Repository<OrderAuditLog>();
+
+            var sourceOrder = await orderRepository
+                .Query()
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.OptionGroups)
-                    .ThenInclude(og => og.OptionValues)
+                        .ThenInclude(og => og.OptionValues)
                 .FirstOrDefaultAsync(o => o.OrderId == request.SourceOrderId, cancellationToken);
+
             if (sourceOrder is null)
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.NotFound, request.SourceOrderId);
-                return Result<SplitOrderResponse>.NotFound(errorMessage);
+                _logger.LogWarning("Source order {OrderId} was not found for split.", request.SourceOrderId);
+                return Result<SplitOrderResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.Order.NotFound, request.SourceOrderId)
+                );
             }
-            if (sourceOrder.Status != OrderStatus.Completed)
+
+            if (sourceOrder.OrderType != OrderType.DineIn || !sourceOrder.IsActive())
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Order.StatusNotCompleted, request.SourceOrderId);
-                return Result<SplitOrderResponse>.Failure(errorMessage);
+                _logger.LogWarning(
+                    "Split rejected because source order {OrderId} is not an active dine-in order. Status={Status}",
+                    sourceOrder.OrderId,
+                    sourceOrder.Status
+                );
+                return Result<SplitOrderResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus),
+                    ResultErrorType.BadRequest
+                );
             }
 
-            var itemsToFullySplit = 0;
-
-            // Validate items to split
             foreach (var itemToSplit in request.ItemsToSplit)
             {
                 var orderItem = sourceOrder.OrderItems.FirstOrDefault(
@@ -77,196 +100,332 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
 
                 if (orderItem is null)
                 {
-                    var errorMessage = _messageService.GetMessage(
-                        MessageKeys.OrderItem.NotFound,
-                        itemToSplit.OrderItemId
+                    _logger.LogWarning(
+                        "Split rejected because OrderItem {OrderItemId} does not belong to Order {OrderId}",
+                        itemToSplit.OrderItemId,
+                        sourceOrder.OrderId
                     );
-                    return Result<SplitOrderResponse>.NotFound(errorMessage);
+                    return Result<SplitOrderResponse>.NotFound(
+                        _messageService.GetMessage(
+                            MessageKeys.OrderItem.NotFound,
+                            itemToSplit.OrderItemId
+                        )
+                    );
+                }
+
+                if (!orderItem.CanBeMoved())
+                {
+                    _logger.LogWarning(
+                        "Split rejected because OrderItem {OrderItemId} is not movable. Status={Status}",
+                        orderItem.OrderItemId,
+                        orderItem.Status
+                    );
+                    return Result<SplitOrderResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus),
+                        ResultErrorType.BadRequest
+                    );
                 }
 
                 if (itemToSplit.QuantityToSplit > orderItem.Quantity)
                 {
-                    var errorMessage = _messageService.GetMessage(
-                        MessageKeys.OrderItem.InvalidQuantity,
-                        itemToSplit.OrderItemId
+                    _logger.LogWarning(
+                        "Split rejected because requested quantity {Quantity} exceeds current quantity {CurrentQuantity} for OrderItem {OrderItemId}",
+                        itemToSplit.QuantityToSplit,
+                        orderItem.Quantity,
+                        orderItem.OrderItemId
                     );
-                    return Result<SplitOrderResponse>.Failure(errorMessage);
-                }
-
-                if (itemToSplit.QuantityToSplit == orderItem.Quantity)
-                {
-                    itemsToFullySplit++;
+                    return Result<SplitOrderResponse>.Failure(
+                        _messageService.GetMessage(
+                            MessageKeys.OrderItem.InvalidQuantity,
+                            itemToSplit.OrderItemId
+                        ),
+                        ResultErrorType.BadRequest
+                    );
                 }
             }
 
-            if (itemsToFullySplit == sourceOrder.OrderItems.Count)
+            var now = DateTime.UtcNow;
+            var createdNewOrder = false;
+            Order? destinationOrder = null;
+            Table? destinationTable = null;
+
+            if (request.DestinationOrderId.HasValue)
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.OrderItem.InvalidQuantity);
-                return Result<SplitOrderResponse>.Failure(errorMessage);
+                if (request.DestinationOrderId.Value == sourceOrder.OrderId)
+                {
+                    _logger.LogWarning(
+                        "Split rejected because destination order is the same as source order. OrderId={OrderId}",
+                        sourceOrder.OrderId
+                    );
+                    return Result<SplitOrderResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.InvalidAction),
+                        ResultErrorType.BadRequest
+                    );
+                }
+
+                destinationOrder = await orderRepository
+                    .Query()
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.OptionGroups)
+                            .ThenInclude(og => og.OptionValues)
+                    .FirstOrDefaultAsync(
+                        o => o.OrderId == request.DestinationOrderId.Value,
+                        cancellationToken
+                    );
+
+                if (destinationOrder is null)
+                {
+                    _logger.LogWarning(
+                        "Destination order {OrderId} was not found for split.",
+                        request.DestinationOrderId.Value
+                    );
+                    return Result<SplitOrderResponse>.NotFound(
+                        _messageService.GetMessage(
+                            MessageKeys.Order.NotFound,
+                            request.DestinationOrderId.Value
+                        )
+                    );
+                }
+
+                if (destinationOrder.OrderType != OrderType.DineIn || !destinationOrder.IsActive())
+                {
+                    _logger.LogWarning(
+                        "Split rejected because destination order {OrderId} is not an active dine-in order. Status={Status}",
+                        destinationOrder.OrderId,
+                        destinationOrder.Status
+                    );
+                    return Result<SplitOrderResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus),
+                        ResultErrorType.BadRequest
+                    );
+                }
+
+                if (destinationOrder.TableId.HasValue)
+                {
+                    destinationTable = await tableRepository
+                        .Query()
+                        .Include(t => t.Orders)
+                        .FirstOrDefaultAsync(
+                            t => t.TableId == destinationOrder.TableId.Value,
+                            cancellationToken
+                        );
+                }
+            }
+            else
+            {
+                if (!request.DestinationTableId.HasValue)
+                {
+                    _logger.LogWarning(
+                        "Split rejected because no destination order or table was supplied for Order {OrderId}",
+                        sourceOrder.OrderId
+                    );
+                    return Result<SplitOrderResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.InvalidAction),
+                        ResultErrorType.BadRequest
+                    );
+                }
+
+                destinationTable = await tableRepository
+                    .Query()
+                    .Include(t => t.Orders)
+                    .FirstOrDefaultAsync(
+                        t => t.TableId == request.DestinationTableId.Value,
+                        cancellationToken
+                    );
+
+                if (destinationTable is null)
+                {
+                    _logger.LogWarning(
+                        "Destination table {TableId} was not found for split.",
+                        request.DestinationTableId.Value
+                    );
+                    return Result<SplitOrderResponse>.NotFound(
+                        _messageService.GetMessage(
+                            MessageKeys.Table.NotFound,
+                            request.DestinationTableId.Value
+                        )
+                    );
+                }
+
+                destinationOrder = await orderRepository
+                    .Query()
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.OptionGroups)
+                            .ThenInclude(og => og.OptionValues)
+                    .FirstOrDefaultAsync(
+                        o =>
+                            o.TableId == destinationTable.TableId
+                            && o.Status == OrderStatus.Serving
+                            && o.OrderId != sourceOrder.OrderId,
+                        cancellationToken
+                    );
+
+                if (destinationOrder is null)
+                {
+                    if (destinationTable.Status != TableStatus.Available)
+                    {
+                        _logger.LogWarning(
+                            "Split rejected because destination table {TableId} is not available. Status={Status}",
+                            destinationTable.TableId,
+                            destinationTable.Status
+                        );
+                        return Result<SplitOrderResponse>.Failure(
+                            _messageService.GetMessage(MessageKeys.Table.NotAvailable),
+                            ResultErrorType.BadRequest
+                        );
+                    }
+
+                    createdNewOrder = true;
+                    destinationOrder = Order.CreateSplitOrder(
+                        await GenerateOrderCodeAsync(cancellationToken),
+                        sourceOrder,
+                        destinationTable.TableId,
+                        now,
+                        auditorId
+                    );
+
+                    await orderRepository.AddAsync(destinationOrder);
+                }
             }
 
-            // Begin transaction
+            if (destinationOrder is null)
+            {
+                _logger.LogWarning(
+                    "Split rejected because destination order resolution returned null for source order {OrderId}",
+                    sourceOrder.OrderId
+                );
+                return Result<SplitOrderResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.InvalidAction),
+                    ResultErrorType.BadRequest
+                );
+            }
+
             await _unitOfWork.BeginTransactionAsync();
+
             try
             {
-                // Generate new order code
-                var newOrderCode = await GenerateOrderCodeAsync(cancellationToken);
+                var splitResult = sourceOrder.SplitItemsTo(
+                    destinationOrder,
+                    request
+                        .ItemsToSplit.Select(item =>
+                            new OrderItemSplitRequest(item.OrderItemId, item.QuantityToSplit)
+                        )
+                        .ToList(),
+                    now,
+                    auditorId
+                );
 
-                // Create new order
-                var newOrder = new Order
+                if (!splitResult.IsSuccess || splitResult.Value is null)
                 {
-                    OrderId = Guid.NewGuid(),
-                    OrderCode = newOrderCode,
-                    OrderType = sourceOrder.OrderType,
-                    Status = OrderStatus.Completed,
-                    TableId = sourceOrder.TableId,
-                    Note = $"Split from Order {sourceOrder.OrderCode}",
-                    TotalAmount = 0,
-                    IsPriority = sourceOrder.IsPriority,
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedBy = auditorId,
-                    CompletedAt = DateTime.UtcNow,
-                };
-
-                _logger.LogInformation("Creating new order {NewOrderCode} for table {TableId}", newOrderCode, sourceOrder.TableId);
-
-                // Process each item to split
-                foreach (var itemToSplit in request.ItemsToSplit)
-                {
-                    var sourceItem = sourceOrder.OrderItems.First(oi => oi.OrderItemId == itemToSplit.OrderItemId);
-
-                    _logger.LogInformation(
-                        "Splitting item {OrderItemId}: OriginalQuantity={OriginalQuantity}, QuantityToSplit={QuantityToSplit}",
-                        sourceItem.OrderItemId,
-                        sourceItem.Quantity,
-                        itemToSplit.QuantityToSplit
+                    await _unitOfWork.RollbackTransactionAsync();
+                    _logger.LogWarning(
+                        "Domain split rejected for source order {SourceOrderId}. Error={Error}",
+                        sourceOrder.OrderId,
+                        splitResult.ErrorCode
                     );
+                    return Result<SplitOrderResponse>.Failure(
+                        _messageService.GetMessage(
+                            splitResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
+                        ),
+                        ResultErrorType.BadRequest
+                    );
+                }
 
-                    // Create new item for new order with split quantity
-                    var newItem = new OrderItem
-                    {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = newOrder.OrderId,
-                        MenuItemId = sourceItem.MenuItemId,
-                        ItemCodeSnapshot = sourceItem.ItemCodeSnapshot,
-                        ItemNameSnapshot = sourceItem.ItemNameSnapshot,
-                        StationSnapshot = sourceItem.StationSnapshot,
-                        Status = sourceItem.Status,
-                        Quantity = itemToSplit.QuantityToSplit,
-                        UnitPriceSnapshot = sourceItem.UnitPriceSnapshot,
-                        ItemNote = sourceItem.ItemNote,
-                        CreatedAt = DateTime.UtcNow
-                    };
+                foreach (var deletedItem in splitResult.Value.DeletedSourceItems)
+                {
+                    orderItemRepository.Delete(deletedItem);
+                }
 
-                    // Clone option groups and values
-                    foreach (var optionGroup in sourceItem.OptionGroups)
-                    {
-                        var newOptionGroup = new OrderItemOptionGroup
-                        {
-                            OrderItemOptionGroupId = Guid.NewGuid(),
-                            OrderItemId = newItem.OrderItemId,
-                            GroupNameSnapshot = optionGroup.GroupNameSnapshot,
-                            GroupTypeSnapshot = optionGroup.GroupTypeSnapshot,
-                            IsRequiredSnapshot = optionGroup.IsRequiredSnapshot,
-                            CreatedAt = DateTime.UtcNow
-                        };
+                orderRepository.Update(sourceOrder);
+                if (!createdNewOrder)
+                {
+                    orderRepository.Update(destinationOrder);
+                }
 
-                        foreach (var optionValue in optionGroup.OptionValues)
-                        {
-                            var newOptionValue = new OrderItemOptionValue
-                            {
-                                OrderItemOptionValueId = Guid.NewGuid(),
-                                OrderItemOptionGroupId = newOptionGroup.OrderItemOptionGroupId,
-                                OptionItemId = optionValue.OptionItemId,
-                                LabelSnapshot = optionValue.LabelSnapshot,
-                                ExtraPriceSnapshot = optionValue.ExtraPriceSnapshot,
-                                Quantity = optionValue.Quantity,
-                                Note = optionValue.Note,
-                                CreatedAt = DateTime.UtcNow
-                            };
-                            newOptionGroup.OptionValues.Add(newOptionValue);
-                        }
-
-                        newItem.OptionGroups.Add(newOptionGroup);
-                    }
-
-                    newOrder.OrderItems.Add(newItem);
-
-                    sourceItem.UpdatedAt = DateTime.UtcNow;
-
-                    // Update source item quantity or remove if fully split
-                    if (itemToSplit.QuantityToSplit == sourceItem.Quantity)
-                    {
-                        repoOrderItem.Delete(sourceItem);
-
-                        _logger.LogDebug(
-                            "Fully moved item {ItemName} to new order",
-                            sourceItem.ItemNameSnapshot
+                if (destinationTable == null && destinationOrder.TableId.HasValue)
+                {
+                    destinationTable = await tableRepository
+                        .Query()
+                        .Include(t => t.Orders)
+                        .FirstOrDefaultAsync(
+                            t => t.TableId == destinationOrder.TableId.Value,
+                            cancellationToken
                         );
-                    }
-                    else
-                    {
-                        sourceItem.Quantity -= itemToSplit.QuantityToSplit;
-                        repoOrderItem.Update(sourceItem);
+                }
 
-                        _logger.LogDebug(
-                            "Reduced source item {ItemName} quantity to {RemainingQty}",
-                            sourceItem.ItemNameSnapshot,
-                            sourceItem.Quantity
+                if (
+                    destinationTable != null
+                    && (createdNewOrder || destinationTable.Status != TableStatus.Occupied)
+                )
+                {
+                    destinationTable.MarkAsOccupied(auditorId, now);
+                    tableRepository.Update(destinationTable);
+                }
+
+                if (
+                    sourceOrder.TableId.HasValue
+                    && sourceOrder.TableId != destinationOrder.TableId
+                )
+                {
+                    var sourceTable = await tableRepository
+                        .Query()
+                        .Include(t => t.Orders)
+                        .FirstOrDefaultAsync(
+                            t => t.TableId == sourceOrder.TableId.Value,
+                            cancellationToken
                         );
+
+                    if (sourceTable != null && sourceTable.SetAvailable())
+                    {
+                        sourceTable.UpdatedAt = now;
+                        sourceTable.UpdatedBy = auditorId;
+                        tableRepository.Update(sourceTable);
                     }
                 }
 
-                newOrder.TotalAmount = newOrder.OrderItems.Sum(oi => oi.GetTotalPrice());
-                await repoOrder.AddAsync(newOrder);
-
-                // Recalculate total amounts
-                sourceOrder.TotalAmount -= newOrder.TotalAmount;
-                sourceOrder.UpdatedAt = DateTime.UtcNow;
-                sourceOrder.UpdatedBy = auditorId;
-                repoOrder.Update(sourceOrder);
+                await auditLogRepository.AddAsync(
+                    new OrderAuditLog
+                    {
+                        LogId = Guid.NewGuid(),
+                        OrderId = sourceOrder.OrderId,
+                        EmployeeId = auditorId,
+                        Action = AuditLogActions.SplitOrder,
+                        CreatedAt = now,
+                        NewValue =
+                            $"{{\"destinationOrderId\":\"{destinationOrder.OrderId}\",\"createdNewOrder\":{createdNewOrder.ToString().ToLowerInvariant()}}}",
+                    }
+                );
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation(
-                    "Successfully split Order {SourceOrderCode} into {NewOrderCode}. Source Amount: {SourceAmount}, New Amount: {NewAmount}",
+                    "Successfully split items from Order {SourceOrderCode} to Order {DestinationOrderCode}. SourceAmount={SourceAmount}, DestinationAmount={DestinationAmount}",
                     sourceOrder.OrderCode,
-                    newOrder.OrderCode,
+                    destinationOrder.OrderCode,
                     sourceOrder.TotalAmount,
-                    newOrder.TotalAmount
+                    destinationOrder.TotalAmount
                 );
 
-                // Reload order items for accurate response
-                var sourceOrderItems = await repoOrderItem
-                    .Query()
-                    .Include(oi => oi.OptionGroups)
-                    .ThenInclude(og => og.OptionValues)
-                    .Where(oi => oi.OrderId == sourceOrder.OrderId)
-                    .ToListAsync(cancellationToken);
-
-                var newOrderItems = await repoOrderItem
-                    .Query()
-                    .Include(oi => oi.OptionGroups)
-                    .ThenInclude(og => og.OptionValues)
-                    .Where(oi => oi.OrderId == newOrder.OrderId)
-                    .ToListAsync(cancellationToken);
-
-                // Prepare response
-                var response = new SplitOrderResponse
-                {
-                    SourceOrderId = sourceOrder.OrderId,
-                    SourceOrderCode = sourceOrder.OrderCode,
-                    SourceOrderTotalAmount = sourceOrder.TotalAmount,
-                    SourceOrderItems = _mapper.Map<List<SplitOrderItemDto>>(sourceOrderItems),
-
-                    NewOrderId = newOrder.OrderId,
-                    NewOrderCode = newOrder.OrderCode,
-                    NewOrderTotalAmount = newOrder.TotalAmount,
-                    NewOrderItems = _mapper.Map<List<SplitOrderItemDto>>(newOrderItems)
-                };
-
-                return Result<SplitOrderResponse>.Success(response);
+                return Result<SplitOrderResponse>.Success(
+                    new SplitOrderResponse
+                    {
+                        SourceOrderId = sourceOrder.OrderId,
+                        SourceOrderCode = sourceOrder.OrderCode,
+                        SourceOrderTotalAmount = sourceOrder.TotalAmount,
+                        SourceOrderItems = _mapper.Map<List<SplitOrderItemDto>>(
+                            sourceOrder.OrderItems.ToList()
+                        ),
+                        DestinationOrderId = destinationOrder.OrderId,
+                        DestinationOrderCode = destinationOrder.OrderCode,
+                        DestinationOrderTotalAmount = destinationOrder.TotalAmount,
+                        DestinationOrderItems = _mapper.Map<List<SplitOrderItemDto>>(
+                            destinationOrder.OrderItems.ToList()
+                        ),
+                        DestinationTableId = destinationOrder.TableId,
+                        CreatedNewOrder = createdNewOrder,
+                    }
+                );
             }
             catch (Exception ex)
             {
@@ -289,11 +448,11 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                 .OrderByDescending(o => o.OrderCode)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            int sequenceNumber = 1;
+            var sequenceNumber = 1;
             if (lastOrder != null)
             {
                 var parts = lastOrder.OrderCode.Split('-');
-                if (parts.Length == 3 && int.TryParse(parts[2], out int lastSequence))
+                if (parts.Length == 3 && int.TryParse(parts[2], out var lastSequence))
                 {
                     sequenceNumber = lastSequence + 1;
                 }

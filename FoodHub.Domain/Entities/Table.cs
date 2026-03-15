@@ -68,13 +68,6 @@ namespace FoodHub.Domain.Entities
                 throw new InvalidOperationException("Orders navigation property must be loaded before calling CanAvailable.");
             }
 
-            // If there are no orders but the table is not in the default Available state,
-            // it is likely that Orders has not been loaded from the database.
-            if (!Orders.Any() && Status != TableStatus.Available)
-            {
-                throw new InvalidOperationException("Orders navigation property may not be loaded. Ensure Orders are eagerly loaded before calling CanAvailable.");
-            }
-
             var hasServingOrders = Orders.Any(o => o.Status == OrderStatus.Serving);
 
             if (hasServingOrders)
@@ -83,6 +76,13 @@ namespace FoodHub.Domain.Entities
             }
 
             return true;
+        }
+
+        public void MarkAsOccupied(Guid? updatedBy, DateTime updatedAt)
+        {
+            Status = TableStatus.Occupied;
+            UpdatedBy = updatedBy;
+            UpdatedAt = updatedAt;
         }
     }
 }
