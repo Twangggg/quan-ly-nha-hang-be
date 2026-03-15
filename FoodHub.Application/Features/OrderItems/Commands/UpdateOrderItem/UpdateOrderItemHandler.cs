@@ -69,7 +69,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
             }
 
             // BR: Không cho phép chỉnh sửa order đã hoàn thành hoặc hủy
-            if (order.Status == OrderStatus.Completed || order.Status == OrderStatus.Cancelled)
+            if (!order.IsActive())
             {
                 _logger.LogWarning(
                     "Cannot update items for Order {OrderId} because status is {Status}.",

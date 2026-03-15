@@ -132,6 +132,9 @@
     <data name="Unauthorized" xml:space="preserve">
     <value>You are not authorized to perform this action.</value>
   </data>
+    <data name="Common.Forbidden" xml:space="preserve">
+    <value>You do not have permission to access this resource.</value>
+  </data>
     <data name="CannotIdentifyManager" xml:space="preserve">
     <value>Cannot identify the manager performing the reset.</value>
   </data>

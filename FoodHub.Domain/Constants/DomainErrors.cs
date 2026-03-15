@@ -15,6 +15,7 @@ namespace FoodHub.Domain.Constants
 
         public static class OrderItem
         {
+            public const string InvalidQuantity = "OrderItem.InvalidQuantity";
             public const string InvalidStatusForCancel = "OrderItem.InvalidStatusForCancel";
 
             // KDS state transitions
@@ -32,6 +33,11 @@ namespace FoodHub.Domain.Constants
             public const string CannotDeactivateWithActiveItems =
                 "Category.CannotDeactivateWithActiveItems";
             public const string NotFound = "Category.NotFound";
+        }
+
+        public static class Area
+        {
+            public const string AlreadyInactive = "Area.AlreadyInactive";
         }
 
         public static class SetMenu

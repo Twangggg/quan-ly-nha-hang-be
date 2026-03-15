@@ -70,6 +70,10 @@ public class ExceptionMiddleware
                 statusCode = (int)HttpStatusCode.NotFound;
                 message = notFoundException.Message;
                 break;
+            case ForbiddenException forbiddenException:
+                statusCode = (int)HttpStatusCode.Forbidden;
+                message = forbiddenException.Message;
+                break;
             default:
                 if (_env.IsDevelopment())
                 {
@@ -99,7 +103,7 @@ public class ExceptionMiddleware
         var statusCode = context.Response.StatusCode;
         var message = statusCode == StatusCodes.Status401Unauthorized
             ? messageService.GetMessage(MessageKeys.Common.Unauthorized)
-            : messageService.GetMessage(MessageKeys.Common.Unauthorized);
+            : messageService.GetMessage(MessageKeys.Common.Forbidden);
 
         context.Response.ContentType = "application/json";
 

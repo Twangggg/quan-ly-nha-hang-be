@@ -1,4 +1,5 @@
 using AutoMapper;
+using FoodHub.Application.Common.Behaviors;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
@@ -13,7 +14,7 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTable
     /// <summary>
     /// Handler for updating a table's information, including capacity and area assignment. It validates the existence of the table and area, updates the table's properties, and manages caching to ensure data consistency.
     /// </summary>
-    public class UpdateTableHandler : IRequestHandler<UpdateTableCommand, Result<UpdateTableResponse>>
+    public class UpdateTableHandler : IRequestHandler<UpdateTableCommand, Result<UpdateTableResponse>>, IMustBeActive
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -65,7 +66,6 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTable
                 auditorId = parsedId;
             }
 
-            table.TableNumber = request.TableNumber;
             table.Capacity = request.Capacity;
             table.AreaId = request.AreaId;
             table.UpdatedAt = DateTime.UtcNow;

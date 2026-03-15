@@ -36,6 +36,8 @@ namespace FoodHub.Domain.Entities
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
 
+        public bool IsActive() => Status == OrderStatus.Serving;
+
         public DomainResult ProcessCheckout(PaymentMethod paymentMethod, decimal? amountPaid)
         {
             if (
@@ -153,6 +155,227 @@ namespace FoodHub.Domain.Entities
                         ?? 0;
                     return itemTotal + (optionsTotal * item.Quantity);
                 });
+        }
+
+        public void ChangeTable(Guid newTableId, DateTime updatedAt, Guid? updatedBy)
+        {
+            TableId = newTableId;
+            UpdatedAt = updatedAt;
+            UpdatedBy = updatedBy;
+        }
+
+        public void MarkAsClosed(DateTime updatedAt, Guid? updatedBy)
+        {
+            Status = OrderStatus.Closed;
+            UpdatedAt = updatedAt;
+            UpdatedBy = updatedBy;
+        }
+
+        public void MarkAsMerged(string destinationOrderCode, DateTime updatedAt, Guid? updatedBy)
+        {
+            Status = OrderStatus.Merged;
+            UpdatedAt = updatedAt;
+            UpdatedBy = updatedBy;
+            Note = string.IsNullOrWhiteSpace(Note)
+                ? $"Merged into Order {destinationOrderCode}"
+                : $"{Note}; Merged into Order {destinationOrderCode}";
+        }
+
+        public void AppendNote(string? note)
+        {
+            if (string.IsNullOrWhiteSpace(note))
+            {
+                return;
+            }
+
+            Note = string.IsNullOrWhiteSpace(Note) ? note : $"{Note}; {note}";
+        }
+
+        public static Order CreateSplitOrder(
+            string orderCode,
+            Order sourceOrder,
+            Guid destinationTableId,
+            DateTime createdAt,
+            Guid? createdBy
+        )
+        {
+            return new Order
+            {
+                OrderId = Guid.NewGuid(),
+                OrderCode = orderCode,
+                OrderType = sourceOrder.OrderType,
+                Status = OrderStatus.Serving,
+                TableId = destinationTableId,
+                Note = $"Split from Order {sourceOrder.OrderCode}",
+                TotalAmount = 0,
+                IsPriority = sourceOrder.IsPriority,
+                CreatedAt = createdAt,
+                CreatedBy = createdBy,
+            };
+        }
+
+        public DomainResult<MergeOrderPlan> MergeFrom(
+            Order sourceOrder,
+            DateTime updatedAt,
+            Guid? updatedBy
+        )
+        {
+            if (
+                sourceOrder.OrderId == OrderId
+                || !IsActive()
+                || !sourceOrder.IsActive()
+                || OrderType != OrderType.DineIn
+                || sourceOrder.OrderType != OrderType.DineIn
+            )
+            {
+                return DomainResult<MergeOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            var deletedSourceItems = new List<OrderItem>();
+
+            foreach (var sourceItem in sourceOrder.OrderItems.ToList())
+            {
+                var existingItem = OrderItems.FirstOrDefault(item =>
+                    item.HasSameConfiguration(sourceItem)
+                );
+
+                if (existingItem != null)
+                {
+                    existingItem.IncreaseQuantity(sourceItem.Quantity, updatedAt);
+                    sourceOrder.OrderItems.Remove(sourceItem);
+                    deletedSourceItems.Add(sourceItem);
+                    continue;
+                }
+
+                var moveResult = sourceItem.MoveToOrder(OrderId, updatedAt);
+                if (!moveResult.IsSuccess)
+                {
+                    return DomainResult<MergeOrderPlan>.Failure(
+                        moveResult.ErrorCode ?? DomainErrors.Order.InvalidActionWithStatus
+                    );
+                }
+
+                sourceOrder.OrderItems.Remove(sourceItem);
+                OrderItems.Add(sourceItem);
+            }
+
+            AppendNote(sourceOrder.Note);
+            RecalculateTotalAmount();
+            UpdatedAt = updatedAt;
+            UpdatedBy = updatedBy;
+
+            sourceOrder.RecalculateTotalAmount();
+            sourceOrder.MarkAsMerged(OrderCode, updatedAt, updatedBy);
+
+            return DomainResult<MergeOrderPlan>.Success(new MergeOrderPlan(deletedSourceItems));
+        }
+
+        public DomainResult<SplitOrderPlan> SplitItemsTo(
+            Order destinationOrder,
+            IReadOnlyCollection<OrderItemSplitRequest> splitRequests,
+            DateTime updatedAt,
+            Guid? updatedBy
+        )
+        {
+            if (
+                destinationOrder.OrderId == OrderId
+                || !IsActive()
+                || !destinationOrder.IsActive()
+                || OrderType != OrderType.DineIn
+                || destinationOrder.OrderType != OrderType.DineIn
+            )
+            {
+                return DomainResult<SplitOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            var newDestinationItems = new List<OrderItem>();
+            var deletedSourceItems = new List<OrderItem>();
+
+            foreach (var splitRequest in splitRequests)
+            {
+                var sourceItem = OrderItems.First(item => item.OrderItemId == splitRequest.OrderItemId);
+
+                if (!sourceItem.CanBeMoved())
+                {
+                    return DomainResult<SplitOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+                }
+
+                if (splitRequest.QuantityToSplit <= 0 || splitRequest.QuantityToSplit > sourceItem.Quantity)
+                {
+                    return DomainResult<SplitOrderPlan>.Failure(DomainErrors.OrderItem.InvalidQuantity);
+                }
+
+                if (splitRequest.QuantityToSplit == sourceItem.Quantity)
+                {
+                    var mergeTarget = destinationOrder.OrderItems.FirstOrDefault(item =>
+                        item.HasSameConfiguration(sourceItem)
+                    );
+
+                    if (mergeTarget != null)
+                    {
+                        mergeTarget.IncreaseQuantity(sourceItem.Quantity, updatedAt);
+                        OrderItems.Remove(sourceItem);
+                        deletedSourceItems.Add(sourceItem);
+                        continue;
+                    }
+
+                    var moveResult = sourceItem.MoveToOrder(destinationOrder.OrderId, updatedAt);
+                    if (!moveResult.IsSuccess)
+                    {
+                        return DomainResult<SplitOrderPlan>.Failure(
+                            moveResult.ErrorCode ?? DomainErrors.Order.InvalidActionWithStatus
+                        );
+                    }
+
+                    OrderItems.Remove(sourceItem);
+                    destinationOrder.OrderItems.Add(sourceItem);
+                    continue;
+                }
+
+                var reduceResult = sourceItem.ReduceQuantity(splitRequest.QuantityToSplit, updatedAt);
+                if (!reduceResult.IsSuccess)
+                {
+                    return DomainResult<SplitOrderPlan>.Failure(
+                        reduceResult.ErrorCode ?? DomainErrors.OrderItem.InvalidQuantity
+                    );
+                }
+
+                var clonedItem = sourceItem.CloneForOrder(
+                    destinationOrder.OrderId,
+                    splitRequest.QuantityToSplit,
+                    updatedAt
+                );
+
+                var existingDestinationItem = destinationOrder.OrderItems.FirstOrDefault(item =>
+                    item.HasSameConfiguration(clonedItem)
+                );
+
+                if (existingDestinationItem != null)
+                {
+                    existingDestinationItem.IncreaseQuantity(clonedItem.Quantity, updatedAt);
+                    continue;
+                }
+
+                destinationOrder.OrderItems.Add(clonedItem);
+                newDestinationItems.Add(clonedItem);
+            }
+
+            RecalculateTotalAmount();
+            UpdatedAt = updatedAt;
+            UpdatedBy = updatedBy;
+
+            destinationOrder.RecalculateTotalAmount();
+            destinationOrder.UpdatedAt = updatedAt;
+            destinationOrder.UpdatedBy = updatedBy;
+
+            if (!OrderItems.Any())
+            {
+                MarkAsClosed(updatedAt, updatedBy);
+            }
+
+            return DomainResult<SplitOrderPlan>.Success(
+                new SplitOrderPlan(newDestinationItems, deletedSourceItems)
+            );
         }
 
         public OrderItem CreateOrderItem(
@@ -282,4 +505,13 @@ namespace FoodHub.Domain.Entities
             return string.Join("|", allValues);
         }
     }
+
+    public sealed record MergeOrderPlan(IReadOnlyCollection<OrderItem> DeletedSourceItems);
+
+    public sealed record OrderItemSplitRequest(Guid OrderItemId, int QuantityToSplit);
+
+    public sealed record SplitOrderPlan(
+        IReadOnlyCollection<OrderItem> NewDestinationItems,
+        IReadOnlyCollection<OrderItem> DeletedSourceItems
+    );
 }

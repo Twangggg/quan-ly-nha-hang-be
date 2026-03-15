@@ -51,7 +51,9 @@ namespace FoodHub.Tests.Features.Billing.Commands
             mockOrderRepo
                 .Setup(r => r.Query())
                 .Returns(new List<FoodHub.Domain.Entities.Order> { order }.AsQueryable().BuildMock());
-            mockTableRepo.Setup(r => r.GetByIdAsync(tableId)).ReturnsAsync(table);
+            mockTableRepo
+                .Setup(r => r.Query())
+                .Returns(new List<Table> { table }.AsQueryable().BuildMock());
 
             _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(mockOrderRepo.Object);
             _mockUow.Setup(u => u.Repository<Table>()).Returns(mockTableRepo.Object);

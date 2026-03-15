@@ -126,16 +126,10 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                     );
                 }
 
-                var auditLog = new OrderAuditLog
-                {
-                    LogId = Guid.NewGuid(),
-                    OrderId = orderItem.OrderId,
-                    EmployeeId = auditorId,
-                    Action = AuditLogActions.KdsStartCooking,
-                    OldValue = $"\"{OrderItemStatus.Preparing}\"",
-                    NewValue = $"\"{OrderItemStatus.Cooking}\"",
-                    CreatedAt = DateTime.UtcNow,
-                };
+                var auditLog = OrderAuditLog.CreateKdsStartCooking(
+                    orderItem.OrderId,
+                    auditorId
+                );
 
                 orderItemRepository.Update(orderItem);
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);

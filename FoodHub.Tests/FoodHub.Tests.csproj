@@ -31,6 +31,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\FoodHub.Infrastructure\FoodHub.Infrastructure.csproj" />
     <ProjectReference Include="..\FoodHub.WebAPI\FoodHub.WebAPI.csproj" />
     <ProjectReference Include="..\FoodHub.Application\FoodHub.Application.csproj" />
     <ProjectReference Include="..\FoodHub.Domain\FoodHub.Domain.csproj" />
