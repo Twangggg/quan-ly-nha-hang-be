@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -12,11 +13,13 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CreateReservationHandler> _logger;
+        private readonly IMessageService _messageService;
 
-        public CreateReservationHandler(IUnitOfWork unitOfWork, ILogger<CreateReservationHandler> logger)
+        public CreateReservationHandler(IUnitOfWork unitOfWork, ILogger<CreateReservationHandler> logger, IMessageService messageService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _messageService = messageService;
         }
 
         public async Task<Result<Guid>> Handle(CreateReservationCommand request, CancellationToken cancellationToken)
@@ -24,11 +27,18 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             // Kiểm tra bàn tồn tại và ACTIVE (Không bị xóa và không OutOfService)
             var table = await _unitOfWork.Repository<Table>()
                 .Query()
+                .Include(t => t.Area)
                 .FirstOrDefaultAsync(t => t.TableId == request.TableId && t.Status != TableStatus.OutOfService, cancellationToken);
 
             if (table == null)
             {
-                return Result<Guid>.Failure("Bàn không tồn tại hoặc đã ngưng hoạt động.", ResultErrorType.NotFound);
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Table.NotFound), ResultErrorType.NotFound);
+            }
+
+            // Kiểm tra quy định VIP cho đoàn trên 8 người
+            if (request.GuestCount > 8 && table.Area.Type != AreaType.VIP)
+            {
+                return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Reservation.VipRequired), ResultErrorType.BadRequest);
             }
 
             // Kiểm tra sức chứa

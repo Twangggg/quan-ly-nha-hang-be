@@ -19,10 +19,17 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
         public async Task<Result<List<GetAvailableTablesResponse>>> Handle(GetAvailableTablesQuery request, CancellationToken cancellationToken)
         {
             var query = _unitOfWork.Repository<Table>().Query()
+                .Include(t => t.Area)
                 .Where(t => t.Status != TableStatus.OutOfService);
 
             // Lọc theo sức chứa
             query = query.Where(t => t.Capacity >= request.GuestCount);
+
+            // Quy định đoàn trên 8 người phải đặt phòng VIP
+            if (request.GuestCount > 8)
+            {
+                query = query.Where(t => t.Area.Type == AreaType.VIP);
+            }
 
             // Lọc theo khu vực nếu có
             if (request.AreaId.HasValue)
