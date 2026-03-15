@@ -1,5 +1,7 @@
+using System.Linq.Expressions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
+using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -37,9 +39,41 @@ namespace FoodHub.Application.Features.Inventory.Transactions.Queries.GetInvento
                 request.Pagination.PageSize
             );
 
-            var query = _unitOfWork.Repository<InventoryTransaction>().Query().AsNoTracking();
+            IQueryable<InventoryTransaction> query = _unitOfWork
+                .Repository<InventoryTransaction>()
+                .Query()
+                .AsNoTracking()
+                .Include(x => x.Ingredient);
 
-            query = query.OrderByDescending(x => x.OccurredAt).ThenByDescending(x => x.CreatedAt);
+            var searchableFields = new List<Expression<Func<InventoryTransaction, string?>>>
+            {
+                x => x.Ingredient.Name,
+                x => x.Ingredient.Code,
+                x => x.Reference,
+            };
+
+            query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
+
+            var filterMapping = new Dictionary<string, Expression<Func<InventoryTransaction, object?>>>
+            {
+                { "ingredientid", x => x.IngredientId },
+                { "ingredientcode", x => x.Ingredient.Code },
+                { "ingredientname", x => x.Ingredient.Name },
+                { "transactiontype", x => x.TransactionType },
+                { "occurredat", x => x.OccurredAt },
+            };
+
+            query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
+
+            var sortMapping = new Dictionary<string, Expression<Func<InventoryTransaction, object?>>>
+            {
+                { "occurredat", x => x.OccurredAt },
+                { "createdat", x => x.CreatedAt },
+                { "ingredientname", x => x.Ingredient.Name },
+                { "transactiontype", x => x.TransactionType },
+            };
+
+            query = query.ApplySorting(request.Pagination.OrderBy, sortMapping, x => x.OccurredAt);
 
             var projection = query.Select(x => new GetInventoryTransactionsResponse
             {
