@@ -44,5 +44,73 @@ namespace FoodHub.Domain.Entities
                 UpdatedBy = createdBy,
             };
         }
+
+        public static InventoryTransaction CreateStockIn(
+            Guid ingredientId,
+            decimal quantity,
+            decimal? unitCost,
+            decimal balanceAfter,
+            string reference,
+            Guid? createdBy = null
+        )
+        {
+            return Create(
+                ingredientId,
+                InventoryTransactionType.StockIn,
+                quantity,
+                unitCost,
+                balanceAfter,
+                reference,
+                createdBy
+            );
+        }
+
+        public static InventoryTransaction CreateStockInReverse(
+            Guid ingredientId,
+            decimal quantity,
+            decimal? unitCost,
+            decimal balanceAfter,
+            string reference,
+            Guid? createdBy = null
+        )
+        {
+            return Create(
+                ingredientId,
+                InventoryTransactionType.StockInReverse,
+                -quantity,
+                unitCost,
+                balanceAfter,
+                reference,
+                createdBy
+            );
+        }
+
+        private static InventoryTransaction Create(
+            Guid ingredientId,
+            InventoryTransactionType transactionType,
+            decimal quantity,
+            decimal? unitCost,
+            decimal balanceAfter,
+            string? reference,
+            Guid? createdBy
+        )
+        {
+            var occurredAt = DateTime.UtcNow;
+
+            return new InventoryTransaction
+            {
+                InventoryTransactionId = Guid.NewGuid(),
+                IngredientId = ingredientId,
+                TransactionType = transactionType,
+                Quantity = quantity,
+                UnitCost = unitCost,
+                BalanceAfter = balanceAfter,
+                Reference = reference,
+                OccurredAt = occurredAt,
+                CreatedAt = occurredAt,
+                CreatedBy = createdBy,
+                UpdatedBy = createdBy,
+            };
+        }
     }
 }

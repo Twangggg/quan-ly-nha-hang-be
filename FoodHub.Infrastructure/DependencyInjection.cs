@@ -70,6 +70,7 @@ namespace FoodHub.Infrastructure
 
             // Cache Service
             services.AddScoped<ICacheService, RedisCacheService>();
+            services.AddScoped<IInventoryAvailabilitySyncService, NoOpInventoryAvailabilitySyncService>();
 
             // Cloudinary Service
             services.AddScoped<ICloudinaryService, CloudinaryService>();
