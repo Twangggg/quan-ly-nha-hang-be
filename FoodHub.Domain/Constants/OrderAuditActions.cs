@@ -15,5 +15,6 @@ namespace FoodHub.Domain.Constants
         public const string KdsReject = "KDS_REJECT";
         public const string KdsReturn = "KDS_RETURN";
         public const string CheckInReservation = "CHECK_IN_RESERVATION";
+        public const string AdjustOrderItemQuantity = "ADJUST_ORDER_ITEM_QUANTITY";
     }
 }

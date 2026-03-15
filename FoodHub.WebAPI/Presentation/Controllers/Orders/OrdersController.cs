@@ -5,6 +5,7 @@ using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;
 using FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem;
 using FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem;
+using FoodHub.Application.Features.OrderItems.Commands.AdjustOrderItemQuantity;
 using FoodHub.Application.Features.Orders.Commands.CancelOrder;
 using FoodHub.Application.Features.Orders.Commands.CompleteOrder;
 using FoodHub.Application.Features.Orders.Commands.CreateOrder;
@@ -130,6 +131,38 @@ namespace FoodHub.Presentation.Controllers
                         _messageService.GetMessage(MessageKeys.Common.IdMismatch)
                     )
                 );
+            var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Điều chỉnh số lượng một món ăn trong đơn hàng.
+        /// </summary>
+        [HttpPatch("{id:guid}/items/{itemId:guid}/quantity")]
+        [HasPermission(Permissions.Orders.Update)]
+        [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
+        [ProducesResponseType(typeof(Result<AdjustOrderItemQuantityResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AdjustOrderItemQuantity(
+            Guid id,
+            Guid itemId,
+            [FromBody] AdjustOrderItemQuantityCommand command
+        )
+        {
+            if (id != command.OrderId)
+                return BadRequest(
+                    new ErrorResponse(
+                        StatusCodes.Status400BadRequest,
+                        _messageService.GetMessage(MessageKeys.Common.IdMismatch)
+                    )
+                );
+            if (itemId != command.OrderItemId)
+                return BadRequest(
+                    new ErrorResponse(
+                        StatusCodes.Status400BadRequest,
+                        _messageService.GetMessage(MessageKeys.Common.IdMismatch)
+                    )
+                );
+
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }

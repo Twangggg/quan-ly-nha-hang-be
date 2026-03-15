@@ -132,6 +132,9 @@
     <data name="Unauthorized" xml:space="preserve">
     <value>Bạn không có quyền thực hiện thao tác này.</value>
   </data>
+    <data name="Common.Forbidden" xml:space="preserve">
+    <value>Bạn không đủ quyền truy cập tài nguyên này.</value>
+  </data>
     <data name="CannotIdentifyManager" xml:space="preserve">
     <value>Không thể xác định Manager thực hiện thao tác</value>
   </data>

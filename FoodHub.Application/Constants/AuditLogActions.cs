@@ -17,5 +17,6 @@ namespace FoodHub.Application.Constants
         public const string KdsReject = OrderAuditActions.KdsReject;
         public const string KdsReturn = OrderAuditActions.KdsReturn;
         public const string CheckInReservation = OrderAuditActions.CheckInReservation;
+        public const string AdjustOrderItemQuantity = OrderAuditActions.AdjustOrderItemQuantity;
     }
 }

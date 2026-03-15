@@ -106,7 +106,7 @@ namespace FoodHub.Tests.Features.Areas.Commands.UpdateAreaStatus
             var result = await BuildHandler().Handle(command, CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Cannot deactivate area");
+            result.Error.Should().Be("Cannot deactivate area");
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
