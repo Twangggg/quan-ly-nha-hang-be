@@ -358,6 +358,15 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Không thể đổi loại danh mục khi đang có món ăn bên trong..
+        /// </summary>
+        public static string Category_CannotChangeTypeNotEmpty {
+            get {
+                return ResourceManager.GetString("Category.CannotChangeTypeNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Không thể vô hiệu hóa danh mục có món đang hoạt động..
         /// </summary>
         public static string Category_CannotDeactivateWithActiveItems {
@@ -376,11 +385,74 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mã danh mục đã tồn tại, vui lòng chọn mã khác..
+        /// </summary>
+        public static string Category_CodePrefixExists {
+            get {
+                return ResourceManager.GetString("Category.CodePrefixExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mã danh mục không được quá 10 ký tự..
+        /// </summary>
+        public static string Category_CodePrefixMaxLength {
+            get {
+                return ResourceManager.GetString("Category.CodePrefixMaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mã danh mục không được để trống..
+        /// </summary>
+        public static string Category_CodePrefixRequired {
+            get {
+                return ResourceManager.GetString("Category.CodePrefixRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Danh mục đã dừng hoạt động, không thể tạo món ăn mới..
+        /// </summary>
+        public static string Category_Inactive {
+            get {
+                return ResourceManager.GetString("Category.Inactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loại danh mục không hợp lệ cho loại thực đơn này..
+        /// </summary>
+        public static string Category_InvalidType {
+            get {
+                return ResourceManager.GetString("Category.InvalidType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tên danh mục không được quá 100 ký tự..
+        /// </summary>
+        public static string Category_NameMaxLength {
+            get {
+                return ResourceManager.GetString("Category.NameMaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tên danh mục không được để trống..
         /// </summary>
         public static string Category_NameRequired {
             get {
                 return ResourceManager.GetString("Category.NameRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy danh mục..
+        /// </summary>
+        public static string Category_NotFound {
+            get {
+                return ResourceManager.GetString("Category.NotFound", resourceCulture);
             }
         }
         
@@ -790,6 +862,24 @@ namespace FoodHub.Application.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Đơn hàng này đã được thanh toán..
+        /// </summary>
+        public static string Order_AlreadyPaid {
+            get {
+                return ResourceManager.GetString("Order.AlreadyPaid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Số tiền thanh toán (tiền mặt) không đủ..
+        /// </summary>
+        public static string Order_InsufficientAmount {
+            get {
+                return ResourceManager.GetString("Order.InsufficientAmount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Thao tác không hợp lệ.
         /// </summary>
         public static string Order_InvalidAction {
@@ -1074,6 +1164,78 @@ namespace FoodHub.Application.Resources {
         public static string Profile_UsernameExists {
             get {
                 return ResourceManager.GetString("Profile.UsernameExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hủy đặt bàn thành công..
+        /// </summary>
+        public static string Reservation_CancelReservationSuccess {
+            get {
+                return ResourceManager.GetString("Reservation.CancelReservationSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Số lượng khách phải lớn hơn 0..
+        /// </summary>
+        public static string Reservation_InvalidGuestCount {
+            get {
+                return ResourceManager.GetString("Reservation.InvalidGuestCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tên khách hàng không được vượt quá 100 ký tự..
+        /// </summary>
+        public static string Reservation_NameMaxLength {
+            get {
+                return ResourceManager.GetString("Reservation.NameMaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tên khách hàng là bắt buộc..
+        /// </summary>
+        public static string Reservation_NameRequired {
+            get {
+                return ResourceManager.GetString("Reservation.NameRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hiện không có bàn nào trống phù hợp với yêu cầu..
+        /// </summary>
+        public static string Reservation_NoTableAvailable {
+            get {
+                return ResourceManager.GetString("Reservation.NoTableAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không tìm thấy thông tin đặt bàn..
+        /// </summary>
+        public static string Reservation_NotFound {
+            get {
+                return ResourceManager.GetString("Reservation.NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Số điện thoại không đúng định dạng..
+        /// </summary>
+        public static string Reservation_PhoneInvalid {
+            get {
+                return ResourceManager.GetString("Reservation.PhoneInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Số điện thoại khách hàng là bắt buộc..
+        /// </summary>
+        public static string Reservation_PhoneRequired {
+            get {
+                return ResourceManager.GetString("Reservation.PhoneRequired", resourceCulture);
             }
         }
         

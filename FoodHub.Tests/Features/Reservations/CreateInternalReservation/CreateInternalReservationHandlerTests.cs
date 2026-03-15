@@ -1,0 +1,95 @@
+using FluentAssertions;
+using FoodHub.Application.Common.Exceptions;
+using FoodHub.Application.Features.Reservations.Commands.CreateInternalReservation;
+using FoodHub.Application.Interfaces;
+using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
+using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
+{
+    public class CreateInternalReservationHandlerTests
+    {
+        private readonly Mock<IUnitOfWork> _mockUow;
+        private readonly Mock<ILogger<CreateInternalReservationHandler>> _mockLogger;
+
+        public CreateInternalReservationHandlerTests()
+        {
+            _mockUow = new Mock<IUnitOfWork>();
+            _mockLogger = new Mock<ILogger<CreateInternalReservationHandler>>();
+        }
+
+        [Fact]
+        public async Task Handle_ShouldThrowBusinessException_WhenNoTableAvailable()
+        {
+            // Arrange
+            var command = new CreateInternalReservationCommand
+            {
+                CustomerName = "John Doe",
+                CustomerPhone = "123456789",
+                ReservationDate = DateOnly.FromDateTime(DateTime.Now),
+                ReservationTime = DateTime.Now.TimeOfDay.Add(TimeSpan.FromHours(1)),
+                GuestCount = 10,
+                PartyType = "normal"
+            };
+
+            var tableRepo = new Mock<IGenericRepository<Table>>();
+            tableRepo.Setup(r => r.Query()).Returns(new List<Table>().AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
+
+            var handler = new CreateInternalReservationHandler(_mockUow.Object, _mockLogger.Object);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<BusinessException>(() => handler.Handle(command, CancellationToken.None));
+            ex.Message.Should().Be("Không có bàn trống phù hợp với yêu cầu.");
+        }
+
+        [Fact]
+        public async Task Handle_ShouldCreateReservation_WhenTableAvailable()
+        {
+            // Arrange
+            var tableId = Guid.NewGuid();
+            var areaId = Guid.NewGuid();
+            var command = new CreateInternalReservationCommand
+            {
+                CustomerName = "Jane Doe",
+                CustomerPhone = "987654321",
+                ReservationDate = DateOnly.FromDateTime(DateTime.Now),
+                ReservationTime = DateTime.Now.TimeOfDay.Add(TimeSpan.FromHours(1)),
+                GuestCount = 2,
+                PartyType = "normal",
+                AreaId = areaId
+            };
+
+            var table = new Table { TableId = tableId, AreaId = areaId, Capacity = 4, Status = TableStatus.Available };
+            var tableRepo = new Mock<IGenericRepository<Table>>();
+            tableRepo.Setup(r => r.Query()).Returns(new List<Table> { table }.AsQueryable().BuildMock());
+
+            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
+            reservationRepo.Setup(r => r.Query()).Returns(new List<Reservation>().AsQueryable().BuildMock());
+
+            _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
+            _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
+            _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var handler = new CreateInternalReservationHandler(_mockUow.Object, _mockLogger.Object);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeEmpty();
+            reservationRepo.Verify(r => r.AddAsync(It.Is<Reservation>(res => res.TableId == tableId && res.CustomerName == "Jane Doe")), Times.Once);
+            _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+    }
+}
