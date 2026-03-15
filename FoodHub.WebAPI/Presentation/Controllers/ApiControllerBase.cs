@@ -64,5 +64,32 @@ namespace FoodHub.Presentation.Controllers
 
             return Created(location, new { data = result.Data });
         }
+
+        protected IActionResult HandleFileResult<T>(
+            Result<T> result,
+            Func<T, byte[]> contentFunc,
+            string contentType,
+            Func<T, string?>? fileNameFunc = null
+        )
+        {
+            if (result == null) return BadRequest();
+
+            if (!result.IsSuccess)
+            {
+                return HandleResult(result);
+            }
+
+            if (result.Data == null)
+            {
+                return NoContent();
+            }
+
+            var fileName = fileNameFunc?.Invoke(result.Data);
+            var content = contentFunc(result.Data);
+
+            return string.IsNullOrWhiteSpace(fileName)
+                ? File(content, contentType)
+                : File(content, contentType, fileName);
+        }
     }
 }

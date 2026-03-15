@@ -40,13 +40,38 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
             var order = await _unitOfWork
                 .Repository<Order>()
                 .Query()
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.OptionGroups)
-                        .ThenInclude(og => og.OptionValues)
-                .Include(o => o.Table)
-                .Include(o => o.CreatedByEmployee)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
+                .Where(o => o.OrderId == request.OrderId)
+                .Select(o => new PreCheckBillOrderSnapshot
+                {
+                    OrderId = o.OrderId,
+                    OrderCode = o.OrderCode,
+                    Status = o.Status,
+                    TableNumber = o.Table != null ? o.Table.TableNumber : (int?)null,
+                    EmployeeName = o.CreatedByEmployee != null ? o.CreatedByEmployee.FullName : string.Empty,
+                    Items = o.OrderItems
+                        .Where(oi =>
+                            oi.Status != OrderItemStatus.Cancelled
+                            && oi.Status != OrderItemStatus.Rejected
+                        )
+                        .Select(oi => new PreCheckBillItemSnapshot
+                        {
+                            ItemName = oi.ItemNameSnapshot,
+                            Quantity = oi.Quantity,
+                            UnitPrice = oi.UnitPriceSnapshot,
+                            OptionValues = oi.OptionGroups
+                                .SelectMany(og => og.OptionValues)
+                                .Select(ov => new PreCheckBillOptionValueSnapshot
+                                {
+                                    Label = ov.LabelSnapshot,
+                                    Quantity = ov.Quantity,
+                                    ExtraPrice = ov.ExtraPriceSnapshot,
+                                })
+                                .ToList(),
+                        })
+                        .ToList(),
+                })
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (order == null)
             {
@@ -76,14 +101,7 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                 );
             }
 
-            var validItems = order
-                .OrderItems.Where(oi =>
-                    oi.Status != OrderItemStatus.Cancelled
-                    && oi.Status != OrderItemStatus.Rejected
-                )
-                .ToList();
-
-            if (!validItems.Any())
+            if (!order.Items.Any())
             {
                 _logger.LogWarning(
                     "No valid items in order for pre-check bill. OrderId: {OrderId}",
@@ -95,18 +113,20 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                 );
             }
 
-            var items = validItems
+            var items = order.Items
                 .Select(oi =>
                 {
-                    var optionsSummary = BuildOptionsSummary(oi);
+                    var optionsSummary = BuildOptionsSummary(oi.OptionValues);
+                    var lineTotal = oi.Quantity
+                        * (oi.UnitPrice + oi.OptionValues.Sum(ov => ov.ExtraPrice * ov.Quantity));
 
                     return new PreCheckBillItemDto
                     {
-                        ItemName = oi.ItemNameSnapshot,
+                        ItemName = oi.ItemName,
                         Quantity = oi.Quantity,
-                        UnitPrice = oi.UnitPriceSnapshot,
+                        UnitPrice = oi.UnitPrice,
                         OptionsSummary = optionsSummary,
-                        LineTotal = oi.GetTotalPrice(),
+                        LineTotal = lineTotal,
                     };
                 })
                 .ToList();
@@ -117,8 +137,8 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
             {
                 OrderId = order.OrderId,
                 OrderCode = order.OrderCode,
-                TableNumber = order.Table?.TableNumber,
-                EmployeeName = order.CreatedByEmployee?.FullName ?? string.Empty,
+                TableNumber = order.TableNumber,
+                EmployeeName = order.EmployeeName,
                 PrintedAt = DateTime.UtcNow,
                 Items = items,
                 SubTotal = subTotal,
@@ -135,19 +155,45 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
             return Result<GetPreCheckBillResponse>.Success(response);
         }
 
-        private static string? BuildOptionsSummary(OrderItem item)
+        private static string? BuildOptionsSummary(
+            IReadOnlyCollection<PreCheckBillOptionValueSnapshot> optionValues
+        )
         {
-            if (item.OptionGroups == null || !item.OptionGroups.Any())
+            if (optionValues.Count == 0)
                 return null;
 
-            var parts = item
-                .OptionGroups.SelectMany(og => og.OptionValues)
+            var parts = optionValues
                 .Select(ov =>
-                    ov.Quantity > 1 ? $"{ov.LabelSnapshot} x{ov.Quantity}" : ov.LabelSnapshot
+                    ov.Quantity > 1 ? $"{ov.Label} x{ov.Quantity}" : ov.Label
                 );
 
             var summary = string.Join(", ", parts);
             return string.IsNullOrEmpty(summary) ? null : summary;
+        }
+
+        private sealed class PreCheckBillOrderSnapshot
+        {
+            public Guid OrderId { get; init; }
+            public string OrderCode { get; init; } = string.Empty;
+            public OrderStatus Status { get; init; }
+            public int? TableNumber { get; init; }
+            public string EmployeeName { get; init; } = string.Empty;
+            public List<PreCheckBillItemSnapshot> Items { get; init; } = new();
+        }
+
+        private sealed class PreCheckBillItemSnapshot
+        {
+            public string ItemName { get; init; } = string.Empty;
+            public int Quantity { get; init; }
+            public decimal UnitPrice { get; init; }
+            public List<PreCheckBillOptionValueSnapshot> OptionValues { get; init; } = new();
+        }
+
+        private sealed class PreCheckBillOptionValueSnapshot
+        {
+            public string Label { get; init; } = string.Empty;
+            public int Quantity { get; init; }
+            public decimal ExtraPrice { get; init; }
         }
     }
 }
