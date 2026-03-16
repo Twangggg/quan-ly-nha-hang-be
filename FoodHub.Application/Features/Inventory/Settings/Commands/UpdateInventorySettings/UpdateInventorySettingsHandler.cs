@@ -2,6 +2,7 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -48,7 +49,7 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
             );
 
             var repo = _unitOfWork.Repository<InventorySettings>();
-            var actorId = ParseActorId();
+            var actorId = _currentUserService.GetUserIdAsGuid();
 
             var settings = await repo.Query()
                 .FirstOrDefaultAsync(
@@ -110,16 +111,6 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
-        }
-
-        private Guid? ParseActorId()
-        {
-            if (Guid.TryParse(_currentUserService.UserId, out var actorId))
-            {
-                return actorId;
-            }
-
-            return null;
         }
     }
 }

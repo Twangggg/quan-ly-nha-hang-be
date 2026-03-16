@@ -85,6 +85,46 @@ namespace FoodHub.Domain.Entities
             );
         }
 
+        public static InventoryTransaction CreateStockOut(
+            Guid ingredientId,
+            decimal quantity,
+            decimal? unitCost,
+            decimal balanceAfter,
+            string reference,
+            Guid? createdBy = null
+        )
+        {
+            return Create(
+                ingredientId,
+                InventoryTransactionType.StockOut,
+                -quantity,
+                unitCost,
+                balanceAfter,
+                reference,
+                createdBy
+            );
+        }
+
+        public static InventoryTransaction CreateStockOutReverse(
+            Guid ingredientId,
+            decimal quantity,
+            decimal? unitCost,
+            decimal balanceAfter,
+            string reference,
+            Guid? createdBy = null
+        )
+        {
+            return Create(
+                ingredientId,
+                InventoryTransactionType.StockOutReverse,
+                quantity,
+                unitCost,
+                balanceAfter,
+                reference,
+                createdBy
+            );
+        }
+
         private static InventoryTransaction Create(
             Guid ingredientId,
             InventoryTransactionType transactionType,

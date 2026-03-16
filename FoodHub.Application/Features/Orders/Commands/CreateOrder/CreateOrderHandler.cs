@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -34,7 +35,8 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             CancellationToken cancellationToken
         )
         {
-            if (!Guid.TryParse(_currentUserService.UserId, out var userId))
+            var userId = _currentUserService.GetUserIdAsGuid();
+            if (userId == null)
             {
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
@@ -133,14 +135,14 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     TotalAmount = 0,
                     IsPriority = isPriority,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedBy = userId,
+                    CreatedBy = userId.Value,
                 };
 
                 await _unitOfWork.Repository<Order>().AddAsync(newOrder);
 
                 var auditLog = OrderAuditLog.CreateOrderCreated(
                     newOrder.OrderId,
-                    userId,
+                    userId.Value,
                     newOrder.OrderCode,
                     newOrder.OrderType,
                     newOrder.TableId

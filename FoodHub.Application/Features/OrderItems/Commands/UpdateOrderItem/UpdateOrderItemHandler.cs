@@ -1,6 +1,7 @@
 using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -40,7 +41,8 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
             CancellationToken cancellationToken
         )
         {
-            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            var auditorId = _currentUserService.GetUserIdAsGuid();
+            if (auditorId == null)
             {
                 _logger.LogWarning(
                     "Unauthorized user attempt to update order {OrderId}.",
@@ -205,7 +207,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                 {
                     LogId = Guid.NewGuid(),
                     OrderId = order.OrderId,
-                    EmployeeId = auditorId,
+                    EmployeeId = auditorId.Value,
                     Action = AuditLogActions.UpdateOrderItem,
                     CreatedAt = DateTime.UtcNow,
                     ChangeReason = request.Reason,

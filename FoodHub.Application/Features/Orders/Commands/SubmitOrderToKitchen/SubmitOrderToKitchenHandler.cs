@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -38,12 +39,8 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             CancellationToken cancellationToken
         )
         {
-            //Get current user
-            var currentIdString = _currentUserService.UserId;
-            if (
-                string.IsNullOrEmpty(currentIdString)
-                || !Guid.TryParse(currentIdString, out var userId)
-            )
+            var userId = _currentUserService.GetUserIdAsGuid();
+            if (userId == null)
             {
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
@@ -169,7 +166,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                     TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
                     Note = request.Note,
                     TotalAmount = 0,
-                    CreatedBy = userId,
+                    CreatedBy = userId.Value,
                     CreatedAt = DateTime.UtcNow,
                 };
             }
@@ -270,7 +267,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 {
                     LogId = Guid.NewGuid(),
                     OrderId = order.OrderId,
-                    EmployeeId = userId,
+                    EmployeeId = userId.Value,
                     Action = isNewOrder
                         ? AuditLogActions.SubmitOrder
                         : AuditLogActions.AddOrderItem,

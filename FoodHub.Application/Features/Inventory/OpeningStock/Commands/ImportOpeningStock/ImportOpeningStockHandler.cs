@@ -2,6 +2,7 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -46,7 +47,7 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
             );
 
             var ingredientIds = request.Items.Select(x => x.IngredientId).Distinct().ToList();
-            var actorId = ParseActorId();
+            var actorId = _currentUserService.GetUserIdAsGuid();
             var settingsRepo = _unitOfWork.Repository<InventorySettings>();
 
             var ingredients = await _unitOfWork
@@ -183,16 +184,6 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
                 _logger.LogError(ex, "ImportOpeningStock transaction rolled back");
                 throw;
             }
-        }
-
-        private Guid? ParseActorId()
-        {
-            if (Guid.TryParse(_currentUserService.UserId, out var actorId))
-            {
-                return actorId;
-            }
-
-            return null;
         }
     }
 }

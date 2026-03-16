@@ -1,6 +1,7 @@
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -43,7 +44,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                 request.Items.Count
             );
 
-            var actorId = ParseActorId();
+            var actorId = _currentUserService.GetUserIdAsGuid();
             var ingredientIds = request.Items.Select(x => x.IngredientId).Distinct().ToList();
             var ingredientRepo = _unitOfWork.Repository<Ingredient>();
             var receiptRepo = _unitOfWork.Repository<StockInReceipt>();
@@ -99,7 +100,11 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                     }
 
                     var ingredient = ingredientMap[item.IngredientId];
-                    var receiveResult = ingredient.ReceiveStock(item.Quantity, item.UnitCost, actorId);
+                    var receiveResult = ingredient.ReceiveStock(
+                        item.Quantity,
+                        item.UnitCost,
+                        actorId
+                    );
 
                     if (!receiveResult.IsSuccess)
                     {
@@ -180,18 +185,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                     sequenceNumber = lastSequence + 1;
                 }
             }
-
             return $"{prefix}{sequenceNumber:D4}";
-        }
-
-        private Guid? ParseActorId()
-        {
-            if (Guid.TryParse(_currentUserService.UserId, out var actorId))
-            {
-                return actorId;
-            }
-
-            return null;
         }
 
         private static DateTime? NormalizeUtc(DateTime? value)
