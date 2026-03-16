@@ -6,6 +6,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
         public string ReceiptCode { get; set; } = string.Empty;
         public DateTime StockOutDate { get; set; }
         public decimal TotalAmount { get; set; }
+        public int TotalItems { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

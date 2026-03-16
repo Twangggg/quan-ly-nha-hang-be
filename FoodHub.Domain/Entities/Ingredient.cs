@@ -177,7 +177,12 @@ namespace FoodHub.Domain.Entities
             }
 
             var previousStock = CurrentStock;
-            var updatedStock = Math.Max(0, previousStock - quantity);
+            if (previousStock - quantity < 0)
+            {
+                return DomainResult.Failure(DomainErrors.Ingredient.InsufficientStock);
+            }
+
+            var updatedStock = previousStock - quantity;
 
             CurrentStock = updatedStock;
             UpdatedAt = DateTime.UtcNow;

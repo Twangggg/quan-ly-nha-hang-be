@@ -13,6 +13,7 @@ namespace FoodHub.Domain.Entities
         public DateTime StockOutDate { get; private set; }
         public string Reason { get; private set; } = string.Empty;
         public decimal TotalAmount { get; private set; }
+        public int TotalItems { get; private set; }
         public virtual ICollection<StockOutReceiptItem> Items { get; private set; } =
             new List<StockOutReceiptItem>();
 
@@ -88,6 +89,7 @@ namespace FoodHub.Domain.Entities
         private void RefreshTotals(Guid? updatedBy)
         {
             TotalAmount = Items.Sum(x => x.LineAmount);
+            TotalItems = Items.Count;
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;
         }

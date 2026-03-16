@@ -147,6 +147,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
                         ReceiptCode = receipt.ReceiptCode,
                         StockOutDate = receipt.StockOutDate,
                         TotalAmount = receipt.TotalAmount,
+                        TotalItems = receipt.TotalItems,
                         CreatedAt = receipt.CreatedAt,
                     }
                 );
