@@ -1,6 +1,7 @@
 using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -40,7 +41,8 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             CancellationToken cancellationToken
         )
         {
-            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            var auditorId = _currentUserService.GetUserIdAsGuid();
+            if (auditorId == null)
             {
                 return Result<bool>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),

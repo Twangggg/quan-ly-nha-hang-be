@@ -323,5 +323,18 @@ namespace FoodHub.Application.Constants
                 "StockInReceipt.ReverseInsufficientStock";
             public const string AlreadyReversed = "StockInReceipt.AlreadyReversed";
         }
+
+        public static class StockOutReceipt
+        {
+            public const string ReceiptNotFound = "StockOutReceipt.ReceiptNotFound";
+            public const string ItemsRequired = "StockOutReceipt.ItemsRequired";
+            public const string IngredientIdRequired = "StockOutReceipt.IngredientIdRequired";
+            public const string QuantityMin = "StockOutReceipt.QuantityMin";
+            public const string UnitPriceMin = "StockOutReceipt.UnitPriceMin";
+            public const string DuplicateIngredient = "StockOutReceipt.DuplicateIngredient";
+            public const string ReasonRequired = "StockOutReceipt.ReasonRequired";
+            public const string ReasonMaxLength = "StockOutReceipt.ReasonMaxLength";
+            public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
+        }
     }
 }

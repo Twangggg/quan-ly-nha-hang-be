@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -34,7 +35,8 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
             CancellationToken cancellationToken
         )
         {
-            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            var auditorId = _currentUserService.GetUserIdAsGuid();
+            if (auditorId == null)
             {
                 _logger.LogWarning(
                     "Unauthorized cancel attempt for OrderItemId {OrderItemId}",
@@ -50,7 +52,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                 "Canceling OrderItem {OrderItemId}. Reason: {Reason}, RequestedBy: {UserId}",
                 request.OrderItemId,
                 request.Reason,
-                auditorId
+                auditorId.Value
             );
 
             var orderItemRepository = _unitOfWork.Repository<OrderItem>();
@@ -111,7 +113,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                 {
                     LogId = Guid.NewGuid(),
                     OrderId = orderItem.OrderId,
-                    EmployeeId = auditorId,
+                    EmployeeId = auditorId.Value,
                     Action = AuditLogActions.CancelOrderItem,
                     CreatedAt = DateTime.UtcNow,
                     ChangeReason = request.Reason,

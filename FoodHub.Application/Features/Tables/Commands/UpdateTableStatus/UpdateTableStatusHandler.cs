@@ -7,6 +7,7 @@ using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -69,12 +70,7 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
                 return Result<UpdateTableStatusResponse>.NotFound(errorMessage);
             }
 
-            // Get the current user's ID to set as the auditor for the update
-            Guid? auditorId = null;
-            if (Guid.TryParse(_currentUserService.UserId, out var userId))
-            {
-                auditorId = userId;
-            }
+            var auditorId = _currentUserService.GetUserIdAsGuid();
 
             // Update the table's status and audit information
             table.Status = request.Status;
