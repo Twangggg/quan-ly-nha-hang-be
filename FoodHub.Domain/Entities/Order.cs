@@ -18,6 +18,9 @@ namespace FoodHub.Domain.Entities
         public Guid? ReservationId { get; set; }
 
         public string? Note { get; set; }
+        public decimal SubTotal { get; set; }
+        public decimal VatRate { get; set; } = 0.10m; // Default 10% VAT
+        public decimal VatAmount { get; set; }
         public decimal TotalAmount { get; set; }
         public bool IsPriority { get; set; }
 
@@ -126,11 +129,7 @@ namespace FoodHub.Domain.Entities
             }
 
             Status = OrderStatus.Completed;
-            TotalAmount = OrderItems
-                .Where(oi =>
-                    oi.Status != OrderItemStatus.Cancelled && oi.Status != OrderItemStatus.Rejected
-                )
-                .Sum(oi => oi.GetTotalPrice());
+            RecalculateTotalAmount();
 
             CompletedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
@@ -140,7 +139,7 @@ namespace FoodHub.Domain.Entities
 
         public void RecalculateTotalAmount()
         {
-            TotalAmount = OrderItems
+            SubTotal = OrderItems
                 .Where(x =>
                     x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected
                 )
@@ -153,6 +152,9 @@ namespace FoodHub.Domain.Entities
                         ?? 0;
                     return itemTotal + (optionsTotal * item.Quantity);
                 });
+
+            VatAmount = SubTotal * VatRate;
+            TotalAmount = SubTotal + VatAmount;
         }
 
         public OrderItem CreateOrderItem(

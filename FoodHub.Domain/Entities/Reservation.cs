@@ -19,11 +19,8 @@ namespace FoodHub.Domain.Entities
         public DateOnly ReservationDate { get; set; }
         public TimeSpan ReservationTime { get; set; }
 
-        public PartyType PartyType { get; set; }
         public int GuestCount { get; set; }
-        public bool HasChildren { get; set; }
         public string? Note { get; set; }
-
         public ReservationStatus Status { get; set; }
         public Guid? AreaId { get; set; }
         public virtual Area? Area { get; set; }
@@ -35,9 +32,7 @@ namespace FoodHub.Domain.Entities
             string customerPhone,
             DateOnly reservationDate,
             TimeSpan reservationTime,
-            PartyType partyType,
             int guestCount,
-            bool hasChildren,
             string? note,
             Guid tableId,
             Guid? areaId
@@ -48,9 +43,7 @@ namespace FoodHub.Domain.Entities
             CustomerPhone = customerPhone;
             ReservationDate = reservationDate;
             ReservationTime = reservationTime;
-            PartyType = partyType;
             GuestCount = guestCount;
-            HasChildren = hasChildren;
             Note = note;
             Status = ReservationStatus.Booked;
             TableId = tableId;
@@ -62,9 +55,7 @@ namespace FoodHub.Domain.Entities
             string customerPhone,
             DateOnly reservationDate,
             TimeSpan reservationTime,
-            PartyType partyType,
             int guestCount,
-            bool hasChildren,
             string? note,
             Guid tableId,
             Guid? areaId
@@ -75,9 +66,7 @@ namespace FoodHub.Domain.Entities
                 customerPhone,
                 reservationDate,
                 reservationTime,
-                partyType,
                 guestCount,
-                hasChildren,
                 note,
                 tableId,
                 areaId

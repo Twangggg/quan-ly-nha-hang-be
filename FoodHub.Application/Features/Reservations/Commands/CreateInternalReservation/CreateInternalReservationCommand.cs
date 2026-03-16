@@ -12,7 +12,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
         public DateOnly ReservationDate { get; set; }
         public TimeSpan ReservationTime { get; set; }
         public int GuestCount { get; set; }
-        public string PartyType { get; set; } = string.Empty; // e.g. "normal", "birthday"
         public Guid? AreaId { get; set; }
     }
 }

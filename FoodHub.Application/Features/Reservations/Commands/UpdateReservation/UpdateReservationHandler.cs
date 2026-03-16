@@ -101,7 +101,11 @@ namespace FoodHub.Application.Features.Reservations.Commands.UpdateReservation
             reservation.ReservationDate = request.ReservationDate;
             reservation.ReservationTime = request.ReservationTime;
             reservation.GuestCount = request.GuestCount;
-            reservation.PartyType = MapPartyType(request.PartyType);
+            reservation.CustomerName = request.CustomerName;
+            reservation.CustomerPhone = request.CustomerPhone;
+            reservation.ReservationDate = request.ReservationDate;
+            reservation.ReservationTime = request.ReservationTime;
+            reservation.GuestCount = request.GuestCount;
 
             _unitOfWork.Repository<Reservation>().Update(reservation);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -109,18 +113,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.UpdateReservation
             _logger.LogInformation("Successfully updated Reservation {ReservationId}", reservation.ReservationId);
 
             return Result<Guid>.Success(reservation.ReservationId);
-        }
-
-        private PartyType MapPartyType(string type)
-        {
-            return type.ToLower() switch
-            {
-                "birthday" => PartyType.Party,
-                "anniversary" => PartyType.RomanticDinner,
-                "corporate" => PartyType.Other,
-                "normal" => PartyType.Party,
-                _ => PartyType.Other
-            };
         }
     }
 }

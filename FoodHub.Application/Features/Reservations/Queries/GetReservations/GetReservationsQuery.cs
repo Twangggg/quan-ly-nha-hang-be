@@ -22,7 +22,6 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
         public string Time { get; set; } = string.Empty;
         public string Area { get; set; } = string.Empty;
         public int People { get; set; }
-        public string PartyType { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
     }
 }

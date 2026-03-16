@@ -3,17 +3,20 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodHub.Migrations
+namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260316031009_SyncReservationModel")]
+    partial class SyncReservationModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -868,10 +871,6 @@ namespace FoodHub.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
-                    b.Property<decimal>("SubTotal")
-                        .HasColumnType("decimal(15,2)")
-                        .HasColumnName("sub_total");
-
                     b.Property<Guid?>("TableId")
                         .HasColumnType("uuid")
                         .HasColumnName("table_id");
@@ -894,14 +893,6 @@ namespace FoodHub.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
-
-                    b.Property<decimal>("VatAmount")
-                        .HasColumnType("decimal(15,2)")
-                        .HasColumnName("vat_amount");
-
-                    b.Property<decimal>("VatRate")
-                        .HasColumnType("decimal(5,2)")
-                        .HasColumnName("vat_rate");
 
                     b.HasKey("OrderId")
                         .HasName("pk_orders");

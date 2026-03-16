@@ -78,8 +78,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                 throw new BusinessException(_messageService.GetMessage(MessageKeys.Reservation.NoTableAvailable));
             }
 
-            var partyType = MapPartyType(request.PartyType);
-
             var reservation = new Reservation
             {
                 ReservationId = Guid.NewGuid(),
@@ -87,9 +85,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                 CustomerPhone = request.CustomerPhone,
                 ReservationDate = request.ReservationDate,
                 ReservationTime = request.ReservationTime,
-                PartyType = partyType,
                 GuestCount = request.GuestCount,
-                HasChildren = false,
                 Note = "Created by Internal User",
                 Status = ReservationStatus.Booked,
                 AreaId = availableTable.AreaId,
@@ -102,18 +98,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
             _logger.LogInformation("Successfully created Reservation {ReservationId} at Table {TableId}", reservation.ReservationId, reservation.TableId);
 
             return Result<Guid>.Success(reservation.ReservationId);
-        }
-
-        private PartyType MapPartyType(string type)
-        {
-            return type.ToLower() switch
-            {
-                "birthday" => PartyType.Party,
-                "anniversary" => PartyType.RomanticDinner,
-                "corporate" => PartyType.Other,
-                "normal" => PartyType.Party,
-                 _ => PartyType.Other
-            };
         }
     }
 }

@@ -10,6 +10,9 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
         public OrderStatus Status { get; set; }
         public OrderType OrderType { get; set; }
         public Guid? TableId { get; set; }
+        public decimal SubTotal { get; set; }
+        public decimal VatRate { get; set; }
+        public decimal VatAmount { get; set; }
         public decimal TotalAmount { get; set; }
     }
 }

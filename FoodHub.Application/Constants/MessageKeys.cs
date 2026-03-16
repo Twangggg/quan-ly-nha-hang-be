@@ -304,19 +304,5 @@ namespace FoodHub.Application.Constants
             public const string ImportSuccess = "OpeningStock.ImportSuccess";
             public const string AlreadyLocked = "OpeningStock.AlreadyLocked";
         }
-=======
-            public const string NameRequired = "Reservation.NameRequired";
-            public const string NameMaxLength = "Reservation.NameMaxLength";
-            public const string PhoneRequired = "Reservation.PhoneRequired";
-            public const string PhoneInvalid = "Reservation.PhoneInvalid";
-            public const string InvalidGuestCount = "Reservation.InvalidGuestCount";
-            public const string NoTableAvailable = "Reservation.NoTableAvailable";
-            public const string CancelReservationSuccess = "Reservation.CancelReservationSuccess";
-            public const string InvalidTime = "Reservation.InvalidTime";
-            public const string TimeTooSoon = "Reservation.TimeTooSoon";
-            public const string VipRequired = "Reservation.VipRequired";
-        }
-
->>>>>>> origin/feature/reservation-liemdt
     }
 }

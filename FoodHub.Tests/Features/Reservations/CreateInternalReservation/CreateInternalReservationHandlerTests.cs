@@ -20,11 +20,13 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ILogger<CreateInternalReservationHandler>> _mockLogger;
+        private readonly Mock<IMessageService> _mockMessageService;
 
         public CreateInternalReservationHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockLogger = new Mock<ILogger<CreateInternalReservationHandler>>();
+            _mockMessageService = new Mock<IMessageService>();
         }
 
         [Fact]
@@ -38,14 +40,13 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
                 ReservationDate = DateOnly.FromDateTime(DateTime.Now),
                 ReservationTime = DateTime.Now.TimeOfDay.Add(TimeSpan.FromHours(1)),
                 GuestCount = 10,
-                PartyType = "normal"
             };
 
             var tableRepo = new Mock<IGenericRepository<Table>>();
             tableRepo.Setup(r => r.Query()).Returns(new List<Table>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
 
-            var handler = new CreateInternalReservationHandler(_mockUow.Object, _mockLogger.Object);
+            var handler = new CreateInternalReservationHandler(_mockUow.Object, _mockLogger.Object, _mockMessageService.Object);
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<BusinessException>(() => handler.Handle(command, CancellationToken.None));
@@ -65,7 +66,6 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
                 ReservationDate = DateOnly.FromDateTime(DateTime.Now),
                 ReservationTime = DateTime.Now.TimeOfDay.Add(TimeSpan.FromHours(1)),
                 GuestCount = 2,
-                PartyType = "normal",
                 AreaId = areaId
             };
 
@@ -80,7 +80,7 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
             _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-            var handler = new CreateInternalReservationHandler(_mockUow.Object, _mockLogger.Object);
+            var handler = new CreateInternalReservationHandler(_mockUow.Object, _mockLogger.Object, _mockMessageService.Object);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);

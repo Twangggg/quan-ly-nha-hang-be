@@ -89,20 +89,7 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
                 Time = r.ReservationTime.ToString(@"hh\:mm"),
                 Area = r.Area?.Name ?? "N/A",
                 People = r.GuestCount,
-                PartyType = MapPartyType(r.PartyType),
                 Status = MapStatus(r.Status)
-            };
-        }
-
-        private string MapPartyType(PartyType type)
-        {
-            return type switch
-            {
-                PartyType.Party => "Sinh nhật/Tiệc",
-                PartyType.RomanticDinner => "Kỷ niệm",
-                PartyType.Proposal => "Cầu hôn",
-                PartyType.Other => "Bình thường",
-                _ => "Khác"
             };
         }
 
@@ -113,7 +100,7 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
                 ReservationStatus.Booked => "BOOKED",
                 ReservationStatus.CheckIn => "CHECKED_IN",
                 ReservationStatus.Cancelled => "CANCELLED",
-                ReservationStatus.Completed => "COMPLETED",
+                ReservationStatus.NoShow => "NO_SHOW",
                 _ => "UNKNOWN"
             };
         }

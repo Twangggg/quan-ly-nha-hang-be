@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateBeforeSync : Migration
+    public partial class SyncReservationModel : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
