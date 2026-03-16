@@ -11,7 +11,7 @@ namespace FoodHub.Domain.Entities
         public Guid StockOutReceiptId { get; private set; }
         public string ReceiptCode { get; private set; } = string.Empty;
         public DateTime StockOutDate { get; private set; }
-        public string Note { get; private set; } = string.Empty;
+        public string Reason { get; private set; } = string.Empty;
         public decimal TotalAmount { get; private set; }
         public virtual ICollection<StockOutReceiptItem> Items { get; private set; } =
             new List<StockOutReceiptItem>();
@@ -19,7 +19,7 @@ namespace FoodHub.Domain.Entities
         public static StockOutReceipt Create(
             string receiptCode,
             DateTime stockOutDate,
-            string? note,
+            string reason,
             Guid? createdBy = null
         )
         {
@@ -28,7 +28,7 @@ namespace FoodHub.Domain.Entities
                 StockOutReceiptId = Guid.NewGuid(),
                 ReceiptCode = receiptCode,
                 StockOutDate = stockOutDate,
-                Note = string.IsNullOrWhiteSpace(note) ? string.Empty : note.Trim(),
+                Reason = reason.Trim(),
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = createdBy,
                 UpdatedBy = createdBy,

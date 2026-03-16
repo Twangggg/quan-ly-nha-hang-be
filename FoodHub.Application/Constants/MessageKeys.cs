@@ -318,7 +318,8 @@ namespace FoodHub.Application.Constants
             public const string QuantityMin = "StockOutReceipt.QuantityMin";
             public const string UnitPriceMin = "StockOutReceipt.UnitPriceMin";
             public const string DuplicateIngredient = "StockOutReceipt.DuplicateIngredient";
-            public const string NoteMaxLength = "StockOutReceipt.NoteMaxLength";
+            public const string ReasonRequired = "StockOutReceipt.ReasonRequired";
+            public const string ReasonMaxLength = "StockOutReceipt.ReasonMaxLength";
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
         }
     }

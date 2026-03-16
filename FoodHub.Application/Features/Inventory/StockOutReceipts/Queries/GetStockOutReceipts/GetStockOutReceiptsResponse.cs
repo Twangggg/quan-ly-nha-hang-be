@@ -7,6 +7,6 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
         public DateTime StockOutDate { get; set; }
         public decimal TotalAmount { get; set; }
         public string? CreatedByName { get; set; }
-        public string? Note { get; set; }
+        public string Reason { get; set; } = string.Empty;
     }
 }

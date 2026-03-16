@@ -6,7 +6,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
     public class CreateStockOutReceiptCommand : IRequest<Result<CreateStockOutReceiptResponse>>
     {
         public DateTime StockOutDate { get; set; } = DateTime.UtcNow;
-        public string? Note { get; set; }
+        public string Reason { get; set; } = string.Empty;
         public List<CreateStockOutReceiptItemDto> Items { get; set; } = new();
     }
 }

@@ -11,7 +11,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
         public Guid StockOutReceiptId { get; set; }
         public string ReceiptCode { get; set; } = string.Empty;
         public DateTime StockOutDate { get; set; }
-        public string? Note { get; set; }
+        public string Reason { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
         public string? CreatedByName { get; set; }
         public List<GetStockOutReceiptByIdItemResponse> Items { get; set; } = new();

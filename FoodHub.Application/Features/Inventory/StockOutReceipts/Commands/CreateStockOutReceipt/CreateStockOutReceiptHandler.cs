@@ -80,7 +80,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
                 var receipt = StockOutReceipt.Create(
                     receiptCode,
                     stockOutDate,
-                    request.Note,
+                    request.Reason,
                     actorId
                 );
 

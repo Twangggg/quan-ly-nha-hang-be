@@ -67,7 +67,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
                     ReceiptCode = x.ReceiptCode,
                     StockOutDate = x.StockOutDate,
                     TotalAmount = x.TotalAmount,
-                    Note = x.Note,
+                    Reason = x.Reason,
                     CreatedByName = employeeQuery
                         .Where(e => e.EmployeeId == x.CreatedBy)
                         .Select(e => e.FullName)

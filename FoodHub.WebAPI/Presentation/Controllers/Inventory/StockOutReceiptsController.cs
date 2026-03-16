@@ -71,7 +71,7 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Tạo mới phiếu xuất kho.
         /// </summary>
-        /// <param name="command">Thông tin phiếu xuất kho (nguyên liệu, số lượng...).</param>
+        /// <param name="command">Thông tin phiếu xuất kho (nguyên liệu, số lượng, lý do...).</param>
         /// <response code="201">Tạo phiếu xuất kho thành công.</response>
         [HttpPost("/api/v{version:apiVersion}/inventory/stock-out")]
         [HasPermission(Permissions.Inventory.Create)]

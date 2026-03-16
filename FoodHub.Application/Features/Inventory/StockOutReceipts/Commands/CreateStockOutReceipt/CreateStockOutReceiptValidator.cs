@@ -8,10 +8,11 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
     {
         public CreateStockOutReceiptValidator(IMessageService messageService)
         {
-            RuleFor(x => x.Note)
+            RuleFor(x => x.Reason)
+                .NotEmpty()
+                .WithMessage(messageService.GetMessage(MessageKeys.StockOutReceipt.ReasonRequired))
                 .MaximumLength(500)
-                .When(x => !string.IsNullOrWhiteSpace(x.Note))
-                .WithMessage(messageService.GetMessage(MessageKeys.StockOutReceipt.NoteMaxLength));
+                .WithMessage(messageService.GetMessage(MessageKeys.StockOutReceipt.ReasonMaxLength));
 
             RuleFor(x => x.Items)
                 .NotEmpty()
