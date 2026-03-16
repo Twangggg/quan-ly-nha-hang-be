@@ -1,3 +1,5 @@
+using FoodHub.Domain.Common;
+using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
@@ -12,25 +14,68 @@ namespace FoodHub.Domain.Entities
         public AreaStatus Status { get; set; } = AreaStatus.Active;
         public virtual ICollection<Table> Tables { get; set; } = new List<Table>();
 
-        /// <summary>
-        /// Cập nhật thông tin khu vực (Name, Description, Type).
-        /// </summary>
-        public void Update(string name, string? description, AreaType type)
+        public static Area Create(
+            string name,
+            string codePrefix,
+            AreaType type,
+            string? description,
+            Guid? createdBy = null
+        )
         {
-            Name = name;
-            Description = description;
-            Type = type;
+            return new Area
+            {
+                Name = name,
+                CodePrefix = codePrefix,
+                Type = type,
+                Description = description,
+                CreatedBy = createdBy,
+            };
         }
 
-        /// <summary>
-        /// Cập nhật trạng thái hoạt động của khu vực.
-        /// </summary>
-        public void UpdateStatus(bool isActive, Guid? updatedBy = null)
+        public DomainResult UpdateDetails(
+            string name,
+            string codePrefix,
+            string? description,
+            AreaType type,
+            Guid? updatedBy = null
+        )
         {
-            Status = isActive ? AreaStatus.Active : AreaStatus.Inactive;
+            Name = name;
+            CodePrefix = codePrefix;
+            Description = description;
+            Type = type;
             UpdatedAt = DateTime.UtcNow;
-            if (updatedBy.HasValue)
-                UpdatedBy = updatedBy.Value;
+            UpdatedBy = updatedBy;
+
+            return DomainResult.Success();
+        }
+
+        public DomainResult Activate(Guid? updatedBy = null)
+        {
+            Status = AreaStatus.Active;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+
+            return DomainResult.Success();
+        }
+
+        public DomainResult Deactivate(Guid? updatedBy = null)
+        {
+            if (Status == AreaStatus.Inactive)
+            {
+                return DomainResult.Failure(DomainErrors.Area.AlreadyInactive);
+            }
+
+            Status = AreaStatus.Inactive;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+
+            return DomainResult.Success();
+        }
+
+        public DomainResult UpdateStatus(bool isActive, Guid? updatedBy = null)
+        {
+            return isActive ? Activate(updatedBy) : Deactivate(updatedBy);
         }
     }
 }

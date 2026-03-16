@@ -88,7 +88,13 @@ namespace FoodHub.Tests.Features.Order.Commands
                 .Setup(u => u.Repository<FoodHub.Domain.Entities.Table>())
                 .Returns(mockTableRepo.Object);
 
-            mockTableRepo.Setup(r => r.GetByIdAsync(tableId)).ReturnsAsync(table);
+            mockTableRepo
+                .Setup(r => r.Query())
+                .Returns(
+                    new List<FoodHub.Domain.Entities.Table> { table }
+                        .AsQueryable()
+                        .BuildMock()
+                );
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             mockOrderRepo
@@ -215,7 +221,13 @@ namespace FoodHub.Tests.Features.Order.Commands
                 .Setup(u => u.Repository<FoodHub.Domain.Entities.Table>())
                 .Returns(mockTableRepo.Object);
 
-            mockTableRepo.Setup(r => r.GetByIdAsync(tableId)).ReturnsAsync(table);
+            mockTableRepo
+                .Setup(r => r.Query())
+                .Returns(
+                    new List<FoodHub.Domain.Entities.Table> { table }
+                        .AsQueryable()
+                        .BuildMock()
+                );
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             mockOrderRepo

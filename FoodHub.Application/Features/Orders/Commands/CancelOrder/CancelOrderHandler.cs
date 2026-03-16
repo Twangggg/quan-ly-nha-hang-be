@@ -77,16 +77,11 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
                 );
             }
 
-            var auditLog = new OrderAuditLog
-            {
-                LogId = Guid.NewGuid(),
-                OrderId = order.OrderId,
-                EmployeeId = auditorId.Value,
-                Action = AuditLogActions.CancelOrder,
-                CreatedAt = DateTime.UtcNow,
-                ChangeReason = request.Reason,
-                NewValue = "{\"status\": \"Cancelled\"}",
-            };
+            var auditLog = OrderAuditLog.CreateOrderCancelled(
+                order.OrderId,
+                auditorId,
+                request.Reason
+            );
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
             _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
@@ -95,11 +90,17 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
             {
                 var table = await _unitOfWork
-                    .Repository<Domain.Entities.Table>()
-                    .GetByIdAsync(order.TableId.Value);
+                    .Repository<Domain.Entities.Table>().Query()
+                    .Include(t => t.Orders)
+                    .FirstOrDefaultAsync(t => t.TableId == order.TableId, cancellationToken);
                 if (table != null)
                 {
-                    table.MarkAsAvailable();
+                    //table.MarkAsAvailable();
+                    if (table.SetAvailable())
+                    {
+                        table.UpdatedAt = DateTime.UtcNow;
+                        table.UpdatedBy = auditorId;
+                    }
                     _unitOfWork.Repository<Domain.Entities.Table>().Update(table);
 
                     // Ngắt kết nối đơn hàng với bàn sau khi đã giải phóng bàn xong

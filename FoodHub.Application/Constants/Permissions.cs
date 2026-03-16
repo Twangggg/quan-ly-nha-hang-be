@@ -10,6 +10,9 @@ namespace FoodHub.Application.Constants
             public const string Cancel = "Permissions.Orders.Cancel";
             public const string Complete = "Permissions.Orders.Complete";
             public const string SubmitToKitchen = "Permissions.Orders.SubmitToKitchen";
+            public const string ChangeTable = "Permissions.Orders.ChangeTable";
+            public const string Merge = "Permissions.Orders.Merge";
+            public const string Split = "Permissions.Orders.Split";
         }
 
         public static class MenuItems
@@ -53,6 +56,7 @@ namespace FoodHub.Application.Constants
         {
             public const string Checkout = "Permissions.Billing.Checkout";
             public const string ViewHistory = "Permissions.Billing.ViewHistory";
+            public const string PreCheckBill = "Permissions.Billing.PreCheckBill";
         }
 
         public static class Kds

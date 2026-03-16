@@ -18,13 +18,15 @@ namespace FoodHub.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(
             this IServiceCollection services,
-            IConfiguration configuration
-        )
+            IConfiguration configuration)
         {
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
             services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
             services.Configure<PayOsSettings>(configuration.GetSection("PayOS"));
+
+            // Configure QuestPDF License
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
             services.AddDbContext<AppDbContext>(options =>
             {
@@ -80,6 +82,9 @@ namespace FoodHub.Infrastructure
             // Excel Export Service
             services.AddScoped<ISalesExcelService, SalesExcelService>();
 
+            // PDF Export Service
+            services.AddScoped<IPdfService, PdfService>();
+
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
@@ -91,6 +96,7 @@ namespace FoodHub.Infrastructure
                 sp.GetRequiredService<BackgroundEmailChannel>()
             );
             services.AddHostedService<EmailBackgroundWorker>();
+            services.AddHostedService<ReservationCancellationService>();
 
             return services;
         }

@@ -52,6 +52,146 @@ namespace FoodHub.Domain.Entities
             || Status == OrderItemStatus.Cancelled
             || Status == OrderItemStatus.Rejected;
 
+        public bool CanBeMoved() => Status != OrderItemStatus.Completed;
+
+        public bool HasSameConfiguration(OrderItem other)
+        {
+            if (
+                MenuItemId != other.MenuItemId
+                || Status != other.Status
+                || (ItemNote ?? string.Empty) != (other.ItemNote ?? string.Empty)
+                || OptionGroups.Count != other.OptionGroups.Count
+            )
+            {
+                return false;
+            }
+
+            foreach (var optionGroup in OptionGroups)
+            {
+                var matchingGroup = other.OptionGroups.FirstOrDefault(group =>
+                    string.Equals(
+                        group.GroupNameSnapshot,
+                        optionGroup.GroupNameSnapshot,
+                        StringComparison.Ordinal
+                    )
+                    && string.Equals(
+                        group.GroupTypeSnapshot,
+                        optionGroup.GroupTypeSnapshot,
+                        StringComparison.Ordinal
+                    )
+                    && group.IsRequiredSnapshot == optionGroup.IsRequiredSnapshot
+                );
+
+                if (
+                    matchingGroup == null
+                    || matchingGroup.OptionValues.Count != optionGroup.OptionValues.Count
+                )
+                {
+                    return false;
+                }
+
+                foreach (var optionValue in optionGroup.OptionValues)
+                {
+                    var matchingValue = matchingGroup.OptionValues.FirstOrDefault(value =>
+                        value.OptionItemId == optionValue.OptionItemId
+                        && value.LabelSnapshot == optionValue.LabelSnapshot
+                        && value.ExtraPriceSnapshot == optionValue.ExtraPriceSnapshot
+                        && value.Quantity == optionValue.Quantity
+                        && (value.Note ?? string.Empty) == (optionValue.Note ?? string.Empty)
+                    );
+
+                    if (matchingValue == null)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public void IncreaseQuantity(int quantityToAdd, DateTime updatedAt)
+        {
+            Quantity += quantityToAdd;
+            UpdatedAt = updatedAt;
+        }
+
+        public DomainResult ReduceQuantity(int quantityToReduce, DateTime updatedAt)
+        {
+            if (quantityToReduce <= 0 || quantityToReduce >= Quantity)
+            {
+                return DomainResult.Failure(DomainErrors.OrderItem.InvalidQuantity);
+            }
+
+            Quantity -= quantityToReduce;
+            UpdatedAt = updatedAt;
+            return DomainResult.Success();
+        }
+
+        public DomainResult MoveToOrder(Guid destinationOrderId, DateTime updatedAt)
+        {
+            if (!CanBeMoved())
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            OrderId = destinationOrderId;
+            UpdatedAt = updatedAt;
+            return DomainResult.Success();
+        }
+
+        public OrderItem CloneForOrder(Guid destinationOrderId, int quantity, DateTime createdAt)
+        {
+            var clonedItem = new OrderItem
+            {
+                OrderItemId = Guid.NewGuid(),
+                OrderId = destinationOrderId,
+                MenuItemId = MenuItemId,
+                ItemCodeSnapshot = ItemCodeSnapshot,
+                ItemNameSnapshot = ItemNameSnapshot,
+                StationSnapshot = StationSnapshot,
+                Status = Status,
+                Quantity = quantity,
+                UnitPriceSnapshot = UnitPriceSnapshot,
+                ItemNote = ItemNote,
+                CreatedAt = createdAt,
+            };
+
+            foreach (var optionGroup in OptionGroups)
+            {
+                var clonedGroup = new OrderItemOptionGroup
+                {
+                    OrderItemOptionGroupId = Guid.NewGuid(),
+                    OrderItemId = clonedItem.OrderItemId,
+                    GroupNameSnapshot = optionGroup.GroupNameSnapshot,
+                    GroupTypeSnapshot = optionGroup.GroupTypeSnapshot,
+                    IsRequiredSnapshot = optionGroup.IsRequiredSnapshot,
+                    CreatedAt = createdAt,
+                };
+
+                foreach (var optionValue in optionGroup.OptionValues)
+                {
+                    clonedGroup.OptionValues.Add(
+                        new OrderItemOptionValue
+                        {
+                            OrderItemOptionValueId = Guid.NewGuid(),
+                            OrderItemOptionGroupId = clonedGroup.OrderItemOptionGroupId,
+                            OptionItemId = optionValue.OptionItemId,
+                            LabelSnapshot = optionValue.LabelSnapshot,
+                            ExtraPriceSnapshot = optionValue.ExtraPriceSnapshot,
+                            Quantity = optionValue.Quantity,
+                            Note = optionValue.Note,
+                            CreatedAt = createdAt,
+                        }
+                    );
+                }
+
+                clonedItem.OptionGroups.Add(clonedGroup);
+            }
+
+            return clonedItem;
+        }
+
         public bool CanCancel() =>
             Status == OrderItemStatus.Preparing
             || Status == OrderItemStatus.Cooking
@@ -139,6 +279,23 @@ namespace FoodHub.Domain.Entities
                 OptionGroups.Add(optionGroup);
             }
 
+            UpdatedAt = DateTime.UtcNow;
+            return DomainResult.Success();
+        }
+
+        public DomainResult AdjustQuantity(int newQuantity)
+        {
+            if (Status == OrderItemStatus.Cancelled || Status == OrderItemStatus.Rejected)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            if (newQuantity < 1)
+            {
+                return DomainResult.Failure(DomainErrors.OrderItem.InvalidQuantity);
+            }
+
+            Quantity = newQuantity;
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }

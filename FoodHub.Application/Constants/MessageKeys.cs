@@ -10,6 +10,7 @@ namespace FoodHub.Application.Constants
             public const string DatabaseUpdateError = "DatabaseUpdateError";
             public const string OperationCancelled = "OperationCancelled";
             public const string Unauthorized = "Unauthorized";
+            public const string Forbidden = "Common.Forbidden";
             public const string InvalidFormat = "Common.InvalidFormat";
             public const string InvalidDate = "Common.InvalidDate";
             public const string InvalidFile = "Common.InvalidFile";
@@ -125,6 +126,10 @@ namespace FoodHub.Application.Constants
             public const string AlreadyPaid = "Order.AlreadyPaid";
             public const string InsufficientAmount = "Order.InsufficientAmount";
             public const string ItemsNotFinished = "Order.ItemsNotFinished";
+            public const string StatusNotServing = "Order.StatusNotServing";
+            public const string InvalidStatus = "Order.InvalidStatus";
+            public const string StatusNotCompleted = "Order.StatusNotCompleted";
+            public const string NoValidItems = "Order.NoValidItems";
         }
 
         public static class OrderItem
@@ -200,6 +205,7 @@ namespace FoodHub.Application.Constants
             public const string CodeExists = "Table.CodeExists";
             public const string UpdateForbidden = "Table.UpdateForbidden";
             public const string UpdateFail = "Table.UpdateFail";
+            public const string SameAsCurrentTable = "Table.SameAsCurrentTable";
         }
 
         public static class Area
@@ -217,6 +223,9 @@ namespace FoodHub.Application.Constants
         public static class Reservation
         {
             public const string NotFound = "Reservation.NotFound";
+            public const string Overlapped = "Reservation.Overlapped";
+            public const string TableCapacityExceeded = "Reservation.TableCapacityExceeded";
+            public const string InvalidTime = "Reservation.InvalidTime";
             public const string InvalidStatusForCheckIn = "Reservation.InvalidStatusForCheckIn";
             public const string TableOccupied = "Reservation.TableOccupied";
             public const string AlreadyCheckedIn = "Reservation.AlreadyCheckedIn";
@@ -288,8 +297,13 @@ namespace FoodHub.Application.Constants
             public const string DuplicateIngredient = "OpeningStock.DuplicateIngredient";
             public const string ConfirmOverwrite = "OpeningStock.ConfirmOverwrite";
             public const string IngredientNotFound = "OpeningStock.IngredientNotFound";
-            public const string ImportSuccess = "OpeningStock.ImportSuccess";
             public const string AlreadyLocked = "OpeningStock.AlreadyLocked";
+            public const string ImportSuccess = "OpeningStock.ImportSuccess";
+        }
+
+        public static class Billing
+        {
+            public const string PdfExportError = "Billing.PdfExportError";
         }
 
         public static class StockInReceipt

@@ -140,16 +140,13 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
 
                 await _unitOfWork.Repository<Order>().AddAsync(newOrder);
 
-                var auditLog = new OrderAuditLog
-                {
-                    LogId = Guid.NewGuid(),
-                    OrderId = newOrder.OrderId,
-                    EmployeeId = userId.Value,
-                    Action = AuditLogActions.CreateOrder,
-                    NewValue =
-                        $"{{\"orderCode\": \"{newOrder.OrderCode}\", \"orderType\": \"{newOrder.OrderType}\", \"tableId\": \"{newOrder.TableId}\"}}",
-                    CreatedAt = DateTime.UtcNow,
-                };
+                var auditLog = OrderAuditLog.CreateOrderCreated(
+                    newOrder.OrderId,
+                    userId,
+                    newOrder.OrderCode,
+                    newOrder.OrderType,
+                    newOrder.TableId
+                );
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
                 // Cập nhật trạng thái bàn sang Occupied
