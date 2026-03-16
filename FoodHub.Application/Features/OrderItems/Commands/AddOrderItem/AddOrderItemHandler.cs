@@ -159,7 +159,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             // Notify KDS
-            _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+            await _signalRService.NotifyOrderItemStatusChangedAsync(
                 result.Item.OrderItemId,
                 result.Item.Status,
                 result.Item.StationSnapshot
