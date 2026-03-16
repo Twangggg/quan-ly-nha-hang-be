@@ -129,7 +129,7 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                     );
                 }
 
-                var auditLog = OrderAuditLog.CreateKdsStartCooking(orderItem.OrderId, auditorId);
+                var auditLog = OrderAuditLog.CreateKdsStartCooking(orderItem.OrderId, auditorId.Value);
 
                 orderItemRepository.Update(orderItem);
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
