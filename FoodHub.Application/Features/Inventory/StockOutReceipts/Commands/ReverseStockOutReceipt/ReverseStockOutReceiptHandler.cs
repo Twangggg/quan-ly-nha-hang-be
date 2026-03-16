@@ -1,6 +1,7 @@
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -44,7 +45,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
                 request.StockOutReceiptId
             );
 
-            var actorId = ParseActorId();
+            var actorId = _currentUserService.GetUserIdAsGuid();
             var receiptRepo = _unitOfWork.Repository<StockOutReceipt>();
             var ingredientRepo = _unitOfWork.Repository<Ingredient>();
             var transactionRepo = _unitOfWork.Repository<InventoryTransaction>();
@@ -140,16 +141,6 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
                 _logger.LogError(ex, "ReverseStockOutReceipt transaction rolled back");
                 throw;
             }
-        }
-
-        private Guid? ParseActorId()
-        {
-            if (Guid.TryParse(_currentUserService.UserId, out var actorId))
-            {
-                return actorId;
-            }
-
-            return null;
         }
     }
 }

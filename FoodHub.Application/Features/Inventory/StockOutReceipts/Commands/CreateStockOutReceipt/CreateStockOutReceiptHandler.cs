@@ -1,6 +1,7 @@
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -43,7 +44,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
                 request.Items.Count
             );
 
-            var actorId = ParseActorId();
+            var actorId = _currentUserService.GetUserIdAsGuid();
             var ingredientIds = request.Items.Select(x => x.IngredientId).Distinct().ToList();
             var ingredientRepo = _unitOfWork.Repository<Ingredient>();
             var receiptRepo = _unitOfWork.Repository<StockOutReceipt>();
@@ -76,7 +77,12 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
             try
             {
                 var receiptCode = await GenerateReceiptCodeAsync(stockOutDate, cancellationToken);
-                var receipt = StockOutReceipt.Create(receiptCode, stockOutDate, request.Note, actorId);
+                var receipt = StockOutReceipt.Create(
+                    receiptCode,
+                    stockOutDate,
+                    request.Note,
+                    actorId
+                );
 
                 foreach (var item in request.Items)
                 {
@@ -179,16 +185,6 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
             }
 
             return $"{prefix}{sequenceNumber:D4}";
-        }
-
-        private Guid? ParseActorId()
-        {
-            if (Guid.TryParse(_currentUserService.UserId, out var actorId))
-            {
-                return actorId;
-            }
-
-            return null;
         }
 
         private static DateTime? NormalizeUtc(DateTime? value)

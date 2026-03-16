@@ -33,16 +33,16 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
         {
             _logger.LogInformation(
                 "Start handling GetStockOutReceipts with PageNumber={PageNumber}, PageSize={PageSize}",
-                request.PageNumber,
-                request.PageSize
+                request.Pagination.PageNumber,
+                request.Pagination.PageSize
             );
 
             var employeeQuery = _unitOfWork.Repository<Employee>().Query().AsNoTracking();
             var query = _unitOfWork.Repository<StockOutReceipt>().Query().AsNoTracking();
 
-            if (!string.IsNullOrWhiteSpace(request.Search))
+            if (!string.IsNullOrWhiteSpace(request.Pagination.Search))
             {
-                var keyword = request.Search.Trim();
+                var keyword = request.Pagination.Search.Trim();
                 query = query.Where(x => x.ReceiptCode.Contains(keyword));
             }
 
@@ -75,7 +75,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
                 });
 
             var pagedResult = await projection.ToPagedResultAsync(
-                request.ToPaginationParams(),
+                request.Pagination,
                 cancellationToken
             );
 

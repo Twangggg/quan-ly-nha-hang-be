@@ -9,6 +9,7 @@ using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredientBy
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredients;
 using FoodHub.Application.Interfaces;
 using FoodHub.WebAPI.Presentation.Attributes;
+using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -41,6 +42,10 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> GetIngredients([FromQuery] PaginationParams pagination)
         {
             var result = await _mediator.Send(new GetIngredientsQuery(pagination));
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
             return HandleResult(result);
         }
 

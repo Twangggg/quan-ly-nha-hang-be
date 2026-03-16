@@ -7,6 +7,7 @@ namespace FoodHub.Domain.Entities
     public class StockOutReceipt : BaseEntity
     {
         protected StockOutReceipt() { }
+
         public Guid StockOutReceiptId { get; private set; }
         public string ReceiptCode { get; private set; } = string.Empty;
         public DateTime StockOutDate { get; private set; }

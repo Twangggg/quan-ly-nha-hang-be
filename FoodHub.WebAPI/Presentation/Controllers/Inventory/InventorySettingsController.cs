@@ -6,6 +6,7 @@ using FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInventorySe
 using FoodHub.Application.Features.Inventory.Settings.Queries.GetInventorySettings;
 using FoodHub.Application.Features.Inventory.Transactions.Queries.GetInventoryTransactions;
 using FoodHub.WebAPI.Presentation.Attributes;
+using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -76,6 +77,10 @@ namespace FoodHub.Presentation.Controllers
         )
         {
             var result = await _mediator.Send(new GetOpeningStockListQuery(pagination));
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
             return HandleResult(result);
         }
 
@@ -93,6 +98,10 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> GetInventoryTransactions([FromQuery] PaginationParams pagination)
         {
             var result = await _mediator.Send(new GetInventoryTransactionsQuery(pagination));
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
             return HandleResult(result);
         }
 

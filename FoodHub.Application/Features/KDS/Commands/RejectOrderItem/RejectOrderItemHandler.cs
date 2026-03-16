@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
@@ -41,10 +42,11 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
             CancellationToken cancellationToken
         )
         {
-            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            var auditorId = _currentUserService.GetUserIdAsGuid();
+            if (auditorId == null)
             {
                 _logger.LogWarning(
-                    "Unauthorized cancel attempt for OrderItemId {OrderItemId}",
+                    "Unauthorized reject attempt for OrderItemId {OrderItemId}",
                     request.OrderItemId
                 );
                 return Result<Guid>.Failure(
@@ -97,7 +99,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                 {
                     LogId = Guid.NewGuid(),
                     OrderId = orderItem.OrderId,
-                    EmployeeId = auditorId,
+                    EmployeeId = auditorId.Value,
                     Action = AuditLogActions.KdsReject,
                     OldValue = $"\"{oldStatus}\"",
                     NewValue = $"\"{OrderItemStatus.Rejected}\"",
@@ -151,7 +153,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                     {
                         LogId = Guid.NewGuid(),
                         OrderId = nextItem.OrderId,
-                        EmployeeId = auditorId,
+                        EmployeeId = auditorId.Value,
                         Action = AuditLogActions.KdsStartCooking,
                         OldValue = $"\"{OrderItemStatus.Preparing}\"",
                         NewValue = $"\"{OrderItemStatus.Cooking}\"",
