@@ -100,5 +100,13 @@ namespace FoodHub.Domain.Constants
             public const string InvalidUnitCost = "StockInReceipt.InvalidUnitCost";
             public const string AlreadyReversed = "StockInReceipt.AlreadyReversed";
         }
+
+        public static class StockOutReceipt
+        {
+            public const string DuplicateIngredient = "StockOutReceipt.DuplicateIngredient";
+            public const string InvalidQuantity = "StockOutReceipt.InvalidQuantity";
+            public const string InvalidUnitCost = "StockOutReceipt.InvalidUnitCost";
+            public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
+        }
     }
 }

@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers
 {
+    /// <summary>
+    /// Quản lý phiếu nhập kho và hoàn nhập.
+    /// </summary>
     [Tags("Kho hang - Phieu nhap kho")]
     public class StockInReceiptsController : ApiControllerBase
     {

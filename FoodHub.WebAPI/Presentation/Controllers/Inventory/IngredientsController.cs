@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FoodHub.Presentation.Controllers
 {
     /// <summary>
-    /// Quản lý nguyên liệu (Inventory - Ingredients).
+    /// Quản lý nguyên liệu, sinh mã, kích hoạt và vô hiệu hóa.
     /// </summary>
     [Tags("Kho hàng - Nguyên liệu (Ingredients)")]
     public class IngredientsController : ApiControllerBase
