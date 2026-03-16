@@ -323,5 +323,13 @@ namespace FoodHub.Application.Constants
                 "StockInReceipt.ReverseInsufficientStock";
             public const string AlreadyReversed = "StockInReceipt.AlreadyReversed";
         }
+
+        public static class Invoice
+        {
+            public const string AlreadyExists = "Invoice.AlreadyExists";
+            public const string NotFound = "Invoice.NotFound";
+            public const string CreateFailed = "Invoice.CreateFailed";
+            public const string InsufficientAmount = "Invoice.InsufficientAmount";
+        }
     }
 }
