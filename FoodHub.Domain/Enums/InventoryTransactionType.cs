@@ -5,5 +5,7 @@ namespace FoodHub.Domain.Enums
         OpeningStock = 1,
         StockIn = 2,
         StockInReverse = 3,
+        StockOut = 4,
+        StockOutReverse = 5,
     }
 }

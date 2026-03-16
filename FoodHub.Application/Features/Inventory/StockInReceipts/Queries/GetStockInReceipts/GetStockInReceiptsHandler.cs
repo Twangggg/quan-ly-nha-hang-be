@@ -9,10 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStockInReceipts
 {
     public class GetStockInReceiptsHandler
-        : IRequestHandler<
-            GetStockInReceiptsQuery,
-            Result<PagedResult<GetStockInReceiptsResponse>>
-        >
+        : IRequestHandler<GetStockInReceiptsQuery, Result<PagedResult<GetStockInReceiptsResponse>>>
     {
         private readonly ILogger<GetStockInReceiptsHandler> _logger;
         private readonly IUnitOfWork _unitOfWork;
@@ -33,16 +30,16 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStoc
         {
             _logger.LogInformation(
                 "Start handling GetStockInReceipts with PageNumber={PageNumber}, PageSize={PageSize}",
-                request.PageNumber,
-                request.PageSize
+                request.Pagination.PageNumber,
+                request.Pagination.PageSize
             );
 
             var employeeQuery = _unitOfWork.Repository<Employee>().Query().AsNoTracking();
             var query = _unitOfWork.Repository<StockInReceipt>().Query().AsNoTracking();
 
-            if (!string.IsNullOrWhiteSpace(request.Search))
+            if (!string.IsNullOrWhiteSpace(request.Pagination.Search))
             {
-                var keyword = request.Search.Trim();
+                var keyword = request.Pagination.Search.Trim();
                 query = query.Where(x => x.ReceiptCode.Contains(keyword));
             }
 
@@ -76,7 +73,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStoc
                 });
 
             var pagedResult = await projection.ToPagedResultAsync(
-                request.ToPaginationParams(),
+                request.Pagination,
                 cancellationToken
             );
 
