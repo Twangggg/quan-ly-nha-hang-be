@@ -223,12 +223,23 @@ namespace FoodHub.Application.Constants
         public static class Reservation
         {
             public const string NotFound = "Reservation.NotFound";
+            // Keys from feature/reservation (HEAD)
             public const string Overlapped = "Reservation.Overlapped";
             public const string TableCapacityExceeded = "Reservation.TableCapacityExceeded";
-            public const string InvalidTime = "Reservation.InvalidTime";
             public const string InvalidStatusForCheckIn = "Reservation.InvalidStatusForCheckIn";
             public const string TableOccupied = "Reservation.TableOccupied";
             public const string AlreadyCheckedIn = "Reservation.AlreadyCheckedIn";
+            // Keys from feature/reservation-liemdt
+            public const string NameRequired = "Reservation.NameRequired";
+            public const string NameMaxLength = "Reservation.NameMaxLength";
+            public const string PhoneRequired = "Reservation.PhoneRequired";
+            public const string PhoneInvalid = "Reservation.PhoneInvalid";
+            public const string InvalidGuestCount = "Reservation.InvalidGuestCount";
+            public const string NoTableAvailable = "Reservation.NoTableAvailable";
+            public const string CancelReservationSuccess = "Reservation.CancelReservationSuccess";
+            public const string InvalidTime = "Reservation.InvalidTime";
+            public const string TimeTooSoon = "Reservation.TimeTooSoon";
+            public const string VipRequired = "Reservation.VipRequired";
         }
         public static class SalesAnalytics
         {

@@ -24,8 +24,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             RuleFor(x => x.GuestCount)
                 .GreaterThan(0).WithMessage(_messageService.GetMessage(MessageKeys.Order.InvalidQuantity));
 
-            RuleFor(x => x.PartyType)
-                .IsInEnum().WithMessage(_messageService.GetMessage(MessageKeys.Common.InvalidFormat));
 
             RuleFor(x => x.AreaId)
                 .NotEmpty().WithMessage(_messageService.GetMessage(MessageKeys.Common.IdRequired));

@@ -430,10 +430,19 @@ namespace FoodHub.Infrastructure.Persistence
                     new Area
                     {
                         AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                        Name = "VIP Room",
-                        CodePrefix = "VIP",
+                        Name = "Phòng VIP 1",
+                        CodePrefix = "VIP1",
                         Type = AreaType.VIP,
-                        Description = "Private VIP rooms",
+                        Description = "Phòng riêng VIP 1 - Sức chứa lớn",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000004"),
+                        Name = "Phòng VIP 2",
+                        CodePrefix = "VIP2",
+                        Type = AreaType.VIP,
+                        Description = "Phòng riêng VIP 2 - Sức chứa lớn",
                         CreatedAt = DateTime.UtcNow,
                     },
                 };
@@ -447,17 +456,36 @@ namespace FoodHub.Infrastructure.Persistence
                 var tableId = Guid.Parse($"00000000-0000-0000-0000-0000000000{i:D2}");
                 if (!_context.Tables.Any(t => t.TableId == tableId))
                 {
-                    var areaId =
-                        i <= 8 ? Guid.Parse("00000000-0000-0000-0000-000000000001")
-                        : i <= 10 ? Guid.Parse("00000000-0000-0000-0000-000000000002")
-                        : Guid.Parse("00000000-0000-0000-0000-000000000003");
+                    Guid areaId;
+                    int capacity;
+
+                    if (i <= 8)
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                        capacity = (i % 2 == 0 ? 4 : 2);
+                    }
+                    else if (i <= 10)
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+                        capacity = 4;
+                    }
+                    else if (i == 11)
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000003");
+                        capacity = 100; // Phòng VIP có thể chứa rất nhiều khách
+                    }
+                    else // i == 12
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000004");
+                        capacity = 100; // Phòng VIP có thể chứa rất nhiều khách
+                    }
 
                     _context.Tables.Add(
                         new Table
                         {
                             TableId = tableId,
                             TableNumber = i,
-                            Capacity = i <= 8 ? (i % 2 == 0 ? 4 : 2) : (i <= 10 ? 4 : 8),
+                            Capacity = capacity,
                             AreaId = areaId,
                             Status = TableStatus.Available,
                             CreatedAt = DateTime.UtcNow,
