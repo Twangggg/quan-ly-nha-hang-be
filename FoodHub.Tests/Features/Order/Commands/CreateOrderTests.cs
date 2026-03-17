@@ -43,7 +43,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             var command = new CreateOrderCommand
             {
                 OrderType = OrderType.Takeaway,
-                TableId = null,
+                ReservationId = null,
                 Note = "Test note",
             };
 
@@ -80,14 +80,15 @@ namespace FoodHub.Tests.Features.Order.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnSuccess_When_OrderCreated_ForDineIn_WithTableId()
+        public async Task Handle_Should_ReturnSuccess_When_OrderCreated_ForDineIn_WithReservationId()
         {
             // Arrange
+            var reservationId = Guid.NewGuid();
             var tableId = Guid.NewGuid();
             var command = new CreateOrderCommand
             {
                 OrderType = OrderType.DineIn,
-                TableId = tableId,
+                ReservationId = reservationId,
                 Note = null,
             };
 
@@ -118,14 +119,25 @@ namespace FoodHub.Tests.Features.Order.Commands
                 AreaId = area.AreaId,
             };
 
-            var tableRepo = new Mock<IGenericRepository<Table>>();
-            tableRepo
+            var reservation = new Reservation
+            {
+                ReservationId = reservationId,
+                TableId = tableId,
+                Table = table,
+                Status = ReservationStatus.Booked
+            };
+
+            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
+            reservationRepo
                 .Setup(r => r.Query())
                 .Returns(
-                    new List<Table> { table }
+                    new List<Reservation> { reservation }
                         .AsQueryable()
                         .BuildMock()
                 );
+            _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
+            
+            var tableRepo = new Mock<IGenericRepository<Table>>();
             _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
 
             var auditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
@@ -149,6 +161,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                             It.Is<FoodHub.Domain.Entities.Order>(o =>
                                 o.OrderType == OrderType.DineIn
                                 && o.TableId == tableId
+                                && o.ReservationId == reservationId
                                 && o.Status == OrderStatus.Serving
                             )
                         ),
@@ -157,13 +170,13 @@ namespace FoodHub.Tests.Features.Order.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnFailure_When_DineIn_WithoutTableId()
+        public async Task Handle_Should_ReturnFailure_When_DineIn_WithoutReservationId()
         {
             // Arrange
             var command = new CreateOrderCommand
             {
                 OrderType = OrderType.DineIn,
-                TableId = null,
+                ReservationId = null,
                 Note = "Test",
             };
 
@@ -193,7 +206,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             var command = new CreateOrderCommand
             {
                 OrderType = OrderType.Takeaway,
-                TableId = null,
+                ReservationId = null,
                 Note = null,
             };
 
@@ -238,7 +251,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             var command = new CreateOrderCommand
             {
                 OrderType = OrderType.Takeaway,
-                TableId = null,
+                ReservationId = null,
                 Note = null,
             };
 

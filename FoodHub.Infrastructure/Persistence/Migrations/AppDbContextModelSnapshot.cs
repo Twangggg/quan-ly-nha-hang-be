@@ -868,6 +868,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("sub_total");
+
                     b.Property<Guid?>("TableId")
                         .HasColumnType("uuid")
                         .HasColumnName("table_id");
@@ -890,6 +894,14 @@ namespace FoodHub.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("vat_amount");
+
+                    b.Property<decimal>("VatRate")
+                        .HasColumnType("decimal(5,2)")
+                        .HasColumnName("vat_rate");
 
                     b.HasKey("OrderId")
                         .HasName("pk_orders");
@@ -1307,20 +1319,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("guest_count");
 
-                    b.Property<bool>("HasChildren")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("has_children");
-
                     b.Property<string>("Note")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("note");
-
-                    b.Property<int>("PartyType")
-                        .HasColumnType("integer")
-                        .HasColumnName("party_type");
 
                     b.Property<DateOnly>("ReservationDate")
                         .HasColumnType("date")
@@ -2023,6 +2025,7 @@ namespace FoodHub.Migrations
                         .HasForeignKey("AreaId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_reservations_areas_area_id");
+
                     b.HasOne("FoodHub.Domain.Entities.Table", "Table")
                         .WithMany("Reservations")
                         .HasForeignKey("TableId")
@@ -2031,6 +2034,7 @@ namespace FoodHub.Migrations
                         .HasConstraintName("fk_reservations_tables_table_id");
 
                     b.Navigation("Area");
+
                     b.Navigation("Table");
                 });
 

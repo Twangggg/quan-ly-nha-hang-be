@@ -13,7 +13,11 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
         public string OrderType { get; set; } = null!;
         public string Status { get; set; } = null!;
         public Guid? TableId { get; set; }
+        public Guid? ReservationId { get; set; }
         public string? Note { get; set; }
+        public decimal SubTotal { get; set; }
+        public decimal VatRate { get; set; }
+        public decimal VatAmount { get; set; }
         public decimal TotalAmount { get; set; }
         public bool IsPriority { get; set; }
         public DateTime CreatedAt { get; set; }

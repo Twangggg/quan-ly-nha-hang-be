@@ -151,7 +151,11 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
             return HandleResult(result);
         }
 
-        public record UpdateTableStatusRequest(bool IsActive);
+        public class UpdateTableStatusRequest
+        {
+            [System.Text.Json.Serialization.JsonPropertyName("isActive")]
+            public bool IsActive { get; set; }
+        }
 
         /// <summary>
         /// Xóa một bàn ăn khỏi hệ thống. Hành động này sẽ đánh dấu bàn ăn là đã xóa (soft delete) thay vì xóa hoàn toàn khỏi cơ sở dữ liệu.

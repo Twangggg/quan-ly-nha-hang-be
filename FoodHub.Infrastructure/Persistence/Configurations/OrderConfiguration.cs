@@ -14,6 +14,9 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(o => o.OrderCode).IsUnique();
             builder.Property(o => o.OrderType).IsRequired();
             builder.Property(o => o.Status).IsRequired();
+            builder.Property(o => o.SubTotal).HasColumnType("decimal(15,2)");
+            builder.Property(o => o.VatRate).HasColumnType("decimal(5,2)");
+            builder.Property(o => o.VatAmount).HasColumnType("decimal(15,2)");
             builder.Property(o => o.TotalAmount).HasColumnType("decimal(15,2)");
             builder.Property(o => o.Note).HasColumnType("text");
 
