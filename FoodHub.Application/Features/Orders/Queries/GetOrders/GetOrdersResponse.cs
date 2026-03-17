@@ -12,6 +12,8 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
         public string OrderCode { get; set; } = null!;
         public string OrderType { get; set; } = null!;
         public string Status { get; set; } = null!;
+        public Guid? TableId { get; set; }
+        public Guid? ReservationId { get; set; }
         public string? Note { get; set; }
         public decimal SubTotal { get; set; }
         public decimal VatRate { get; set; }
