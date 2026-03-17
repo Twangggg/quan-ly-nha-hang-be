@@ -45,6 +45,7 @@ namespace FoodHub.Infrastructure
             services.AddHttpContextAccessor();
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IAuditLogService, AuditLogService>();
 
             // Register Redis Connection
             services.AddSingleton<IConnectionMultiplexer>(sp =>

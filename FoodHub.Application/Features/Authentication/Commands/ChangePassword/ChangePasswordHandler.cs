@@ -85,15 +85,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
                 _unitOfWork.Repository<Domain.Entities.RefreshToken>().Update(token);
             }
 
-            //Log password reset
-            await _unitOfWork.Repository<AuditLog>().AddAsync(new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                TargetId = employee.EmployeeId,
-                PerformedByEmployeeId = employee.EmployeeId, // self-change
-                Reason = "SelfChange",
-                CreatedAt = DateTimeOffset.UtcNow
-            });
+            // UpdatedAt is enough, automatic audit log will capture the password hash change
+            employee.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 

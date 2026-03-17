@@ -107,12 +107,22 @@ namespace FoodHub.Infrastructure.BackgroundJobs
                 var auditLog = new AuditLog
                 {
                     LogId = Guid.NewGuid(),
-                    Action = AuditAction.EmailFailure,
-                    TargetId = message.AuditTargetId!.Value,
-                    PerformedByEmployeeId = message.PerformedByEmployeeId!.Value,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                    Reason = "Email Delivery Failed",
-                    Metadata = $"To: {message.To}, Subject: {message.Subject}, Error: {errorDetails}"
+                    EntityName = "Email",
+                    EntityId = $"{{\"AuditTargetId\":\"{message.AuditTargetId}\"}}",
+                    Action = "EMAIL_FAILURE",
+                    OldValues = null,
+                    NewValues = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        To = message.To,
+                        Subject = message.Subject,
+                        Error = errorDetails
+                    }),
+                    ActorInfo = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        type = "Employee",
+                        id = message.PerformedByEmployeeId
+                    }),
+                    CreatedAt = DateTimeOffset.UtcNow
                 };
 
                 await unitOfWork.Repository<AuditLog>().AddAsync(auditLog);

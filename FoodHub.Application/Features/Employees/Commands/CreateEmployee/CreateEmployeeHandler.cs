@@ -98,17 +98,6 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
                 employee.PasswordHash = _passwordService.HashPassword(randomPassword);
 
                 await _unitOfWork.Repository<Employee>().AddAsync(employee);
-
-                var auditLog = new AuditLog
-                {
-                    LogId = Guid.NewGuid(),
-                    Action = AuditAction.Create,
-                    TargetId = employee.EmployeeId,
-                    PerformedByEmployeeId = auditorId,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                    Reason = "Create new employee",
-                };
-                await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
 
                 // Queue email asynchronously

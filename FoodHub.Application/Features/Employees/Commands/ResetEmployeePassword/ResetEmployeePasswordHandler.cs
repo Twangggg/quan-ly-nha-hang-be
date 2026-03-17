@@ -90,18 +90,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 token.Revoke();
             }
 
-            var auditLog = new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                Action = AuditAction.ResetPassword,
-                TargetId = employee.EmployeeId,
-                PerformedByEmployeeId = managerGuid,
-                Reason = request.Reason,
-                Metadata =
-                    $"{{\"info\": \"Reset by Manager: {manager.FullName} ({manager.EmployeeCode})\"}}",
-                CreatedAt = DateTimeOffset.UtcNow,
-            };
-            await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
+            employee.ResetPassword(_passwordService.HashPassword(newPassword), managerGuid);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             await _emailSender.EnqueuePasswordResetByManagerEmailAsync(
