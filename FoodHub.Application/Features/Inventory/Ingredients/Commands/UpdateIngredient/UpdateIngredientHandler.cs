@@ -117,7 +117,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                         IngredientId = ingredient.IngredientId,
                         Code = ingredient.Code,
                         Name = ingredient.Name,
-                        Unit = ingredient.Unit,
+                        BaseUnit = ingredient.BaseUnit,
                         LowStockThreshold = ingredient.LowStockThreshold,
                         CurrentStock = ingredient.CurrentStock,
                         CostPrice = ingredient.CostPrice,

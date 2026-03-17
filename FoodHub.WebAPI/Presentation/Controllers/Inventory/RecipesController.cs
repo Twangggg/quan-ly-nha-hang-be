@@ -1,0 +1,61 @@
+using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
+using FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe;
+using FoodHub.Application.Features.Inventory.Recipes.Queries.GetRecipe;
+using FoodHub.Application.Interfaces;
+using FoodHub.Presentation.Controllers;
+using FoodHub.WebAPI.Presentation.Attributes;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace FoodHub.WebAPI.Presentation.Controllers.Inventory
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
+    /// <summary>
+    /// Quản lý định lượng nguyên liệu (recipe) cho món ăn.
+    /// </summary>
+    [Tags("Kho hàng - Định lượng (Recipe)")]
+    public class RecipesController : ApiControllerBase
+    {
+        private readonly IMediator _mediator;
+        private readonly IMessageService _messageService;
+
+        public RecipesController(IMediator mediator, IMessageService messageService)
+        {
+            _mediator = mediator;
+            _messageService = messageService;
+        }
+
+        /// <summary>
+        /// Lấy recipe của một món ăn.
+        /// </summary>
+        [HttpGet("{menuItemId:guid}")]
+        [HasPermission(Permissions.Inventory.View)]
+        [ProducesResponseType(typeof(Result<List<GetRecipeItemResponse>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Get(Guid menuItemId, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new GetRecipeQuery(menuItemId), cancellationToken);
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Tạo/cập nhật recipe cho một món (thay thế toàn bộ danh sách nguyên liệu của món).
+        /// </summary>
+        [HttpPost("{menuItemId:guid}")]
+        [HasPermission(Permissions.Inventory.Update)]
+        [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Upsert(
+            Guid menuItemId,
+            [FromBody] UpsertRecipeRequest request,
+            CancellationToken cancellationToken
+        )
+        {
+            var command = new UpsertRecipeCommand(menuItemId, request.Items);
+            var result = await _mediator.Send(command, cancellationToken);
+            return HandleResult(result);
+        }
+    }
+}

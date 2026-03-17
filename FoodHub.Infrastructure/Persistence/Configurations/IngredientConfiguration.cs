@@ -32,6 +32,11 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
             builder.Property(e => e.IsActive).HasColumnName("is_active");
 
+            builder
+                .HasMany(e => e.Conversions)
+                .WithOne(c => c.Ingredient)
+                .HasForeignKey(c => c.IngredientId);
+
             // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");
             builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");

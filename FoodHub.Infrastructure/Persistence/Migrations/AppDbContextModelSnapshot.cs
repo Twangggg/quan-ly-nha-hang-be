@@ -2023,6 +2023,7 @@ namespace FoodHub.Migrations
                         .HasForeignKey("AreaId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_reservations_areas_area_id");
+
                     b.HasOne("FoodHub.Domain.Entities.Table", "Table")
                         .WithMany("Reservations")
                         .HasForeignKey("TableId")
@@ -2031,6 +2032,7 @@ namespace FoodHub.Migrations
                         .HasConstraintName("fk_reservations_tables_table_id");
 
                     b.Navigation("Area");
+
                     b.Navigation("Table");
                 });
 

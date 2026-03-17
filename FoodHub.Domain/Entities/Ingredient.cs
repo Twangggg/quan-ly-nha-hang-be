@@ -19,6 +19,7 @@ namespace FoodHub.Domain.Entities
         public decimal CostPrice { get; private set; }
         public string? Description { get; private set; }
         public bool IsActive { get; private set; } = true;
+        public virtual ICollection<IngredientUoMConversion> Conversions { get; private set; } = new List<IngredientUoMConversion>();
         public virtual ICollection<InventoryTransaction> InventoryTransactions
         {
             get;

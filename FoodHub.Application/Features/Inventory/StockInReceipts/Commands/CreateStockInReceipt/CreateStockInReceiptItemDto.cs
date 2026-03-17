@@ -4,6 +4,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
     {
         public Guid IngredientId { get; set; }
         public decimal Quantity { get; set; }
+        public string? Unit { get; set; }
         public decimal? UnitCost { get; set; }
         public DateTime? ExpiryDate { get; set; }
         public string? BatchCode { get; set; }

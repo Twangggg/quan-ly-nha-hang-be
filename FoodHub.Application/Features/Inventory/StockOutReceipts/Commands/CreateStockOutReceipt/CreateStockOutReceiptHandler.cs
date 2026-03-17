@@ -52,6 +52,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
 
             var ingredients = await ingredientRepo
                 .Query()
+                .Include(x => x.Conversions)
                 .Where(x => ingredientIds.Contains(x.IngredientId))
                 .ToListAsync(cancellationToken);
 
