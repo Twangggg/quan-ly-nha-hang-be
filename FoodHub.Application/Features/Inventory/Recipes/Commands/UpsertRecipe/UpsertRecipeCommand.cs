@@ -3,8 +3,12 @@ using MediatR;
 
 namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 {
-    public record UpsertRecipeCommand(Guid MenuItemId, List<UpsertRecipeItemDto> Items)
-        : IRequest<Result<Unit>>;
+    public record UpsertRecipeCommand(
+        Guid MenuItemId,
+        List<UpsertRecipeItemDto> Items,
+        string? Instructions,
+        int PrepTimeMinutes
+    ) : IRequest<Result<Unit>>;
 
     public class UpsertRecipeItemDto
     {

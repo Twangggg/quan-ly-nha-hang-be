@@ -41,6 +41,16 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 
             var actorId = _currentUserService.GetUserIdAsGuid();
             var recipeRepo = _unitOfWork.Repository<MenuItemIngredient>();
+            var menuItemRepo = _unitOfWork.Repository<MenuItem>();
+
+            var menuItem = await menuItemRepo
+                .Query()
+                .FirstOrDefaultAsync(x => x.MenuItemId == request.MenuItemId, cancellationToken);
+
+            if (menuItem == null)
+            {
+                return Result<Unit>.Failure("MenuItem.NotFound", ResultErrorType.NotFound);
+            }
 
             var existing = await recipeRepo
                 .Query()
@@ -98,6 +108,30 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                         recipeRepo.Update(line);
                     }
                 }
+
+                // Update MenuItem Metadata
+                menuItem.Description = request.Instructions;
+                menuItem.ExpectedTime = request.PrepTimeMinutes;
+
+                // Calculate and update CostPrice
+                var allIngredients = await _unitOfWork
+                    .Repository<Ingredient>()
+                    .Query()
+                    .Where(x => ingredientIds.Contains(x.IngredientId))
+                    .ToListAsync(cancellationToken);
+
+                decimal totalCost = 0;
+                foreach (var item in request.Items)
+                {
+                    var ing = allIngredients.FirstOrDefault(x => x.IngredientId == item.IngredientId);
+                    if (ing != null)
+                    {
+                        totalCost += ing.CostPrice * item.QuantityPerServing;
+                    }
+                }
+
+                menuItem.CostPrice = totalCost;
+                menuItemRepo.Update(menuItem);
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();

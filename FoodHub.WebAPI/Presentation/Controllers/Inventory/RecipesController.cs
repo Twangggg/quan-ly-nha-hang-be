@@ -9,9 +9,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FoodHub.WebAPI.Presentation.Controllers.Inventory
+namespace FoodHub.Presentation.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     [Authorize]
     /// <summary>
@@ -32,7 +31,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Inventory
         /// <summary>
         /// Lấy recipe của một món ăn.
         /// </summary>
-        [HttpGet("{menuItemId:guid}")]
+        [HttpGet("/api/v{version:apiVersion}/inventory/recipes/{menuItemId:guid}")]
         [HasPermission(Permissions.Inventory.View)]
         [ProducesResponseType(typeof(Result<List<GetRecipeItemResponse>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(Guid menuItemId, CancellationToken cancellationToken)
@@ -44,7 +43,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Inventory
         /// <summary>
         /// Tạo/cập nhật recipe cho một món (thay thế toàn bộ danh sách nguyên liệu của món).
         /// </summary>
-        [HttpPost("{menuItemId:guid}")]
+        [HttpPut("/api/v{version:apiVersion}/inventory/recipes/{menuItemId:guid}")]
         [HasPermission(Permissions.Inventory.Update)]
         [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Upsert(
@@ -53,7 +52,12 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Inventory
             CancellationToken cancellationToken
         )
         {
-            var command = new UpsertRecipeCommand(menuItemId, request.Items);
+            var command = new UpsertRecipeCommand(
+                menuItemId,
+                request.Items,
+                request.Instructions,
+                request.PrepTimeMinutes
+            );
             var result = await _mediator.Send(command, cancellationToken);
             return HandleResult(result);
         }
