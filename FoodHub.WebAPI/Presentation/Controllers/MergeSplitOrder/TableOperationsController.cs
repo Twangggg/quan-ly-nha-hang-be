@@ -23,7 +23,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.MergeSplitOrder
         }
 
         /// <summary>
-        /// Đổi bàn cho một đơn hàng (Lúc này đơn hàng & món phải được mang sang bàn mới).
+        /// Đổi bàn cho một đơn hàng (đơn hàng và món đi kèm được chuyển sang bàn mới).
         /// </summary>
         [HttpPatch("{id:guid}/change-table")]
         [HasPermission(Permissions.Orders.ChangeTable)] // Hoặc cần quyền chuyên biệt

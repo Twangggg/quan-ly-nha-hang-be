@@ -79,7 +79,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
 
             var auditLog = OrderAuditLog.CreateOrderCancelled(
                 order.OrderId,
-                auditorId,
+                auditorId.Value,
                 request.Reason
             );
 

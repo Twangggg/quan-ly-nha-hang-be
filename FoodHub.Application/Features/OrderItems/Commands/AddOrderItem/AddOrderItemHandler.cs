@@ -148,7 +148,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             // Audit & Save
             var auditLog = OrderAuditLog.CreateOrderItemAdded(
                 order.OrderId,
-                userId,
+                userId.Value,
                 result.Item.OrderItemId,
                 result.IsNew,
                 request.Quantity,

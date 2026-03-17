@@ -10,7 +10,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
 {
-    public class CreateReservationHandler : IRequestHandler<CreateReservationCommand, Result<CreateReservationResponse>>
+    public class CreateReservationHandler
+        : IRequestHandler<CreateReservationCommand, Result<CreateReservationResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CreateReservationHandler> _logger;
@@ -21,7 +22,8 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             IUnitOfWork unitOfWork,
             ILogger<CreateReservationHandler> logger,
             IMessageService messageService,
-            ICacheService cacheService)
+            ICacheService cacheService
+        )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
@@ -29,7 +31,10 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             _cacheService = cacheService;
         }
 
-        public async Task<Result<CreateReservationResponse>> Handle(CreateReservationCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CreateReservationResponse>> Handle(
+            CreateReservationCommand request,
+            CancellationToken cancellationToken
+        )
         {
             _logger.LogInformation(
                 "Creating reservation request for Area {AreaId} on {ReservationDate} at {ReservationTime} for {GuestCount} guests",
@@ -42,11 +47,14 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var tables = await _unitOfWork.Repository<Table>()
+                var tables = await _unitOfWork
+                    .Repository<Table>()
                     .Query()
-                    .Where(t => t.AreaId == request.AreaId
+                    .Where(t =>
+                        t.AreaId == request.AreaId
                         && t.Status != TableStatus.OutOfService
-                        && t.Capacity >= request.GuestCount)
+                        && t.Capacity >= request.GuestCount
+                    )
                     .OrderBy(t => t.Capacity)
                     .ToListAsync(cancellationToken);
 
@@ -62,25 +70,32 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
                 var tableIds = tables.Select(t => t.TableId).ToList();
                 var candidateReservations = tables.ToDictionary(
                     table => table.TableId,
-                    table => Reservation.CreateBooked(
-                        request.CustomerName,
-                        request.CustomerPhone,
-                        request.ReservationDate,
-                        request.ReservationTime,
-                        request.PartyType,
-                        request.GuestCount,
-                        request.HasChildren,
-                        request.Note,
-                        table.TableId,
-                        table.AreaId
-                    )
+                    table =>
+                        Reservation.CreateBooked(
+                            request.CustomerName,
+                            request.CustomerPhone,
+                            request.ReservationDate,
+                            request.ReservationTime,
+                            request.PartyType,
+                            request.GuestCount,
+                            request.HasChildren,
+                            request.Note,
+                            table.TableId,
+                            table.AreaId
+                        )
                 );
 
-                var existingReservations = await _unitOfWork.Repository<Reservation>()
+                var existingReservations = await _unitOfWork
+                    .Repository<Reservation>()
                     .Query()
-                    .Where(r => tableIds.Contains(r.TableId)
+                    .Where(r =>
+                        tableIds.Contains(r.TableId)
                         && r.ReservationDate == request.ReservationDate
-                        && (r.Status == ReservationStatus.Booked || r.Status == ReservationStatus.CheckIn))
+                        && (
+                            r.Status == ReservationStatus.Booked
+                            || r.Status == ReservationStatus.CheckIn
+                        )
+                    )
                     .ToListAsync(cancellationToken);
 
                 var selectedTable = tables.FirstOrDefault(table =>
@@ -111,13 +126,18 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
                     selectedTable.TableId
                 );
 
-                await _cacheService.RemoveByPatternAsync(CacheKey.ReservationList + "*", cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.ReservationList + "*",
+                    cancellationToken
+                );
 
-                return Result<CreateReservationResponse>.Success(new CreateReservationResponse
-                {
-                    ReservationId = reservation.ReservationId,
-                    TableId = selectedTable.TableId
-                });
+                return Result<CreateReservationResponse>.Success(
+                    new CreateReservationResponse
+                    {
+                        ReservationId = reservation.ReservationId,
+                        TableId = selectedTable.TableId,
+                    }
+                );
             }
             catch (Exception ex)
             {

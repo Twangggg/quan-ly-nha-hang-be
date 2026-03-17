@@ -109,7 +109,6 @@ namespace FoodHub.Tests.Features.Options.Commands
 
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId);
 
-            OptionGroup? capturedOptionGroup = null;
             var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
             mockRepo
                 .Setup(r => r.Query())

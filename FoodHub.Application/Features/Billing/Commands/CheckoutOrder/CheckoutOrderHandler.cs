@@ -21,7 +21,8 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             IUnitOfWork unitOfWork,
             ILogger<CheckoutOrderHandler> logger,
             IMessageService messageService,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService
+        )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
@@ -52,7 +53,10 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
 
             if (order == null)
             {
-                _logger.LogWarning("Order not found for checkout. OrderId: {OrderId}", request.OrderId);
+                _logger.LogWarning(
+                    "Order not found for checkout. OrderId: {OrderId}",
+                    request.OrderId
+                );
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.Order.NotFound),
                     ResultErrorType.NotFound
@@ -63,7 +67,11 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             var domainResult = order.ProcessCheckout(request.PaymentMethod, request.AmountPaid);
             if (!domainResult.IsSuccess)
             {
-                _logger.LogWarning("Checkout failed for OrderId: {OrderId}. Reason: {ErrorCode}", request.OrderId, domainResult.ErrorCode);
+                _logger.LogWarning(
+                    "Checkout failed for OrderId: {OrderId}. Reason: {ErrorCode}",
+                    request.OrderId,
+                    domainResult.ErrorCode
+                );
 
                 if (domainResult.ErrorCode == DomainErrors.Order.InvalidActionWithStatus)
                 {
@@ -95,7 +103,8 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                     EmployeeId = auditorId,
                     Action = AuditLogActions.CheckoutOrder,
                     CreatedAt = DateTime.UtcNow,
-                    NewValue = $"{{\"paymentMethod\": \"{request.PaymentMethod}\", \"totalAmount\": {order.TotalAmount}, \"amountPaid\": {order.AmountPaid}}}",
+                    NewValue =
+                        $"{{\"paymentMethod\": \"{request.PaymentMethod}\", \"totalAmount\": {order.TotalAmount}, \"amountPaid\": {order.AmountPaid}}}",
                 };
 
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
@@ -117,6 +126,25 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                         }
                         //table.MarkAsAvailable();
                         _unitOfWork.Repository<Domain.Entities.Table>().Update(table);
+
+                        // Cập nhật Reservation sang Completed
+                        if (order.ReservationId.HasValue)
+                        {
+                            var reservation = await _unitOfWork
+                                .Repository<Reservation>()
+                                .GetByIdAsync(order.ReservationId.Value);
+                            if (reservation != null)
+                            {
+                                reservation.Status = ReservationStatus.Completed;
+                                reservation.UpdatedAt = DateTime.UtcNow;
+                                reservation.UpdatedBy = auditorId;
+                                _unitOfWork.Repository<Reservation>().Update(reservation);
+                            }
+                        }
+
+                        // Chú ý: Tại đây nếu một nhóm khách ngồi nhiều bàn (đã gộp đơn về đơn này), 
+                        // nhân viên sẽ cần giải phóng các bàn kia thủ công hoặc chúng ta cần lưu vết liên kết đa bàn.
+                        // Hiện tại hệ thống ưu tiên tính minh bạch: giải phóng bàn chính gắn với đơn hàng.
 
                         // Ngắt kết nối đơn hàng với bàn sau khi đã giải phóng bàn xong
                         order.TableId = null;

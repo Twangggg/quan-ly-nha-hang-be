@@ -111,6 +111,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                     SourceOrderId: sourceOrderId,
                     DestinationOrderId: null,
                     DestinationTableId: destinationTableId,
+                    DestinationReservationId: null,
                     ItemsToSplit:
                     new List<SplitOrderItemCommand>
                     {
@@ -184,6 +185,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                     SourceOrderId: sourceOrderId,
                     DestinationOrderId: null,
                     DestinationTableId: destinationTableId,
+                    DestinationReservationId: null,
                     ItemsToSplit:
                     new List<SplitOrderItemCommand>
                     {

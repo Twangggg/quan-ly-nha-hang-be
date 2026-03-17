@@ -10,8 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 {
-    public class MergeOrderHandler
-        : IRequestHandler<MergeOrderCommand, Result<MergeOrderResponse>>
+    public class MergeOrderHandler : IRequestHandler<MergeOrderCommand, Result<MergeOrderResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
@@ -71,6 +70,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                 auditorId
             );
 
+            var reservationRepository = _unitOfWork.Repository<Reservation>();
             var orderRepository = _unitOfWork.Repository<Order>();
             var orderItemRepository = _unitOfWork.Repository<OrderItem>();
             var tableRepository = _unitOfWork.Repository<Table>();
@@ -85,7 +85,10 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 
             if (firstOrder is null)
             {
-                _logger.LogWarning("Primary order {OrderId} was not found for merge.", request.FirstOrder);
+                _logger.LogWarning(
+                    "Primary order {OrderId} was not found for merge.",
+                    request.FirstOrder
+                );
                 return Result<MergeOrderResponse>.NotFound(
                     _messageService.GetMessage(MessageKeys.Order.NotFound, request.FirstOrder)
                 );
@@ -100,7 +103,10 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 
             if (secondOrder is null)
             {
-                _logger.LogWarning("Secondary order {OrderId} was not found for merge.", request.SecondOrder);
+                _logger.LogWarning(
+                    "Secondary order {OrderId} was not found for merge.",
+                    request.SecondOrder
+                );
                 return Result<MergeOrderResponse>.NotFound(
                     _messageService.GetMessage(MessageKeys.Order.NotFound, request.SecondOrder)
                 );
@@ -166,12 +172,9 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                             cancellationToken
                         );
 
-                    if (secondTable != null && secondTable.SetAvailable())
-                    {
-                        secondTable.UpdatedAt = now;
-                        secondTable.UpdatedBy = auditorId;
-                        tableRepository.Update(secondTable);
-                    }
+                    // Ghi chú: Chúng ta KHÔNG giải phóng bàn hoặc reservation của đơn bị gộp (secondOrder) 
+                    // vì theo ý kiến người dùng, khách vẫn có thể ngồi tại bàn đó cho đến khi thanh toán xong toàn bộ.
+                    // Table của secondOrder sẽ ở trạng thái Occupied nhưng không còn Order gắn trực tiếp (vì đã gộp vào firstOrder).
                 }
 
                 await auditLogRepository.AddAsync(

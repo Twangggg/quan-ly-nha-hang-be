@@ -85,7 +85,18 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 .Returns(Task.CompletedTask);
 
             var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
-            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            mockCategoryRepo
+                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(
+                    new Category
+                    {
+                        CategoryId = categoryId,
+                        Name = "Combo",
+                        CodePrefix = "CB",
+                        CategoryType = CategoryType.Combo,
+                        IsActive = true,
+                    }
+                );
             _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
 
             // Act
@@ -143,7 +154,18 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 .Returns("Menu item not found");
 
             var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
-            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            mockCategoryRepo
+                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(
+                    new Category
+                    {
+                        CategoryId = categoryId,
+                        Name = "Combo",
+                        CodePrefix = "CB",
+                        CategoryType = CategoryType.Combo,
+                        IsActive = true,
+                    }
+                );
             _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
 
             // Act
