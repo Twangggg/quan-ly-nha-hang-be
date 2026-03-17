@@ -173,4 +173,7 @@
   <data name="Ingredient.InvalidOpeningStockCost" xml:space="preserve">
     <value>Don gia nhap phai lon hon hoac bang 0.</value>
   </data>
+  <data name="Reservation.CancelReservationSuccess" xml:space="preserve">
+    <value>Hủy đặt chỗ thành công.</value>
+  </data>
 </root>

@@ -141,4 +141,7 @@
   <data name="Ingredient.InvalidOpeningStockCost" xml:space="preserve">
     <value>Opening stock unit cost must be greater than or equal to 0.</value>
   </data>
+  <data name="Reservation.CancelReservationSuccess" xml:space="preserve">
+    <value>Reservation cancelled successfully.</value>
+  </data>
 </root>

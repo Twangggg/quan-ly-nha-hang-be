@@ -535,4 +535,49 @@
   <data name="Ingredient.ThresholdMin" xml:space="preserve">
     <value>Low stock threshold must be greater than or equal to 0.</value>
   </data>
+  <data name="Reservation.NotFound" xml:space="preserve">
+    <value>Reservation not found.</value>
+  </data>
+  <data name="Reservation.Overlapped" xml:space="preserve">
+    <value>The reservation time overlaps with another booking.</value>
+  </data>
+  <data name="Reservation.TableCapacityExceeded" xml:space="preserve">
+    <value>Guest count exceeds table capacity.</value>
+  </data>
+  <data name="Reservation.InvalidStatusForCheckIn" xml:space="preserve">
+    <value>Invalid reservation status for check-in.</value>
+  </data>
+  <data name="Reservation.TableOccupied" xml:space="preserve">
+    <value>The table is currently occupied.</value>
+  </data>
+  <data name="Reservation.AlreadyCheckedIn" xml:space="preserve">
+    <value>Customer has already checked in.</value>
+  </data>
+  <data name="Reservation.NameRequired" xml:space="preserve">
+    <value>Customer name is required.</value>
+  </data>
+  <data name="Reservation.NameMaxLength" xml:space="preserve">
+    <value>Customer name cannot exceed 100 characters.</value>
+  </data>
+  <data name="Reservation.PhoneRequired" xml:space="preserve">
+    <value>Phone number is required.</value>
+  </data>
+  <data name="Reservation.PhoneInvalid" xml:space="preserve">
+    <value>Invalid phone number format.</value>
+  </data>
+  <data name="Reservation.InvalidGuestCount" xml:space="preserve">
+    <value>Guest count must be greater than 0.</value>
+  </data>
+  <data name="Reservation.NoTableAvailable" xml:space="preserve">
+    <value>No suitable table available.</value>
+  </data>
+  <data name="Reservation.InvalidTime" xml:space="preserve">
+    <value>Invalid reservation time.</value>
+  </data>
+  <data name="Reservation.TimeTooSoon" xml:space="preserve">
+    <value>Reservations must be made at least 45 minutes in advance.</value>
+  </data>
+  <data name="Reservation.VipRequired" xml:space="preserve">
+    <value>This area requires VIP status.</value>
+  </data>
 </root>
