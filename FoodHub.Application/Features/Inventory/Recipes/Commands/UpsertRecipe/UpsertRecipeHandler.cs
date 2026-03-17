@@ -54,6 +54,8 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 
             var menuItem = await menuItemRepo
                 .Query()
+                .Include(m => m.Ingredients)
+                    .ThenInclude(i => i.Ingredient)
                 .FirstOrDefaultAsync(x => x.MenuItemId == request.MenuItemId, cancellationToken);
 
             if (menuItem == null)
@@ -61,12 +63,15 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                 return Result<Guid>.Failure("MenuItem.NotFound", ResultErrorType.NotFound);
             }
 
-            var existing = await recipeRepo
-                .Query()
-                .Where(x => x.MenuItemId == request.MenuItemId)
-                .ToListAsync(cancellationToken);
-
             var ingredientIds = request.Items.Select(x => x.IngredientId).ToList();
+
+            // Fetch all required ingredients to ensure they are tracked for Identity Resolution (Fix-up)
+            // and cost calculation in the loop/domain method.
+            await _unitOfWork
+                .Repository<Ingredient>()
+                .Query()
+                .Where(x => ingredientIds.Contains(x.IngredientId))
+                .ToListAsync(cancellationToken);
 
             if (ingredientIds.Count != ingredientIds.Distinct().Count())
             {
@@ -81,29 +86,32 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
             try
             {
                 // Remove deleted lines
-                var toRemove = existing
-                    .Where(e => !ingredientIds.Contains(e.IngredientId))
+                var toRemove = menuItem
+                    .Ingredients.Where(e => !ingredientIds.Contains(e.IngredientId))
                     .ToList();
                 foreach (var rem in toRemove)
                 {
+                    menuItem.Ingredients.Remove(rem);
                     recipeRepo.Delete(rem);
                 }
 
                 // Upsert items
                 foreach (var item in request.Items)
                 {
-                    var line = existing.FirstOrDefault(x => x.IngredientId == item.IngredientId);
+                    var line = menuItem.Ingredients.FirstOrDefault(x =>
+                        x.IngredientId == item.IngredientId
+                    );
                     if (line == null)
                     {
-                        await recipeRepo.AddAsync(
-                            MenuItemIngredient.Create(
-                                request.MenuItemId,
-                                item.IngredientId,
-                                item.QuantityPerServing,
-                                item.BaseUnit,
-                                actorId
-                            )
+                        var newLine = MenuItemIngredient.Create(
+                            request.MenuItemId,
+                            item.IngredientId,
+                            item.QuantityPerServing,
+                            item.BaseUnit,
+                            actorId
                         );
+                        await recipeRepo.AddAsync(newLine);
+                        menuItem.Ingredients.Add(newLine);
                     }
                     else
                     {
@@ -115,7 +123,10 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                         if (!updateResult.IsSuccess)
                         {
                             throw new FoodHub.Application.Common.Exceptions.BusinessException(
-                                updateResult.ErrorCode ?? _messageService.GetMessage(MessageKeys.StockOutReceipt.QuantityMin)
+                                updateResult.ErrorCode
+                                    ?? _messageService.GetMessage(
+                                        MessageKeys.StockOutReceipt.QuantityMin
+                                    )
                             );
                         }
 
@@ -128,14 +139,8 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                 menuItem.ExpectedTime = request.PrepTimeMinutes;
 
                 // Calculate and update CostPrice via Domain Entity
-                var updatedIngredients = await _unitOfWork
-                    .Repository<MenuItemIngredient>()
-                    .Query()
-                    .Where(x => x.MenuItemId == request.MenuItemId)
-                    .Include(x => x.Ingredient)
-                    .ToListAsync(cancellationToken);
-
-                menuItem.UpdateCostFromIngredients(updatedIngredients);
+                // ingredients are already in memory and navigation properties are fixed-up by EF Core
+                menuItem.UpdateCostFromIngredients(menuItem.Ingredients);
 
                 _unitOfWork.Repository<MenuItem>().Update(menuItem);
 
