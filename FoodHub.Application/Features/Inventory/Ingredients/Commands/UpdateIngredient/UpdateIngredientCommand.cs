@@ -7,7 +7,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
         Guid IngredientId,
         string Code,
         string Name,
-        string Unit,
+        string BaseUnit,
         decimal LowStockThreshold,
         string? Description,
         bool IsActive,

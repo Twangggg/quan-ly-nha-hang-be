@@ -19,7 +19,7 @@ namespace FoodHub.Tests.Features.Inventory
 
             inactive.Update(
                 inactive.Name,
-                inactive.Unit,
+                inactive.BaseUnit,
                 inactive.LowStockThreshold,
                 inactive.Description,
                 false,

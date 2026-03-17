@@ -99,7 +99,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                 {
                     ingredient.Update(
                         request.Name,
-                        request.Unit,
+                        request.BaseUnit,
                         request.LowStockThreshold,
                         request.Description,
                         request.IsActive,

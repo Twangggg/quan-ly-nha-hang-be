@@ -48,7 +48,7 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Queries.GetOpening
                     IngredientId = x.IngredientId,
                     Code = x.Code,
                     Name = x.Name,
-                    Unit = x.Unit,
+                    Unit = x.BaseUnit,
                     CurrentStock = x.CurrentStock,
                     CostPrice = x.CostPrice,
                 });

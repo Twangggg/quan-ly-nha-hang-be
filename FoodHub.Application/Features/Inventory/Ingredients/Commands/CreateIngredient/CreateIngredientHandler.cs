@@ -73,7 +73,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                 var ingredient = Ingredient.Create(
                     generatedCode,
                     request.Name,
-                    request.Unit,
+                    request.BaseUnit,
                     request.LowStockThreshold,
                     0,
                     0,
@@ -97,7 +97,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                         IngredientId = ingredient.IngredientId,
                         Code = ingredient.Code,
                         Name = ingredient.Name,
-                        Unit = ingredient.Unit,
+                        BaseUnit = ingredient.BaseUnit,
                         CurrentStock = ingredient.CurrentStock,
                         CostPrice = ingredient.CostPrice,
                         LowStockThreshold = ingredient.LowStockThreshold,

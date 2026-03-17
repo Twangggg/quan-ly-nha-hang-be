@@ -77,7 +77,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
                             Unit =
                                 ingredientQuery
                                     .Where(ing => ing.IngredientId == i.IngredientId)
-                                    .Select(ing => ing.Unit)
+                                    .Select(ing => ing.BaseUnit)
                                     .FirstOrDefault()
                                 ?? string.Empty,
                             Quantity = i.Quantity,

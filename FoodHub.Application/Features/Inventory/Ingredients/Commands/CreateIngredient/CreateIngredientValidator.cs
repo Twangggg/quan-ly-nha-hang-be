@@ -14,7 +14,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                 .MaximumLength(100)
                 .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.NameMaxLength));
 
-            RuleFor(x => x.Unit)
+            RuleFor(x => x.BaseUnit)
                 .NotEmpty()
                 .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.UnitRequired))
                 .MaximumLength(20)
