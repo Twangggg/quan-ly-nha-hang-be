@@ -142,7 +142,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
 
                 var auditLog = OrderAuditLog.CreateOrderCreated(
                     newOrder.OrderId,
-                    userId,
+                    userId.Value,
                     newOrder.OrderCode,
                     newOrder.OrderType,
                     newOrder.TableId

@@ -148,7 +148,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             // Audit & Save
             var auditLog = OrderAuditLog.CreateOrderItemAdded(
                 order.OrderId,
-                userId,
+                userId.Value,
                 result.Item.OrderItemId,
                 result.IsNew,
                 request.Quantity,
@@ -159,7 +159,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             // Notify KDS
-            _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+            await _signalRService.NotifyOrderItemStatusChangedAsync(
                 result.Item.OrderItemId,
                 result.Item.Status,
                 result.Item.StationSnapshot

@@ -291,9 +291,10 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             }
 
             // 4. Notify KDS
+            // 4. Notify KDS
             foreach (var item in processedItems)
             {
-                _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                await _signalRService.NotifyOrderItemStatusChangedAsync(
                     item.OrderItemId,
                     item.Status,
                     item.StationSnapshot
