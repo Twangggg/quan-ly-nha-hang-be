@@ -19,6 +19,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
         private readonly ISignalRService _signalRService;
+        private readonly IInventoryDeductionService _inventoryDeductionService;
         private readonly ILogger<CompleteOrderHandler> _logger;
 
         public CompleteOrderHandler(
@@ -27,6 +28,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
             IMapper mapper,
             ICurrentUserService currentUserService,
             ISignalRService signalRService,
+            IInventoryDeductionService inventoryDeductionService,
             ILogger<CompleteOrderHandler> logger
         )
         {
@@ -35,6 +37,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
             _mapper = mapper;
             _currentUserService = currentUserService;
             _signalRService = signalRService;
+            _inventoryDeductionService = inventoryDeductionService;
             _logger = logger;
         }
 
@@ -97,6 +100,11 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
             try
             {
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+                // Trigger stock deduction after order is marked as completed in DB
+                // This is done after SaveChangeAsync to ensure the order state is consistent
+                // In a more robust system, this could be a domain event or a background job
+                await _inventoryDeductionService.DeductStockAsync(order.OrderId, cancellationToken);
             }
             catch (DbUpdateException ex)
             {

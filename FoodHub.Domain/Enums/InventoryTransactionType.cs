@@ -7,5 +7,6 @@ namespace FoodHub.Domain.Enums
         StockInReverse = 3,
         StockOut = 4,
         StockOutReverse = 5,
+        SaleDeduction = 6,
     }
 }

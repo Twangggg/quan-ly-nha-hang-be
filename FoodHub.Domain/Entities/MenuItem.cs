@@ -26,7 +26,13 @@ namespace FoodHub.Domain.Entities
 
         public ICollection<OptionGroup> OptionGroups { get; set; } = new List<OptionGroup>();
         public ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();
-        public ICollection<MenuItemIngredient> Ingredients { get; set; } =
+        public virtual ICollection<MenuItemIngredient> Ingredients { get; private set; } =
             new List<MenuItemIngredient>();
+
+        public void UpdateCostPrice(decimal newCost)
+        {
+            CostPrice = newCost;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }

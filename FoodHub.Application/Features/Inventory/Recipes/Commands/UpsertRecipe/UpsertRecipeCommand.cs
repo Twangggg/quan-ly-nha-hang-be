@@ -8,7 +8,7 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
         List<UpsertRecipeItemDto> Items,
         string? Instructions,
         int PrepTimeMinutes
-    ) : IRequest<Result<Unit>>;
+    ) : IRequest<Result<Guid>>;
 
     public class UpsertRecipeItemDto
     {

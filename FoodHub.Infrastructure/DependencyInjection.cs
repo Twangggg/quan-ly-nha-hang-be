@@ -85,6 +85,9 @@ namespace FoodHub.Infrastructure
             // PDF Export Service
             services.AddScoped<IPdfService, PdfService>();
 
+            // Inventory Services
+            services.AddScoped<IInventoryDeductionService, InventoryDeductionService>();
+
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();

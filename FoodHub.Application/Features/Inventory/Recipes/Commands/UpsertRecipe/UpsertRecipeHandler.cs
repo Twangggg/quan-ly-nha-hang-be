@@ -5,35 +5,44 @@ using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 {
-    public class UpsertRecipeHandler : IRequestHandler<UpsertRecipeCommand, Result<Unit>>
+    public class UpsertRecipeHandler : IRequestHandler<UpsertRecipeCommand, Result<Guid>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ILogger<UpsertRecipeHandler> _logger;
 
         public UpsertRecipeHandler(
             IUnitOfWork unitOfWork,
             IMessageService messageService,
-            ICurrentUserService currentUserService
+            ICurrentUserService currentUserService,
+            ILogger<UpsertRecipeHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _logger = logger;
         }
 
-        public async Task<Result<Unit>> Handle(
+        public async Task<Result<Guid>> Handle(
             UpsertRecipeCommand request,
             CancellationToken cancellationToken
         )
         {
+            _logger.LogInformation(
+                "Starting UpsertRecipe for MenuItemId: {MenuItemId}",
+                request.MenuItemId
+            );
+
             var validationResult = new UpsertRecipeValidator(_messageService).Validate(request);
             if (!validationResult.IsValid)
             {
-                return Result<Unit>.Failure(
+                return Result<Guid>.Failure(
                     validationResult.Errors.First().ErrorMessage,
                     ResultErrorType.Conflict
                 );
@@ -49,7 +58,7 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 
             if (menuItem == null)
             {
-                return Result<Unit>.Failure("MenuItem.NotFound", ResultErrorType.NotFound);
+                return Result<Guid>.Failure("MenuItem.NotFound", ResultErrorType.NotFound);
             }
 
             var existing = await recipeRepo
@@ -61,7 +70,7 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 
             if (ingredientIds.Count != ingredientIds.Distinct().Count())
             {
-                return Result<Unit>.Failure(
+                return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.StockOutReceipt.DuplicateIngredient),
                     ResultErrorType.Conflict
                 );
@@ -106,7 +115,7 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                         if (!updateResult.IsSuccess)
                         {
                             await _unitOfWork.RollbackTransactionAsync();
-                            return Result<Unit>.Failure(
+                            return Result<Guid>.Failure(
                                 _messageService.GetMessage(MessageKeys.StockOutReceipt.QuantityMin),
                                 ResultErrorType.Conflict
                             );
@@ -139,15 +148,29 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                     }
                 }
 
-                menuItem.CostPrice = totalCost;
-                menuItemRepo.Update(menuItem);
+                // 4. Update Menu Item metadata and Cost Price
+                menuItem.UpdateCostPrice(totalCost);
+
+                _unitOfWork.Repository<MenuItem>().Update(menuItem);
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
-                return Result<Unit>.Success(Unit.Value);
+
+                _logger.LogInformation(
+                    "Successfully updated recipe for MenuItemId: {MenuItemId}. Total Cost: {TotalCost}",
+                    request.MenuItemId,
+                    totalCost
+                );
+
+                return Result<Guid>.Success(menuItem.MenuItemId);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(
+                    ex,
+                    "Error occurred while upserting recipe for MenuItemId: {MenuItemId}",
+                    request.MenuItemId
+                );
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }

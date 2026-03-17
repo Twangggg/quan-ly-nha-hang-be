@@ -54,7 +54,7 @@ namespace FoodHub.Tests.Features.Inventory
             ingredient.ReceiveStock(5, 6);
 
             var receipt = StockInReceipt.Create("NK-20260315-0001", DateTime.UtcNow, null);
-            receipt.AddItem(ingredient.IngredientId, 5, 6, null, "BATCH-01");
+            receipt.AddItem(ingredient.IngredientId, 5, "Kg", 6, null, "BATCH-01");
 
             var existingTransactions = new List<InventoryTransaction>
             {
@@ -106,7 +106,7 @@ namespace FoodHub.Tests.Features.Inventory
             ingredient.ReceiveStock(5, 6);
 
             var receipt = StockInReceipt.Create("NK-20260315-0001", DateTime.UtcNow, null);
-            receipt.AddItem(ingredient.IngredientId, 5, 6, null, "BATCH-01");
+            receipt.AddItem(ingredient.IngredientId, 5, "Kg", 6, null, "BATCH-01");
 
             var existingTransactions = new List<InventoryTransaction>
             {
