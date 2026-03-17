@@ -75,12 +75,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStoc
                                     .Select(ing => ing.Name)
                                     .FirstOrDefault()
                                 ?? string.Empty,
-                            Unit =
-                                ingredientQuery
-                                    .Where(ing => ing.IngredientId == i.IngredientId)
-                                    .Select(ing => ing.BaseUnit)
-                                    .FirstOrDefault()
-                                ?? string.Empty,
+                            BaseUnit = i.BaseUnit,
                             Quantity = i.Quantity,
                             UnitCost = i.UnitCost,
                             LineAmount = i.LineAmount,

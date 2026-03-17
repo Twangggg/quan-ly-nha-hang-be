@@ -83,13 +83,14 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                 foreach (var item in request.Items)
                 {
                     var ingredient = ingredientMap[item.IngredientId];
-                    var baseQuantity = item.Unit is null
+                    var baseQuantity = item.BaseUnit is null
                         ? item.Quantity
-                        : ConvertToBase(ingredient, item.Unit, item.Quantity);
+                        : ConvertToBase(ingredient, item.BaseUnit, item.Quantity);
 
                     var addItemResult = receipt.AddItem(
                         item.IngredientId,
                         baseQuantity,
+                        item.BaseUnit ?? ingredient.BaseUnit,
                         item.UnitCost,
                         NormalizeUtc(item.ExpiryDate),
                         item.BatchCode,
@@ -123,12 +124,12 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                     await transactionRepo.AddAsync(
                         InventoryTransaction.CreateStockIn(
                             ingredient.IngredientId,
-                             baseQuantity,
-                             item.UnitCost,
-                             ingredient.CurrentStock,
-                             receiptCode,
-                             actorId
-                         )
+                            baseQuantity,
+                            item.UnitCost,
+                            ingredient.CurrentStock,
+                            receiptCode,
+                            actorId
+                        )
                     );
                 }
 
@@ -208,19 +209,21 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
             };
         }
 
-        private static decimal ConvertToBase(Ingredient ingredient, string fromUnit, decimal quantity)
+        private static decimal ConvertToBase(
+            Ingredient ingredient,
+            string fromUnit,
+            decimal quantity
+        )
         {
             if (string.Equals(fromUnit, ingredient.BaseUnit, StringComparison.OrdinalIgnoreCase))
             {
                 return quantity;
             }
 
-            var conversion = ingredient
-                .Conversions
-                .FirstOrDefault(x =>
-                    string.Equals(x.FromUnit, fromUnit, StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(x.ToUnit, ingredient.BaseUnit, StringComparison.OrdinalIgnoreCase)
-                );
+            var conversion = ingredient.Conversions.FirstOrDefault(x =>
+                string.Equals(x.FromUnit, fromUnit, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(x.ToUnit, ingredient.BaseUnit, StringComparison.OrdinalIgnoreCase)
+            );
 
             if (conversion == null)
             {

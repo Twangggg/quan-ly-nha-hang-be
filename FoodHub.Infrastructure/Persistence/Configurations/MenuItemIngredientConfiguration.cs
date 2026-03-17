@@ -18,6 +18,11 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .Property(x => x.QuantityPerServing)
                 .HasColumnName("quantity_per_serving")
                 .HasPrecision(18, 4);
+            builder
+                .Property(x => x.BaseUnit)
+                .HasColumnName("base_unit")
+                .HasMaxLength(20)
+                .IsRequired();
 
             builder.Property(x => x.CreatedAt).HasColumnName("created_at");
             builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");

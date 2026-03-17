@@ -43,7 +43,9 @@ namespace FoodHub.Presentation.Controllers
             [FromQuery] DateOnly? toDate
         )
         {
-            var result = await _mediator.Send(new GetStockInReceiptsQuery(pagination, fromDate, toDate));
+            var result = await _mediator.Send(
+                new GetStockInReceiptsQuery(pagination, fromDate, toDate)
+            );
             if (result.IsSuccess && result.Data != null)
             {
                 Response.AddPaginationHeaders(result.Data);
@@ -86,7 +88,8 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(command);
             return HandleCreated(
                 result,
-                data => Url.Action(nameof(GetStockInReceiptById), new { id = data.StockInReceiptId })
+                data =>
+                    Url.Action(nameof(GetStockInReceiptById), new { id = data.StockInReceiptId })
             );
         }
 

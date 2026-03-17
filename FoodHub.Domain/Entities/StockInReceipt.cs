@@ -38,6 +38,7 @@ namespace FoodHub.Domain.Entities
         public DomainResult AddItem(
             Guid ingredientId,
             decimal quantity,
+            string baseUnit,
             decimal? unitCost,
             DateTime? expiryDate,
             string? batchCode,
@@ -63,6 +64,7 @@ namespace FoodHub.Domain.Entities
                 StockInReceiptId,
                 ingredientId,
                 quantity,
+                baseUnit,
                 unitCost,
                 expiryDate,
                 batchCode,

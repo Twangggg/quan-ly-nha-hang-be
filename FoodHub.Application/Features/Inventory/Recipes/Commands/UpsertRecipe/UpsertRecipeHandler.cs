@@ -72,7 +72,9 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
             try
             {
                 // Remove deleted lines
-                var toRemove = existing.Where(e => !ingredientIds.Contains(e.IngredientId)).ToList();
+                var toRemove = existing
+                    .Where(e => !ingredientIds.Contains(e.IngredientId))
+                    .ToList();
                 foreach (var rem in toRemove)
                 {
                     recipeRepo.Delete(rem);
@@ -89,13 +91,18 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                                 request.MenuItemId,
                                 item.IngredientId,
                                 item.QuantityPerServing,
+                                item.BaseUnit,
                                 actorId
                             )
                         );
                     }
                     else
                     {
-                        var updateResult = line.UpdateQuantity(item.QuantityPerServing, actorId);
+                        var updateResult = line.Update(
+                            item.QuantityPerServing,
+                            item.BaseUnit,
+                            actorId
+                        );
                         if (!updateResult.IsSuccess)
                         {
                             await _unitOfWork.RollbackTransactionAsync();
@@ -123,7 +130,9 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                 decimal totalCost = 0;
                 foreach (var item in request.Items)
                 {
-                    var ing = allIngredients.FirstOrDefault(x => x.IngredientId == item.IngredientId);
+                    var ing = allIngredients.FirstOrDefault(x =>
+                        x.IngredientId == item.IngredientId
+                    );
                     if (ing != null)
                     {
                         totalCost += ing.CostPrice * item.QuantityPerServing;

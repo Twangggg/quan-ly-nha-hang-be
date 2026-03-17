@@ -14,5 +14,6 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
     {
         public Guid IngredientId { get; set; }
         public decimal QuantityPerServing { get; set; }
+        public string BaseUnit { get; set; } = string.Empty;
     }
 }

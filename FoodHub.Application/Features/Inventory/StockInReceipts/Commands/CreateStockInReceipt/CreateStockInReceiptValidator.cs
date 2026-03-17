@@ -45,11 +45,13 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                             messageService.GetMessage(MessageKeys.StockInReceipt.QuantityMin)
                         );
 
-                    item.RuleFor(x => x.Unit)
+                    item.RuleFor(x => x.BaseUnit)
                         .NotEmpty()
                         .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.UnitRequired))
                         .MaximumLength(20)
-                        .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.UnitMaxLength));
+                        .WithMessage(
+                            messageService.GetMessage(MessageKeys.Ingredient.UnitMaxLength)
+                        );
 
                     item.RuleFor(x => x.UnitCost)
                         .GreaterThanOrEqualTo(0)

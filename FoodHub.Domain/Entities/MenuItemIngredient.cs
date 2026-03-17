@@ -10,6 +10,7 @@ namespace FoodHub.Domain.Entities
         public Guid MenuItemId { get; private set; }
         public Guid IngredientId { get; private set; }
         public decimal QuantityPerServing { get; private set; }
+        public string BaseUnit { get; private set; } = string.Empty;
 
         public virtual MenuItem MenuItem { get; private set; } = null!;
         public virtual Ingredient Ingredient { get; private set; } = null!;
@@ -18,6 +19,7 @@ namespace FoodHub.Domain.Entities
             Guid menuItemId,
             Guid ingredientId,
             decimal quantityPerServing,
+            string baseUnit,
             Guid? createdBy = null
         )
         {
@@ -27,13 +29,18 @@ namespace FoodHub.Domain.Entities
                 MenuItemId = menuItemId,
                 IngredientId = ingredientId,
                 QuantityPerServing = quantityPerServing,
+                BaseUnit = baseUnit,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = createdBy,
                 UpdatedBy = createdBy,
             };
         }
 
-        public DomainResult UpdateQuantity(decimal quantityPerServing, Guid? updatedBy = null)
+        public DomainResult Update(
+            decimal quantityPerServing,
+            string baseUnit,
+            Guid? updatedBy = null
+        )
         {
             if (quantityPerServing <= 0)
             {
@@ -41,6 +48,7 @@ namespace FoodHub.Domain.Entities
             }
 
             QuantityPerServing = quantityPerServing;
+            BaseUnit = baseUnit;
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;
 
