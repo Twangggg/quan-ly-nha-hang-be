@@ -114,10 +114,8 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                         );
                         if (!updateResult.IsSuccess)
                         {
-                            await _unitOfWork.RollbackTransactionAsync();
-                            return Result<Guid>.Failure(
-                                _messageService.GetMessage(MessageKeys.StockOutReceipt.QuantityMin),
-                                ResultErrorType.Conflict
+                            throw new FoodHub.Application.Common.Exceptions.BusinessException(
+                                updateResult.ErrorCode ?? _messageService.GetMessage(MessageKeys.StockOutReceipt.QuantityMin)
                             );
                         }
 
@@ -129,27 +127,15 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                 menuItem.Description = request.Instructions;
                 menuItem.ExpectedTime = request.PrepTimeMinutes;
 
-                // Calculate and update CostPrice
-                var allIngredients = await _unitOfWork
-                    .Repository<Ingredient>()
+                // Calculate and update CostPrice via Domain Entity
+                var updatedIngredients = await _unitOfWork
+                    .Repository<MenuItemIngredient>()
                     .Query()
-                    .Where(x => ingredientIds.Contains(x.IngredientId))
+                    .Where(x => x.MenuItemId == request.MenuItemId)
+                    .Include(x => x.Ingredient)
                     .ToListAsync(cancellationToken);
 
-                decimal totalCost = 0;
-                foreach (var item in request.Items)
-                {
-                    var ing = allIngredients.FirstOrDefault(x =>
-                        x.IngredientId == item.IngredientId
-                    );
-                    if (ing != null)
-                    {
-                        totalCost += ing.CostPrice * item.QuantityPerServing;
-                    }
-                }
-
-                // 4. Update Menu Item metadata and Cost Price
-                menuItem.UpdateCostPrice(totalCost);
+                menuItem.UpdateCostFromIngredients(updatedIngredients);
 
                 _unitOfWork.Repository<MenuItem>().Update(menuItem);
 
@@ -157,9 +143,9 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation(
-                    "Successfully updated recipe for MenuItemId: {MenuItemId}. Total Cost: {TotalCost}",
+                    "Successfully updated recipe for MenuItemId: {MenuItemId}. New Cost: {TotalCost}",
                     request.MenuItemId,
-                    totalCost
+                    menuItem.CostPrice
                 );
 
                 return Result<Guid>.Success(menuItem.MenuItemId);

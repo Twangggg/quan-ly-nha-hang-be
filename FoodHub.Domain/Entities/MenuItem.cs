@@ -29,9 +29,19 @@ namespace FoodHub.Domain.Entities
         public virtual ICollection<MenuItemIngredient> Ingredients { get; private set; } =
             new List<MenuItemIngredient>();
 
-        public void UpdateCostPrice(decimal newCost)
+        public void UpdateCostFromIngredients(IEnumerable<MenuItemIngredient> ingredients)
         {
-            CostPrice = newCost;
+            decimal totalCost = 0;
+            foreach (var item in ingredients)
+            {
+                // Ensure Ingredient is loaded to access CostPrice
+                if (item.Ingredient != null)
+                {
+                    totalCost += item.Ingredient.CostPrice * item.QuantityPerServing;
+                }
+            }
+
+            CostPrice = totalCost;
             UpdatedAt = DateTime.UtcNow;
         }
     }
