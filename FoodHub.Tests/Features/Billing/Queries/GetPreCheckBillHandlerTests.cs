@@ -134,8 +134,8 @@ namespace FoodHub.Tests.Features.Billing.Queries
 
             SetupOrderRepo(new List<FoodHub.Domain.Entities.Order> { order });
             _mockMessageService
-                .Setup(m => m.GetMessage(MessageKeys.Order.InvalidActionWithStatus, It.IsAny<object>()))
-                .Returns("Invalid action");
+                .Setup(m => m.GetMessage(MessageKeys.Order.InvalidActionWithStatus))
+                .Returns("Invalid action with");
 
             var handler = CreateHandler();
             var query = new GetPreCheckBillQuery { OrderId = orderId };
@@ -149,7 +149,7 @@ namespace FoodHub.Tests.Features.Billing.Queries
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnFailure_When_AllItemsCancelled()
+        public async Task Handle_Should_ReturnSuccess_WithEmptyItems_When_AllItemsCancelled()
         {
             // Arrange
             var orderId = Guid.NewGuid();
@@ -158,9 +158,6 @@ namespace FoodHub.Tests.Features.Billing.Queries
             order.OrderItems.Add(CreateOrderItem(status: OrderItemStatus.Rejected));
 
             SetupOrderRepo(new List<FoodHub.Domain.Entities.Order> { order });
-            _mockMessageService
-                .Setup(m => m.GetMessage(MessageKeys.Order.NoValidItems))
-                .Returns("No valid items");
 
             var handler = CreateHandler();
             var query = new GetPreCheckBillQuery { OrderId = orderId };
@@ -169,8 +166,10 @@ namespace FoodHub.Tests.Features.Billing.Queries
             var result = await handler.Handle(query, CancellationToken.None);
 
             // Assert
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorType.Should().Be(ResultErrorType.BadRequest);
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.Items.Should().BeEmpty();
+            result.Data.SubTotal.Should().Be(0);
+            result.Data.TotalAmount.Should().Be(0);
         }
 
         [Fact]
