@@ -245,4 +245,7 @@
   <data name="InventoryCheck.InvalidStatus" xml:space="preserve">
     <value>Phieu kiem ke khong o trang thai hop le de xu ly.</value>
   </data>
+  <data name="Reservation.CancelReservationSuccess" xml:space="preserve">
+    <value>Hủy đặt chỗ thành công.</value>
+  </data>
 </root>

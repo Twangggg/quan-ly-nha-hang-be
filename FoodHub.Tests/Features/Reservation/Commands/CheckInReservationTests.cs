@@ -113,6 +113,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
 
             // Table repository
             var tableRepo = new Mock<IGenericRepository<Table>>();
+            tableRepo.Setup(r => r.Query()).Returns(new List<Table>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
 
             // Audit log repository

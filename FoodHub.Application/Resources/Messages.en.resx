@@ -213,4 +213,7 @@
   <data name="InventoryCheck.InvalidStatus" xml:space="preserve">
     <value>The inventory check is not in a valid status for processing.</value>
   </data>
+  <data name="Reservation.CancelReservationSuccess" xml:space="preserve">
+    <value>Reservation cancelled successfully.</value>
+  </data>
 </root>

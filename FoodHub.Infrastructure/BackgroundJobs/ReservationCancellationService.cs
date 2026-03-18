@@ -41,8 +41,8 @@ namespace FoodHub.Infrastructure.BackgroundJobs
                     _logger.LogError(ex, "Error occurred executing Reservation Cancellation Service.");
                 }
 
-                // Chạy mỗi 10 phút một lần
-                await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);
+                // Chạy mỗi 10p một lần
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
             }
 
             _logger.LogInformation("Reservation Cancellation Service is stopping.");
@@ -55,7 +55,7 @@ namespace FoodHub.Infrastructure.BackgroundJobs
 
             // Calculate the threshold: 30 minutes past today's reservation time
             var today = DateOnly.FromDateTime(DateTime.Now);
-            var overdueTime = DateTime.Now.TimeOfDay.Subtract(TimeSpan.FromMinutes(30));
+            var overdueTime = DateTime.Now.TimeOfDay.Subtract(TimeSpan.FromMinutes(15));
 
             // Get all booked tables where customers haven't arrived (Status = Booked) for today, and are 30 minutes overdue
             var overdueReservations = await unitOfWork.Repository<Reservation>().Query()
