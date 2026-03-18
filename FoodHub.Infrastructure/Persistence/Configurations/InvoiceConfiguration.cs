@@ -18,7 +18,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(i => i.OrderId).IsRequired().HasColumnName("order_id");
             // String properties
             builder.Property(i => i.InvoiceNumber).IsRequired().HasMaxLength(50).HasColumnName("invoice_number");
-            builder.Property(i => i.PaymentMethod).IsRequired().HasMaxLength(50).HasColumnName("payment_method");
+            builder.Property(i => i.PaymentMethod).IsRequired().HasColumnName("payment_method");
             builder.Property(i => i.CashierName).IsRequired().HasMaxLength(100).HasColumnName("cashier_name");
             builder.Property(i => i.TableNumber).HasMaxLength(20).HasColumnName("table_number");
             // Decimal properties with precision
