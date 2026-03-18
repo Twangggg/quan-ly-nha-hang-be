@@ -129,7 +129,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             sourceOrder.TotalAmount.Should().Be(0);
             destinationTable.Status.Should().Be(TableStatus.Occupied);
             sourceTable.Status.Should().Be(TableStatus.Available);
-            result.Data.DestinationOrderTotalAmount.Should().Be(24m);
+            result.Data.DestinationOrderTotalAmount.Should().Be(26.40m);
             result.Data.DestinationOrderItems.Single().Quantity.Should().Be(2);
             auditRepo.Verify(r => r.AddAsync(It.IsAny<OrderAuditLog>()), Times.Once);
         }

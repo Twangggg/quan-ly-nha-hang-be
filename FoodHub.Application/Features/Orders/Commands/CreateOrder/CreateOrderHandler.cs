@@ -147,6 +147,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     OrderType = request.OrderType,
                     Status = OrderStatus.Serving,
                     TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
+                    ReservationId = request.ReservationId,
                     Note = request.Note,
                     TotalAmount = 0,
                     IsPriority = isPriority,
