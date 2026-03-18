@@ -1,12 +1,12 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.Extensions;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -220,7 +220,11 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
                 .Returns(mockIngredientRepo.Object);
             mockIngredientRepo
                 .Setup(x => x.Query())
-                .Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
+                .Returns(
+                    new List<Ingredient> { ingredient }
+                        .AsQueryable()
+                        .BuildMock()
+                );
 
             var mockRecipeRepo = new Mock<IGenericRepository<MenuItemIngredient>>();
             _unitOfWorkMock
