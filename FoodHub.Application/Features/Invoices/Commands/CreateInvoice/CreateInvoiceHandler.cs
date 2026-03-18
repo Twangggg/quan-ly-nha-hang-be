@@ -53,7 +53,7 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
             {
                 _logger.LogWarning("An invoice already exists for OrderId: {OrderId}", request.OrderId);
                 var errorMessage = _messageService.GetMessage(MessageKeys.Invoice.AlreadyExists);
-                return Result<CreateInvoiceResponse>.Failure(errorMessage);
+                return Result<CreateInvoiceResponse>.Failure(errorMessage, ResultErrorType.Conflict);
             }
 
             // Check if the employee (auditor) exists
