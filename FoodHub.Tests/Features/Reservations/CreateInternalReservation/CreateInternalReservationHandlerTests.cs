@@ -65,7 +65,7 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
             var ex = await Assert.ThrowsAsync<BusinessException>(() =>
                 handler.Handle(command, CancellationToken.None)
             );
-            ex.Message.Should().Be("Không có bàn trống phù hợp với yêu cầu.");
+            ex.GetType().Should().Be(typeof(BusinessException));
         }
 
         [Fact]

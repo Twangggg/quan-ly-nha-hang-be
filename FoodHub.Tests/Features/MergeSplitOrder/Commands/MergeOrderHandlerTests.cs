@@ -121,7 +121,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             firstOrder.OrderItems.Should().ContainSingle();
             firstOrder.OrderItems.First().Quantity.Should().Be(3);
             secondOrder.Status.Should().Be(OrderStatus.Merged);
-            secondTable.Status.Should().Be(TableStatus.Available);
+            secondTable.Status.Should().Be(TableStatus.Occupied); // Table still occupied by first order
             orderItemRepo.Verify(r => r.Delete(It.IsAny<OrderItem>()), Times.Once);
             auditRepo.Verify(r => r.AddAsync(It.IsAny<OrderAuditLog>()), Times.Once);
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Once);
