@@ -2,7 +2,7 @@ using Asp.Versioning.ApiExplorer;
 using FoodHub.Application;
 using FoodHub.Infrastructure;
 using FoodHub.Infrastructure.Persistence;
-using FoodHub.Infrastructure.Services.Hubs;
+using FoodHub.Infrastructure.Services.Messaging.Hubs;
 using FoodHub.Presentation.Middleware;
 using FoodHub.WebAPI.Presentation.Extensions;
 using Microsoft.EntityFrameworkCore;

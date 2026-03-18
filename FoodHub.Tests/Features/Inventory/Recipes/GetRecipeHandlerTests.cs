@@ -1,6 +1,11 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Inventory.Recipes.Queries.GetRecipe;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MockQueryable.Moq;
 using Moq;
@@ -27,7 +32,7 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
             // Arrange
             var menuItemId = Guid.NewGuid();
             var query = new GetRecipeQuery(menuItemId);
-            
+
             var menuItem = new FoodHub.Domain.Entities.MenuItem
             {
                 MenuItemId = menuItemId,

@@ -88,7 +88,7 @@ namespace FoodHub.Presentation.Controllers
                 result,
             data => Url.Action(nameof(GetStockOutReceiptById), new { id = data.StockOutReceiptId })
         );
-    }
+        }
 
         /// <summary>
         /// Hoàn (reverse) một phiếu xuất kho.

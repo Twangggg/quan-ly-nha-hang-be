@@ -5,7 +5,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
 {
     public class ChangePasswordValidator : AbstractValidator<ChangePasswordCommand>
     {
-        public ChangePasswordValidator(Interfaces.IMessageService messageService)
+        public ChangePasswordValidator(Interfaces.Common.IMessageService messageService)
         {
             // Current password required
             RuleFor(v => v.CurrentPassword)

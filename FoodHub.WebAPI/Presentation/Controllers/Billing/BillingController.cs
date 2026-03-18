@@ -3,10 +3,15 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Billing.Commands.CheckoutOrder;
 using FoodHub.Application.Features.Billing.Commands.CreateQrPayment;
 using FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook;
-using FoodHub.Application.Features.Billing.Queries.GetBillingHistory;
 using FoodHub.Application.Features.Billing.Queries.ExportPreCheckBillPdf;
+using FoodHub.Application.Features.Billing.Queries.GetBillingHistory;
 using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
@@ -17,14 +22,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace FoodHub.WebAPI.Presentation.Controllers.Billing
 {
     [Route("api/v{version:apiVersion}/billing")]
-        public class BillingController : ApiControllerBase
-        {
-            private readonly IMediator _mediator;
+    public class BillingController : ApiControllerBase
+    {
+        private readonly IMediator _mediator;
 
-            public BillingController(IMediator mediator)
-            {
-                _mediator = mediator;
-            }
+        public BillingController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
         /// <summary>
         /// Xem trước phiếu tạm tính (Pre-check Bill) cho đơn hàng.

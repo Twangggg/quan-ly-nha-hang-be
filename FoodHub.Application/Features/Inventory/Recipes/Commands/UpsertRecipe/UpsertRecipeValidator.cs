@@ -1,6 +1,11 @@
 using FluentValidation;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 
 namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 {
@@ -13,9 +18,10 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                 .WithMessage(messageService.GetMessage(MessageKeys.MenuItem.NotFound));
 
             RuleFor(x => x.Items)
-                .NotEmpty()
-                .WithMessage(messageService.GetMessage(MessageKeys.StockOutReceipt.ItemsRequired))
-                .Must(items => items.Select(i => i.IngredientId).Distinct().Count() == items.Count)
+                .Must(items =>
+                    items == null
+                    || items.Select(i => i.IngredientId).Distinct().Count() == items.Count
+                )
                 .WithMessage(
                     messageService.GetMessage(MessageKeys.StockOutReceipt.DuplicateIngredient)
                 );

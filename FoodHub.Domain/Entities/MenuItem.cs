@@ -26,7 +26,7 @@ namespace FoodHub.Domain.Entities
 
         public ICollection<OptionGroup> OptionGroups { get; set; } = new List<OptionGroup>();
         public ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();
-        public virtual ICollection<MenuItemIngredient> Ingredients { get; private set; } =
+        public virtual ICollection<MenuItemIngredient> Ingredients { get; set; } =
             new List<MenuItemIngredient>();
 
         public void UpdateCostFromIngredients(IEnumerable<MenuItemIngredient> ingredients)

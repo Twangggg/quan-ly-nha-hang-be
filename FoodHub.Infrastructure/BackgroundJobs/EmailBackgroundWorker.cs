@@ -1,11 +1,22 @@
 using System.Net.Sockets;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-using FoodHub.Infrastructure.Services;
+using FoodHub.Infrastructure.Services.Common;
+using FoodHub.Infrastructure.Services.Inventory;
+using FoodHub.Infrastructure.Services.Messaging;
+using FoodHub.Infrastructure.Services.Reporting;
+using FoodHub.Infrastructure.Services.External;
+using FoodHub.Infrastructure.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using FoodHub.Infrastructure.Services.Messaging.Messaging;
 
 namespace FoodHub.Infrastructure.BackgroundJobs
 {

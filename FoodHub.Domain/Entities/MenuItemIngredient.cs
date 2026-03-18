@@ -12,8 +12,8 @@ namespace FoodHub.Domain.Entities
         public decimal QuantityPerServing { get; private set; }
         public string BaseUnit { get; private set; } = string.Empty;
 
-        public virtual MenuItem MenuItem { get; private set; } = null!;
-        public virtual Ingredient Ingredient { get; private set; } = null!;
+        public virtual MenuItem MenuItem { get; set; } = null!;
+        public virtual Ingredient Ingredient { get; set; } = null!;
 
         public static MenuItemIngredient Create(
             Guid menuItemId,

@@ -1,4 +1,9 @@
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +19,7 @@ namespace FoodHub.Infrastructure.BackgroundJobs
         private readonly ILogger<ReservationCancellationService> _logger;
 
         public ReservationCancellationService(
-            IServiceProvider serviceProvider, 
+            IServiceProvider serviceProvider,
             ILogger<ReservationCancellationService> logger)
         {
             _serviceProvider = serviceProvider;
@@ -69,7 +74,7 @@ namespace FoodHub.Infrastructure.BackgroundJobs
             foreach (var reservation in overdueReservations)
             {
                 _logger.LogInformation("Cancelling Reservation {ReservationId} (Time: {Time}). Customer did not check-in after 30 minutes.", reservation.ReservationId, reservation.ReservationTime);
-                
+
                 reservation.Status = ReservationStatus.Cancelled;
             }
 
