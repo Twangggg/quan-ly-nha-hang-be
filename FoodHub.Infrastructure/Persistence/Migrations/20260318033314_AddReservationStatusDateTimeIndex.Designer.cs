@@ -3,17 +3,20 @@ using System;
 using FoodHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FoodHub.Migrations
+namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260318033314_AddReservationStatusDateTimeIndex")]
+    partial class AddReservationStatusDateTimeIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1495,274 +1498,6 @@ namespace FoodHub.Migrations
                     b.ToTable("set_menu_items", (string)null);
                 });
 
-            modelBuilder.Entity("FoodHub.Domain.Entities.StockInReceipt", b =>
-                {
-                    b.Property<Guid>("StockInReceiptId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("stock_in_receipt_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("note");
-
-                    b.Property<string>("ReceiptCode")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("receipt_code");
-
-                    b.Property<DateTime>("ReceivedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("received_at");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("total_amount");
-
-                    b.Property<int>("TotalLines")
-                        .HasColumnType("integer")
-                        .HasColumnName("total_lines");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("StockInReceiptId")
-                        .HasName("pk_stock_in_receipts");
-
-                    b.HasIndex("ReceiptCode")
-                        .IsUnique()
-                        .HasDatabaseName("ix_stock_in_receipts_receipt_code")
-                        .HasFilter("deleted_at IS NULL");
-
-                    b.HasIndex("ReceivedAt")
-                        .HasDatabaseName("ix_stock_in_receipts_received_at");
-
-                    b.ToTable("stock_in_receipts", (string)null);
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.StockInReceiptItem", b =>
-                {
-                    b.Property<Guid>("StockInReceiptItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("stock_in_receipt_item_id");
-
-                    b.Property<string>("BatchCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("batch_code");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expiry_date");
-
-                    b.Property<Guid>("IngredientId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ingredient_id");
-
-                    b.Property<decimal>("LineAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("line_amount");
-
-                    b.Property<decimal>("Quantity")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("quantity");
-
-                    b.Property<Guid>("StockInReceiptId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("stock_in_receipt_id");
-
-                    b.Property<decimal?>("UnitCost")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("unit_cost");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("StockInReceiptItemId")
-                        .HasName("pk_stock_in_receipt_items");
-
-                    b.HasIndex("IngredientId")
-                        .HasDatabaseName("ix_stock_in_receipt_items_ingredient_id");
-
-                    b.HasIndex("StockInReceiptId", "IngredientId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_stock_in_receipt_items_stock_in_receipt_id_ingredient_id")
-                        .HasFilter("deleted_at IS NULL");
-
-                    b.ToTable("stock_in_receipt_items", (string)null);
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.StockOutReceipt", b =>
-                {
-                    b.Property<Guid>("StockOutReceiptId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("stock_out_receipt_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("reason");
-
-                    b.Property<string>("ReceiptCode")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("receipt_code");
-
-                    b.Property<DateTime>("StockOutDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("stock_out_date");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("total_amount");
-
-                    b.Property<int>("TotalItems")
-                        .HasColumnType("integer")
-                        .HasColumnName("total_items");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("StockOutReceiptId")
-                        .HasName("pk_stock_out_receipts");
-
-                    b.HasIndex("ReceiptCode")
-                        .IsUnique()
-                        .HasDatabaseName("ix_stock_out_receipts_receipt_code")
-                        .HasFilter("deleted_at IS NULL");
-
-                    b.HasIndex("StockOutDate")
-                        .HasDatabaseName("ix_stock_out_receipts_stock_out_date");
-
-                    b.ToTable("stock_out_receipts", (string)null);
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.StockOutReceiptItem", b =>
-                {
-                    b.Property<Guid>("StockOutReceiptItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("stock_out_receipt_item_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<Guid>("IngredientId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("ingredient_id");
-
-                    b.Property<decimal>("LineAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("line_amount");
-
-                    b.Property<decimal>("Quantity")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("quantity");
-
-                    b.Property<Guid>("StockOutReceiptId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("stock_out_receipt_id");
-
-                    b.Property<decimal?>("UnitPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("unit_price");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("StockOutReceiptItemId")
-                        .HasName("pk_stock_out_receipt_items");
-
-                    b.HasIndex("IngredientId")
-                        .HasDatabaseName("ix_stock_out_receipt_items_ingredient_id");
-
-                    b.HasIndex("StockOutReceiptId", "IngredientId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_stock_out_receipt_items_stock_out_receipt_id_ingredient_id")
-                        .HasFilter("deleted_at IS NULL");
-
-                    b.ToTable("stock_out_receipt_items", (string)null);
-                });
-
             modelBuilder.Entity("FoodHub.Domain.Entities.Table", b =>
                 {
                     b.Property<Guid>("TableId")
@@ -2073,48 +1808,6 @@ namespace FoodHub.Migrations
                     b.Navigation("SetMenu");
                 });
 
-            modelBuilder.Entity("FoodHub.Domain.Entities.StockInReceiptItem", b =>
-                {
-                    b.HasOne("FoodHub.Domain.Entities.Ingredient", "Ingredient")
-                        .WithMany()
-                        .HasForeignKey("IngredientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_stock_in_receipt_items_ingredients_ingredient_id");
-
-                    b.HasOne("FoodHub.Domain.Entities.StockInReceipt", "StockInReceipt")
-                        .WithMany("Items")
-                        .HasForeignKey("StockInReceiptId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_stock_in_receipt_items_stock_in_receipts_stock_in_receipt_id");
-
-                    b.Navigation("Ingredient");
-
-                    b.Navigation("StockInReceipt");
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.StockOutReceiptItem", b =>
-                {
-                    b.HasOne("FoodHub.Domain.Entities.Ingredient", "Ingredient")
-                        .WithMany()
-                        .HasForeignKey("IngredientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_stock_out_receipt_items_ingredients_ingredient_id");
-
-                    b.HasOne("FoodHub.Domain.Entities.StockOutReceipt", "StockOutReceipt")
-                        .WithMany("Items")
-                        .HasForeignKey("StockOutReceiptId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_stock_out_receipt_items_stock_out_receipts_stock_out_receip");
-
-                    b.Navigation("Ingredient");
-
-                    b.Navigation("StockOutReceipt");
-                });
-
             modelBuilder.Entity("FoodHub.Domain.Entities.Table", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.Area", "Area")
@@ -2183,16 +1876,6 @@ namespace FoodHub.Migrations
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
                 {
                     b.Navigation("SetMenuItems");
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.StockInReceipt", b =>
-                {
-                    b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("FoodHub.Domain.Entities.StockOutReceipt", b =>
-                {
-                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.Table", b =>
