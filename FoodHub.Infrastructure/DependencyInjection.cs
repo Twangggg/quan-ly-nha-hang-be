@@ -18,9 +18,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
-using FoodHub.Infrastructure.Services.Common.Common;
 using FoodHub.Infrastructure.Services.Common.RateLimiting;
-using FoodHub.Infrastructure.Services.Messaging.Messaging;
+using FoodHub.Infrastructure.Services.Common;
+using FoodHub.Infrastructure.Services.Messaging;
 
 namespace FoodHub.Infrastructure
 {

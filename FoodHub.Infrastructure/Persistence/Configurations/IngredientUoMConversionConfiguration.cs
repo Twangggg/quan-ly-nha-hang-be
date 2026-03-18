@@ -44,7 +44,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder
                 .HasOne(x => x.Ingredient)
-                .WithMany()
+                .WithMany(x => x.Conversions)
                 .HasForeignKey(x => x.IngredientId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

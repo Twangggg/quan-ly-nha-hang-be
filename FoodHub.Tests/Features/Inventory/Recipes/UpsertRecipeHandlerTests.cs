@@ -44,6 +44,26 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
             );
         }
 
+        private UpsertRecipeCommand BuildCommand(
+            Guid menuItemId,
+            params (Guid ingredientId, decimal qty, string unit)[] items
+        )
+        {
+            return new UpsertRecipeCommand(
+                menuItemId,
+                items
+                    .Select(i => new UpsertRecipeItemDto
+                    {
+                        IngredientId = i.ingredientId,
+                        QuantityPerServing = i.qty,
+                        BaseUnit = i.unit,
+                    })
+                    .ToList(),
+                "Test Instructions",
+                10
+            );
+        }
+
         [Fact]
         public async Task Handle_ValidRequest_ShouldSuccess()
         {
@@ -127,6 +147,96 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
                 x => x.SaveChangeAsync(It.IsAny<CancellationToken>()),
                 Times.AtLeastOnce
             );
+        }
+
+        [Fact]
+        public async Task Handle_DuplicateIngredient_ShouldFailValidation()
+        {
+            // Arrange
+            var menuItemId = Guid.NewGuid();
+            var ingredientId = Guid.NewGuid();
+
+            var command = BuildCommand(
+                menuItemId,
+                (ingredientId, 2, "kg"),
+                (ingredientId, 3, "kg") // duplicate
+            );
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal(MessageKeys.StockOutReceipt.DuplicateIngredient, result.Error);
+            _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_InvalidQuantity_ShouldReturnFailure()
+        {
+            // Arrange
+            var menuItemId = Guid.NewGuid();
+            var ingredientId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+
+            var command = BuildCommand(menuItemId, (ingredientId, -1, "kg"));
+
+            var menuItem = new FoodHub.Domain.Entities.MenuItem
+            {
+                MenuItemId = menuItemId,
+                Name = "Test Product",
+                Code = "TEST01",
+                ImageUrl = "test.png",
+                Price = 100,
+                CostPrice = 0,
+            };
+
+            var ingredient = FoodHub.Domain.Entities.Ingredient.Create(
+                "ING01",
+                "Test Ingredient",
+                "kg",
+                5,
+                100,
+                10,
+                null,
+                userId
+            );
+
+            _currentUserServiceMock.Setup(x => x.UserId).Returns(userId.ToString());
+
+            var mockMenuItemRepo = new Mock<IGenericRepository<MenuItem>>();
+            _unitOfWorkMock.Setup(x => x.Repository<MenuItem>()).Returns(mockMenuItemRepo.Object);
+            mockMenuItemRepo
+                .Setup(x => x.Query())
+                .Returns(
+                    new List<MenuItem> { menuItem }
+                        .AsQueryable()
+                        .BuildMock()
+                );
+
+            var mockIngredientRepo = new Mock<IGenericRepository<Ingredient>>();
+            _unitOfWorkMock
+                .Setup(x => x.Repository<Ingredient>())
+                .Returns(mockIngredientRepo.Object);
+            mockIngredientRepo
+                .Setup(x => x.Query())
+                .Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
+
+            var mockRecipeRepo = new Mock<IGenericRepository<MenuItemIngredient>>();
+            _unitOfWorkMock
+                .Setup(x => x.Repository<MenuItemIngredient>())
+                .Returns(mockRecipeRepo.Object);
+            mockRecipeRepo
+                .Setup(x => x.Query())
+                .Returns(new List<MenuItemIngredient>().AsQueryable().BuildMock());
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal(MessageKeys.StockOutReceipt.QuantityMin, result.Error);
+            _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(), Times.Never);
         }
 
         [Fact]

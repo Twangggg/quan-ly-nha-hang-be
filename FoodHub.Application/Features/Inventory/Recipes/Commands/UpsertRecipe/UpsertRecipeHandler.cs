@@ -2,10 +2,10 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -39,11 +39,6 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
             CancellationToken cancellationToken
         )
         {
-            _logger.LogInformation(
-                "Starting UpsertRecipe for MenuItemId: {MenuItemId}",
-                request.MenuItemId
-            );
-
             var validationResult = new UpsertRecipeValidator(_messageService).Validate(request);
             if (!validationResult.IsValid)
             {
@@ -52,6 +47,11 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
                     ResultErrorType.Conflict
                 );
             }
+
+            _logger.LogInformation(
+                "Starting UpsertRecipe for MenuItemId: {MenuItemId}",
+                request.MenuItemId
+            );
 
             var actorId = _currentUserService.GetUserIdAsGuid();
             var recipeRepo = _unitOfWork.Repository<MenuItemIngredient>();
@@ -90,62 +90,41 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 
             try
             {
-                // Remove deleted lines
-                var toRemove = menuItem
-                    .Ingredients.Where(e => !ingredientIds.Contains(e.IngredientId))
-                    .ToList();
-                foreach (var rem in toRemove)
-                {
-                    menuItem.Ingredients.Remove(rem);
-                    recipeRepo.Delete(rem);
-                }
+                var recipeItems = request.Items.Select(i => new MenuItem.RecipeItemInput(
+                    i.IngredientId,
+                    i.QuantityPerServing,
+                    i.BaseUnit
+                ));
 
-                // Upsert items
-                foreach (var item in request.Items)
+                var updateResult = menuItem.UpdateRecipe(
+                    recipeItems,
+                    request.Instructions,
+                    request.PrepTimeMinutes,
+                    actorId
+                );
+
+                if (!updateResult.IsSuccess)
                 {
-                    var line = menuItem.Ingredients.FirstOrDefault(x =>
-                        x.IngredientId == item.IngredientId
+                    throw new FoodHub.Application.Common.Exceptions.BusinessException(
+                        updateResult.ErrorCode
+                            ?? _messageService.GetMessage(MessageKeys.StockOutReceipt.QuantityMin)
                     );
-                    if (line == null)
-                    {
-                        var newLine = MenuItemIngredient.Create(
-                            request.MenuItemId,
-                            item.IngredientId,
-                            item.QuantityPerServing,
-                            item.BaseUnit,
-                            actorId
-                        );
-                        await recipeRepo.AddAsync(newLine);
-                        menuItem.Ingredients.Add(newLine);
-                    }
-                    else
-                    {
-                        var updateResult = line.Update(
-                            item.QuantityPerServing,
-                            item.BaseUnit,
-                            actorId
-                        );
-                        if (!updateResult.IsSuccess)
-                        {
-                            throw new FoodHub.Application.Common.Exceptions.BusinessException(
-                                updateResult.ErrorCode
-                                    ?? _messageService.GetMessage(
-                                        MessageKeys.StockOutReceipt.QuantityMin
-                                    )
-                            );
-                        }
-
-                        recipeRepo.Update(line);
-                    }
                 }
 
-                // Update MenuItem Metadata
-                menuItem.Description = request.Instructions;
-                menuItem.ExpectedTime = request.PrepTimeMinutes;
+                foreach (var added in updateResult.Value!.Added)
+                {
+                    await recipeRepo.AddAsync(added);
+                }
 
-                // Calculate and update CostPrice via Domain Entity
-                // ingredients are already in memory and navigation properties are fixed-up by EF Core
-                menuItem.UpdateCostFromIngredients(menuItem.Ingredients);
+                foreach (var updated in updateResult.Value!.Updated)
+                {
+                    recipeRepo.Update(updated);
+                }
+
+                foreach (var removed in updateResult.Value!.Removed)
+                {
+                    recipeRepo.Delete(removed);
+                }
 
                 _unitOfWork.Repository<MenuItem>().Update(menuItem);
 
