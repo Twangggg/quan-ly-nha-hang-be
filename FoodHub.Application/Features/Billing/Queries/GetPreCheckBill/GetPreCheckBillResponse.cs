@@ -21,9 +21,24 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
         public int? TableNumber { get; set; }
 
         /// <summary>
+        /// ID đặt bàn (nếu có).
+        /// </summary>
+        public Guid? ReservationId { get; set; }
+
+        /// <summary>
         /// Tên nhân viên tạo đơn hoặc phục vụ đơn.
         /// </summary>
         public string EmployeeName { get; set; } = null!;
+
+        /// <summary>
+        /// Tên khách hàng (từ Reservation nếu có).
+        /// </summary>
+        public string? CustomerName { get; set; }
+
+        /// <summary>
+        /// Số điện thoại khách hàng (từ Reservation nếu có).
+        /// </summary>
+        public string? CustomerPhone { get; set; }
 
         /// <summary>
         /// Thời điểm tạo phiếu tạm tính.
@@ -36,14 +51,24 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
         public List<PreCheckBillItemDto> Items { get; set; } = new();
 
         /// <summary>
-        /// Tạm tính trước giảm giá, VAT.
+        /// Tạm tính (Tiền hàng) trước giảm giá, dịch vụ, VAT.
         /// </summary>
         public decimal SubTotal { get; set; }
+
+        /// <summary>
+        /// Số tiền trước thuế.
+        /// </summary>
+        public decimal PreTaxAmount { get; set; }
 
         /// <summary>
         /// Tổng số tiền giảm giá áp dụng.
         /// </summary>
         public decimal Discount { get; set; }
+
+        /// <summary>
+        /// % Thuế GTGT.
+        /// </summary>
+        public decimal VatRate { get; set; }
 
         /// <summary>
         /// Tổng VAT áp dụng.

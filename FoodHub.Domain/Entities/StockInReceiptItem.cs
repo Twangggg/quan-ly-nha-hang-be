@@ -13,8 +13,8 @@ namespace FoodHub.Domain.Entities
         public DateTime? ExpiryDate { get; private set; }
         public string? BatchCode { get; private set; }
 
-        public virtual StockInReceipt StockInReceipt { get; private set; } = null!;
-        public virtual Ingredient Ingredient { get; private set; } = null!;
+        public StockInReceipt StockInReceipt { get; private set; } = null!;
+        public Ingredient Ingredient { get; private set; } = null!;
 
         public static StockInReceiptItem Create(
             Guid stockInReceiptId,
@@ -42,13 +42,6 @@ namespace FoodHub.Domain.Entities
                 CreatedBy = createdBy,
                 UpdatedBy = createdBy,
             };
-        }
-
-        public void MarkDeleted(Guid? updatedBy = null)
-        {
-            DeletedAt = DateTime.UtcNow;
-            UpdatedAt = DateTime.UtcNow;
-            UpdatedBy = updatedBy;
         }
     }
 }

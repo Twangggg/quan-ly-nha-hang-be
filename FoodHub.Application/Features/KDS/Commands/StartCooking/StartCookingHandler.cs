@@ -1,5 +1,7 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
+using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -37,10 +39,11 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
             CancellationToken cancellationToken
         )
         {
-            if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
+            var auditorId = _currentUserService.GetUserIdAsGuid();
+            if (auditorId == null)
             {
                 _logger.LogWarning(
-                    "Unauthorized cancel attempt for OrderItemId {OrderItemId}",
+                    "Unauthorized start cooking attempt for OrderItemId {OrderItemId}",
                     request.OrderItemId
                 );
                 return Result<Guid>.Failure(
@@ -126,10 +129,7 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                     );
                 }
 
-                var auditLog = OrderAuditLog.CreateKdsStartCooking(
-                    orderItem.OrderId,
-                    auditorId
-                );
+                var auditLog = OrderAuditLog.CreateKdsStartCooking(orderItem.OrderId, auditorId.Value);
 
                 orderItemRepository.Update(orderItem);
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);

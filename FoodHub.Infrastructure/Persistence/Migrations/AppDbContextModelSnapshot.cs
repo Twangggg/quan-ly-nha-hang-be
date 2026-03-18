@@ -1042,6 +1042,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("status");
 
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("sub_total");
+
                     b.Property<Guid?>("TableId")
                         .HasColumnType("uuid")
                         .HasColumnName("table_id");
@@ -1064,6 +1068,14 @@ namespace FoodHub.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasColumnType("decimal(15,2)")
+                        .HasColumnName("vat_amount");
+
+                    b.Property<decimal>("VatRate")
+                        .HasColumnType("decimal(5,2)")
+                        .HasColumnName("vat_rate");
 
                     b.HasKey("OrderId")
                         .HasName("pk_orders");
@@ -1481,20 +1493,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("guest_count");
 
-                    b.Property<bool>("HasChildren")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("has_children");
-
                     b.Property<string>("Note")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("note");
-
-                    b.Property<int>("PartyType")
-                        .HasColumnType("integer")
-                        .HasColumnName("party_type");
 
                     b.Property<DateOnly>("ReservationDate")
                         .HasColumnType("date")
@@ -1800,6 +1802,136 @@ namespace FoodHub.Migrations
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("stock_in_receipt_items", (string)null);
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.StockOutReceipt", b =>
+                {
+                    b.Property<Guid>("StockOutReceiptId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("stock_out_receipt_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<string>("ReceiptCode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("receipt_code");
+
+                    b.Property<DateTime>("StockOutDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("stock_out_date");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("total_amount");
+
+                    b.Property<int>("TotalItems")
+                        .HasColumnType("integer")
+                        .HasColumnName("total_items");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("StockOutReceiptId")
+                        .HasName("pk_stock_out_receipts");
+
+                    b.HasIndex("ReceiptCode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_stock_out_receipts_receipt_code")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("StockOutDate")
+                        .HasDatabaseName("ix_stock_out_receipts_stock_out_date");
+
+                    b.ToTable("stock_out_receipts", (string)null);
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.StockOutReceiptItem", b =>
+                {
+                    b.Property<Guid>("StockOutReceiptItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("stock_out_receipt_item_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid>("IngredientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("ingredient_id");
+
+                    b.Property<decimal>("LineAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("line_amount");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("quantity");
+
+                    b.Property<Guid>("StockOutReceiptId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("stock_out_receipt_id");
+
+                    b.Property<decimal?>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("unit_price");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("StockOutReceiptItemId")
+                        .HasName("pk_stock_out_receipt_items");
+
+                    b.HasIndex("IngredientId")
+                        .HasDatabaseName("ix_stock_out_receipt_items_ingredient_id");
+
+                    b.HasIndex("StockOutReceiptId", "IngredientId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_stock_out_receipt_items_stock_out_receipt_id_ingredient_id")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("stock_out_receipt_items", (string)null);
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.Table", b =>
@@ -2145,6 +2277,27 @@ namespace FoodHub.Migrations
                     b.Navigation("StockInReceipt");
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.StockOutReceiptItem", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.Ingredient", "Ingredient")
+                        .WithMany()
+                        .HasForeignKey("IngredientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_out_receipt_items_ingredients_ingredient_id");
+
+                    b.HasOne("FoodHub.Domain.Entities.StockOutReceipt", "StockOutReceipt")
+                        .WithMany("Items")
+                        .HasForeignKey("StockOutReceiptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_stock_out_receipt_items_stock_out_receipts_stock_out_receip");
+
+                    b.Navigation("Ingredient");
+
+                    b.Navigation("StockOutReceipt");
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.Table", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.Area", "Area")
@@ -2221,6 +2374,11 @@ namespace FoodHub.Migrations
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.StockInReceipt", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.StockOutReceipt", b =>
                 {
                     b.Navigation("Items");
                 });

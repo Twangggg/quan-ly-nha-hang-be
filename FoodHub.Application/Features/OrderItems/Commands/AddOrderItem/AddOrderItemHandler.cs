@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -33,10 +34,12 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             CancellationToken cancellationToken
         )
         {
-            if (!Guid.TryParse(_currentUserService.UserId, out var userId))
+            var userId = _currentUserService.GetUserIdAsGuid();
+            if (userId == null)
             {
                 return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn)
+                    _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
+                    ResultErrorType.Unauthorized
                 );
             }
 
@@ -145,7 +148,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             // Audit & Save
             var auditLog = OrderAuditLog.CreateOrderItemAdded(
                 order.OrderId,
-                userId,
+                userId.Value,
                 result.Item.OrderItemId,
                 result.IsNew,
                 request.Quantity,
@@ -156,7 +159,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             // Notify KDS
-            _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+            await _signalRService.NotifyOrderItemStatusChangedAsync(
                 result.Item.OrderItemId,
                 result.Item.Status,
                 result.Item.StationSnapshot

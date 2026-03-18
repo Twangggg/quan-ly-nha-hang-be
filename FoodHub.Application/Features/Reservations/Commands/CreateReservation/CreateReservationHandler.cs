@@ -67,9 +67,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
                         request.CustomerPhone,
                         request.ReservationDate,
                         request.ReservationTime,
-                        request.PartyType,
                         request.GuestCount,
-                        request.HasChildren,
                         request.Note,
                         table.TableId,
                         table.AreaId

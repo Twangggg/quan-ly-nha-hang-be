@@ -2,6 +2,7 @@ using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -70,12 +71,7 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
                     ResultErrorType.NotFound);
             }
 
-            // Create a new table entity and populate its properties
-            Guid? auditorId = null;
-            if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
-            {
-                auditorId = parsedId;
-            }
+            var auditorId = _currentUserService.GetUserIdAsGuid();
 
             // Generate the next table number for the specified area
             var tableNumber = await tableRepo

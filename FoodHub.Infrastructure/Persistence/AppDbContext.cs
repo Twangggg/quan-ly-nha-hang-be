@@ -58,6 +58,8 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<InventoryTransaction> InventoryTransactions { get; set; } = null!;
         public DbSet<StockInReceipt> StockInReceipts { get; set; } = null!;
         public DbSet<StockInReceiptItem> StockInReceiptItems { get; set; } = null!;
+        public DbSet<StockOutReceipt> StockOutReceipts { get; set; } = null!;
+        public DbSet<StockOutReceiptItem> StockOutReceiptItems { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
