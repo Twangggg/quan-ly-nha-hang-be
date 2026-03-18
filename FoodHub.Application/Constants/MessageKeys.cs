@@ -130,6 +130,7 @@ namespace FoodHub.Application.Constants
             public const string InvalidStatus = "Order.InvalidStatus";
             public const string StatusNotCompleted = "Order.StatusNotCompleted";
             public const string NoValidItems = "Order.NoValidItems";
+            public const string EmptyOrder = "Order.EmptyOrder";
             public const string HasBeenPlaced = "Order.HasBeenPlaced";
         }
 
@@ -350,6 +351,14 @@ namespace FoodHub.Application.Constants
             public const string ReasonRequired = "StockOutReceipt.ReasonRequired";
             public const string ReasonMaxLength = "StockOutReceipt.ReasonMaxLength";
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
+        }
+
+        public static class Invoice
+        {
+            public const string AlreadyExists = "Invoice.AlreadyExists";
+            public const string NotFound = "Invoice.NotFound";
+            public const string CreateFailed = "Invoice.CreateFailed";
+            public const string InsufficientAmount = "Invoice.InsufficientAmount";
         }
     }
 }

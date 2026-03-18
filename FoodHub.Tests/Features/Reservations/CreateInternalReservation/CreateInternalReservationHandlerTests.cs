@@ -50,7 +50,9 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
             reservationRepo.Setup(r => r.Query()).Returns(new List<Reservation>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
 
+            _mockMessageService.Setup(m => m.GetMessage(It.IsAny<string>(), It.IsAny<object[]>())).Returns("Không có bàn trống phù hợp với yêu cầu.");
             _mockMessageService.Setup(m => m.GetMessage(It.IsAny<string>())).Returns("Không có bàn trống phù hợp với yêu cầu.");
+
 
             var handler = new CreateInternalReservationHandler(_mockUow.Object, _mockLogger.Object, _mockMessageService.Object);
 
