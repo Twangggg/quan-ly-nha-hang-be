@@ -49,7 +49,7 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
             }
 
             // Check if an invoice already exists for the given order
-            if (invoiceRepo.Query().Any(i => i.OrderId == request.OrderId))
+            if (await invoiceRepo.Query().AnyAsync(i => i.OrderId == request.OrderId, cancellationToken))
             {
                 _logger.LogWarning("An invoice already exists for OrderId: {OrderId}", request.OrderId);
                 var errorMessage = _messageService.GetMessage(MessageKeys.Invoice.AlreadyExists);
