@@ -13,10 +13,12 @@ namespace FoodHub.Infrastructure.Services
     public class SignalRService : ISignalRService
     {
         private readonly IHubContext<KdsHub> _hubContext;
+        private readonly IHubContext<BillingHub> _billingHubContext;
 
-        public SignalRService(IHubContext<KdsHub> hubContext)
+        public SignalRService(IHubContext<KdsHub> hubContext, IHubContext<BillingHub> billingHubContext)
         {
             _hubContext = hubContext;
+            _billingHubContext = billingHubContext;
         }
 
         // Thông báo khi có món ăn mới vừa được đặt (Submit Order/Add Item)
@@ -47,8 +49,14 @@ namespace FoodHub.Infrastructure.Services
 
         public async Task NotifyOrderStatusChangedAsync(Guid orderId, string status)
         {
-            // Thông báo toàn bộ đơn hàng (ví dụ: đã thanh toán xong)
+            // Thông báo toàn bộ đơn hàng (ví dụ: đã thanh toán xong) cho KDS
             await _hubContext.Clients.All.SendAsync(
+                "OrderStatusChanged",
+                new { OrderId = orderId, Status = status }
+            );
+
+            // Bắn tín hiệu sang màn hình Thanh Toán (Frontend)
+            await _billingHubContext.Clients.All.SendAsync(
                 "OrderStatusChanged",
                 new { OrderId = orderId, Status = status }
             );

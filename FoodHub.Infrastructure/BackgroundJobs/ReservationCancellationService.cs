@@ -70,7 +70,7 @@ namespace FoodHub.Infrastructure.BackgroundJobs
             {
                 _logger.LogInformation("Cancelling Reservation {ReservationId} (Time: {Time}). Customer did not check-in after 30 minutes.", reservation.ReservationId, reservation.ReservationTime);
                 
-                reservation.Status = ReservationStatus.Cancelled;
+                reservation.Status = ReservationStatus.NoShow;
             }
 
             await unitOfWork.SaveChangeAsync(cancellationToken);
