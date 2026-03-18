@@ -94,11 +94,11 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
                 var invoiceId = Guid.NewGuid();
                 var orderId = order.OrderId;
                 var invoiceNumber = GenerateInvoiceNumber();
-                var subTotal = order.TotalAmount; // Assuming TotalAmount is the sum of all order items
+                var subTotal = order.SubTotal;
                 var amountReceived = request.AmountReceived;
-                var taxAmount = subTotal * 0.1m; // Assuming a 10% tax rate, adjust as needed
+                var taxAmount = order.VatAmount;
                 var discountAmount = 0m; // Assuming DiscountAmount is the total discount applied to the order
-                var totalAmount = subTotal + taxAmount - discountAmount;
+                var totalAmount = order.TotalAmount;
                 var amountReturned = amountReceived - totalAmount;
                 var paymentMethod = order.PaymentMethod;
                 var cashierName = employee.FullName;
