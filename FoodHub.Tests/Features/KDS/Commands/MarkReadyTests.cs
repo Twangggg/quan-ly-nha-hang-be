@@ -22,6 +22,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ISignalRService> _mockSignalRService;
+        private readonly Mock<IInventoryDeductionService> _mockInventoryDeductionService;
         private readonly Mock<ILogger<MarkReadyHandler>> _mockLogger;
         private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly MarkReadyHandler _handler;
@@ -32,6 +33,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
             _mockSignalRService = new Mock<ISignalRService>();
+            _mockInventoryDeductionService = new Mock<IInventoryDeductionService>();
             _mockLogger = new Mock<ILogger<MarkReadyHandler>>();
             _priorityCalculator = new KdsPriorityCalculator(); // Dùng instance thật vì logic tính điểm đơn giản
 
@@ -41,6 +43,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 _mockMessageService.Object,
                 _mockSignalRService.Object,
                 _priorityCalculator,
+                _mockInventoryDeductionService.Object,
                 _mockLogger.Object
             );
         }

@@ -2,10 +2,10 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -99,8 +99,6 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     table = reservation.Table;
 
                     // Table must be Available (or we could enforce checking the reservation status too, like Booked/CheckIn)
-                    // Depending on your requirements, if a reservation is checked in, maybe the table is already Occupied,
-                    // but according to previous logic, table must be Available.
                     if (table.Status != TableStatus.Available)
                     {
                         _logger.LogWarning(
@@ -132,13 +130,20 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 }
 
                 // If table not from reservation, try fetch by TableId
-                if (table == null && request.OrderType == OrderType.DineIn && request.TableId.HasValue)
+                if (
+                    table == null
+                    && request.OrderType == OrderType.DineIn
+                    && request.TableId.HasValue
+                )
                 {
                     table = await _unitOfWork
                         .Repository<Table>()
                         .Query()
                         .Include(t => t.Area)
-                        .FirstOrDefaultAsync(t => t.TableId == request.TableId.Value, cancellationToken);
+                        .FirstOrDefaultAsync(
+                            t => t.TableId == request.TableId.Value,
+                            cancellationToken
+                        );
 
                     if (table is null)
                     {
@@ -192,7 +197,8 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     OrderType = request.OrderType,
                     Status = OrderStatus.Serving,
                     TableId = request.OrderType == OrderType.DineIn ? table?.TableId : null,
-                    ReservationId = request.OrderType == OrderType.DineIn ? request.ReservationId : null,
+                    ReservationId =
+                        request.OrderType == OrderType.DineIn ? request.ReservationId : null,
                     Note = request.Note,
                     TotalAmount = 0,
                     IsPriority = isPriority,
@@ -256,10 +262,6 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             }
         }
 
-        /// <summary>
-        /// Generate unique order code in format: ORD-yyyyMMdd-xxxx.
-        /// Must be called inside a transaction to prevent race conditions.
-        /// </summary>
         private async Task<string> GenerateOrderCodeAsync(CancellationToken cancellationToken)
         {
             var today = DateTime.UtcNow.Date;

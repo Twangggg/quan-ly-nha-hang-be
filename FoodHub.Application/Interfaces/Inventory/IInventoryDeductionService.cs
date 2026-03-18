@@ -11,5 +11,15 @@ namespace FoodHub.Application.Interfaces.Inventory
         /// <param name="orderId">The ID of the order to process.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         Task DeductStockAsync(Guid orderId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Deducts stock for a single order item when it's marked as Ready.
+        /// </summary>
+        /// <param name="orderItemId">The ID of the order item.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        Task DeductStockForItemAsync(
+            Guid orderItemId,
+            CancellationToken cancellationToken = default
+        );
     }
 }

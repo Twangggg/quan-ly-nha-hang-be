@@ -3,10 +3,10 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -23,6 +23,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
         private readonly IMessageService _messageService;
         private readonly ISignalRService _signalRService;
         private readonly KdsPriorityCalculator _priorityCalculator;
+        private readonly IInventoryDeductionService _inventoryDeductionService;
         private readonly ILogger<MarkReadyHandler> _logger;
 
         public MarkReadyHandler(
@@ -31,6 +32,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
             IMessageService messageService,
             ISignalRService signalRService,
             KdsPriorityCalculator priorityCalculator,
+            IInventoryDeductionService inventoryDeductionService,
             ILogger<MarkReadyHandler> logger
         )
         {
@@ -39,6 +41,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
             _messageService = messageService;
             _signalRService = signalRService;
             _priorityCalculator = priorityCalculator;
+            _inventoryDeductionService = inventoryDeductionService;
             _logger = logger;
         }
 
@@ -189,6 +192,12 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                 orderItemRepository.Update(orderItem);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+
+                // Deduct stock when item is marked as Ready
+                await _inventoryDeductionService.DeductStockForItemAsync(
+                    orderItem.OrderItemId,
+                    cancellationToken
+                );
 
                 _logger.LogInformation(
                     "Successfully marked ready and handled auto-pull for OrderItemId: {OrderItemId}",

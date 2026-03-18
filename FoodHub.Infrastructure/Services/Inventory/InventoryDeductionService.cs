@@ -1,8 +1,8 @@
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -49,7 +49,10 @@ namespace FoodHub.Infrastructure.Services.Inventory
             }
 
             var orderItems = order
-                .OrderItems.Where(oi => oi.Status == OrderItemStatus.Completed && !oi.StockDeducted)
+                .OrderItems.Where(oi =>
+                    (oi.Status == OrderItemStatus.Completed || oi.Status == OrderItemStatus.Ready)
+                    && !oi.StockDeducted
+                )
                 .ToList();
 
             if (!orderItems.Any())
@@ -185,6 +188,132 @@ namespace FoodHub.Infrastructure.Services.Inventory
             }
 
             _logger.LogInformation("Stock deduction completed for OrderId: {OrderId}", orderId);
+        }
+
+        public async Task DeductStockForItemAsync(
+            Guid orderItemId,
+            CancellationToken cancellationToken = default
+        )
+        {
+            _logger.LogInformation(
+                "Starting stock deduction for OrderItemId: {OrderItemId}",
+                orderItemId
+            );
+
+            var orderItem = await _unitOfWork
+                .Repository<OrderItem>()
+                .Query()
+                .Include(oi => oi.Order)
+                .FirstOrDefaultAsync(oi => oi.OrderItemId == orderItemId, cancellationToken);
+
+            if (orderItem == null)
+            {
+                _logger.LogWarning(
+                    "OrderItem {OrderItemId} not found for stock deduction",
+                    orderItemId
+                );
+                return;
+            }
+
+            if (orderItem.StockDeducted)
+            {
+                _logger.LogInformation(
+                    "Stock already deducted for OrderItemId: {OrderItemId}",
+                    orderItemId
+                );
+                return;
+            }
+
+            var recipe = await _unitOfWork
+                .Repository<MenuItemIngredient>()
+                .Query()
+                .Where(ri => ri.MenuItemId == orderItem.MenuItemId)
+                .Include(ri => ri.Ingredient)
+                .ToListAsync(cancellationToken);
+
+            if (!recipe.Any())
+            {
+                _logger.LogDebug(
+                    "No recipe found for MenuItemId: {MenuItemId} in OrderItem: {OrderItemId}",
+                    orderItem.MenuItemId,
+                    orderItemId
+                );
+                return;
+            }
+
+            var order = orderItem.Order;
+            var receiptCode = $"SALE-{order!.OrderCode}-{orderItemId}";
+            var receipt = StockOutReceipt.Create(
+                receiptCode,
+                DateTime.UtcNow,
+                $"Sale for Order {order.OrderCode} - Item {orderItemId}",
+                order.CreatedBy
+            );
+            await _unitOfWork.Repository<StockOutReceipt>().AddAsync(receipt);
+
+            var affectedIngredientIds = new List<Guid>();
+
+            foreach (var ingredientUsage in recipe)
+            {
+                var quantityToDeduct = ingredientUsage.QuantityPerServing * orderItem.Quantity;
+                var ingredient = ingredientUsage.Ingredient;
+
+                _logger.LogInformation(
+                    "Deducting {Quantity} {Unit} of {Ingredient} for OrderItem {OrderItemId}",
+                    quantityToDeduct,
+                    ingredient.BaseUnit,
+                    ingredient.Name,
+                    orderItemId
+                );
+
+                var result = ingredient.ReduceStock(quantityToDeduct, order.CreatedBy);
+                if (!result.IsSuccess)
+                {
+                    _logger.LogError(
+                        "Failed to reduce stock for ingredient {IngredientId}: {Error}",
+                        ingredient.IngredientId,
+                        result.ErrorCode
+                    );
+                }
+
+                var transaction = InventoryTransaction.CreateSaleDeduction(
+                    ingredient.IngredientId,
+                    quantityToDeduct,
+                    ingredient.CostPrice,
+                    ingredient.CurrentStock,
+                    $"Order:{order.OrderCode}|Item:{orderItemId}",
+                    order.CreatedBy
+                );
+
+                await _unitOfWork.Repository<InventoryTransaction>().AddAsync(transaction);
+
+                receipt.AddItem(
+                    ingredient.IngredientId,
+                    quantityToDeduct,
+                    ingredient.CostPrice,
+                    order.CreatedBy
+                );
+
+                affectedIngredientIds.Add(ingredient.IngredientId);
+            }
+
+            orderItem.StockDeducted = true;
+            _unitOfWork.Repository<OrderItem>().Update(orderItem);
+
+            await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            if (affectedIngredientIds.Any())
+            {
+                await _inventoryAvailabilitySyncService.SyncAfterStockChangeAsync(
+                    affectedIngredientIds,
+                    cancellationToken
+                );
+            }
+
+            _logger.LogInformation(
+                "Stock deduction completed for OrderItemId: {OrderItemId}",
+                orderItemId
+            );
         }
     }
 }
