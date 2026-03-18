@@ -75,6 +75,18 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                             cancellationToken
                         );
 
+                    var bufferTime = TimeSpan.FromHours(2);
+                    var now = DateTime.Now;
+                    var currentTime = now.TimeOfDay;
+                    var today = DateOnly.FromDateTime(now);
+                    var upcomingReservation = await _unitOfWork.Repository<Reservation>().Query()
+                        .AnyAsync(r => r.TableId == request.TableId.Value
+                                    && r.ReservationDate == today
+                                    && r.Status == ReservationStatus.Booked
+                                    && r.ReservationTime > currentTime
+                                    && r.ReservationTime <= currentTime.Add(bufferTime),
+                                    cancellationToken);
+
                     if (table is null)
                     {
                         await _unitOfWork.RollbackTransactionAsync();
@@ -112,6 +124,12 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                             _messageService.GetMessage(MessageKeys.Area.Inactive),
                             ResultErrorType.Conflict
                         );
+                    }
+
+                    //Bàn bị đặt trước
+                    if (upcomingReservation)
+                    {
+                        return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.HasBeenPlaced));
                     }
                 }
 

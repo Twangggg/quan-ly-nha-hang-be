@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-    <!-- 
+  <!-- 
     Microsoft ResX Schema 
     
     Version 2.0
@@ -59,466 +59,454 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-        <xsd:element name="root" msdata:IsDataSet="true">
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
             <xsd:complexType>
-                <xsd:choice maxOccurs="unbounded">
-                    <xsd:element name="metadata">
-                        <xsd:complexType>
-                            <xsd:sequence>
-                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-                            </xsd:sequence>
-                            <xsd:attribute name="name" use="required" type="xsd:string" />
-                            <xsd:attribute name="type" type="xsd:string" />
-                            <xsd:attribute name="mimetype" type="xsd:string" />
-                            <xsd:attribute ref="xml:space" />
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="assembly">
-                        <xsd:complexType>
-                            <xsd:attribute name="alias" type="xsd:string" />
-                            <xsd:attribute name="name" type="xsd:string" />
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="data">
-                        <xsd:complexType>
-                            <xsd:sequence>
-                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-                            </xsd:sequence>
-                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-                            <xsd:attribute ref="xml:space" />
-                        </xsd:complexType>
-                    </xsd:element>
-                    <xsd:element name="resheader">
-                        <xsd:complexType>
-                            <xsd:sequence>
-                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                            </xsd:sequence>
-                            <xsd:attribute name="name" type="xsd:string" use="required" />
-                        </xsd:complexType>
-                    </xsd:element>
-                </xsd:choice>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
-        </xsd:element>
-    </xsd:schema>
-    <resheader name="resmimetype">
-        <value>text/microsoft-resx</value>
-    </resheader>
-    <resheader name="version">
-        <value>2.0</value>
-    </resheader>
-    <resheader name="reader">
-        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-    </resheader>
-    <resheader name="writer">
-        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-    </resheader>
-    <data name="DatabaseConflict" xml:space="preserve">
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DatabaseConflict" xml:space="preserve">
     <value>Có xung đột dữ liệu trong hệ thống. Vui lòng thử lại sau vài giây.</value>
   </data>
-    <data name="DatabaseUpdateError" xml:space="preserve">
+  <data name="DatabaseUpdateError" xml:space="preserve">
     <value>Có lỗi xảy ra khi cập nhật dữ liệu. Vui lòng thử lại.</value>
   </data>
-    <data name="OperationCancelled" xml:space="preserve">
+  <data name="OperationCancelled" xml:space="preserve">
     <value>Thao tác bị hủy do timeout. Vui lòng thử lại.</value>
   </data>
-    <data name="InvalidUserId" xml:space="preserve">
+  <data name="InvalidUserId" xml:space="preserve">
     <value>Current user identity is missing or invalid.</value>
   </data>
-    <data name="Unauthorized" xml:space="preserve">
+  <data name="Unauthorized" xml:space="preserve">
     <value>Bạn không có quyền thực hiện thao tác này.</value>
   </data>
-    <data name="CannotIdentifyManager" xml:space="preserve">
+  <data name="CannotIdentifyManager" xml:space="preserve">
     <value>Không thể xác định Manager thực hiện thao tác</value>
   </data>
-    <data name="OnlyManagerCanReset" xml:space="preserve">
+  <data name="OnlyManagerCanReset" xml:space="preserve">
     <value>Chỉ Manager mới có quyền reset password</value>
   </data>
-    <data name="OnlyActiveEmployeeCanReset" xml:space="preserve">
+  <data name="OnlyActiveEmployeeCanReset" xml:space="preserve">
     <value>Chỉ có thể reset password cho tài khoản đang hoạt động</value>
   </data>
-    <data name="Password.MinLength" xml:space="preserve">
+  <data name="Password.MinLength" xml:space="preserve">
     <value>Mật khẩu phải có ít nhất 8 ký tự</value>
   </data>
-    <data name="Password.RequireUppercase" xml:space="preserve">
+  <data name="Password.RequireUppercase" xml:space="preserve">
     <value>Mật khẩu phải có ít nhất 1 chữ hoa</value>
   </data>
-    <data name="Password.RequireLowercase" xml:space="preserve">
+  <data name="Password.RequireLowercase" xml:space="preserve">
     <value>Mật khẩu phải có ít nhất 1 chữ thường</value>
   </data>
-    <data name="Password.RequireDigit" xml:space="preserve">
+  <data name="Password.RequireDigit" xml:space="preserve">
     <value>Mật khẩu phải có ít nhất 1 số</value>
   </data>
-    <data name="Password.RequireSpecial" xml:space="preserve">
+  <data name="Password.RequireSpecial" xml:space="preserve">
     <value>Mật khẩu phải có ít nhất 1 ký tự đặc biệt</value>
   </data>
-    <data name="ResetPassword.EmployeeIdRequired" xml:space="preserve">
+  <data name="ResetPassword.EmployeeIdRequired" xml:space="preserve">
     <value>EmployeeId không được để trống</value>
   </data>
-    <data name="ResetPassword.ReasonRequired" xml:space="preserve">
+  <data name="ResetPassword.ReasonRequired" xml:space="preserve">
     <value>Lý do reset password là bắt buộc</value>
   </data>
-    <data name="ResetPassword.ReasonMinLength" xml:space="preserve">
+  <data name="ResetPassword.ReasonMinLength" xml:space="preserve">
     <value>Lý do reset phải có ít nhất 10 ký tự</value>
   </data>
-    <data name="ResetPassword.ReasonMaxLength" xml:space="preserve">
+  <data name="ResetPassword.ReasonMaxLength" xml:space="preserve">
     <value>Lý do reset không được quá 500 ký tự</value>
   </data>
-    <data name="Auth.InvalidCredentials" xml:space="preserve">
+  <data name="Auth.InvalidCredentials" xml:space="preserve">
     <value>Email hoặc mật khẩu không chính xác.</value>
   </data>
-    <data name="Auth.AccountInactive" xml:space="preserve">
+  <data name="Auth.AccountInactive" xml:space="preserve">
     <value>Tài khoản hiện đang bị khóa hoặc chưa kích hoạt.</value>
   </data>
-    <data name="Auth.AccountBlocked" xml:space="preserve">
+  <data name="Auth.AccountBlocked" xml:space="preserve">
     <value>Tài khoản bị tạm khóa do nhập sai quá nhiều lần. Vui lòng thử lại sau.</value>
   </data>
-    <data name="Auth.InvalidToken" xml:space="preserve">
+  <data name="Auth.InvalidToken" xml:space="preserve">
     <value>Token không hợp lệ hoặc đã hết hạn.</value>
   </data>
-    <data name="Auth.RefreshTokenNotFound" xml:space="preserve">
+  <data name="Auth.RefreshTokenNotFound" xml:space="preserve">
     <value>Refresh token không tồn tại.</value>
   </data>
-    <data name="Auth.RefreshTokenExpired" xml:space="preserve">
+  <data name="Auth.RefreshTokenExpired" xml:space="preserve">
     <value>Refresh token đã hết hạn.</value>
   </data>
-    <data name="Auth.RefreshTokenRevoked" xml:space="preserve">
+  <data name="Auth.RefreshTokenRevoked" xml:space="preserve">
     <value>Token làm mới đã bị thu hồi.</value>
   </data>
-    <data name="Auth.AccountCreationEmailFailed" xml:space="preserve">
+  <data name="Auth.AccountCreationEmailFailed" xml:space="preserve">
     <value>Tạo tài khoản thất bại: Không thể gửi email thông báo. Vui lòng kiểm tra lại địa chỉ email.</value>
   </data>
-    <data name="Auth.ResetRequestLimit" xml:space="preserve">
+  <data name="Auth.ResetRequestLimit" xml:space="preserve">
     <value>Quá nhiều yêu cầu reset mật khẩu. Vui lòng thử lại sau.</value>
   </data>
-    <data name="Auth.InvalidResetLink" xml:space="preserve">
+  <data name="Auth.InvalidResetLink" xml:space="preserve">
     <value>Link không hợp lệ hoặc đã hết hạn.</value>
   </data>
-    <data name="Auth.UserNotLoggedIn" xml:space="preserve">
+  <data name="Auth.UserNotLoggedIn" xml:space="preserve">
     <value>Người dùng chưa đăng nhập.</value>
   </data>
-    <data name="Auth.InvalidAction" xml:space="preserve">
+  <data name="Auth.InvalidAction" xml:space="preserve">
     <value>Thao tác không hợp lệ.</value>
   </data>
-    <data name="Auth.TooManyAttempts" xml:space="preserve">
+  <data name="Auth.TooManyAttempts" xml:space="preserve">
     <value>Quá nhiều lần thử sai. Vui lòng thử lại sau.</value>
   </data>
-    <data name="Password.ConfirmationMismatch" xml:space="preserve">
+  <data name="Password.ConfirmationMismatch" xml:space="preserve">
     <value>Mật khẩu xác nhận không khớp.</value>
   </data>
-    <data name="Password.MustBeDifferent" xml:space="preserve">
+  <data name="Password.MustBeDifferent" xml:space="preserve">
     <value>Mật khẩu mới phải khác mật khẩu hiện tại.</value>
   </data>
-    <data name="Password.IncorrectCurrent" xml:space="preserve">
+  <data name="Password.IncorrectCurrent" xml:space="preserve">
     <value>Mật khẩu hiện tại không chính xác.</value>
   </data>
-    <data name="Profile.PhoneExists" xml:space="preserve">
+  <data name="Profile.PhoneExists" xml:space="preserve">
     <value>Số điện thoại đã được sử dụng bởi người khác.</value>
   </data>
-    <data name="Profile.EmailExists" xml:space="preserve">
+  <data name="Profile.EmailExists" xml:space="preserve">
     <value>Email đã được sử dụng.</value>
   </data>
-    <data name="Employee.CannotUpdateInactive" xml:space="preserve">
+  <data name="Employee.CannotUpdateInactive" xml:space="preserve">
     <value>Không thể cập nhật thông tin cho nhân viên đang ngừng hoạt động.</value>
   </data>
-    <data name="MenuItem.CategoryNotFound" xml:space="preserve">
+  <data name="MenuItem.CategoryNotFound" xml:space="preserve">
     <value>Không tìm thấy danh mục với ID: {0}</value>
   </data>
-    <data name="MenuItem.CodeExists" xml:space="preserve">
+  <data name="MenuItem.CodeExists" xml:space="preserve">
     <value>Mã món '{0}' đã tồn tại</value>
   </data>
-    <data name="MenuItem.NotFound" xml:space="preserve">
+  <data name="MenuItem.NotFound" xml:space="preserve">
     <value>Không tìm thấy món ăn với ID: {0}</value>
   </data>
-    <data name="MenuItem.CodeRequired" xml:space="preserve">
+  <data name="MenuItem.CodeRequired" xml:space="preserve">
     <value>Mã món ăn không được để trống.</value>
   </data>
-    <data name="MenuItem.CodeTooLong" xml:space="preserve">
+  <data name="MenuItem.CodeTooLong" xml:space="preserve">
     <value>Mã món ăn không được quá 50 ký tự.</value>
   </data>
-    <data name="MenuItem.NameRequired" xml:space="preserve">
+  <data name="MenuItem.NameRequired" xml:space="preserve">
     <value>Tên món ăn không được để trống.</value>
   </data>
-    <data name="MenuItem.NameTooLong" xml:space="preserve">
+  <data name="MenuItem.NameTooLong" xml:space="preserve">
     <value>Tên món ăn không được quá 150 ký tự.</value>
   </data>
-    <data name="MenuItem.ImageRequired" xml:space="preserve">
+  <data name="MenuItem.ImageRequired" xml:space="preserve">
     <value>Hình ảnh không được để trống.</value>
   </data>
-    <data name="MenuItem.CategoryRequired" xml:space="preserve">
+  <data name="MenuItem.CategoryRequired" xml:space="preserve">
     <value>Danh mục không được để trống.</value>
   </data>
-    <data name="MenuItem.PriceInvalid" xml:space="preserve">
+  <data name="MenuItem.PriceInvalid" xml:space="preserve">
     <value>Giá bán phải lớn hơn 0.</value>
   </data>
-    <data name="MenuItem.ExpectedTimeInvalid" xml:space="preserve">
+  <data name="MenuItem.ExpectedTimeInvalid" xml:space="preserve">
     <value>Thời gian chờ phải lớn hơn 0.</value>
   </data>
-    <data name="SetMenu.CodeRequired" xml:space="preserve">
+  <data name="SetMenu.CodeRequired" xml:space="preserve">
     <value>Mã set menu không được để trống.</value>
   </data>
-    <data name="SetMenu.NameRequired" xml:space="preserve">
+  <data name="SetMenu.NameRequired" xml:space="preserve">
     <value>Tên set menu không được để trống.</value>
   </data>
-    <data name="SetMenu.PriceInvalid" xml:space="preserve">
+  <data name="SetMenu.PriceInvalid" xml:space="preserve">
     <value>Giá bán phải lớn hơn 0.</value>
   </data>
-    <data name="SetMenu.ItemsRequired" xml:space="preserve">
+  <data name="SetMenu.ItemsRequired" xml:space="preserve">
     <value>Set menu phải có ít nhất 1 món.</value>
   </data>
-    <data name="Category.NameRequired" xml:space="preserve">
+  <data name="Category.NameRequired" xml:space="preserve">
     <value>Tên danh mục không được để trống.</value>
   </data>
-    <data name="Category.TypeInvalid" xml:space="preserve">
+  <data name="Category.TypeInvalid" xml:space="preserve">
     <value>Loại danh mục không hợp lệ.</value>
   </data>
-    <data name="OptionGroup.NameRequired" xml:space="preserve">
+  <data name="OptionGroup.NameRequired" xml:space="preserve">
     <value>Tên nhóm tùy chọn không được để trống.</value>
   </data>
-    <data name="OptionGroup.MenuItemIdRequired" xml:space="preserve">
+  <data name="OptionGroup.MenuItemIdRequired" xml:space="preserve">
     <value>Món ăn không được để trống.</value>
   </data>
-    <data name="OptionItem.LabelRequired" xml:space="preserve">
+  <data name="OptionItem.LabelRequired" xml:space="preserve">
     <value>Tên tùy chọn không được để trống.</value>
   </data>
-    <data name="OptionItem.ExtraPriceInvalid" xml:space="preserve">
+  <data name="OptionItem.ExtraPriceInvalid" xml:space="preserve">
     <value>Giá thêm phải lớn hơn hoặc bằng 0.</value>
   </data>
-    <data name="MenuItem.StationInvalid" xml:space="preserve">
+  <data name="MenuItem.StationInvalid" xml:space="preserve">
     <value>Station không hợp lệ.</value>
   </data>
-    <data name="OptionGroup.Required" xml:space="preserve">
+  <data name="OptionGroup.Required" xml:space="preserve">
     <value>Nhóm tùy chọn không được để trống.</value>
   </data>
-    <data name="Order.InvalidType" xml:space="preserve">
+  <data name="Order.InvalidType" xml:space="preserve">
     <value>Loại đơn không hợp lệ.</value>
   </data>
-    <data name="Order.SelectTable" xml:space="preserve">
+  <data name="Order.SelectTable" xml:space="preserve">
     <value>Vui lòng chọn bàn cho đơn dùng tại nhà hàng</value>
   </data>
-    <data name="Order.InvalidQuantity" xml:space="preserve">
+  <data name="Order.InvalidQuantity" xml:space="preserve">
     <value>Số lượng không hợp lệ</value>
   </data>
-    <data name="Order.NotFound" xml:space="preserve">
+  <data name="Order.NotFound" xml:space="preserve">
     <value>Không tìm thấy đơn.</value>
   </data>
-    <data name="Order.InvalidAction" xml:space="preserve">
+  <data name="Order.InvalidAction" xml:space="preserve">
     <value>Thao tác không hợp lệ</value>
   </data>
-    <data name="Order.InvalidActionWithStatus" xml:space="preserve">
+  <data name="Order.InvalidActionWithStatus" xml:space="preserve">
     <value>Thao tác không hợp lệ với trạng thái</value>
   </data>
-    <data name="Order.MustHaveItem" xml:space="preserve">
+  <data name="Order.MustHaveItem" xml:space="preserve">
     <value>Đơn hàng đang trống.</value>
   </data>
-    <data name="Order.WrongTotalAmount" xml:space="preserve">
+  <data name="Order.WrongTotalAmount" xml:space="preserve">
     <value>Tổng số tiền đang có sự chênh lệch</value>
   </data>
-    <data name="MenuItem.OutOfStock" xml:space="preserve">
+  <data name="MenuItem.OutOfStock" xml:space="preserve">
     <value>Món đã hết: </value>
   </data>
-    <data name="OrderItem.InvalidQuantity" xml:space="preserve">
+  <data name="OrderItem.InvalidQuantity" xml:space="preserve">
     <value>Phải có ít nhất 1 món để gửi bếp</value>
   </data>
-    <data name="MenuItem.InvalidQuantity" xml:space="preserve">
+  <data name="MenuItem.InvalidQuantity" xml:space="preserve">
     <value>Số lượng phải lớn hơn 0.</value>
   </data>
-    <data name="OptionGroup.NotFound" xml:space="preserve">
+  <data name="OptionGroup.NotFound" xml:space="preserve">
     <value>Không tìm thấy nhóm lựa chọn này</value>
   </data>
-    <data name="OptionItem.NotFound" xml:space="preserve">
+  <data name="OptionItem.NotFound" xml:space="preserve">
     <value>Không tìm thấy lựa chọn này.</value>
   </data>
-    <data name="OrderItem.NotFound" xml:space="preserve">
+  <data name="OrderItem.NotFound" xml:space="preserve">
     <value>Không tìm thấy món trong đơn hàng.</value>
   </data>
-    <data name="Order.ReasonRequired" xml:space="preserve">
+  <data name="Order.ReasonRequired" xml:space="preserve">
     <value>Vui lòng nhập lý do cho thao tác này.</value>
   </data>
-    <data name="Order.InvalidStatusForCancel" xml:space="preserve">
+  <data name="Order.InvalidStatusForCancel" xml:space="preserve">
     <value>Đơn hàng không thể huỷ ở trạng thái hiện tại.</value>
   </data>
-    <data name="Order.OrderNotReadyForCompletion" xml:space="preserve">
+  <data name="Order.OrderNotReadyForCompletion" xml:space="preserve">
     <value>Đơn hàng chưa sẵn sàng để hoàn tất. Vui lòng kiểm tra các món còn đang xử lý.</value>
   </data>
-    <data name="Order.TableAlreadyOccupied" xml:space="preserve">
+  <data name="Order.TableAlreadyOccupied" xml:space="preserve">
     <value>Bàn này đang có khách. Vui lòng chọn bàn khác.</value>
   </data>
-    <data name="SetMenu.NotFound" xml:space="preserve">
+  <data name="SetMenu.NotFound" xml:space="preserve">
     <value>Không tìm thấy set menu.</value>
   </data>
-    <data name="SetMenu.CodeExists" xml:space="preserve">
+  <data name="SetMenu.CodeExists" xml:space="preserve">
     <value>Mã set menu đã tồn tại.</value>
   </data>
-    <data name="SetMenu.UpdateForbidden" xml:space="preserve">
+  <data name="SetMenu.UpdateForbidden" xml:space="preserve">
     <value>Không có quyền cập nhật set menu này.</value>
   </data>
-    <data name="SetMenu.DeleteForbidden" xml:space="preserve">
+  <data name="SetMenu.DeleteForbidden" xml:space="preserve">
     <value>Không có quyền xóa set menu này.</value>
   </data>
-    <data name="Auth.PasswordChangedSuccess" xml:space="preserve">
+  <data name="Auth.PasswordChangedSuccess" xml:space="preserve">
     <value>Đổi mật khẩu thành công.</value>
   </data>
-    <data name="Auth.PasswordResetSuccess" xml:space="preserve">
+  <data name="Auth.PasswordResetSuccess" xml:space="preserve">
     <value>Đặt lại mật khẩu thành công.</value>
   </data>
-    <data name="Auth.PasswordResetGenericMessage" xml:space="preserve">
+  <data name="Auth.PasswordResetGenericMessage" xml:space="preserve">
     <value>Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.</value>
   </data>
-    <data name="Auth.TokenRequired" xml:space="preserve">
+  <data name="Auth.TokenRequired" xml:space="preserve">
     <value>Token không được để trống.</value>
   </data>
-    <data name="Auth.NewPasswordRequired" xml:space="preserve">
+  <data name="Auth.NewPasswordRequired" xml:space="preserve">
     <value>Mật khẩu mới không được để trống.</value>
   </data>
-    <data name="Auth.ConfirmPasswordRequired" xml:space="preserve">
+  <data name="Auth.ConfirmPasswordRequired" xml:space="preserve">
     <value>Xác nhận mật khẩu không được để trống.</value>
   </data>
-    <data name="Auth.ConfirmPasswordMismatch" xml:space="preserve">
+  <data name="Auth.ConfirmPasswordMismatch" xml:space="preserve">
     <value>Xác nhận mật khẩu không khớp.</value>
   </data>
-    <data name="Auth.EmployeeCodeRequired" xml:space="preserve">
+  <data name="Auth.EmployeeCodeRequired" xml:space="preserve">
     <value>Mã nhân viên không được để trống.</value>
   </data>
-    <data name="ResetPassword.SuccessWithEmail" xml:space="preserve">
+  <data name="ResetPassword.SuccessWithEmail" xml:space="preserve">
     <value>Reset mật khẩu thành công. Email thông báo đã được gửi.</value>
   </data>
-    <data name="ResetPassword.SuccessNoEmail" xml:space="preserve">
+  <data name="ResetPassword.SuccessNoEmail" xml:space="preserve">
     <value>Reset mật khẩu thành công. Không có email để thông báo.</value>
   </data>
-    <data name="ResetPassword.StatusNoEmail" xml:space="preserve">
+  <data name="ResetPassword.StatusNoEmail" xml:space="preserve">
     <value>Không có email để thông báo trạng thái.</value>
   </data>
-    <data name="MenuItem.UpdateCostForbidden" xml:space="preserve">
+  <data name="MenuItem.UpdateCostForbidden" xml:space="preserve">
     <value>Không có quyền cập nhật giá vốn của món ăn.</value>
   </data>
-    <data name="MenuItem.UpdateStockForbidden" xml:space="preserve">
+  <data name="MenuItem.UpdateStockForbidden" xml:space="preserve">
     <value>Không có quyền cập nhật trạng thái tồn kho.</value>
   </data>
-    <data name="Profile.UsernameExists" xml:space="preserve">
+  <data name="Profile.UsernameExists" xml:space="preserve">
     <value>Tên đăng nhập đã được sử dụng bởi người khác.</value>
   </data>
-    <data name="Employee.CodeInvalidFormat" xml:space="preserve">
+  <data name="Employee.CodeInvalidFormat" xml:space="preserve">
     <value>Mã nhân viên không đúng định dạng.</value>
   </data>
-    <data name="Common.IdMismatch" xml:space="preserve">
+  <data name="Common.IdMismatch" xml:space="preserve">
     <value>Mã định danh không khớp.</value>
   </data>
-    <data name="Common.IdRequired" xml:space="preserve">
+  <data name="Common.IdRequired" xml:space="preserve">
     <value>Mã định danh là bắt buộc.</value>
   </data>
-    <data name="Common.NoFileProvided" xml:space="preserve">
+  <data name="Common.NoFileProvided" xml:space="preserve">
     <value>Vui lòng cung cấp tệp tin.</value>
   </data>
-    <data name="Common.UploadSuccess" xml:space="preserve">
+  <data name="Common.UploadSuccess" xml:space="preserve">
     <value>Tải tệp lên thành công.</value>
   </data>
-    <data name="Common.DeleteSuccess" xml:space="preserve">
+  <data name="Common.DeleteSuccess" xml:space="preserve">
     <value>Xóa tệp thành công.</value>
   </data>
-    <data name="Common.DeleteFailed" xml:space="preserve">
+  <data name="Common.DeleteFailed" xml:space="preserve">
     <value>Xóa tệp thất bại.</value>
   </data>
-    <data name="Common.InternalServerError" xml:space="preserve">
+  <data name="Common.InternalServerError" xml:space="preserve">
     <value>Lỗi hệ thống nội bộ.</value>
   </data>
-    <data name="Common.ValidationFailed" xml:space="preserve">
+  <data name="Common.ValidationFailed" xml:space="preserve">
     <value>Dữ liệu không hợp lệ.</value>
   </data>
-    <data name="Common.NotFound" xml:space="preserve">
+  <data name="Common.NotFound" xml:space="preserve">
     <value>Không tìm thấy tài nguyên.</value>
   </data>
-    <data name="Auth.InvalidTokenClaims" xml:space="preserve">
+  <data name="Auth.InvalidTokenClaims" xml:space="preserve">
     <value>Token chứa thông tin không hợp lệ.</value>
   </data>
-
-
-    <!-- OrderItem KDS Errors -->
-    <data name="OrderItem.MustBePreparingToStartCooking" xml:space="preserve">
+  <data name="OrderItem.MustBePreparingToStartCooking" xml:space="preserve">
     <value>Món phải đang ở trạng thái Chuẩn bị để bắt đầu nấu.</value>
   </data>
-    <data name="OrderItem.MustBeCookingToReady" xml:space="preserve">
+  <data name="OrderItem.MustBeCookingToReady" xml:space="preserve">
     <value>Món phải đang nấu để chuyển sang trạng thái Sẵn sàng.</value>
   </data>
-    <data name="OrderItem.MustBeCookingToReject" xml:space="preserve">
+  <data name="OrderItem.MustBeCookingToReject" xml:space="preserve">
     <value>Món phải đang nấu để từ chối.</value>
   </data>
-    <data name="OrderItem.RejectionReasonIsRequired" xml:space="preserve">
+  <data name="OrderItem.RejectionReasonIsRequired" xml:space="preserve">
     <value>Vui lòng nhập lý do từ chối món ăn.</value>
   </data>
-    <data name="OrderItem.RejectionReasonRequired" xml:space="preserve">
+  <data name="OrderItem.RejectionReasonRequired" xml:space="preserve">
     <value>Vui lòng nhập lý do từ chối món ăn.</value>
   </data>
-    <data name="OrderItem.MustBeRejectedToReturn" xml:space="preserve">
+  <data name="OrderItem.MustBeRejectedToReturn" xml:space="preserve">
     <value>Món phải bị từ chối để hoàn trả.</value>
   </data>
-    <data name="OrderItem.InvalidStatusForCancel" xml:space="preserve">
+  <data name="OrderItem.InvalidStatusForCancel" xml:space="preserve">
     <value>Món không thể huỷ ở trạng thái hiện tại.</value>
   </data>
-
-    <!-- Category Errors -->
-    <data name="Category.CannotDeleteActiveCategory" xml:space="preserve">
+  <data name="Category.CannotDeleteActiveCategory" xml:space="preserve">
     <value>Không thể xóa danh mục đang hoạt động.</value>
   </data>
-    <data name="Category.CannotDeactivateWithActiveItems" xml:space="preserve">
+  <data name="Category.CannotDeactivateWithActiveItems" xml:space="preserve">
     <value>Không thể vô hiệu hóa danh mục có món đang hoạt động.</value>
   </data>
-
-    <!-- SetMenu Errors -->
-    <data name="SetMenu.CannotDeleteWithItems" xml:space="preserve">
+  <data name="SetMenu.CannotDeleteWithItems" xml:space="preserve">
     <value>Không thể xóa set menu còn chứa món.</value>
   </data>
-
-    <!-- OptionGroup Errors -->
-    <data name="OptionGroup.CannotDeleteWithOptions" xml:space="preserve">
+  <data name="OptionGroup.CannotDeleteWithOptions" xml:space="preserve">
     <value>Không thể xóa nhóm tùy chọn còn chứa tùy chọn.</value>
   </data>
-    <data name="OptionGroup.CannotHaveBothMinAndMax" xml:space="preserve">
+  <data name="OptionGroup.CannotHaveBothMinAndMax" xml:space="preserve">
     <value>Nhóm tùy chọn không thể có cả Min và Max cùng lúc.</value>
   </data>
-
-    <!-- OptionItem Errors -->
-    <data name="OptionItem.InvalidExtraPrice" xml:space="preserve">
+  <data name="OptionItem.InvalidExtraPrice" xml:space="preserve">
     <value>Giá thêm phải lớn hơn hoặc bằng 0.</value>
   </data>
-    <data name="EmployeeNotActive" xml:space="preserve">
+  <data name="EmployeeNotActive" xml:space="preserve">
     <value>Nhân viên này hiện không hoạt động.</value>
   </data>
-    <data name="CannotPromoteToManager" xml:space="preserve">
+  <data name="CannotPromoteToManager" xml:space="preserve">
     <value>Không thể chuyển sang vai trò Quản lý</value>
   </data>
-    <data name="ActiveUserBehavior.InActiveAccount" xml:space="preserve">
+  <data name="ActiveUserBehavior.InActiveAccount" xml:space="preserve">
     <value>Tài khoản của bạn đã bị vô hiệu hóa.</value>
   </data>
-    <data name="ActiveUserBehavior.Unauthorized" xml:space="preserve">
+  <data name="ActiveUserBehavior.Unauthorized" xml:space="preserve">
     <value>Truy cập trái phép</value>
-      </data>
-    <data name="Area.NotFound" xml:space="preserve">
+  </data>
+  <data name="Area.NotFound" xml:space="preserve">
     <value>Không tìm thấy khu vực.</value>
   </data>
-    <data name="Area.CodeExists" xml:space="preserve">
+  <data name="Area.CodeExists" xml:space="preserve">
     <value>Mã khu vực đã tồn tại.</value>
   </data>
-    <data name="Area.NameRequired" xml:space="preserve">
+  <data name="Area.NameRequired" xml:space="preserve">
     <value>Tên khu vực là bắt buộc.</value>
   </data>
-    <data name="Area.CodeRequired" xml:space="preserve">
+  <data name="Area.CodeRequired" xml:space="preserve">
     <value>Mã khu vực là bắt buộc.</value>
   </data>
-    <data name="Area.UpdateForbidden" xml:space="preserve">
+  <data name="Area.UpdateForbidden" xml:space="preserve">
     <value>Không có quyền cập nhật khu vực này.</value>
   </data>
-    <data name="Area.DeleteForbidden" xml:space="preserve">
+  <data name="Area.DeleteForbidden" xml:space="preserve">
     <value>Không có quyền xóa khu vực này.</value>
   </data>
-    <data name="Area.DeactivateForbidden" xml:space="preserve">
+  <data name="Area.DeactivateForbidden" xml:space="preserve">
     <value>Khu vực này đã ngừng hoạt động.</value>
   </data>
-  <!-- Checkout Errors -->
   <data name="Order.AlreadyPaid" xml:space="preserve">
     <value>Đơn hàng này đã được thanh toán.</value>
   </data>
@@ -549,8 +537,6 @@
   <data name="Category.CannotChangeTypeNotEmpty" xml:space="preserve">
     <value>Không thể đổi loại danh mục khi đang có món ăn bên trong.</value>
   </data>
-
-  <!-- Ingredient Errors -->
   <data name="Ingredient.NotFound" xml:space="preserve">
     <value>Không tìm thấy nguyên liệu.</value>
   </data>
@@ -631,5 +617,14 @@
   </data>
   <data name="Reservation.VipRequired" xml:space="preserve">
     <value>Khu vực này yêu cầu khách hàng VIP.</value>
+  </data>
+  <data name="Order.HasBeenPlaced" xml:space="preserve">
+    <value>Bàn này đã được khách đặt trước trong thời gian tới. Vui lòng chọn bàn khác.</value>
+  </data>
+  <data name="Reservation.InvalidNewTable" xml:space="preserve">
+    <value>Bàn mới đã được chọn không khả dụng.</value>
+  </data>
+  <data name="Reservation.NoTableInArea" xml:space="preserve">
+    <value>Khu vực hiện tại đã hết bàn trống. Bạn có muốn chuyển khách sang khu vực khác không?</value>
   </data>
 </root>
