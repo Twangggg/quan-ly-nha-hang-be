@@ -626,7 +626,6 @@ namespace FoodHub.Migrations
                         .HasColumnName("sub_total");
 
                     b.Property<string>("TableNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("table_number");
