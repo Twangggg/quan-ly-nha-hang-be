@@ -3,6 +3,7 @@ using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Commands.ProcessInventoryCheck;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
@@ -184,6 +185,27 @@ namespace FoodHub.Tests.Features.Inventory
                 );
 
             await action.Should().ThrowAsync<BusinessException>().WithMessage("invalid status");
+        }
+
+        [Fact]
+        public async Task Handle_Should_ThrowBusinessException_WhenInventoryCheckHasNoItems()
+        {
+            var inventoryCheck = InventoryCheck.Create(DateTime.UtcNow);
+
+            _mockInventoryCheckRepo
+                .Setup(x => x.Query())
+                .Returns(new List<InventoryCheck> { inventoryCheck }.AsQueryable().BuildMock());
+            _mockMessageService
+                .Setup(x => x.GetMessage(DomainErrors.InventoryCheck.ItemsRequired))
+                .Returns("items required");
+
+            var action = async () =>
+                await _handler.Handle(
+                    new ProcessInventoryCheckCommand(inventoryCheck.InventoryCheckId),
+                    CancellationToken.None
+                );
+
+            await action.Should().ThrowAsync<BusinessException>().WithMessage("items required");
         }
 
         [Fact]

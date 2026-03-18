@@ -2,6 +2,7 @@ using FluentAssertions;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Commands.CreateInventoryCheck;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
@@ -102,6 +103,35 @@ namespace FoodHub.Tests.Features.Inventory
                 );
 
             await action.Should().ThrowAsync<NotFoundException>().WithMessage("ingredient not found");
+        }
+
+        [Fact]
+        public async Task Handle_Should_ThrowBusinessException_WhenDuplicateIngredient()
+        {
+            var ingredient = Ingredient.Create("ING001", "Salt", "Kg", 0, 12, 3, null);
+
+            _mockIngredientRepo
+                .Setup(x => x.Query())
+                .Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
+            _mockMessageService
+                .Setup(x => x.GetMessage(DomainErrors.InventoryCheck.DuplicateIngredient))
+                .Returns("duplicate ingredient");
+
+            var action = async () =>
+                await _handler.Handle(
+                    new CreateInventoryCheckCommand
+                    {
+                        CheckDate = DateTime.UtcNow,
+                        Items = new List<CreateInventoryCheckItemDto>
+                        {
+                            new() { IngredientId = ingredient.IngredientId, PhysicalQuantity = 10 },
+                            new() { IngredientId = ingredient.IngredientId, PhysicalQuantity = 8 },
+                        },
+                    },
+                    CancellationToken.None
+                );
+
+            await action.Should().ThrowAsync<BusinessException>().WithMessage("duplicate ingredient");
         }
     }
 }
