@@ -160,7 +160,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Invoices
                 return HandleResult(result);
             }
 
-            return Ok(result);
+            return HandleResult(result);
         }
     }
 }
