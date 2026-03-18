@@ -5,7 +5,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
 {
     public class ChangeRoleValidator : AbstractValidator<ChangeRoleCommand>
     {
-        public ChangeRoleValidator(Interfaces.IMessageService messageService)
+        public ChangeRoleValidator(Interfaces.Common.IMessageService messageService)
         {
             RuleFor(x => x.EmployeeCode)
                .NotEmpty()

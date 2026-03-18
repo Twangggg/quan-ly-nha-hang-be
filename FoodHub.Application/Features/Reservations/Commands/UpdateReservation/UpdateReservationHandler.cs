@@ -1,16 +1,11 @@
-using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FoodHub.Application.Features.Reservations.Commands.UpdateReservation
 {
@@ -69,10 +64,10 @@ namespace FoodHub.Application.Features.Reservations.Commands.UpdateReservation
                 var maxTime = request.ReservationTime.Add(TimeSpan.FromHours(bufferHours));
 
                 var overlappingTableIds = await _unitOfWork.Repository<Reservation>().Query()
-                    .Where(r => r.ReservationDate == request.ReservationDate 
+                    .Where(r => r.ReservationDate == request.ReservationDate
                                 && r.ReservationId != request.ReservationId
                                 && r.Status == ReservationStatus.Booked
-                                && r.ReservationTime > minTime 
+                                && r.ReservationTime > minTime
                                 && r.ReservationTime < maxTime)
                     .Select(r => r.TableId)
                     .Distinct()

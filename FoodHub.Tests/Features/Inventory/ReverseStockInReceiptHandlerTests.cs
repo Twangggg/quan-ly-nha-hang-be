@@ -1,7 +1,12 @@
 using FluentAssertions;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Features.Inventory.StockInReceipts.Commands.ReverseStockInReceipt;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
@@ -54,7 +59,7 @@ namespace FoodHub.Tests.Features.Inventory
             ingredient.ReceiveStock(5, 6);
 
             var receipt = StockInReceipt.Create("NK-20260315-0001", DateTime.UtcNow, null);
-            receipt.AddItem(ingredient.IngredientId, 5, 6, null, "BATCH-01");
+            receipt.AddItem(ingredient.IngredientId, 5, "Kg", 6, null, "BATCH-01");
 
             var existingTransactions = new List<InventoryTransaction>
             {
@@ -106,7 +111,7 @@ namespace FoodHub.Tests.Features.Inventory
             ingredient.ReceiveStock(5, 6);
 
             var receipt = StockInReceipt.Create("NK-20260315-0001", DateTime.UtcNow, null);
-            receipt.AddItem(ingredient.IngredientId, 5, 6, null, "BATCH-01");
+            receipt.AddItem(ingredient.IngredientId, 5, "Kg", 6, null, "BATCH-01");
 
             var existingTransactions = new List<InventoryTransaction>
             {

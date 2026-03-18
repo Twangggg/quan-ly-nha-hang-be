@@ -112,8 +112,8 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
-        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived)
-            => ProcessCheckout(paymentMethod, amountReceived);
+        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived) =>
+            ProcessCheckout(paymentMethod, amountReceived);
 
         public bool CanComplete() =>
             Status == OrderStatus.Serving && OrderItems.All(oi => oi.IsFinished());
@@ -197,6 +197,7 @@ namespace FoodHub.Domain.Entities
             string orderCode,
             Order sourceOrder,
             Guid destinationTableId,
+            Guid? destinationReservationId,
             DateTime createdAt,
             Guid? createdBy
         )
@@ -208,6 +209,7 @@ namespace FoodHub.Domain.Entities
                 OrderType = sourceOrder.OrderType,
                 Status = OrderStatus.Serving,
                 TableId = destinationTableId,
+                ReservationId = destinationReservationId ?? sourceOrder.ReservationId,
                 Note = $"Split from Order {sourceOrder.OrderCode}",
                 TotalAmount = 0,
                 IsPriority = sourceOrder.IsPriority,
@@ -230,7 +232,9 @@ namespace FoodHub.Domain.Entities
                 || sourceOrder.OrderType != OrderType.DineIn
             )
             {
-                return DomainResult<MergeOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+                return DomainResult<MergeOrderPlan>.Failure(
+                    DomainErrors.Order.InvalidActionWithStatus
+                );
             }
 
             var deletedSourceItems = new List<OrderItem>();
@@ -287,7 +291,9 @@ namespace FoodHub.Domain.Entities
                 || destinationOrder.OrderType != OrderType.DineIn
             )
             {
-                return DomainResult<SplitOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+                return DomainResult<SplitOrderPlan>.Failure(
+                    DomainErrors.Order.InvalidActionWithStatus
+                );
             }
 
             var newDestinationItems = new List<OrderItem>();
@@ -295,16 +301,25 @@ namespace FoodHub.Domain.Entities
 
             foreach (var splitRequest in splitRequests)
             {
-                var sourceItem = OrderItems.First(item => item.OrderItemId == splitRequest.OrderItemId);
+                var sourceItem = OrderItems.First(item =>
+                    item.OrderItemId == splitRequest.OrderItemId
+                );
 
                 if (!sourceItem.CanBeMoved())
                 {
-                    return DomainResult<SplitOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+                    return DomainResult<SplitOrderPlan>.Failure(
+                        DomainErrors.Order.InvalidActionWithStatus
+                    );
                 }
 
-                if (splitRequest.QuantityToSplit <= 0 || splitRequest.QuantityToSplit > sourceItem.Quantity)
+                if (
+                    splitRequest.QuantityToSplit <= 0
+                    || splitRequest.QuantityToSplit > sourceItem.Quantity
+                )
                 {
-                    return DomainResult<SplitOrderPlan>.Failure(DomainErrors.OrderItem.InvalidQuantity);
+                    return DomainResult<SplitOrderPlan>.Failure(
+                        DomainErrors.OrderItem.InvalidQuantity
+                    );
                 }
 
                 if (splitRequest.QuantityToSplit == sourceItem.Quantity)
@@ -334,7 +349,10 @@ namespace FoodHub.Domain.Entities
                     continue;
                 }
 
-                var reduceResult = sourceItem.ReduceQuantity(splitRequest.QuantityToSplit, updatedAt);
+                var reduceResult = sourceItem.ReduceQuantity(
+                    splitRequest.QuantityToSplit,
+                    updatedAt
+                );
                 if (!reduceResult.IsSuccess)
                 {
                     return DomainResult<SplitOrderPlan>.Failure(

@@ -3,7 +3,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -112,11 +117,11 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
 
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            firstOrder.TotalAmount.Should().Be(33m);
+            firstOrder.TotalAmount.Should().Be(33m); // 30 * 1.1 = 33
             firstOrder.OrderItems.Should().ContainSingle();
             firstOrder.OrderItems.First().Quantity.Should().Be(3);
             secondOrder.Status.Should().Be(OrderStatus.Merged);
-            secondTable.Status.Should().Be(TableStatus.Available);
+            secondTable.Status.Should().Be(TableStatus.Occupied); // Table still occupied by first order
             orderItemRepo.Verify(r => r.Delete(It.IsAny<OrderItem>()), Times.Once);
             auditRepo.Verify(r => r.AddAsync(It.IsAny<OrderAuditLog>()), Times.Once);
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Once);

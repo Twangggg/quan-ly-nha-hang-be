@@ -19,7 +19,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStoc
         public Guid IngredientId { get; set; }
         public string IngredientCode { get; set; } = string.Empty;
         public string IngredientName { get; set; } = string.Empty;
-        public string Unit { get; set; } = string.Empty;
+        public string BaseUnit { get; set; } = string.Empty;
         public decimal Quantity { get; set; }
         public decimal? UnitCost { get; set; }
         public decimal LineAmount { get; set; }

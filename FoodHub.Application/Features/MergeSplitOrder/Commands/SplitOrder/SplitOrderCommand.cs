@@ -12,6 +12,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
         Guid SourceOrderId,
         Guid? DestinationOrderId,
         Guid? DestinationTableId,
+        Guid? DestinationReservationId,
         List<SplitOrderItemCommand> ItemsToSplit
     ) : IRequest<Result<SplitOrderResponse>>, IMustBeActive;
 

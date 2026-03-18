@@ -1,6 +1,6 @@
 using FluentValidation;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 
 namespace FoodHub.Application.Features.Reservations.Commands.CancelReservation
 {

@@ -218,6 +218,33 @@
   <data name="StockInReceipt.AlreadyReversed" xml:space="preserve">
     <value>Phieu nhap kho nay da duoc dao truoc do.</value>
   </data>
+  <data name="Ingredient.PhysicalStockMin" xml:space="preserve">
+    <value>So luong ton thuc te phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="Ingredient.InvalidPhysicalStockQuantity" xml:space="preserve">
+    <value>So luong ton thuc te phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="InventoryCheck.CheckNotFound" xml:space="preserve">
+    <value>Khong tim thay phieu kiem ke.</value>
+  </data>
+  <data name="InventoryCheck.ItemsRequired" xml:space="preserve">
+    <value>Phieu kiem ke phai co it nhat 1 nguyen lieu.</value>
+  </data>
+  <data name="InventoryCheck.IngredientIdRequired" xml:space="preserve">
+    <value>Nguyen lieu la bat buoc.</value>
+  </data>
+  <data name="InventoryCheck.QuantityMin" xml:space="preserve">
+    <value>So luong kiem ke phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="InventoryCheck.DuplicateIngredient" xml:space="preserve">
+    <value>Nguyen lieu khong duoc trung trong phieu kiem ke.</value>
+  </data>
+  <data name="InventoryCheck.ReasonMaxLength" xml:space="preserve">
+    <value>Nguyen nhan khong duoc vuot qua 500 ky tu.</value>
+  </data>
+  <data name="InventoryCheck.InvalidStatus" xml:space="preserve">
+    <value>Phieu kiem ke khong o trang thai hop le de xu ly.</value>
+  </data>
   <data name="Reservation.CancelReservationSuccess" xml:space="preserve">
     <value>Hủy đặt chỗ thành công.</value>
   </data>

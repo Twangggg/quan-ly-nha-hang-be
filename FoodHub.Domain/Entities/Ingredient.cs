@@ -13,12 +13,13 @@ namespace FoodHub.Domain.Entities
         public virtual Guid IngredientId { get; private set; }
         public string Code { get; private set; } = string.Empty;
         public string Name { get; private set; } = string.Empty;
-        public string Unit { get; private set; } = string.Empty;
+        public string BaseUnit { get; private set; } = string.Empty;
         public decimal CurrentStock { get; private set; }
         public decimal LowStockThreshold { get; private set; }
         public decimal CostPrice { get; private set; }
         public string? Description { get; private set; }
         public bool IsActive { get; private set; } = true;
+        public virtual ICollection<IngredientUoMConversion> Conversions { get; private set; } = new List<IngredientUoMConversion>();
         public virtual ICollection<InventoryTransaction> InventoryTransactions
         {
             get;
@@ -28,7 +29,7 @@ namespace FoodHub.Domain.Entities
         public static Ingredient Create(
             string code,
             string name,
-            string unit,
+            string baseUnit,
             decimal lowStockThreshold,
             decimal currentStock,
             decimal costPrice,
@@ -41,7 +42,7 @@ namespace FoodHub.Domain.Entities
                 IngredientId = Guid.NewGuid(),
                 Code = code,
                 Name = name,
-                Unit = unit,
+                BaseUnit = baseUnit,
                 LowStockThreshold = lowStockThreshold,
                 CurrentStock = currentStock,
                 CostPrice = costPrice,
@@ -55,7 +56,7 @@ namespace FoodHub.Domain.Entities
 
         public DomainResult Update(
             string name,
-            string unit,
+            string baseUnit,
             decimal lowStockThreshold,
             string? description,
             bool isActive,
@@ -66,7 +67,7 @@ namespace FoodHub.Domain.Entities
         )
         {
             Name = name;
-            Unit = unit;
+            BaseUnit = baseUnit;
             LowStockThreshold = lowStockThreshold;
             Description = description;
             IsActive = isActive;
@@ -231,6 +232,20 @@ namespace FoodHub.Domain.Entities
                 CostPrice = costPrice.Value;
             }
 
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+
+            return DomainResult.Success();
+        }
+
+        public DomainResult ApplyInventoryCheck(decimal physicalQuantity, Guid? updatedBy = null)
+        {
+            if (physicalQuantity < 0)
+            {
+                return DomainResult.Failure(DomainErrors.Ingredient.InvalidPhysicalStockQuantity);
+            }
+
+            CurrentStock = physicalQuantity;
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;
 

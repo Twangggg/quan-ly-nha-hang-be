@@ -2,7 +2,12 @@ using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +57,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
 
             var ingredients = await ingredientRepo
                 .Query()
+                .Include(x => x.Conversions)
                 .Where(x => ingredientIds.Contains(x.IngredientId))
                 .ToListAsync(cancellationToken);
 

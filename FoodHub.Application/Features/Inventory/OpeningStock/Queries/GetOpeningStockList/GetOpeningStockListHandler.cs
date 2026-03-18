@@ -1,6 +1,11 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -48,7 +53,7 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Queries.GetOpening
                     IngredientId = x.IngredientId,
                     Code = x.Code,
                     Name = x.Name,
-                    Unit = x.Unit,
+                    Unit = x.BaseUnit,
                     CurrentStock = x.CurrentStock,
                     CostPrice = x.CostPrice,
                 });

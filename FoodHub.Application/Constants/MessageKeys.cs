@@ -225,12 +225,14 @@ namespace FoodHub.Application.Constants
         public static class Reservation
         {
             public const string NotFound = "Reservation.NotFound";
+
             // Keys from feature/reservation (HEAD)
             public const string Overlapped = "Reservation.Overlapped";
             public const string TableCapacityExceeded = "Reservation.TableCapacityExceeded";
             public const string InvalidStatusForCheckIn = "Reservation.InvalidStatusForCheckIn";
             public const string TableOccupied = "Reservation.TableOccupied";
             public const string AlreadyCheckedIn = "Reservation.AlreadyCheckedIn";
+
             // Keys from feature/reservation-liemdt
             public const string NameRequired = "Reservation.NameRequired";
             public const string NameMaxLength = "Reservation.NameMaxLength";
@@ -244,8 +246,8 @@ namespace FoodHub.Application.Constants
             public const string VipRequired = "Reservation.VipRequired";
             public const string InvalidNewTable = "Reservation.InvalidNewTable";
             public const string NoTableInArea = "Reservation.NoTableInArea";
-
         }
+
         public static class SalesAnalytics
         {
             public const string MonthMustBeBetween1And12 =
@@ -291,16 +293,15 @@ namespace FoodHub.Application.Constants
             public const string ThresholdMin = "Ingredient.ThresholdMin";
             public const string CostMin = "Ingredient.CostMin";
             public const string StockMin = "Ingredient.StockMin";
+            public const string PhysicalStockMin = "Ingredient.PhysicalStockMin";
         }
 
         public static class InventorySettings
         {
-            public const string ExpiryWarningDaysMin =
-                "InventorySettings.ExpiryWarningDaysMin";
+            public const string ExpiryWarningDaysMin = "InventorySettings.ExpiryWarningDaysMin";
             public const string DefaultLowStockThresholdMin =
                 "InventorySettings.DefaultLowStockThresholdMin";
-            public const string MaxCostRecalcDaysRange =
-                "InventorySettings.MaxCostRecalcDaysRange";
+            public const string MaxCostRecalcDaysRange = "InventorySettings.MaxCostRecalcDaysRange";
             public const string UpdateSuccess = "InventorySettings.UpdateSuccess";
         }
 
@@ -351,6 +352,17 @@ namespace FoodHub.Application.Constants
             public const string ReasonRequired = "StockOutReceipt.ReasonRequired";
             public const string ReasonMaxLength = "StockOutReceipt.ReasonMaxLength";
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
+        }
+
+        public static class InventoryCheck
+        {
+            public const string CheckNotFound = "InventoryCheck.CheckNotFound";
+            public const string ItemsRequired = "InventoryCheck.ItemsRequired";
+            public const string IngredientIdRequired = "InventoryCheck.IngredientIdRequired";
+            public const string QuantityMin = "InventoryCheck.QuantityMin";
+            public const string DuplicateIngredient = "InventoryCheck.DuplicateIngredient";
+            public const string ReasonMaxLength = "InventoryCheck.ReasonMaxLength";
+            public const string InvalidStatus = "InventoryCheck.InvalidStatus";
         }
 
         public static class Invoice

@@ -1,16 +1,12 @@
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReservation
 {
@@ -53,9 +49,9 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
             var maxTime = request.ReservationTime.Add(TimeSpan.FromHours(bufferHours));
 
             var overlappingTableIds = await _unitOfWork.Repository<Reservation>().Query()
-                .Where(r => r.ReservationDate == request.ReservationDate 
+                .Where(r => r.ReservationDate == request.ReservationDate
                             && r.Status == ReservationStatus.Booked
-                            && r.ReservationTime > minTime 
+                            && r.ReservationTime > minTime
                             && r.ReservationTime < maxTime)
                 .Select(r => r.TableId)
                 .Distinct()
@@ -73,7 +69,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                     _logger.LogWarning("No VIP table available for group of {GuestCount}", request.GuestCount);
                     throw new BusinessException(_messageService.GetMessage(MessageKeys.Reservation.VipRequired));
                 }
-                
+
                 _logger.LogWarning("No table available for {GuestCount} guests at requested time.", request.GuestCount);
                 throw new BusinessException(_messageService.GetMessage(MessageKeys.Reservation.NoTableAvailable));
             }

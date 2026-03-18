@@ -9,6 +9,7 @@ namespace FoodHub.Domain.Entities
         public Guid IngredientId { get; private set; }
         public decimal Quantity { get; private set; }
         public decimal? UnitCost { get; private set; }
+        public string BaseUnit { get; private set; } = string.Empty;
         public decimal LineAmount { get; private set; }
         public DateTime? ExpiryDate { get; private set; }
         public string? BatchCode { get; private set; }
@@ -20,6 +21,7 @@ namespace FoodHub.Domain.Entities
             Guid stockInReceiptId,
             Guid ingredientId,
             decimal quantity,
+            string baseUnit,
             decimal? unitCost,
             DateTime? expiryDate,
             string? batchCode,
@@ -34,6 +36,7 @@ namespace FoodHub.Domain.Entities
                 StockInReceiptId = stockInReceiptId,
                 IngredientId = ingredientId,
                 Quantity = quantity,
+                BaseUnit = baseUnit,
                 UnitCost = unitCost,
                 LineAmount = amount,
                 ExpiryDate = expiryDate,
