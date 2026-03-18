@@ -242,7 +242,7 @@ namespace FoodHub.Infrastructure.Services.Inventory
             }
 
             var order = orderItem.Order;
-            var receiptCode = $"SALE-{order!.OrderCode}-{orderItemId}";
+            var receiptCode = $"SALE-{order!.OrderCode}-{DateTime.UtcNow:HHmmss}";
             var receipt = StockOutReceipt.Create(
                 receiptCode,
                 DateTime.UtcNow,
