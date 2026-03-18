@@ -32,7 +32,7 @@ namespace FoodHub.Domain.Entities
 
         public string CashierName { get; set; } = string.Empty;
 
-        public string TableNumber { get; set; } = string.Empty;
+        public string? TableNumber { get; set; }
 
         // Dữ liệu chi tiết các món
         public ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
