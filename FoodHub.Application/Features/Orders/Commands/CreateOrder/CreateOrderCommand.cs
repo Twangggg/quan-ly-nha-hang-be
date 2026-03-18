@@ -13,7 +13,6 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
         public Guid? TableId { get; set; }
         // Required for DINE_IN (Check-in from reservation)
         public Guid? ReservationId { get; set; }
-        public Guid? TableId { get; set; }
         public string? Note { get; set; }
     }
 }
