@@ -130,6 +130,7 @@ namespace FoodHub.Application.Constants
             public const string InvalidStatus = "Order.InvalidStatus";
             public const string StatusNotCompleted = "Order.StatusNotCompleted";
             public const string NoValidItems = "Order.NoValidItems";
+            public const string EmptyOrder = "Order.EmptyOrder";
         }
 
         public static class OrderItem

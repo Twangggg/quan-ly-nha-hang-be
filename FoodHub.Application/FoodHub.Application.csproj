@@ -41,7 +41,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Invoices\Queries\" />
     <Folder Include="Features\KDS\Commands\" />
     <Folder Include="Features\KDS\Queries\" />
   </ItemGroup>

@@ -580,6 +580,12 @@ namespace FoodHub.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("amount_returned");
 
+                    b.Property<string>("CashierName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("cashier_name");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -618,6 +624,12 @@ namespace FoodHub.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("sub_total");
+
+                    b.Property<string>("TableNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("table_number");
 
                     b.Property<decimal>("TaxAmount")
                         .HasPrecision(18, 2)

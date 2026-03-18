@@ -1,5 +1,6 @@
 using FoodHub.Application.Features.Billing.Commands.CheckoutOrder;
 using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
+using FoodHub.Domain.Entities;
 
 namespace FoodHub.Application.Interfaces
 {
@@ -7,6 +8,6 @@ namespace FoodHub.Application.Interfaces
     {
         byte[] GeneratePreCheckBill(GetPreCheckBillResponse data);
 
-        //byte[] GenerateInvoice(CheckoutOrderResponse data);
+        byte[] GenerateInvoicePdf(Invoice invoice);
     }
 }

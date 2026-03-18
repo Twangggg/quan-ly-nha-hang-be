@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -25,6 +25,8 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     amount_received = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
                     amount_returned = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
                     payment_method = table.Column<int>(type: "integer", maxLength: 50, nullable: false),
+                    cashier_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    table_number = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),

@@ -30,6 +30,10 @@ namespace FoodHub.Domain.Entities
         // Phương thức: Cash, BankTransfer, Card
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
 
+        public string CashierName { get; set; } = string.Empty;
+
+        public string TableNumber { get; set; } = string.Empty;
+
         // Dữ liệu chi tiết các món
         public ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
     }
