@@ -56,13 +56,16 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 userId
             );
 
-            // Validate Basic Logic
-            if (request.OrderType == OrderType.DineIn && request.ReservationId == null)
+            // Validate Basic Logic for dine-in
+            if (request.OrderType == OrderType.DineIn)
             {
-                return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.SelectTable), // You may want to create a new message key for this later if needed like "SelectReservation"
-                    ResultErrorType.BadRequest
-                );
+                if (request.TableId == null && request.ReservationId == null)
+                {
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.SelectTable),
+                        ResultErrorType.BadRequest
+                    );
+                }
             }
 
             await _unitOfWork.BeginTransactionAsync();
@@ -113,6 +116,53 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     }
 
                     // Khu vực phải Active mới cho tạo order
+                    if (table.Area!.Status == AreaStatus.Inactive)
+                    {
+                        _logger.LogWarning(
+                            "Cannot create order — Area {AreaId} for Table {TableId} is Inactive",
+                            table.AreaId,
+                            table.TableId
+                        );
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Area.Inactive),
+                            ResultErrorType.Conflict
+                        );
+                    }
+                }
+
+                // If table not from reservation, try fetch by TableId
+                if (table == null && request.OrderType == OrderType.DineIn && request.TableId.HasValue)
+                {
+                    table = await _unitOfWork
+                        .Repository<Table>()
+                        .Query()
+                        .Include(t => t.Area)
+                        .FirstOrDefaultAsync(t => t.TableId == request.TableId.Value, cancellationToken);
+
+                    if (table is null)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Table.NotFound),
+                            ResultErrorType.NotFound
+                        );
+                    }
+
+                    if (table.Status != TableStatus.Available)
+                    {
+                        _logger.LogWarning(
+                            "Cannot create order — Table {TableId} is not Available (Status: {Status})",
+                            table.TableId,
+                            table.Status
+                        );
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Table.NotAvailable),
+                            ResultErrorType.Conflict
+                        );
+                    }
+
                     if (table.Area!.Status == AreaStatus.Inactive)
                     {
                         _logger.LogWarning(

@@ -53,15 +53,26 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 );
             }
 
-            //Validate Table for dine in
-            if (request.OrderType == OrderType.DineIn)
+            // Retrieve existing order early if provided
+            Order? order = null;
+            if (request.OrderId != Guid.Empty)
             {
-                if (!request.TableId.HasValue)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.Order.SelectTable)
-                    );
-                }
+                order = await _unitOfWork
+                    .Repository<Order>()
+                    .Query()
+                    .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
+            }
+
+            // Determine effective order type and table (prefer request, fallback to existing order)
+            var orderType = order?.OrderType ?? request.OrderType;
+            var tableId = request.TableId ?? order?.TableId;
+
+            //Validate Table for dine in
+            if (orderType == OrderType.DineIn && !tableId.HasValue)
+            {
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.SelectTable)
+                );
             }
 
             //Validate All Menu Items Exist
@@ -135,24 +146,14 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             }
 
             // Retrieve or Create Order
-            Order? order = null;
-
-            if (request.OrderId != Guid.Empty)
-            {
-                order = await _unitOfWork
-                    .Repository<Order>()
-                    .Query()
-                    .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
-            }
-
-            if (order == null && request.OrderType == OrderType.DineIn && request.TableId.HasValue)
+            if (order == null && orderType == OrderType.DineIn && tableId.HasValue)
             {
                 // Check for existing active order at this table (also lightweight)
                 order = await _unitOfWork
                     .Repository<Order>()
                     .Query()
                     .FirstOrDefaultAsync(
-                        x => x.TableId == request.TableId && x.Status == OrderStatus.Serving,
+                        x => x.TableId == tableId && x.Status == OrderStatus.Serving,
                         cancellationToken
                     );
             }
@@ -166,14 +167,18 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 {
                     OrderId = Guid.NewGuid(),
                     OrderCode = orderCode,
-                    OrderType = request.OrderType,
+                    OrderType = orderType,
                     Status = OrderStatus.Serving,
-                    TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
+                    TableId = orderType == OrderType.DineIn ? tableId : null,
                     Note = request.Note,
                     TotalAmount = 0,
                     CreatedBy = userId.Value,
                     CreatedAt = DateTime.UtcNow,
                 };
+            }
+            else if (orderType == OrderType.DineIn && tableId.HasValue)
+            {
+                order.TableId = tableId;
             }
 
             // Group items by signature to merge duplicates within the same request
