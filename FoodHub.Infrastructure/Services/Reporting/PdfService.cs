@@ -1,14 +1,9 @@
 using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
-using FoodHub.Application.Interfaces.Common;
-using FoodHub.Application.Interfaces.External;
-using FoodHub.Application.Interfaces.Inventory;
-using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.Security;
+using FoodHub.Domain.Entities;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using QuestPDF.Previewer;
 
 namespace FoodHub.Infrastructure.Services.Reporting
 {
@@ -281,6 +276,146 @@ namespace FoodHub.Infrastructure.Services.Reporting
                                 .FontSize(9);
                             column.Item().Text("Cảm ơn quý khách và hẹn gặp lại!").FontSize(9);
                         });
+                });
+            });
+
+            return document.GeneratePdf();
+        }
+
+        public byte[] GenerateInvoicePdf(Invoice invoice)
+        {
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(5, Unit.Millimetre);
+                    page.Size(PageSizes.A5);
+                    page.DefaultTextStyle(x => x.FontSize(10).FontFamily(Fonts.Arial));
+
+                    page.Header().Element(headerContainer =>
+                    {
+                        headerContainer.Column(column =>
+                        {
+                            column.Item().AlignCenter().Text("HÓA ĐƠN THANH TOÁN").FontSize(14).SemiBold();
+                            column.Item().AlignCenter().Text("FoodHub Restaurant").FontSize(12).SemiBold();
+                            column.Item().AlignCenter().Text($"Số HĐ: {invoice.InvoiceNumber}").FontSize(10).SemiBold();
+                        });
+                    });
+
+                    page.Content().PaddingVertical(10).Column(column =>
+                    {
+                        // Info section using Table for alignment
+                        column.Item().PaddingBottom(5).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.ConstantColumn(70);
+                                columns.RelativeColumn();
+                            });
+
+                            table.Cell().Text("Ngày:").SemiBold();
+                            table.Cell().Text(invoice.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy (hh:mm tt)"));
+
+                            table.Cell().Text("Bàn:").SemiBold();
+                            table.Cell().Text(!string.IsNullOrEmpty(invoice.TableNumber) ? $"Bàn {invoice.TableNumber}" : "Mang về");
+
+                            table.Cell().Text("Thu ngân:").SemiBold();
+                            table.Cell().Text(invoice.CashierName);
+
+                            table.Cell().Text("Hình thức:").SemiBold();
+                            table.Cell().Text(invoice.PaymentMethod.ToString());
+                        });
+
+                        // Items Table
+                        column.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(3);  // Tên món
+                                columns.RelativeColumn(1);  // SL
+                                columns.RelativeColumn(2);  // ĐG
+                                columns.RelativeColumn(2);  // Thành tiền
+                            });
+
+                            table.Header(header =>
+                            {
+                                header.Cell().BorderTop(1).BorderBottom(1).PaddingVertical(3).Text("Tên món").SemiBold();
+                                header.Cell().BorderTop(1).BorderBottom(1).PaddingVertical(3).AlignCenter().Text("SL").SemiBold();
+                                header.Cell().BorderTop(1).BorderBottom(1).PaddingVertical(3).AlignRight().Text("ĐG").SemiBold();
+                                header.Cell().BorderTop(1).BorderBottom(1).PaddingVertical(3).AlignRight().Text("Thành tiền").SemiBold();
+                            });
+
+                            var itemsList = invoice.Items.ToList();
+                            for (int i = 0; i < itemsList.Count; i++)
+                            {
+                                var item = itemsList[i];
+
+                                table.Cell().PaddingVertical(3).Column(c =>
+                                {
+                                    c.Item().Text(item.ItemName);
+                                    if (!string.IsNullOrEmpty(item.Note))
+                                    {
+                                        c.Item().Text(item.Note).FontSize(8).Italic();
+                                    }
+                                });
+                                table.Cell().PaddingVertical(3).AlignCenter().Text(item.Quantity.ToString());
+                                table.Cell().PaddingVertical(3).AlignRight().Text(item.UnitPrice.ToString("N0"));
+                                table.Cell().PaddingVertical(3).AlignRight().Text(item.TotalPrice.ToString("N0"));
+
+                                // Dashed line except for the last item
+                                if (i < itemsList.Count - 1)
+                                {
+                                    table.Cell().ColumnSpan(4).LineHorizontal(1).LineColor(Colors.Black);
+                                }
+                            }
+                            // Bottom border of the table items
+                            table.Cell().ColumnSpan(4).BorderBottom(1).PaddingTop(2);
+                        });
+
+                        // Summary section
+                        column.Item().PaddingTop(10).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn();
+                                columns.ConstantColumn(120);
+                            });
+
+                            table.Cell().PaddingVertical(2).Text("Tiền hàng").Italic();
+                            table.Cell().PaddingVertical(2).AlignRight().Text($"{invoice.SubTotal:N0}đ").Italic();
+
+                            if (invoice.DiscountAmount > 0)
+                            {
+                                table.Cell().PaddingVertical(2).Text("Giảm giá").Italic();
+                                table.Cell().PaddingVertical(2).AlignRight().Text($"-{invoice.DiscountAmount:N0}đ").Italic();
+                            }
+
+                            if (invoice.TaxAmount > 0)
+                            {
+                                table.Cell().PaddingVertical(2).Text("Thuế (VAT)").Italic();
+                                table.Cell().PaddingVertical(2).AlignRight().Text($"{invoice.TaxAmount:N0}đ").Italic();
+                            }
+
+                            table.Cell().PaddingVertical(4).Text("Tổng thanh toán").FontSize(12).SemiBold();
+                            table.Cell().PaddingVertical(4).AlignRight().Text($"{invoice.TotalAmount:N0}đ").FontSize(12).SemiBold();
+
+                            if (invoice.AmountReceived.HasValue && invoice.AmountReceived > 0)
+                            {
+                                table.Cell().PaddingVertical(2).Text("Tiền khách đưa").Italic();
+                                table.Cell().PaddingVertical(2).AlignRight().Text($"{invoice.AmountReceived:N0}đ").Italic();
+
+                                table.Cell().PaddingVertical(2).Text("Tiền thừa").Italic();
+                                table.Cell().PaddingVertical(2).AlignRight().Text($"{invoice.AmountReturned:N0}đ").Italic();
+                            }
+                        });
+                    });
+
+                    page.Footer().AlignCenter().Column(column =>
+                    {
+                        column.Item().PaddingTop(10).LineHorizontal(1);
+                        column.Item().PaddingTop(5).Text("Cảm ơn quý khách và hẹn gặp lại!").FontSize(9).SemiBold();
+                        column.Item().Text("Powered by FoodHub System").FontSize(8).Italic();
+                    });
                 });
             });
 

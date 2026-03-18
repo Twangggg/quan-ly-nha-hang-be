@@ -48,7 +48,9 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
             _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
 
             var reservationRepo = new Mock<IGenericRepository<Reservation>>();
-            reservationRepo.Setup(r => r.Query()).Returns(new List<Reservation>().AsQueryable().BuildMock());
+            reservationRepo
+                .Setup(r => r.Query())
+                .Returns(new List<Reservation>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
 
             _mockMessageService

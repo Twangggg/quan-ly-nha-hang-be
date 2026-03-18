@@ -5,7 +5,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.CreateMenuItem
         public Guid MenuItemId { get; set; }
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public string ImageUrl { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
         public string? Description { get; set; }
         public Guid CategoryId { get; set; }
         public string CategoryName { get; set; } = string.Empty;

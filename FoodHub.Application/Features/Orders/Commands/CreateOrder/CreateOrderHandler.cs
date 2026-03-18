@@ -105,8 +105,6 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                         );
                     }
 
-                    table = reservation.Table;
-
                     // Table must be Available (or we could enforce checking the reservation status too, like Booked/CheckIn)
                     if (table.Status != TableStatus.Available)
                     {

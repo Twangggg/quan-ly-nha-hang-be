@@ -54,6 +54,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Tables.View,
                 Permissions.Areas.View,
                 Permissions.Reservations.CheckIn,
+                Permissions.Billing.PreCheckBill
             };
         }
 
@@ -76,8 +77,14 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Areas.View,
                 Permissions.Billing.Checkout,
                 Permissions.Billing.ViewHistory,
+                Permissions.Billing.PreCheckBill,
                 Permissions.Reservations.CheckIn,
                 Permissions.SalesAnalytics.View,
+
+                // Invoice permissions for cashiers
+                Permissions.Invoices.View,
+                Permissions.Invoices.ViewPdf,
+                Permissions.Invoices.Create,
             };
         }
 

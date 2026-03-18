@@ -27,8 +27,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder
                 .Property(e => e.ImageUrl)
                 .HasColumnName("image_url")
-                .HasMaxLength(255)
-                .IsRequired();
+                .HasMaxLength(255);
 
             builder.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
 
