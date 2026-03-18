@@ -123,7 +123,7 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
 
                 _logger.LogInformation("Creating invoice items for OrderId: {OrderId}", request.OrderId);
                 // Create invoice items based on order items
-                var InvoiceItems = order.OrderItems.Select(oi => new InvoiceItem
+                var invoiceItems = order.OrderItems.Select(oi => new InvoiceItem
                 {
                     InvoiceItemId = Guid.NewGuid(),
                     InvoiceId = invoiceId,
@@ -161,7 +161,7 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
 
 
                     // Set related invoice items
-                    Items = InvoiceItems
+                    Items = invoiceItems
                 };
 
                 _logger.LogInformation("Adding invoice to repository for OrderId: {OrderId}", request.OrderId);
