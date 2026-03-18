@@ -124,9 +124,9 @@ namespace FoodHub.Presentation.Controllers
         [HttpPatch("{id}/status")]
         [HasPermission(Permissions.Areas.Update)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateAreaStatus(Guid id, [FromQuery] bool isActive)
+        public async Task<IActionResult> UpdateAreaStatus(Guid id, [FromBody] UpdateAreaStatusRequest request)
         {
-            var result = await _mediator.Send(new UpdateAreaStatusCommand(id, isActive));
+            var result = await _mediator.Send(new UpdateAreaStatusCommand(id, request.IsActive));
             return HandleResult(result);
         }
 

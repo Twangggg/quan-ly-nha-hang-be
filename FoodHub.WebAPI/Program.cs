@@ -84,9 +84,11 @@ try
                 }
 
                 logger.LogWarning(
-                    "Database not ready. Retry {Count}/{Max}...",
+                    ex,
+                    "Database not ready. Retry {Count}/{Max}... Error: {ErrorMessage}",
                     retryCount,
-                    maxRetries
+                    maxRetries,
+                    ex.Message
                 );
                 await Task.Delay(3000);
             }

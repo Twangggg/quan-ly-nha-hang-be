@@ -2,10 +2,10 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -81,9 +81,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
                             request.CustomerPhone,
                             request.ReservationDate,
                             request.ReservationTime,
-                            request.PartyType,
                             request.GuestCount,
-                            request.HasChildren,
                             request.Note,
                             table.TableId,
                             table.AreaId

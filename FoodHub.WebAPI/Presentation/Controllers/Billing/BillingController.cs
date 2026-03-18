@@ -36,11 +36,11 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Billing
         /// </summary>
         /// <remarks>
         /// Không tạo Invoice. Chỉ trả về dữ liệu để hiển thị phiếu tạm tính trên giao diện.
-        /// Đơn hàng phải ở trạng thái "Serving" và có ít nhất 1 món hợp lệ.
+        /// Đơn hàng phải ở trạng thái "Serving".
         /// </remarks>
         /// <param name="orderId">ID đơn hàng.</param>
         /// <response code="200">Trả về thông tin phiếu tạm tính.</response>
-        /// <response code="400">Đơn hàng không hợp lệ (sai trạng thái hoặc không có món).</response>
+        /// <response code="400">Đơn hàng không hợp lệ (sai trạng thái).</response>
         /// <response code="404">Không tìm thấy đơn hàng.</response>
         [HttpGet("orders/{orderId:guid}/pre-check-bill")]
         [HasPermission(Permissions.Billing.PreCheckBill)]

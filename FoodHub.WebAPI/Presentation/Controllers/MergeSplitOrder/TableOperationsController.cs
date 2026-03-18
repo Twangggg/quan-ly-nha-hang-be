@@ -34,15 +34,16 @@ namespace FoodHub.WebAPI.Presentation.Controllers.MergeSplitOrder
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ChangeOrderTable(Guid id, [FromBody] ChangeOrderTableCommand command)
+        public async Task<IActionResult> ChangeOrderTable(
+            Guid id,
+            [FromBody] ChangeOrderTableCommand command
+        )
         {
             var result = await _mediator.Send(command with { OrderId = id });
             return HandleResult(result);
         }
 
-        /// <summary>
-        /// Gộp hai đơn hàng thành một. Khách hàng từ đơn này được gom vào đơn kia.
-        /// </summary>
+        /// <summary>Gộp hai đơn hàng thành một. Khách hàng và món được gom sang đơn đích.</summary>
         [HttpPost("{id:guid}/merge")]
         [HasPermission(Permissions.Orders.Merge)] // Hoặc cần quyền chuyên biệt
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
@@ -58,9 +59,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.MergeSplitOrder
             return HandleResult(result);
         }
 
-        /// <summary>
-        /// Tách một đơn hàng thành hai. Một phần món ăn được tách ra thành đơn mới.
-        /// </summary>
+        /// <summary>Tách một đơn hàng thành hai. Một phần món được chuyển sang đơn mới.</summary>
         [HttpPost("{id:guid}/split")]
         [HasPermission(Permissions.Orders.Split)] // Hoặc cần quyền chuyên biệt
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
