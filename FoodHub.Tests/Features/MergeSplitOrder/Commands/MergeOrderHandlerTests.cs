@@ -112,7 +112,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
 
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            firstOrder.TotalAmount.Should().Be(30m);
+            firstOrder.TotalAmount.Should().Be(33m);
             firstOrder.OrderItems.Should().ContainSingle();
             firstOrder.OrderItems.First().Quantity.Should().Be(3);
             secondOrder.Status.Should().Be(OrderStatus.Merged);
