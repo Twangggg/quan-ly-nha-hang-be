@@ -41,7 +41,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Invoices
         [HttpGet]
         [HasPermission(Permissions.Invoices.View)]
         [ProducesResponseType(typeof(Result<PagedResult<GetInvoicesResponse>>), 200)]
-        public async Task<IActionResult> GetInvoicesAsync([FromQuery]PaginationParams pagination, [FromQuery] string? keyword, [FromQuery] DateTime? fromDate, DateTime? toDate)
+        public async Task<IActionResult> GetInvoicesAsync([FromQuery]PaginationParams pagination, [FromQuery] string? keyword, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
         {
             var query = new GetInvoicesQuery
             {
