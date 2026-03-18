@@ -89,6 +89,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             {
                 OrderType = OrderType.DineIn,
                 ReservationId = reservationId,
+                TableId = tableId,
                 Note = null,
             };
 
@@ -138,6 +139,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
             
             var tableRepo = new Mock<IGenericRepository<Table>>();
+            tableRepo.Setup(r => r.Query()).Returns(new List<Table> { table }.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
 
             var auditRepo = new Mock<IGenericRepository<OrderAuditLog>>();

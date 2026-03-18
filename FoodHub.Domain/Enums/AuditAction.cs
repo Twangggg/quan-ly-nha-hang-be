@@ -19,7 +19,7 @@ namespace FoodHub.Domain.Enums
         Complete = 15,
         Checkout = 16,
         CheckIn = 17,
-        NoShow = 18
+        NoShow = 18,
+        LoginFailed = 19
     }
-
 }

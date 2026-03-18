@@ -218,4 +218,7 @@
   <data name="StockInReceipt.AlreadyReversed" xml:space="preserve">
     <value>Phieu nhap kho nay da duoc dao truoc do.</value>
   </data>
+  <data name="Reservation.CancelReservationSuccess" xml:space="preserve">
+    <value>Hủy đặt chỗ thành công.</value>
+  </data>
 </root>

@@ -75,6 +75,10 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasConstraintName("fk_reservations_tables_table_id")
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Index cho Background Job quét đơn quá hạn
+            builder.HasIndex(r => new { r.Status, r.ReservationDate, r.ReservationTime })
+                .HasDatabaseName("ix_reservations_status_date_time");
+
             builder.HasQueryFilter(r => !r.DeletedAt.HasValue);
         }
     }

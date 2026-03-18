@@ -27,21 +27,18 @@ namespace FoodHub.Presentation.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly IMessageService _messageService;
         private readonly IConfiguration _configuration;
-        private readonly IAuditLogService _auditLogService;
 
         public AuthController(
             IMediator mediator,
             IWebHostEnvironment env,
             IMessageService messageService,
-            IConfiguration configuration,
-            IAuditLogService auditLogService
+            IConfiguration configuration
         )
         {
             _mediator = mediator;
             _env = env;
             _messageService = messageService;
             _configuration = configuration;
-            _auditLogService = auditLogService;
         }
 
         /// <summary>
@@ -64,7 +61,6 @@ namespace FoodHub.Presentation.Controllers
             if (result.IsSuccess && result.Data != null)
             {
                 SetTokenCookies(result.Data);
-                await _auditLogService.LogActivityAsync(AuditAction.Login, "Auth", result.Data.EmployeeId.ToString());
             }
 
             return HandleResult(result);
@@ -154,12 +150,6 @@ namespace FoodHub.Presentation.Controllers
 
             var revokeCommand = new RevokeTokenCommand { RefreshToken = refreshToken };
             var result = await _mediator.Send(revokeCommand);
-
-            if (result.IsSuccess)
-            {
-                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                await _auditLogService.LogActivityAsync(AuditAction.Logout, "Auth", userId);
-            }
 
             return NoContent();
         }

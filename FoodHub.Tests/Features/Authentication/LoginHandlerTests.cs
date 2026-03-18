@@ -19,6 +19,7 @@ namespace FoodHub.Tests.Features.Authentication
         private readonly Mock<IRateLimiter> _mockRateLimiter;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ILogger<LoginHandler>> _mockLogger;
+        private readonly Mock<IAuditLogService> _mockAuditLogService;
         private readonly LoginHandler _handler;
 
         public LoginHandlerTests()
@@ -29,6 +30,7 @@ namespace FoodHub.Tests.Features.Authentication
             _mockRateLimiter = new Mock<IRateLimiter>();
             _mockMessageService = new Mock<IMessageService>();
             _mockLogger = new Mock<ILogger<LoginHandler>>();
+            _mockAuditLogService = new Mock<IAuditLogService>();
 
             _handler = new LoginHandler(
                 _mockUow.Object,
@@ -36,7 +38,8 @@ namespace FoodHub.Tests.Features.Authentication
                 _mockTokenService.Object,
                 _mockRateLimiter.Object,
                 _mockMessageService.Object,
-                _mockLogger.Object
+                _mockLogger.Object,
+                _mockAuditLogService.Object
             );
         }
 

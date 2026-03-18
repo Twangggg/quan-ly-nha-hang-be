@@ -17,6 +17,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
         private readonly IRateLimiter _rateLimiter;
         private readonly IMessageService _messageService;
         private readonly ILogger<LoginHandler> _logger;
+        private readonly IAuditLogService _auditLogService;
 
         public LoginHandler(
             IUnitOfWork unitOfWork,
@@ -24,7 +25,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
             ITokenService tokenService,
             IRateLimiter rateLimiter,
             IMessageService messageService,
-            ILogger<LoginHandler> logger
+            ILogger<LoginHandler> logger,
+            IAuditLogService auditLogService
         )
         {
             _unitOfWork = unitOfWork;
@@ -33,6 +35,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
             _rateLimiter = rateLimiter;
             _messageService = messageService;
             _logger = logger;
+            _auditLogService = auditLogService;
         }
 
         public async Task<Result<LoginResponse>> Handle(
@@ -53,6 +56,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                     "Login blocked for employee code: {EmployeeCode} due to rate limiting",
                     request.EmployeeCode
                 );
+                await _auditLogService.LogActivityAsync(AuditAction.LoginFailed, "Auth", null, null, new { code = request.EmployeeCode, reason = "RateLimited" });
                 return Result<LoginResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.AccountBlocked)
                 );
@@ -73,6 +77,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                     "Login failed for employee code: {EmployeeCode}. Employee not found.",
                     request.EmployeeCode
                 );
+                await _auditLogService.LogActivityAsync(AuditAction.LoginFailed, "Auth", null, null, new { code = request.EmployeeCode, reason = "NotFound" });
                 return Result<LoginResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.InvalidCredentials)
                 );
@@ -86,6 +91,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                     request.EmployeeCode
                 );
                 // Register failed attempt (block after 5 attempts in 15 mins)
+                // Register failed attempt (block after 5 attempts in 15 mins)
                 await _rateLimiter.RegisterFailAsync(
                     rateLimitKey,
                     limit: 5,
@@ -93,6 +99,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                     blockFor: TimeSpan.FromMinutes(15),
                     cancellationToken
                 );
+
+                await _auditLogService.LogActivityAsync(AuditAction.LoginFailed, "Auth", employee.EmployeeId.ToString(), null, new { code = request.EmployeeCode, reason = "InvalidPassword" });
 
                 return Result<LoginResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.InvalidCredentials)
@@ -109,6 +117,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                     "Login failed for employee code: {EmployeeCode}. Account is inactive.",
                     request.EmployeeCode
                 );
+                await _auditLogService.LogActivityAsync(AuditAction.LoginFailed, "Auth", employee.EmployeeId.ToString(), null, new { code = request.EmployeeCode, reason = "Inactive" });
                 return Result<LoginResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.AccountInactive)
                 );
@@ -149,6 +158,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 Role = employee.Role.ToString(),
                 ExpiresIn = expiresIn,
             };
+
+            await _auditLogService.LogActivityAsync(AuditAction.Login, "Auth", employee.EmployeeId.ToString());
 
             return Result<LoginResponse>.Success(response);
         }
