@@ -122,7 +122,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Invoices
         /// </returns>
         [HttpPost]
         [HasPermission(Permissions.Invoices.Create)]
-        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Result<CreateInvoiceResponse>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateInvoiceAsync(Guid orderId, decimal amountReceived)
         {
