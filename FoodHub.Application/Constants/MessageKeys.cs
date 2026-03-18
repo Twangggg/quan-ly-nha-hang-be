@@ -130,6 +130,7 @@ namespace FoodHub.Application.Constants
             public const string InvalidStatus = "Order.InvalidStatus";
             public const string StatusNotCompleted = "Order.StatusNotCompleted";
             public const string NoValidItems = "Order.NoValidItems";
+            public const string HasBeenPlaced = "Order.HasBeenPlaced";
             public const string EmptyOrder = "Order.EmptyOrder";
         }
 
@@ -241,6 +242,9 @@ namespace FoodHub.Application.Constants
             public const string InvalidTime = "Reservation.InvalidTime";
             public const string TimeTooSoon = "Reservation.TimeTooSoon";
             public const string VipRequired = "Reservation.VipRequired";
+            public const string InvalidNewTable = "Reservation.InvalidNewTable";
+            public const string NoTableInArea = "Reservation.NoTableInArea";
+
         }
         public static class SalesAnalytics
         {

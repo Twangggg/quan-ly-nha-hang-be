@@ -1,0 +1,91 @@
+﻿
+
+testName : FoodHub.Tests.Features.Orde
+           r.Commands.CompleteOrderTes
+           ts.Handle_Should_ReturnSucc
+           ess_When_OrderCompleted_For
+           DineIn_AllItemsFinished
+Error    : Expected order.TotalAmount 
+           to be 220M, but found 
+           242.00M (difference of 
+           22.00).
+
+testName : FoodHub.Tests.Features.Orde
+           r.Commands.CompleteOrderTes
+           ts.Handle_Should_ReturnSucc
+           ess_When_OrderCompleted_For
+           Takeaway
+Error    : Expected order.TotalAmount 
+           to be 50M, but found 
+           55.00M (difference of 
+           5.00).
+
+testName : FoodHub.Tests.Features.Orde
+           r.Commands.CompleteOrderTes
+           ts.Handle_Should_CalculateT
+           otalAmount_ExcludingCancell
+           edAndRejectedItems
+Error    : Expected order.TotalAmount 
+           to be 100M, but found 
+           110.00M (difference of 
+           10.00).
+
+testName : FoodHub.Tests.Features.Merg
+           eSplitOrder.Commands.SplitO
+           rderHandlerTests.Handle_Sho
+           uld_Create_New_Order_On_Des
+           tination_Table_And_Close_So
+           urce_When_All_Items_Are_Mov
+           ed
+Error    : Expected result.Data.Destin
+           ationOrderTotalAmount to 
+           be 24M, but found 26.40M 
+           (difference of 2.40).
+
+testName : FoodHub.Tests.Features.Rese
+           rvations.Commands.CheckInRe
+           servationTests.Handle_Shoul
+           d_ReturnFailure_When_TableO
+           ccupied
+Error    : System.InvalidOperationExce
+           ption : The provider for 
+           the source 'IQueryable' 
+           doesn't implement 
+           'IAsyncQueryProvider'. 
+           Only providers that 
+           implement 
+           'IAsyncQueryProvider' can 
+           be used for Entity 
+           Framework asynchronous 
+           operations.
+
+testName : FoodHub.Tests.Features.Orde
+           r.Commands.CreateOrderTests
+           .Handle_Should_ReturnSucces
+           s_When_OrderCreated_ForDine
+           In_WithReservationId
+Error    : Expected result.IsSuccess 
+           to be True, but found 
+           False.
+
+testName : FoodHub.Tests.Features.Rese
+           rvations.CreateInternalRese
+           rvation.CreateInternalReser
+           vationHandlerTests.Handle_S
+           houldThrowBusinessException
+           _WhenNoTableAvailable
+Error    : Assert.Throws() Failure: 
+           Exception type was not an 
+           exact match
+           Expected: typeof(FoodHub.Ap
+           plication.Common.Exceptions
+           .BusinessException)
+           Actual:   typeof(System.Nul
+           lReferenceException)
+           ---- System.NullReferenceEx
+           ception : Object reference 
+           not set to an instance of 
+           an object.
+
+
+

@@ -108,12 +108,21 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> CheckIn(Guid id)
+        public async Task<IActionResult> CheckIn(Guid id, [FromBody] CheckInReservationRequest? request)
         {
-            var command = new CheckInReservationCommand { ReservationId = id };
+            var command = new CheckInReservationCommand 
+            { 
+                ReservationId = id, 
+                NewAreaId = request?.NewAreaId 
+            };
+            
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
+    }
 
+    public class CheckInReservationRequest
+    {
+        public Guid? NewAreaId { get; set; }
     }
 }

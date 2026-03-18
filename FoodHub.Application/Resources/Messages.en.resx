@@ -186,4 +186,7 @@
   <data name="StockInReceipt.AlreadyReversed" xml:space="preserve">
     <value>This stock-in receipt has already been reversed.</value>
   </data>
+  <data name="Reservation.CancelReservationSuccess" xml:space="preserve">
+    <value>Reservation cancelled successfully.</value>
+  </data>
 </root>
