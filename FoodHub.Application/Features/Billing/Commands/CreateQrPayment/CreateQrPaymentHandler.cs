@@ -67,6 +67,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CreateQrPayment
             try
             {
                 var paymentLink = await _paymentService.CreatePaymentLinkAsync(order, cancellationToken);
+                _logger.LogInformation("Payment link successfully generated for OrderId: {OrderId}", request.OrderId);
                 return Result<PaymentLinkResponse>.Success(paymentLink);
             }
             catch (Exception ex)
