@@ -238,6 +238,20 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
+        public DomainResult ApplyInventoryCheck(decimal physicalQuantity, Guid? updatedBy = null)
+        {
+            if (physicalQuantity < 0)
+            {
+                return DomainResult.Failure(DomainErrors.Ingredient.InvalidPhysicalStockQuantity);
+            }
+
+            CurrentStock = physicalQuantity;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+
+            return DomainResult.Success();
+        }
+
         public virtual DomainResult Deactivate(bool isUsedInRecipe)
         {
             if (isUsedInRecipe)

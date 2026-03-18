@@ -286,6 +286,7 @@ namespace FoodHub.Application.Constants
             public const string ThresholdMin = "Ingredient.ThresholdMin";
             public const string CostMin = "Ingredient.CostMin";
             public const string StockMin = "Ingredient.StockMin";
+            public const string PhysicalStockMin = "Ingredient.PhysicalStockMin";
         }
 
         public static class InventorySettings
@@ -346,6 +347,17 @@ namespace FoodHub.Application.Constants
             public const string ReasonRequired = "StockOutReceipt.ReasonRequired";
             public const string ReasonMaxLength = "StockOutReceipt.ReasonMaxLength";
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
+        }
+
+        public static class InventoryCheck
+        {
+            public const string CheckNotFound = "InventoryCheck.CheckNotFound";
+            public const string ItemsRequired = "InventoryCheck.ItemsRequired";
+            public const string IngredientIdRequired = "InventoryCheck.IngredientIdRequired";
+            public const string QuantityMin = "InventoryCheck.QuantityMin";
+            public const string DuplicateIngredient = "InventoryCheck.DuplicateIngredient";
+            public const string ReasonMaxLength = "InventoryCheck.ReasonMaxLength";
+            public const string InvalidStatus = "InventoryCheck.InvalidStatus";
         }
     }
 }

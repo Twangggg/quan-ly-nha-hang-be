@@ -1,5 +1,6 @@
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
 {
@@ -9,6 +10,7 @@ namespace FoodHub.Domain.Entities
 
         public Guid StockInReceiptId { get; private set; }
         public string ReceiptCode { get; private set; } = string.Empty;
+        public InventoryReceiptType ReceiptType { get; private set; }
         public DateTime ReceivedAt { get; private set; }
         public string? Note { get; private set; }
         public int TotalLines { get; private set; }
@@ -27,6 +29,27 @@ namespace FoodHub.Domain.Entities
             {
                 StockInReceiptId = Guid.NewGuid(),
                 ReceiptCode = receiptCode,
+                ReceiptType = InventoryReceiptType.Manual,
+                ReceivedAt = receivedAt,
+                Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim(),
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = createdBy,
+                UpdatedBy = createdBy,
+            };
+        }
+
+        public static StockInReceipt CreateInventoryAdjustment(
+            string receiptCode,
+            DateTime receivedAt,
+            string? note,
+            Guid? createdBy = null
+        )
+        {
+            return new StockInReceipt
+            {
+                StockInReceiptId = Guid.NewGuid(),
+                ReceiptCode = receiptCode,
+                ReceiptType = InventoryReceiptType.InventoryAdjustment,
                 ReceivedAt = receivedAt,
                 Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim(),
                 CreatedAt = DateTime.UtcNow,

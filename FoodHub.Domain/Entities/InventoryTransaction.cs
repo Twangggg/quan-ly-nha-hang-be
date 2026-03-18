@@ -145,6 +145,26 @@ namespace FoodHub.Domain.Entities
             );
         }
 
+        public static InventoryTransaction CreateInventoryCheck(
+            Guid ingredientId,
+            decimal quantityDifference,
+            decimal? unitCost,
+            decimal balanceAfter,
+            string reference,
+            Guid? createdBy = null
+        )
+        {
+            return Create(
+                ingredientId,
+                InventoryTransactionType.InventoryCheck,
+                quantityDifference,
+                unitCost,
+                balanceAfter,
+                reference,
+                createdBy
+            );
+        }
+
         private static InventoryTransaction Create(
             Guid ingredientId,
             InventoryTransactionType transactionType,

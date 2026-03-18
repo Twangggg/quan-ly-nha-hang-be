@@ -186,4 +186,31 @@
   <data name="StockInReceipt.AlreadyReversed" xml:space="preserve">
     <value>This stock-in receipt has already been reversed.</value>
   </data>
+  <data name="Ingredient.PhysicalStockMin" xml:space="preserve">
+    <value>Physical stock quantity must be greater than or equal to 0.</value>
+  </data>
+  <data name="Ingredient.InvalidPhysicalStockQuantity" xml:space="preserve">
+    <value>Physical stock quantity must be greater than or equal to 0.</value>
+  </data>
+  <data name="InventoryCheck.CheckNotFound" xml:space="preserve">
+    <value>Inventory check could not be found.</value>
+  </data>
+  <data name="InventoryCheck.ItemsRequired" xml:space="preserve">
+    <value>At least one inventory check item is required.</value>
+  </data>
+  <data name="InventoryCheck.IngredientIdRequired" xml:space="preserve">
+    <value>Ingredient is required.</value>
+  </data>
+  <data name="InventoryCheck.QuantityMin" xml:space="preserve">
+    <value>Inventory quantity must be greater than or equal to 0.</value>
+  </data>
+  <data name="InventoryCheck.DuplicateIngredient" xml:space="preserve">
+    <value>An ingredient may only appear once in an inventory check.</value>
+  </data>
+  <data name="InventoryCheck.ReasonMaxLength" xml:space="preserve">
+    <value>Reason must not exceed 500 characters.</value>
+  </data>
+  <data name="InventoryCheck.InvalidStatus" xml:space="preserve">
+    <value>The inventory check is not in a valid status for processing.</value>
+  </data>
 </root>
