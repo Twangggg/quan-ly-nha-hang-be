@@ -43,7 +43,13 @@ namespace FoodHub.Infrastructure.Services
             return new PaymentLinkResponse
             {
                 CheckoutUrl = createPaymentResult.CheckoutUrl ?? string.Empty,
-                QrCode = createPaymentResult.QrCode ?? string.Empty
+                QrCode = createPaymentResult.QrCode ?? string.Empty,
+                Bin = createPaymentResult.Bin ?? string.Empty,
+                AccountNumber = createPaymentResult.AccountNumber ?? string.Empty,
+                AccountName = createPaymentResult.AccountName ?? string.Empty,
+                Amount = createPaymentResult.Amount,
+                Description = createPaymentResult.Description ?? string.Empty,
+                Currency = createPaymentResult.Currency ?? string.Empty
             };
         }
 

@@ -109,6 +109,7 @@ try
     app.MapControllers(); // Map các API Controller
 
     app.MapHub<KdsHub>("/hubs/kds");
+    app.MapHub<BillingHub>("/hubs/billing");
     app.MapHealthCheckEndpoints(); // GET /health & /health/detail
 
     await app.RunAsync();

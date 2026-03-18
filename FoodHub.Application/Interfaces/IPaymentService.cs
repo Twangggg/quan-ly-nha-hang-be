@@ -6,6 +6,12 @@ namespace FoodHub.Application.Interfaces
     {
         public string CheckoutUrl { get; set; } = string.Empty;
         public string QrCode { get; set; } = string.Empty;
+        public string Bin { get; set; } = string.Empty;
+        public string AccountNumber { get; set; } = string.Empty;
+        public string AccountName { get; set; } = string.Empty;
+        public long Amount { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public string Currency { get; set; } = string.Empty;
     }
 
     public interface IPaymentService
