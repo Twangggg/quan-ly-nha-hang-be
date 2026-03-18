@@ -35,6 +35,15 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(r => r.GuestCount)
                 .IsRequired()
                 .HasColumnName("guest_count");
+            
+            builder.Property(r => r.PartyType)
+                .IsRequired()
+                .HasColumnName("party_type");
+
+            builder.Property(r => r.HasChildren)
+                .IsRequired()
+                .HasColumnName("has_children")
+                .HasDefaultValue(false);
 
 
             builder.Property(r => r.Note)

@@ -347,5 +347,12 @@ namespace FoodHub.Application.Constants
             public const string ReasonMaxLength = "StockOutReceipt.ReasonMaxLength";
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
         }
+
+        public static class AuditLog
+        {
+            public const string NotFound = "AuditLog.NotFound";
+            public const string QueryError = "AuditLog.QueryError";
+            public const string Unauthorized = "AuditLog.Unauthorized";
+        }
     }
 }

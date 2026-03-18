@@ -1,4 +1,5 @@
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,7 +23,8 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.Action)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(50)
+                .HasConversion<string>();
 
             builder.Property(x => x.OldValues)
                 .HasColumnType("jsonb");

@@ -95,38 +95,28 @@ namespace FoodHub.Infrastructure.BackgroundJobs
 
                 if (message.AuditTargetId.HasValue && message.PerformedByEmployeeId.HasValue)
                 {
-                    await LogFailureToAudit(unitOfWork, message, lastException?.Message ?? "Unknown error");
+                    await LogFailureToAudit(scope, message, lastException?.Message ?? "Unknown error");
                 }
             }
         }
 
-        private async Task LogFailureToAudit(IUnitOfWork unitOfWork, EmailMessage message, string errorDetails)
+        private async Task LogFailureToAudit(IServiceScope scope, EmailMessage message, string errorDetails)
         {
             try
             {
-                var auditLog = new AuditLog
-                {
-                    LogId = Guid.NewGuid(),
-                    EntityName = "Email",
-                    EntityId = $"{{\"AuditTargetId\":\"{message.AuditTargetId}\"}}",
-                    Action = "EMAIL_FAILURE",
-                    OldValues = null,
-                    NewValues = System.Text.Json.JsonSerializer.Serialize(new
+                var auditLogService = scope.ServiceProvider.GetRequiredService<IAuditLogService>();
+                await auditLogService.LogActivityAsync(
+                    AuditAction.EmailFailure,
+                    "Email",
+                    $"{{\"AuditTargetId\":\"{message.AuditTargetId}\"}}",
+                    null,
+                    new
                     {
                         To = message.To,
                         Subject = message.Subject,
-                        Error = errorDetails
-                    }),
-                    ActorInfo = System.Text.Json.JsonSerializer.Serialize(new
-                    {
-                        type = "Employee",
-                        id = message.PerformedByEmployeeId
-                    }),
-                    CreatedAt = DateTimeOffset.UtcNow
-                };
-
-                await unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
-                await unitOfWork.SaveChangeAsync();
+                        Error = errorDetails,
+                        PerformedByEmployeeId = message.PerformedByEmployeeId
+                    });
 
                 _logger.LogInformation("Logged failure to AuditLog for target {Target}", message.AuditTargetId);
             }

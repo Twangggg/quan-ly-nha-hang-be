@@ -83,6 +83,14 @@ namespace FoodHub.Infrastructure.Persistence
         private class DesignTimeAuditLogService : IAuditLogService
         {
             public string GetActorInfo() => "{\"type\":\"System\",\"info\":\"DesignTime\"}";
+
+            public Task LogActivityAsync(
+                FoodHub.Domain.Enums.AuditAction action,
+                string entityName,
+                string? entityId = null,
+                object? oldValues = null,
+                object? newValues = null
+            ) => Task.CompletedTask;
         }
     }
 }

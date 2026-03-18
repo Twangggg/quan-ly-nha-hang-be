@@ -1,4 +1,5 @@
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Text.Json;
 
@@ -13,7 +14,7 @@ namespace FoodHub.Infrastructure.Persistence
 
         public EntityEntry Entry { get; }
         public string EntityName { get; set; } = null!;
-        public string AuditAction { get; set; } = null!;
+        public AuditAction AuditAction { get; set; }
         public string ActorInfo { get; set; } = null!;
         public Dictionary<string, object?> KeyValues { get; } = new();
         public Dictionary<string, object?> OldValues { get; } = new();

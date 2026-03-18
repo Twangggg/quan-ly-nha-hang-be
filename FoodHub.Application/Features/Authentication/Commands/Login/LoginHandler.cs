@@ -140,6 +140,7 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
 
             var response = new LoginResponse
             {
+                EmployeeId = employee.EmployeeId,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 RefreshTokenExpiresIn = (refreshTokenEntity.Expires - DateTime.UtcNow).TotalSeconds,

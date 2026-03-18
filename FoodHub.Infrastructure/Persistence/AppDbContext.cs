@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Infrastructure.Persistence
@@ -56,32 +57,55 @@ namespace FoodHub.Infrastructure.Persistence
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            auditEntry.AuditAction = "CREATE";
-                            auditEntry.NewValues[propertyName] = property.CurrentValue;
+                            auditEntry.AuditAction = AuditAction.Create;
+                            auditEntry.NewValues[propertyName] = GetValue(property.CurrentValue);
                             break;
 
                         case EntityState.Deleted:
-                            auditEntry.AuditAction = "DELETE";
-                            auditEntry.OldValues[propertyName] = property.OriginalValue;
+                            auditEntry.AuditAction = AuditAction.Delete;
+                            auditEntry.OldValues[propertyName] = GetValue(property.OriginalValue);
                             break;
 
                         case EntityState.Modified:
                             if (property.IsModified)
                             {
-                                auditEntry.AuditAction = "UPDATE";
-                                auditEntry.OldValues[propertyName] = property.OriginalValue;
-                                auditEntry.NewValues[propertyName] = property.CurrentValue;
+                                auditEntry.AuditAction = AuditAction.Update;
+                                auditEntry.OldValues[propertyName] = GetValue(property.OriginalValue);
+                                auditEntry.NewValues[propertyName] = GetValue(property.CurrentValue);
                             }
                             break;
                     }
                 }
 
-                // Handle status changes specifically if needed
-                if (entry.State == EntityState.Modified && auditEntry.AuditAction == "UPDATE")
+                // Refine action for status changes & activation
+                if (entry.State == EntityState.Modified)
                 {
-                    if (entry.Properties.Any(p => p.Metadata.Name == "Status" && p.IsModified))
+                    // Detect Activation/Deactivation for Employee or entities with IsActive/Status
+                    var statusProp = entry.Properties.FirstOrDefault(p => (p.Metadata.Name == "Status" || p.Metadata.Name == "EmployeeStatus" || p.Metadata.Name == "IsActive") && p.IsModified);
+                    if (statusProp != null)
                     {
-                        auditEntry.AuditAction = "STATUS_CHANGE";
+                        if (entry.Entity is Employee employeeEntity)
+                        {
+                            auditEntry.AuditAction = employeeEntity.Status == EmployeeStatus.Active ? AuditAction.Activate : AuditAction.Deactivate;
+                        }
+                        else if (entry.Entity is Reservation resEntity)
+                        {
+                            auditEntry.AuditAction = resEntity.Status switch
+                            {
+                                ReservationStatus.Cancelled => AuditAction.Cancel,
+                                ReservationStatus.CheckIn => AuditAction.CheckIn,
+                                ReservationStatus.NoShow => AuditAction.NoShow,
+                                _ => AuditAction.StatusChange
+                            };
+                        }
+                        else
+                        {
+                            auditEntry.AuditAction = AuditAction.StatusChange;
+                        }
+                    }
+                    else if (entry.Properties.Any(p => p.Metadata.Name == "Role" && p.IsModified))
+                    {
+                        auditEntry.AuditAction = AuditAction.ChangeRole;
                     }
                 }
 
@@ -97,7 +121,15 @@ namespace FoodHub.Infrastructure.Persistence
                 }
             }
 
+
             return auditEntries.Where(_ => _.HasChanges).ToList();
+        }
+
+        private object? GetValue(object? value)
+        {
+            if (value == null) return null;
+            if (value.GetType().IsEnum) return value.ToString();
+            return value;
         }
 
         private Task OnAfterSaveChanges(List<AuditEntry> auditEntries)

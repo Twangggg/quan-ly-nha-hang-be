@@ -4,6 +4,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,8 +33,8 @@ namespace FoodHub.Application.Features.AuditLogs.Queries.GetAuditLogs
             if (request.ToDate.HasValue)
                 query = query.Where(x => x.CreatedAt <= request.ToDate.Value);
 
-            if (!string.IsNullOrEmpty(request.ActionFilter))
-                query = query.Where(x => x.Action == request.ActionFilter);
+            if (!string.IsNullOrEmpty(request.ActionFilter) && Enum.TryParse<AuditAction>(request.ActionFilter, true, out var actionEnum))
+                query = query.Where(x => x.Action == actionEnum);
 
             if (!string.IsNullOrEmpty(request.EntityNameFilter))
                 query = query.Where(x => x.EntityName == request.EntityNameFilter);
