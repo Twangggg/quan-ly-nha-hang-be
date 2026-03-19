@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem;
 using MediatR;
 
 namespace FoodHub.Application.Features.Options.Queries.GetReusableOptionGroups

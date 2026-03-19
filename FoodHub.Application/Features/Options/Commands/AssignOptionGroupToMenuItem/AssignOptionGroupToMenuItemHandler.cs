@@ -1,14 +1,15 @@
-using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Options.Commands.AssignOptionGroupToMenuItem
 {
@@ -19,10 +20,18 @@ namespace FoodHub.Application.Features.Options.Commands.AssignOptionGroupToMenuI
         >
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<AssignOptionGroupToMenuItemHandler> _logger;
+        private readonly IMessageService _messageService;
 
-        public AssignOptionGroupToMenuItemHandler(IUnitOfWork unitOfWork)
+        public AssignOptionGroupToMenuItemHandler(
+            IUnitOfWork unitOfWork,
+            ILogger<AssignOptionGroupToMenuItemHandler> logger,
+            IMessageService messageService
+        )
         {
             _unitOfWork = unitOfWork;
+            _logger = logger;
+            _messageService = messageService;
         }
 
         public async Task<Result<AssignOptionGroupToMenuItemResponse>> Handle(
@@ -30,23 +39,33 @@ namespace FoodHub.Application.Features.Options.Commands.AssignOptionGroupToMenuI
             CancellationToken cancellationToken
         )
         {
+            _logger.LogInformation(
+                "Start assigning OptionGroupId={OptionGroupId} to MenuItemId={MenuItemId}",
+                request.OptionGroupId,
+                request.MenuItemId
+            );
             var menuItemExists = await _unitOfWork
                 .Repository<MenuItem>()
                 .Query()
                 .AnyAsync(x => x.MenuItemId == request.MenuItemId, cancellationToken);
             if (!menuItemExists)
             {
-                throw new NotFoundException($"Menu item with ID {request.MenuItemId} not found.");
+                return Result<AssignOptionGroupToMenuItemResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.MenuItem.NotFound, request.MenuItemId)
+                );
             }
 
             var optionGroup = await _unitOfWork
                 .Repository<OptionGroup>()
                 .Query()
-                .FirstOrDefaultAsync(x => x.OptionGroupId == request.OptionGroupId, cancellationToken);
+                .FirstOrDefaultAsync(
+                    x => x.OptionGroupId == request.OptionGroupId,
+                    cancellationToken
+                );
             if (optionGroup == null)
             {
-                throw new NotFoundException(
-                    $"Option group with ID {request.OptionGroupId} not found."
+                return Result<AssignOptionGroupToMenuItemResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.OptionGroup.NotFound, request.OptionGroupId)
                 );
             }
 
@@ -54,13 +73,15 @@ namespace FoodHub.Application.Features.Options.Commands.AssignOptionGroupToMenuI
                 .Repository<MenuItemOptionGroup>()
                 .Query()
                 .FirstOrDefaultAsync(
-                    x => x.MenuItemId == request.MenuItemId && x.OptionGroupId == request.OptionGroupId,
+                    x =>
+                        x.MenuItemId == request.MenuItemId
+                        && x.OptionGroupId == request.OptionGroupId,
                     cancellationToken
                 );
             if (existingAssignment != null)
             {
                 return Result<AssignOptionGroupToMenuItemResponse>.Failure(
-                    "Option group is already assigned to this menu item.",
+                    _messageService.GetMessage(MessageKeys.OptionGroup.AlreadyAssigned),
                     ResultErrorType.Conflict
                 );
             }
@@ -78,6 +99,12 @@ namespace FoodHub.Application.Features.Options.Commands.AssignOptionGroupToMenuI
 
             await _unitOfWork.Repository<MenuItemOptionGroup>().AddAsync(assignment);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "End assigning OptionGroupId={OptionGroupId} to MenuItemId={MenuItemId}",
+                request.OptionGroupId,
+                request.MenuItemId
+            );
 
             return Result<AssignOptionGroupToMenuItemResponse>.Success(
                 new AssignOptionGroupToMenuItemResponse

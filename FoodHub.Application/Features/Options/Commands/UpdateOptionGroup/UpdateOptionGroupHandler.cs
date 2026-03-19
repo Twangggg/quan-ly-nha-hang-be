@@ -1,10 +1,10 @@
-using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -18,14 +18,17 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<UpdateOptionGroupHandler> _logger;
+        private readonly IMessageService _messageService;
 
         public UpdateOptionGroupHandler(
             IUnitOfWork unitOfWork,
-            ILogger<UpdateOptionGroupHandler> logger
+            ILogger<UpdateOptionGroupHandler> logger,
+            IMessageService messageService
         )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _messageService = messageService;
         }
 
         public async Task<Result<UpdateOptionGroupResponse>> Handle(
@@ -49,8 +52,8 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
 
             if (optionGroup == null)
             {
-                throw new NotFoundException(
-                    $"Option group with ID {request.OptionGroupId} not found."
+                return Result<UpdateOptionGroupResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.OptionGroup.NotFound, request.OptionGroupId)
                 );
             }
 

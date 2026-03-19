@@ -1,11 +1,6 @@
-using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
-using FoodHub.Application.Interfaces.Inventory;
-using FoodHub.Application.Interfaces.Messaging;
-using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
-using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -19,14 +14,17 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CreateOptionGroupHandler> _logger;
+        private readonly IMessageService _messageService;
 
         public CreateOptionGroupHandler(
             IUnitOfWork unitOfWork,
-            ILogger<CreateOptionGroupHandler> logger
+            ILogger<CreateOptionGroupHandler> logger,
+            IMessageService messageService
         )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _messageService = messageService;
         }
 
         public async Task<Result<CreateOptionGroupResponse>> Handle(
@@ -53,7 +51,9 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
 
                 if (menuItem == null)
                 {
-                    throw new NotFoundException($"Menu item with ID {request.MenuItemId} not found.");
+                    return Result<CreateOptionGroupResponse>.NotFound(
+                        _messageService.GetMessage(MessageKeys.MenuItem.NotFound, request.MenuItemId.Value)
+                    );
                 }
             }
 

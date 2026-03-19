@@ -16,6 +16,5 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
         int? MaxSelect,
         int SortOrder = 0,
         bool IsVisible = true
-    )
-        : IRequest<Result<CreateOptionGroupResponse>>;
+    ) : IRequest<Result<CreateOptionGroupResponse>>;
 }

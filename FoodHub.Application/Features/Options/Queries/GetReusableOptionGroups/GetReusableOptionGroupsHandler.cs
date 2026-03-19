@@ -5,6 +5,7 @@ using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Options.Queries.GetReusableOptionGroups
 {
@@ -12,10 +13,15 @@ namespace FoodHub.Application.Features.Options.Queries.GetReusableOptionGroups
         : IRequestHandler<GetReusableOptionGroupsQuery, Result<PagedResult<OptionGroupResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<GetReusableOptionGroupsHandler> _logger;
 
-        public GetReusableOptionGroupsHandler(IUnitOfWork unitOfWork)
+        public GetReusableOptionGroupsHandler(
+            IUnitOfWork unitOfWork,
+            ILogger<GetReusableOptionGroupsHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task<Result<PagedResult<OptionGroupResponse>>> Handle(
@@ -23,6 +29,7 @@ namespace FoodHub.Application.Features.Options.Queries.GetReusableOptionGroups
             CancellationToken cancellationToken
         )
         {
+            _logger.LogInformation("Start querying reusable option groups");
             var pagedGroups = await _unitOfWork
                 .Repository<OptionGroup>()
                 .Query()
@@ -47,6 +54,12 @@ namespace FoodHub.Application.Features.Options.Queries.GetReusableOptionGroups
                         .ToList(),
                 })
                 .ToPagedResultAsync(request.PageNumber, request.PageSize);
+
+            _logger.LogInformation(
+                "End querying reusable option groups PageNumber={PageNumber} TotalCount={TotalCount}",
+                request.PageNumber,
+                pagedGroups.TotalCount
+            );
 
             return Result<PagedResult<OptionGroupResponse>>.Success(pagedGroups);
         }

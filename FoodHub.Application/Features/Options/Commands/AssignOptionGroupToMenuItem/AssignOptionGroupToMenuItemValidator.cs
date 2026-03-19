@@ -1,21 +1,19 @@
 using FluentValidation;
-using FoodHub.Application.Resources;
-using Microsoft.Extensions.Localization;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Messaging;
 
 namespace FoodHub.Application.Features.Options.Commands.AssignOptionGroupToMenuItem
 {
     public class AssignOptionGroupToMenuItemValidator
         : AbstractValidator<AssignOptionGroupToMenuItemCommand>
     {
-        public AssignOptionGroupToMenuItemValidator(IStringLocalizer<ErrorMessages> localizer)
+        public AssignOptionGroupToMenuItemValidator(IMessageService messageService)
         {
             RuleFor(x => x.MenuItemId)
                 .NotEmpty()
-                .WithMessage(localizer["OptionGroup.MenuItemIdRequired"]);
+                .WithMessage(messageService.GetMessage("OptionGroup.MenuItemIdRequired"));
 
-            RuleFor(x => x.OptionGroupId)
-                .NotEmpty()
-                .WithMessage(localizer["OptionGroup.Required"]);
+            RuleFor(x => x.OptionGroupId).NotEmpty().WithMessage(messageService.GetMessage("OptionGroup.Required"));
 
             RuleFor(x => x.MinSelect).GreaterThanOrEqualTo(0);
             RuleFor(x => x.MaxSelect).GreaterThan(0);

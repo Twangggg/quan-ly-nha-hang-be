@@ -27,8 +27,8 @@ namespace FoodHub.Application.Features.Options.Common
             IMessageService messageService
         )
         {
-            var assignments = menuItem.MenuItemOptionGroups
-                .Where(x => x.DeletedAt == null && x.IsVisible)
+            var assignments = menuItem
+                .MenuItemOptionGroups.Where(x => x.DeletedAt == null && x.IsVisible)
                 .ToDictionary(x => x.OptionGroupId);
             var requests =
                 requestedSelections?.ToDictionary(x => x.OptionGroupId)
@@ -39,7 +39,11 @@ namespace FoodHub.Application.Features.Options.Common
                 if (!assignments.ContainsKey(requestedGroupId))
                 {
                     return Result<List<ValidatedOptionSelection>>.Failure(
-                        $"Option group {requestedGroupId} is not assigned to menu item {menuItem.MenuItemId}.",
+                        messageService.GetMessage(
+                            MessageKeys.OptionGroup.NotAssignedToMenuItem,
+                            requestedGroupId,
+                            menuItem.MenuItemId
+                        ),
                         ResultErrorType.BadRequest
                     );
                 }
@@ -51,13 +55,17 @@ namespace FoodHub.Application.Features.Options.Common
             {
                 requests.TryGetValue(assignment.OptionGroupId, out var requestedSelection);
 
-                var selectedValues = requestedSelection?.SelectedValues ?? Array.Empty<RequestedOptionValue>();
+                var selectedValues =
+                    requestedSelection?.SelectedValues ?? Array.Empty<RequestedOptionValue>();
                 var selectedQuantity = selectedValues.Sum(x => x.Quantity);
 
                 if (assignment.IsRequired && selectedQuantity == 0)
                 {
                     return Result<List<ValidatedOptionSelection>>.Failure(
-                        $"Option group '{assignment.OptionGroup.Name}' is required.",
+                        messageService.GetMessage(
+                            MessageKeys.OptionGroup.RequiredWithName,
+                            assignment.OptionGroup.Name
+                        ),
                         ResultErrorType.BadRequest
                     );
                 }
@@ -65,7 +73,11 @@ namespace FoodHub.Application.Features.Options.Common
                 if (selectedQuantity < assignment.MinSelect)
                 {
                     return Result<List<ValidatedOptionSelection>>.Failure(
-                        $"Option group '{assignment.OptionGroup.Name}' requires at least {assignment.MinSelect} selection(s).",
+                        messageService.GetMessage(
+                            MessageKeys.OptionGroup.MinSelectRequired,
+                            assignment.OptionGroup.Name,
+                            assignment.MinSelect
+                        ),
                         ResultErrorType.BadRequest
                     );
                 }
@@ -73,12 +85,18 @@ namespace FoodHub.Application.Features.Options.Common
                 if (selectedQuantity > assignment.MaxSelect)
                 {
                     return Result<List<ValidatedOptionSelection>>.Failure(
-                        $"Option group '{assignment.OptionGroup.Name}' allows at most {assignment.MaxSelect} selection(s).",
+                        messageService.GetMessage(
+                            MessageKeys.OptionGroup.MaxSelectAllowed,
+                            assignment.OptionGroup.Name,
+                            assignment.MaxSelect
+                        ),
                         ResultErrorType.BadRequest
                     );
                 }
 
-                var itemsById = assignment.OptionGroup.OptionItems.ToDictionary(x => x.OptionItemId);
+                var itemsById = assignment.OptionGroup.OptionItems.ToDictionary(x =>
+                    x.OptionItemId
+                );
                 var domainSelections = new List<(OptionItem Item, int Quantity, string? Note)>();
 
                 foreach (var value in selectedValues)
@@ -94,7 +112,11 @@ namespace FoodHub.Application.Features.Options.Common
                     if (!itemsById.TryGetValue(value.OptionItemId, out var item))
                     {
                         return Result<List<ValidatedOptionSelection>>.Failure(
-                            $"Option item {value.OptionItemId} does not belong to option group {assignment.OptionGroupId}.",
+                            messageService.GetMessage(
+                                MessageKeys.OptionItem.NotBelongToGroup,
+                                value.OptionItemId,
+                                assignment.OptionGroupId
+                            ),
                             ResultErrorType.BadRequest
                         );
                     }
