@@ -31,12 +31,15 @@ namespace FoodHub.Domain.Entities
         public DateTime? RejectedAt { get; set; }
         public Order Order { get; set; } = null!;
         public MenuItem MenuItem { get; set; } = null!;
+
+        public bool IsFeeItem { get; set; } // Dùng cho các khoản phí như phí giao hàng, phí dịch vụ, không phải là món ăn thực tế
+
         public ICollection<OrderItemOptionGroup> OptionGroups { get; set; } =
             new List<OrderItemOptionGroup>();
 
         public decimal GetTotalPrice()
         {
-            if (Status == OrderItemStatus.Cancelled || Status == OrderItemStatus.Rejected)
+            if (Status == OrderItemStatus.Cancelled || Status == OrderItemStatus.Rejected || IsFeeItem)
                 return 0;
 
             var optionsTotal =

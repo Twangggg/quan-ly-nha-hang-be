@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Linq.Expressions;
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
@@ -38,6 +39,11 @@ namespace FoodHub.Domain.Entities
         public DateTime? PaidAt { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
+
+        // Voucher
+        public decimal DiscountAmount { get; set; }
+        public Guid? VoucherId { get; set; }
+        public virtual Voucher? Voucher { get; set; }
 
         public bool IsActive() => Status == OrderStatus.Serving;
 
@@ -155,6 +161,8 @@ namespace FoodHub.Domain.Entities
                     return itemTotal + (optionsTotal * item.Quantity);
                 });
 
+            DiscountAmount = CalculateDiscount();
+            SubTotal = Math.Max(SubTotal - DiscountAmount, 0);
             VatAmount = SubTotal * VatRate;
             TotalAmount = SubTotal + VatAmount;
         }
@@ -524,6 +532,37 @@ namespace FoodHub.Domain.Entities
 
             return string.Join("|", allValues);
         }
+
+        public decimal CalculateDiscount()
+        {
+            if (Voucher == null || !Voucher.IsValid())
+                return 0;
+
+            switch (Voucher.VoucherType)
+            {
+                case VoucherType.Percent:
+                    var percentDiscount = SubTotal * (Voucher.DiscountValue ?? 0) / 100;
+                    if (Voucher.MaxDiscount.HasValue)
+                    {
+                        return Math.Min(percentDiscount, Voucher.MaxDiscount.Value);
+                    }
+                    return percentDiscount;
+                case VoucherType.Fixed:
+                    return Math.Min(Voucher.DiscountValue ?? 0, SubTotal);
+                case VoucherType.FreeItem:
+                    if (Voucher.ItemtId.HasValue && Voucher.FreeQuantity.HasValue)
+                    {
+                        var freeItemTotal = OrderItems
+                            .Where(oi => oi.MenuItemId == Voucher.ItemtId.Value)
+                            .Sum(oi => oi.UnitPriceSnapshot * Math.Min(oi.Quantity, Voucher.FreeQuantity.Value));
+                        return Math.Min(freeItemTotal, SubTotal);
+                    }
+                    return 0;
+                default:
+                    return 0;
+            }
+        }
+
     }
 
     public sealed record MergeOrderPlan(IReadOnlyCollection<OrderItem> DeletedSourceItems);
