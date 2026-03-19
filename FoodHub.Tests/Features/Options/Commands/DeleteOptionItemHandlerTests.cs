@@ -38,15 +38,9 @@ namespace FoodHub.Tests.Features.Options.Commands
         public async Task Handle_Should_ReturnSuccess_When_OptionItemDeleted()
         {
             // Arrange
-            var optionItemId = Guid.NewGuid();
+            var existingOptionItem = OptionItem.Create(Guid.NewGuid(), "Small", 0);
+            var optionItemId = existingOptionItem.OptionItemId;
             var command = new DeleteOptionItemCommand(optionItemId);
-
-            var existingOptionItem = new OptionItem
-            {
-                OptionItemId = optionItemId,
-                OptionGroupId = Guid.NewGuid(),
-                Label = "Small"
-            };
 
             var mockRepo = new Mock<IGenericRepository<OptionItem>>();
             mockRepo
@@ -96,16 +90,10 @@ namespace FoodHub.Tests.Features.Options.Commands
         public async Task Handle_Should_SetDeletedAt_And_UpdatedAt_When_Deleted()
         {
             // Arrange
-            var optionItemId = Guid.NewGuid();
             var userId = Guid.NewGuid().ToString();
+            var existingOptionItem = OptionItem.Create(Guid.NewGuid(), "Small", 0);
+            var optionItemId = existingOptionItem.OptionItemId;
             var command = new DeleteOptionItemCommand(optionItemId);
-
-            var existingOptionItem = new OptionItem
-            {
-                OptionItemId = optionItemId,
-                OptionGroupId = Guid.NewGuid(),
-                Label = "Small"
-            };
 
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId);
 

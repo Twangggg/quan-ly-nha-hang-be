@@ -1,5 +1,5 @@
+using FoodHub.Application.Common.Exceptions;
 using FluentAssertions;
-using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Options.Commands.UpdateOptionGroup;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -9,6 +9,7 @@ using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
+using Microsoft.Extensions.Logging.Abstractions;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -23,30 +24,26 @@ namespace FoodHub.Tests.Features.Options.Commands
         public UpdateOptionGroupHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
-            _handler = new UpdateOptionGroupHandler(_mockUow.Object);
+            _handler = new UpdateOptionGroupHandler(_mockUow.Object, NullLogger<UpdateOptionGroupHandler>.Instance);
         }
 
         [Fact]
         public async Task Handle_Should_ReturnSuccess_When_OptionGroupUpdated()
         {
             // Arrange
-            var optionGroupId = Guid.NewGuid();
+            var existingOptionGroup = OptionGroup.Create(
+                "Size",
+                OptionGroupType.Single,
+                true,
+                Guid.NewGuid()
+            );
+            var optionGroupId = existingOptionGroup.OptionGroupId;
             var command = new UpdateOptionGroupCommand(
                 OptionGroupId: optionGroupId,
                 Name: "Updated Size",
-                Type: (int)OptionGroupType.Multi,
+                Type: OptionGroupType.Multi,
                 IsRequired: false
             );
-
-            var existingOptionGroup = new OptionGroup
-            {
-                OptionGroupId = optionGroupId,
-                MenuItemId = Guid.NewGuid(),
-                Name = "Size",
-                OptionType = OptionGroupType.Single,
-                IsRequired = true,
-                OptionItems = new List<OptionItem>()
-            };
 
             var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
             mockRepo
@@ -72,14 +69,14 @@ namespace FoodHub.Tests.Features.Options.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnFailure_When_OptionGroupNotFound()
+        public async Task Handle_Should_ThrowNotFound_When_OptionGroupNotFound()
         {
             // Arrange
             var optionGroupId = Guid.NewGuid();
             var command = new UpdateOptionGroupCommand(
                 OptionGroupId: optionGroupId,
                 Name: "Updated Size",
-                Type: (int)OptionGroupType.Multi,
+                Type: OptionGroupType.Multi,
                 IsRequired: false
             );
 
@@ -90,11 +87,10 @@ namespace FoodHub.Tests.Features.Options.Commands
             _mockUow.Setup(u => u.Repository<OptionGroup>()).Returns(mockRepo.Object);
 
             // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            var act = () => _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorType.Should().Be(ResultErrorType.NotFound);
+            await act.Should().ThrowAsync<NotFoundException>();
             _mockUow.Verify(
                 u => u.Repository<OptionGroup>().Update(It.IsAny<OptionGroup>()),
                 Times.Never
@@ -106,23 +102,19 @@ namespace FoodHub.Tests.Features.Options.Commands
         public async Task Handle_Should_UpdateOptionGroupProperties()
         {
             // Arrange
-            var optionGroupId = Guid.NewGuid();
+            var existingOptionGroup = OptionGroup.Create(
+                "Old Name",
+                OptionGroupType.Single,
+                false,
+                Guid.NewGuid()
+            );
+            var optionGroupId = existingOptionGroup.OptionGroupId;
             var command = new UpdateOptionGroupCommand(
                 OptionGroupId: optionGroupId,
                 Name: "New Name",
-                Type: (int)OptionGroupType.Scale,
+                Type: OptionGroupType.Scale,
                 IsRequired: true
             );
-
-            var existingOptionGroup = new OptionGroup
-            {
-                OptionGroupId = optionGroupId,
-                MenuItemId = Guid.NewGuid(),
-                Name = "Old Name",
-                OptionType = OptionGroupType.Single,
-                IsRequired = false,
-                OptionItems = new List<OptionItem>()
-            };
 
             var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
             mockRepo

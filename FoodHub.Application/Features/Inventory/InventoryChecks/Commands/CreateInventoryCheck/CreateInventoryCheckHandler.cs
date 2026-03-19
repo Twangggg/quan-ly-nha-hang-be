@@ -61,7 +61,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Create
             }
 
             var ingredientMap = ingredients.ToDictionary(x => x.IngredientId);
-            var inventoryCheck = InventoryCheck.Create(NormalizeUtc(request.CheckDate), actorId);
+            var inventoryCheck = InventoryCheck.Create(request.CheckDate.ToUtc(), actorId);
 
             foreach (var item in request.Items)
             {
@@ -113,16 +113,6 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Create
                 _logger.LogError(ex, "CreateInventoryCheck transaction rolled back");
                 throw;
             }
-        }
-
-        private static DateTime NormalizeUtc(DateTime value)
-        {
-            return value.Kind switch
-            {
-                DateTimeKind.Utc => value,
-                DateTimeKind.Local => value.ToUniversalTime(),
-                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc),
-            };
         }
     }
 }

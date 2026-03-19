@@ -7,6 +7,7 @@ using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
+using FoodHub.Application.Features.Options.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -81,6 +82,9 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 .Repository<MenuItem>()
                 .Query()
                 .Where(m => menuItemIds.Contains(m.MenuItemId))
+                .Include(m => m.MenuItemOptionGroups)
+                    .ThenInclude(miog => miog.OptionGroup)
+                        .ThenInclude(og => og.OptionItems)
                 .ToDictionaryAsync(m => m.MenuItemId, cancellationToken);
             if (menuItems.Count != menuItemIds.Count)
             {
@@ -88,51 +92,6 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.MenuItem.NotFound)
                 );
-            }
-
-            // Validate Options Exist (if provided)
-            var allOptionGroupIds = request
-                .Items.Where(i => i.SelectedOptions != null)
-                .SelectMany(i => i.SelectedOptions!)
-                .Select(og => og.OptionGroupId)
-                .Distinct()
-                .ToList();
-            var allOptionItemIds = request
-                .Items.Where(i => i.SelectedOptions != null)
-                .SelectMany(i => i.SelectedOptions!)
-                .SelectMany(og => og.SelectedValues)
-                .Select(v => v.OptionItemId)
-                .Distinct()
-                .ToList();
-            Dictionary<Guid, OptionGroup> optionGroups = new();
-            Dictionary<Guid, OptionItem> optionItems = new();
-            if (allOptionGroupIds.Any())
-            {
-                optionGroups = await _unitOfWork
-                    .Repository<OptionGroup>()
-                    .Query()
-                    .Where(og => allOptionGroupIds.Contains(og.OptionGroupId))
-                    .ToDictionaryAsync(og => og.OptionGroupId, cancellationToken);
-                if (optionGroups.Count != allOptionGroupIds.Count)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.OptionGroup.NotFound)
-                    );
-                }
-            }
-            if (allOptionItemIds.Any())
-            {
-                optionItems = await _unitOfWork
-                    .Repository<OptionItem>()
-                    .Query()
-                    .Where(oi => allOptionItemIds.Contains(oi.OptionItemId))
-                    .ToDictionaryAsync(oi => oi.OptionItemId, cancellationToken);
-                if (optionItems.Count != allOptionItemIds.Count)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.OptionItem.NotFound)
-                    );
-                }
             }
 
             //Check Out of Stock
@@ -189,25 +148,39 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 var menuItem = menuItems[itemDto.MenuItemId];
 
                 // Prepare options for Domain method
-                var domainOptions =
-                    new List<(
-                        OptionGroup Group,
-                        List<(OptionItem Item, int Quantity, string? Note)> Selections
-                    )>();
-                if (itemDto.SelectedOptions != null)
+                var selectionValidation = OptionSelectionValidation.ValidateForMenuItem(
+                    menuItem,
+                    itemDto.SelectedOptions
+                        ?.Select(
+                            x =>
+                                new RequestedOptionSelection(
+                                    x.OptionGroupId,
+                                    x.SelectedValues
+                                        .Select(
+                                            v =>
+                                                new RequestedOptionValue(
+                                                    v.OptionItemId,
+                                                    v.Quantity,
+                                                    v.Note
+                                                )
+                                        )
+                                        .ToList()
+                                )
+                        )
+                        .ToList(),
+                    _messageService
+                );
+                if (!selectionValidation.IsSuccess)
                 {
-                    foreach (var optDto in itemDto.SelectedOptions)
-                    {
-                        if (optionGroups.TryGetValue(optDto.OptionGroupId, out var og))
-                        {
-                            var selections = optDto
-                                .SelectedValues.Where(v => optionItems.ContainsKey(v.OptionItemId))
-                                .Select(v => (optionItems[v.OptionItemId], v.Quantity, v.Note))
-                                .ToList();
-                            domainOptions.Add((og, selections));
-                        }
-                    }
+                    return Result<Guid>.Failure(
+                        selectionValidation.Error!,
+                        selectionValidation.ErrorType
+                    );
                 }
+
+                var domainOptions = selectionValidation
+                    .Data!.Select(x => (x.Assignment, x.Group, x.Selections))
+                    .ToList();
 
                 // Create Item using lightweight method
                 var newItem = order.CreateOrderItem(

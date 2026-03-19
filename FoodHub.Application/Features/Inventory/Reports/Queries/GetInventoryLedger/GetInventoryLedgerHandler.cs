@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLedger
 {
     public class GetInventoryLedgerHandler
-        : IRequestHandler<GetInventoryLedgerQuery, Result<IReadOnlyList<GetInventoryLedgerResponse>>>
+        : IRequestHandler<GetInventoryLedgerQuery, Result<PagedResult<GetInventoryLedgerResponse>>>
     {
         private readonly ILogger<GetInventoryLedgerHandler> _logger;
         private readonly IUnitOfWork _unitOfWork;
@@ -22,7 +23,7 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLed
             _logger = logger;
         }
 
-        public async Task<Result<IReadOnlyList<GetInventoryLedgerResponse>>> Handle(
+        public async Task<Result<PagedResult<GetInventoryLedgerResponse>>> Handle(
             GetInventoryLedgerQuery request,
             CancellationToken cancellationToken
         )
@@ -41,21 +42,28 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLed
                 .Repository<InventoryTransaction>()
                 .Query()
                 .AsNoTracking()
+                .Include(x => x.Ingredient)
                 .Where(
                     x =>
-                        x.IngredientId == request.IngredientId
-                        && x.OccurredAt >= from
+                        x.OccurredAt >= from
                         && x.OccurredAt < toExclusive
                 );
+
+            if (request.IngredientId.HasValue)
+            {
+                query = query.Where(x => x.IngredientId == request.IngredientId.Value);
+            }
 
             if (request.TransactionType.HasValue)
             {
                 query = query.Where(x => x.TransactionType == request.TransactionType.Value);
             }
 
-            var responses = await query
+            var orderedQuery = query
                 .OrderByDescending(x => x.OccurredAt)
-                .ThenByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.CreatedAt);
+
+            var pagedResult = await orderedQuery
                 .Select(x => new GetInventoryLedgerResponse
                 {
                     OccurredAt = x.OccurredAt,
@@ -63,16 +71,21 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLed
                     ReferenceNo = x.Reference,
                     QuantityDelta = x.Quantity,
                     BalanceAfter = x.BalanceAfter,
-                    Note = null,
+                    IngredientName = x.Ingredient.Name,
+                    IngredientId = x.IngredientId,
                 })
-                .ToListAsync(cancellationToken);
+                .ToPagedResultAsync(
+                    new PaginationParams { PageNumber = 1, PageSize = 100 },
+                    cancellationToken
+                );
 
             _logger.LogInformation(
-                "End handling GetInventoryLedger with {Count} items",
-                responses.Count
+                "End handling GetInventoryLedger with {Count} items out of {TotalCount}",
+                pagedResult.Items.Count,
+                pagedResult.TotalCount
             );
 
-            return Result<IReadOnlyList<GetInventoryLedgerResponse>>.Success(responses);
+            return Result<PagedResult<GetInventoryLedgerResponse>>.Success(pagedResult);
         }
 
         private static DateTime ToUtcStart(DateOnly value)

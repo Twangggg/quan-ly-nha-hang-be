@@ -6,9 +6,9 @@ using MediatR;
 namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLedger
 {
     public record GetInventoryLedgerQuery(
-        Guid IngredientId,
+        Guid? IngredientId,
         DateOnly FromDate,
         DateOnly ToDate,
         InventoryTransactionType? TransactionType
-    ) : IRequest<Result<IReadOnlyList<GetInventoryLedgerResponse>>>, IMustBeActive;
+    ) : IRequest<Result<PagedResult<GetInventoryLedgerResponse>>>, IMustBeActive;
 }

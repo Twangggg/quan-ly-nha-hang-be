@@ -51,21 +51,60 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInve
                 query = query.Where(x => x.CheckDate < ToUtcExclusiveEnd(request.ToDate.Value));
             }
 
-            var projection = query
+            var orderedQuery = query
                 .OrderByDescending(x => x.CheckDate)
-                .ThenByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.CreatedAt);
+
+            var totalCount = await orderedQuery.CountAsync(cancellationToken);
+
+            var paginatedIds = await orderedQuery
+                .Skip((request.Pagination.PageNumber - 1) * request.Pagination.PageSize)
+                .Take(request.Pagination.PageSize)
+                .Select(x => x.InventoryCheckId)
+                .ToListAsync(cancellationToken);
+
+            var inventoryChecksWithItems = await _unitOfWork
+                .Repository<InventoryCheck>()
+                .Query()
+                .AsNoTracking()
+                .Include(x => x.Items)
+                .Where(x => paginatedIds.Contains(x.InventoryCheckId))
+                .ToListAsync(cancellationToken);
+
+            var createdByIds = inventoryChecksWithItems
+                .Where(x => x.CreatedBy.HasValue)
+                .Select(x => x.CreatedBy!.Value)
+                .Distinct()
+                .ToList();
+
+            var employeeNameMap = await _unitOfWork
+                .Repository<Employee>()
+                .Query()
+                .AsNoTracking()
+                .Where(x => createdByIds.Contains(x.EmployeeId))
+                .ToDictionaryAsync(x => x.EmployeeId, x => x.FullName, cancellationToken);
+
+            var orderedChecks = paginatedIds
+                .Select(id => inventoryChecksWithItems.First(x => x.InventoryCheckId == id))
+                .ToList();
+
+            var responses = orderedChecks
                 .Select(x => new GetInventoryChecksResponse
                 {
                     InventoryCheckId = x.InventoryCheckId,
                     CheckDate = x.CheckDate,
                     Status = x.Status,
-                    CreatedBy = x.CreatedBy,
+                    CreatedByName = x.CreatedBy.HasValue
+                        ? employeeNameMap.GetValueOrDefault(x.CreatedBy.Value)
+                        : null,
                     TotalItems = x.Items.Count,
-                });
+                })
+                .ToList();
 
-            var pagedResult = await projection.ToPagedResultAsync(
+            var pagedResult = new PagedResult<GetInventoryChecksResponse>(
+                responses,
                 request.Pagination,
-                cancellationToken
+                totalCount
             );
 
             _logger.LogInformation(

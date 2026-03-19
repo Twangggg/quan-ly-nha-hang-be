@@ -1,13 +1,14 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem
 {
@@ -15,10 +16,15 @@ namespace FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem
         : IRequestHandler<GetOptionGroupsByMenuItemQuery, Result<List<OptionGroupResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<GetOptionGroupsByMenuItemHandler> _logger;
 
-        public GetOptionGroupsByMenuItemHandler(IUnitOfWork unitOfWork)
+        public GetOptionGroupsByMenuItemHandler(
+            IUnitOfWork unitOfWork,
+            ILogger<GetOptionGroupsByMenuItemHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task<Result<List<OptionGroupResponse>>> Handle(
@@ -26,23 +32,33 @@ namespace FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem
             CancellationToken cancellationToken
         )
         {
-            var groups = await _unitOfWork
-                .Repository<OptionGroup>()
-                .Query()
-                .Where(og => og.MenuItemId == request.MenuItemId)
-                .Include(og => og.OptionItems)
-                .ToListAsync(cancellationToken);
+            _logger.LogInformation(
+                "Start querying option groups for MenuItemId={MenuItemId}",
+                request.MenuItemId
+            );
 
-            var responses = groups
-                .Select(og => new OptionGroupResponse
+            var groups = await _unitOfWork
+                .Repository<MenuItemOptionGroup>()
+                .Query()
+                .AsNoTracking()
+                .Where(miog => miog.MenuItemId == request.MenuItemId && miog.IsVisible)
+                .OrderBy(miog => miog.SortOrder)
+                .ThenBy(miog => miog.OptionGroup.Name)
+                .Select(miog => new OptionGroupResponse
                 {
-                    OptionGroupId = og.OptionGroupId,
-                    MenuItemId = og.MenuItemId,
-                    Name = og.Name,
-                    Type = (int)og.OptionType,
-                    IsRequired = og.IsRequired,
-                    OptionItems = og
-                        .OptionItems.Select(oi => new OptionItemResponse
+                    MenuItemOptionGroupId = miog.MenuItemOptionGroupId,
+                    OptionGroupId = miog.OptionGroupId,
+                    MenuItemId = miog.MenuItemId,
+                    Name = miog.OptionGroup.Name,
+                    Type = (int)miog.OptionGroup.OptionType,
+                    IsRequired = miog.IsRequired,
+                    MinSelect = miog.MinSelect,
+                    MaxSelect = miog.MaxSelect,
+                    SortOrder = miog.SortOrder,
+                    IsVisible = miog.IsVisible,
+                    OptionItems = miog
+                        .OptionGroup.OptionItems.OrderBy(oi => oi.Label)
+                        .Select(oi => new OptionItemResponse
                         {
                             OptionItemId = oi.OptionItemId,
                             OptionGroupId = oi.OptionGroupId,
@@ -51,9 +67,15 @@ namespace FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem
                         })
                         .ToList(),
                 })
-                .ToList();
+                .ToListAsync(cancellationToken);
 
-            return Result<List<OptionGroupResponse>>.Success(responses);
+            _logger.LogInformation(
+                "End querying option groups for MenuItemId={MenuItemId} Count={OptionGroupCount}",
+                request.MenuItemId,
+                groups.Count
+            );
+
+            return Result<List<OptionGroupResponse>>.Success(groups);
         }
     }
 }

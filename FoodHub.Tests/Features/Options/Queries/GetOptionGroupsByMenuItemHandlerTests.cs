@@ -9,6 +9,7 @@ using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
+using Microsoft.Extensions.Logging.Abstractions;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -23,7 +24,10 @@ namespace FoodHub.Tests.Features.Options.Queries
         public GetOptionGroupsByMenuItemHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
-            _handler = new GetOptionGroupsByMenuItemHandler(_mockUow.Object);
+            _handler = new GetOptionGroupsByMenuItemHandler(
+                _mockUow.Object,
+                NullLogger<GetOptionGroupsByMenuItemHandler>.Instance
+            );
         }
 
         [Fact]
@@ -33,47 +37,41 @@ namespace FoodHub.Tests.Features.Options.Queries
             var menuItemId = Guid.NewGuid();
             var query = new GetOptionGroupsByMenuItemQuery(menuItemId);
 
-            var optionGroups = new List<OptionGroup>
-            {
-                new OptionGroup
-                {
-                    OptionGroupId = Guid.NewGuid(),
-                    MenuItemId = menuItemId,
-                    Name = "Size",
-                    OptionType = OptionGroupType.Single,
-                    IsRequired = true,
-                    OptionItems = new List<OptionItem>
-                    {
-                        new OptionItem
-                        {
-                            OptionItemId = Guid.NewGuid(),
-                            OptionGroupId = Guid.NewGuid(),
-                            Label = "Small",
-                            ExtraPrice = 0,
-                        },
-                        new OptionItem
-                        {
-                            OptionItemId = Guid.NewGuid(),
-                            OptionGroupId = Guid.NewGuid(),
-                            Label = "Large",
-                            ExtraPrice = 2.00m,
-                        },
-                    },
-                },
-                new OptionGroup
-                {
-                    OptionGroupId = Guid.NewGuid(),
-                    MenuItemId = menuItemId,
-                    Name = "Toppings",
-                    OptionType = OptionGroupType.Multi,
-                    IsRequired = false,
-                    OptionItems = new List<OptionItem>(),
-                },
-            };
+            var sizeGroup = OptionGroup.Create("Size", OptionGroupType.Single, true, menuItemId);
+            sizeGroup.OptionItems.Add(OptionItem.Create(sizeGroup.OptionGroupId, "Small", 0));
+            sizeGroup.OptionItems.Add(OptionItem.Create(sizeGroup.OptionGroupId, "Large", 2.00m));
 
-            var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
+            var toppingsGroup = OptionGroup.Create("Toppings", OptionGroupType.Multi, false, menuItemId);
+
+            var optionGroups = new List<MenuItemOptionGroup>
+            {
+                MenuItemOptionGroup.Create(
+                    menuItemId,
+                    sizeGroup.OptionGroupId,
+                    sizeGroup.OptionType,
+                    true,
+                    1,
+                    1,
+                    0,
+                    true
+                ),
+                MenuItemOptionGroup.Create(
+                    menuItemId,
+                    toppingsGroup.OptionGroupId,
+                    toppingsGroup.OptionType,
+                    false,
+                    0,
+                    3,
+                    1,
+                    true
+                ),
+            };
+            optionGroups[0].AttachOptionGroup(sizeGroup);
+            optionGroups[1].AttachOptionGroup(toppingsGroup);
+
+            var mockRepo = new Mock<IGenericRepository<MenuItemOptionGroup>>();
             mockRepo.Setup(r => r.Query()).Returns(optionGroups.AsQueryable().BuildMock());
-            _mockUow.Setup(u => u.Repository<OptionGroup>()).Returns(mockRepo.Object);
+            _mockUow.Setup(u => u.Repository<MenuItemOptionGroup>()).Returns(mockRepo.Object);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -93,11 +91,11 @@ namespace FoodHub.Tests.Features.Options.Queries
             var menuItemId = Guid.NewGuid();
             var query = new GetOptionGroupsByMenuItemQuery(menuItemId);
 
-            var optionGroups = new List<OptionGroup>();
+            var optionGroups = new List<MenuItemOptionGroup>();
 
-            var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
+            var mockRepo = new Mock<IGenericRepository<MenuItemOptionGroup>>();
             mockRepo.Setup(r => r.Query()).Returns(optionGroups.AsQueryable().BuildMock());
-            _mockUow.Setup(u => u.Repository<OptionGroup>()).Returns(mockRepo.Object);
+            _mockUow.Setup(u => u.Repository<MenuItemOptionGroup>()).Returns(mockRepo.Object);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -115,31 +113,23 @@ namespace FoodHub.Tests.Features.Options.Queries
             var menuItemId = Guid.NewGuid();
             var query = new GetOptionGroupsByMenuItemQuery(menuItemId);
 
-            var optionGroups = new List<OptionGroup>
-            {
-                new OptionGroup
-                {
-                    OptionGroupId = Guid.NewGuid(),
-                    MenuItemId = menuItemId,
-                    Name = "Size",
-                    OptionType = OptionGroupType.Single,
-                    IsRequired = true,
-                    OptionItems = new List<OptionItem>
-                    {
-                        new OptionItem
-                        {
-                            OptionItemId = Guid.NewGuid(),
-                            OptionGroupId = Guid.NewGuid(),
-                            Label = "Medium",
-                            ExtraPrice = 1.00m,
-                        },
-                    },
-                },
-            };
+            var optionGroup = OptionGroup.Create("Size", OptionGroupType.Single, true, menuItemId);
+            optionGroup.OptionItems.Add(OptionItem.Create(optionGroup.OptionGroupId, "Medium", 1.00m));
+            var assignment = MenuItemOptionGroup.Create(
+                menuItemId,
+                optionGroup.OptionGroupId,
+                optionGroup.OptionType,
+                true,
+                1,
+                1,
+                0,
+                true
+            );
+            assignment.AttachOptionGroup(optionGroup);
 
-            var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
-            mockRepo.Setup(r => r.Query()).Returns(optionGroups.AsQueryable().BuildMock());
-            _mockUow.Setup(u => u.Repository<OptionGroup>()).Returns(mockRepo.Object);
+            var mockRepo = new Mock<IGenericRepository<MenuItemOptionGroup>>();
+            mockRepo.Setup(r => r.Query()).Returns(new List<MenuItemOptionGroup> { assignment }.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<MenuItemOptionGroup>()).Returns(mockRepo.Object);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);

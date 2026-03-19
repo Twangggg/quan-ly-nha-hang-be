@@ -1,5 +1,5 @@
+using FoodHub.Application.Common.Exceptions;
 using FluentAssertions;
-using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Options.Commands.UpdateOptionItem;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -35,13 +35,7 @@ namespace FoodHub.Tests.Features.Options.Commands
                 ExtraPrice: 1.50m
             );
 
-            var existingOptionItem = new OptionItem
-            {
-                OptionItemId = optionItemId,
-                OptionGroupId = Guid.NewGuid(),
-                Label = "Small",
-                ExtraPrice = 0
-            };
+            var existingOptionItem = OptionItem.Create(Guid.NewGuid(), "Small", 0);
 
             var mockRepo = new Mock<IGenericRepository<OptionItem>>();
             mockRepo.Setup(r => r.GetByIdAsync(optionItemId)).ReturnsAsync(existingOptionItem);
@@ -64,7 +58,7 @@ namespace FoodHub.Tests.Features.Options.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnFailure_When_OptionItemNotFound()
+        public async Task Handle_Should_ThrowNotFound_When_OptionItemNotFound()
         {
             // Arrange
             var optionItemId = Guid.NewGuid();
@@ -79,11 +73,10 @@ namespace FoodHub.Tests.Features.Options.Commands
             _mockUow.Setup(u => u.Repository<OptionItem>()).Returns(mockRepo.Object);
 
             // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            var act = () => _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            result.IsSuccess.Should().BeFalse();
-            result.ErrorType.Should().Be(ResultErrorType.NotFound);
+            await act.Should().ThrowAsync<NotFoundException>();
             _mockUow.Verify(
                 u => u.Repository<OptionItem>().Update(It.IsAny<OptionItem>()),
                 Times.Never
@@ -102,13 +95,7 @@ namespace FoodHub.Tests.Features.Options.Commands
                 ExtraPrice: 2.00m
             );
 
-            var existingOptionItem = new OptionItem
-            {
-                OptionItemId = optionItemId,
-                OptionGroupId = Guid.NewGuid(),
-                Label = "Small",
-                ExtraPrice = 0
-            };
+            var existingOptionItem = OptionItem.Create(Guid.NewGuid(), "Small", 0);
 
             var mockRepo = new Mock<IGenericRepository<OptionItem>>();
             mockRepo.Setup(r => r.GetByIdAsync(optionItemId)).ReturnsAsync(existingOptionItem);

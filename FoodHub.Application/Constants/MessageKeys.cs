@@ -178,11 +178,21 @@ namespace FoodHub.Application.Constants
         public static class OptionGroup
         {
             public const string NotFound = "OptionGroup.NotFound";
+            public const string AlreadyAssigned = "OptionGroup.AlreadyAssigned";
+            public const string NotAssignedToMenuItem = "OptionGroup.NotAssignedToMenuItem";
+            public const string RequiredWithName = "OptionGroup.RequiredWithName";
+            public const string MinSelectRequired = "OptionGroup.MinSelectRequired";
+            public const string MaxSelectAllowed = "OptionGroup.MaxSelectAllowed";
+            public const string Required = "OptionGroup.Required";
+            public const string NameRequired = "OptionGroup.NameRequired";
         }
 
         public static class OptionItem
         {
             public const string NotFound = "OptionItem.NotFound";
+            public const string NotBelongToGroup = "OptionItem.NotBelongToGroup";
+            public const string LabelRequired = "OptionItem.LabelRequired";
+            public const string ExtraPriceInvalid = "OptionItem.ExtraPriceInvalid";
         }
 
         public static class SetMenu

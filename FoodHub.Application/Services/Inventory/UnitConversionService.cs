@@ -2,6 +2,16 @@ using FoodHub.Domain.Entities;
 
 namespace FoodHub.Application.Services.Inventory
 {
+    internal static class InventoryQuantityMath
+    {
+        public const int Scale = 3;
+
+        public static decimal Normalize(decimal value)
+        {
+            return Math.Round(value, Scale, MidpointRounding.AwayFromZero);
+        }
+    }
+
     public interface IUnitConversionService
     {
         decimal ConvertToBase(Ingredient ingredient, string fromUnit, decimal quantity);
@@ -28,7 +38,7 @@ namespace FoodHub.Application.Services.Inventory
                 );
             }
 
-            return quantity * conversion.Factor;
+            return InventoryQuantityMath.Normalize(quantity * conversion.Factor);
         }
     }
 }

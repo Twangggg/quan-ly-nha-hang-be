@@ -793,7 +793,6 @@ namespace FoodHub.Migrations
                         .HasColumnName("order_id");
 
                     b.Property<int>("PaymentMethod")
-                        .HasMaxLength(50)
                         .HasColumnType("integer")
                         .HasColumnName("payment_method");
 
@@ -1093,6 +1092,78 @@ namespace FoodHub.Migrations
                     b.ToTable("menu_item_ingredients", (string)null);
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.MenuItemOptionGroup", b =>
+                {
+                    b.Property<Guid>("MenuItemOptionGroupId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("menu_item_option_group_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_required");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_visible");
+
+                    b.Property<int>("MaxSelect")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_select");
+
+                    b.Property<Guid>("MenuItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("menu_item_id");
+
+                    b.Property<int>("MinSelect")
+                        .HasColumnType("integer")
+                        .HasColumnName("min_select");
+
+                    b.Property<Guid>("OptionGroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("option_group_id");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("MenuItemOptionGroupId")
+                        .HasName("pk_menu_item_option_groups");
+
+                    b.HasIndex("MenuItemId")
+                        .HasDatabaseName("idx_menu_item_option_groups_menu_item_id");
+
+                    b.HasIndex("OptionGroupId")
+                        .HasDatabaseName("idx_menu_item_option_groups_option_group_id");
+
+                    b.HasIndex("MenuItemId", "OptionGroupId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_menu_item_option_groups_menu_item_id_option_group_id")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("menu_item_option_groups", (string)null);
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.OptionGroup", b =>
                 {
                     b.Property<Guid>("OptionGroupId")
@@ -1116,7 +1187,7 @@ namespace FoodHub.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_required");
 
-                    b.Property<Guid>("MenuItemId")
+                    b.Property<Guid?>("MenuItemId")
                         .HasColumnType("uuid")
                         .HasColumnName("menu_item_id");
 
@@ -2366,13 +2437,33 @@ namespace FoodHub.Migrations
                     b.Navigation("MenuItem");
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.MenuItemOptionGroup", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.MenuItem", "MenuItem")
+                        .WithMany("MenuItemOptionGroups")
+                        .HasForeignKey("MenuItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_menu_item_option_groups_menu_item_id");
+
+                    b.HasOne("FoodHub.Domain.Entities.OptionGroup", "OptionGroup")
+                        .WithMany("MenuItemOptionGroups")
+                        .HasForeignKey("OptionGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_menu_item_option_groups_option_group_id");
+
+                    b.Navigation("MenuItem");
+
+                    b.Navigation("OptionGroup");
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.OptionGroup", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.MenuItem", "MenuItem")
                         .WithMany("OptionGroups")
                         .HasForeignKey("MenuItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_option_groups_menu_item_id");
 
                     b.Navigation("MenuItem");
@@ -2646,18 +2737,21 @@ namespace FoodHub.Migrations
                     b.Navigation("InventoryTransactions");
                 });
 
-            modelBuilder.Entity("FoodHub.Domain.Entities.InventoryCheck", b =>{
+            modelBuilder.Entity("FoodHub.Domain.Entities.InventoryCheck", b =>
+                {
                     b.Navigation("Items");
                 });
-                
-            modelBuilder.Entity("FoodHub.Domain.Entities.Invoice", b =>{
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.Invoice", b =>
+                {
                     b.Navigation("Items");
                 });
-                
 
             modelBuilder.Entity("FoodHub.Domain.Entities.MenuItem", b =>
                 {
                     b.Navigation("Ingredients");
+
+                    b.Navigation("MenuItemOptionGroups");
 
                     b.Navigation("OptionGroups");
 
@@ -2666,6 +2760,8 @@ namespace FoodHub.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.OptionGroup", b =>
                 {
+                    b.Navigation("MenuItemOptionGroups");
+
                     b.Navigation("OptionItems");
                 });
 

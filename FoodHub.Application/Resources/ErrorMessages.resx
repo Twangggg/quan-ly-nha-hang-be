@@ -333,8 +333,26 @@
   <data name="OptionGroup.NotFound" xml:space="preserve">
     <value>Không tìm thấy nhóm lựa chọn này</value>
   </data>
+  <data name="OptionGroup.AlreadyAssigned" xml:space="preserve">
+    <value>Nhóm lựa chọn đã được gán cho món ăn này rồi.</value>
+  </data>
+  <data name="OptionGroup.NotAssignedToMenuItem" xml:space="preserve">
+    <value>Nhóm lựa chọn {0} không thuộc về món ăn {1}.</value>
+  </data>
+  <data name="OptionGroup.RequiredWithName" xml:space="preserve">
+    <value>Nhóm lựa chọn '{0}' là bắt buộc.</value>
+  </data>
+  <data name="OptionGroup.MinSelectRequired" xml:space="preserve">
+    <value>Nhóm lựa chọn '{0}' yêu cầu chọn tối thiểu {1} lựa chọn.</value>
+  </data>
+  <data name="OptionGroup.MaxSelectAllowed" xml:space="preserve">
+    <value>Nhóm lựa chọn '{0}' cho phép chọn tối đa {1} lựa chọn.</value>
+  </data>
   <data name="OptionItem.NotFound" xml:space="preserve">
     <value>Không tìm thấy lựa chọn này.</value>
+  </data>
+  <data name="OptionItem.NotBelongToGroup" xml:space="preserve">
+    <value>Lựa chọn {0} không thuộc về nhóm lựa chọn {1}.</value>
   </data>
   <data name="OrderItem.NotFound" xml:space="preserve">
     <value>Không tìm thấy món trong đơn hàng.</value>

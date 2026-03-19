@@ -403,6 +403,7 @@ namespace FoodHub.Domain.Entities
             int quantity,
             string? note,
             List<(
+                MenuItemOptionGroup Assignment,
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
             )> options
@@ -431,7 +432,7 @@ namespace FoodHub.Domain.Entities
                     OrderItemId = newItem.OrderItemId,
                     GroupNameSnapshot = optGroup.Group.Name,
                     GroupTypeSnapshot = optGroup.Group.OptionType.ToString(),
-                    IsRequiredSnapshot = optGroup.Group.IsRequired,
+                    IsRequiredSnapshot = optGroup.Assignment.IsRequired,
                     CreatedAt = DateTime.UtcNow,
                 };
 
@@ -461,6 +462,7 @@ namespace FoodHub.Domain.Entities
             int quantity,
             string? note,
             List<(
+                MenuItemOptionGroup Assignment,
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
             )> options
@@ -495,6 +497,7 @@ namespace FoodHub.Domain.Entities
 
         public string GenerateSignature(
             List<(
+                MenuItemOptionGroup Assignment,
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
             )> options

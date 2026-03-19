@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryReport;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
@@ -97,8 +98,10 @@ namespace FoodHub.Tests.Features.Inventory
                 .Setup(x => x.Query())
                 .Returns(stockOutReceipt.Items.AsQueryable().BuildMock());
 
+            var pagination = new PaginationParams { PageNumber = 1, PageSize = 10 };
             var result = await _handler.Handle(
                 new GetInventoryReportQuery(
+                    pagination,
                     new DateOnly(2026, 3, 10),
                     new DateOnly(2026, 3, 10),
                     ingredient.IngredientId
@@ -107,16 +110,16 @@ namespace FoodHub.Tests.Features.Inventory
             );
 
             result.IsSuccess.Should().BeTrue();
-            result.Data.Should().ContainSingle();
-            var report = result.Data!.Single();
+            result.Data!.Items.Should().ContainSingle();
+            var report = result.Data!.Items.Single();
             report.OpeningStock.Should().Be(10);
             report.TotalStockIn.Should().Be(5);
             report.TotalStockOut.Should().Be(3);
             report.TotalSaleDeduction.Should().Be(2);
-            report.TotalOutbound.Should().Be(5);
-            report.ClosingStock.Should().Be(10);
+            report.TotalOutbound.Should().Be(5); // StockOut + SaleDeduction
+            report.ClosingStock.Should().Be(10); // 10 + 5 - 5 = 10
             report.AverageUnitCost.Should().Be(4);
-            report.ClosingStockValue.Should().Be(40);
+            report.ClosingStockValue.Should().Be(40); // 10 * 4 = 40
         }
 
         private static void SetDate(object target, string propertyName, DateTime value)

@@ -7,7 +7,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInve
         public Guid InventoryCheckId { get; set; }
         public DateTime CheckDate { get; set; }
         public InventoryCheckStatus Status { get; set; }
-        public Guid? CreatedBy { get; set; }
+        public string? CreatedByName { get; set; }
         public int TotalItems { get; set; }
     }
 }
