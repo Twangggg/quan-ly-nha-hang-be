@@ -103,6 +103,17 @@ public static class CacheKey
     public const string ReservationById = "reservation:{0}";
     // ==================== INVENTORY ====================
     public const string InventorySettings = "inventory:settings";
+
+    // ==================== SHIFTS ====================
+    /// <summary>
+    /// Key cho danh sách tất cả ca làm việc
+    /// </summary>
+    public const string ShiftList = "shift:list:all";
+    /// <summary>
+    /// Key cho một ca làm việc cụ thể
+    /// Example: string.Format(ShiftById, "id") → "shift:{id}"
+    /// </summary>
+    public const string ShiftById = "shift:{0}";
 }
 public static class CacheTTL
 {
@@ -116,4 +127,5 @@ public static class CacheTTL
     public static readonly TimeSpan Tables = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan Reservations = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan InventorySettings = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan Shifts = TimeSpan.FromMinutes(15);
 }
