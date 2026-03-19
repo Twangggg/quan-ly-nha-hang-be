@@ -90,7 +90,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 },
             };
 
-            var expectedTotal = (2 * 100) + ((10 * 1) * 2); // 200 + 20 = 220
+            var expectedTotal = Math.Round((2 * 100 + (10 * 1) * 2) * 1.10m, 0); // (200 + 20) * 1.10 = 242
 
             var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
             var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
@@ -183,7 +183,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             order.Status.Should().Be(OrderStatus.Completed);
-            order.TotalAmount.Should().Be(50);
+            order.TotalAmount.Should().Be(Math.Round(50 * 1.10m, 0)); // 55 with VAT
             order.TableId.Should().BeNull(); // No table for takeaway
             order.CompletedAt.Should().NotBeNull();
             order.UpdatedAt.Should().NotBeNull();
@@ -311,7 +311,7 @@ namespace FoodHub.Tests.Features.Order.Commands
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            order.TotalAmount.Should().Be(100); // Only completed item
+            order.TotalAmount.Should().Be(Math.Round(100 * 1.10m, 0)); // Only completed item + VAT
         }
 
         [Fact]

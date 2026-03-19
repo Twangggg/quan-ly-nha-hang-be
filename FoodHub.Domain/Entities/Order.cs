@@ -2,6 +2,7 @@ using System.Linq;
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
+using static FoodHub.Domain.Constants.OrderConstants;
 
 namespace FoodHub.Domain.Entities
 {
@@ -128,11 +129,12 @@ namespace FoodHub.Domain.Entities
             }
 
             Status = OrderStatus.Completed;
-            TotalAmount = OrderItems
+            var subTotal = OrderItems
                 .Where(oi =>
                     oi.Status != OrderItemStatus.Cancelled && oi.Status != OrderItemStatus.Rejected
                 )
                 .Sum(oi => oi.GetTotalPrice());
+            TotalAmount = Math.Round(subTotal * (1 + VatRate), 0);
 
             CompletedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
@@ -142,7 +144,7 @@ namespace FoodHub.Domain.Entities
 
         public void RecalculateTotalAmount()
         {
-            TotalAmount = OrderItems
+            var subTotal = OrderItems
                 .Where(x =>
                     x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected
                 )
@@ -155,6 +157,7 @@ namespace FoodHub.Domain.Entities
                         ?? 0;
                     return itemTotal + (optionsTotal * item.Quantity);
                 });
+            TotalAmount = Math.Round(subTotal * (1 + VatRate), 0);
         }
 
         public void ChangeTable(Guid newTableId, DateTime updatedAt, Guid? updatedBy)
