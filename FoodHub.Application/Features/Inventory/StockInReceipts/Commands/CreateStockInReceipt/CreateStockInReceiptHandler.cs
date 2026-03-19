@@ -237,7 +237,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                 );
             }
 
-            return quantity * conversion.Factor;
+            return Math.Round(quantity * conversion.Factor, 3, MidpointRounding.AwayFromZero);
         }
     }
 }

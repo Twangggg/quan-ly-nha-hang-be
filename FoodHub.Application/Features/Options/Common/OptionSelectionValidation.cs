@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Entities;
 

@@ -29,10 +29,19 @@ namespace FoodHub.Tests.Features.Inventory
             );
         }
 
+        private static void SetProperty<T>(T target, string propertyName, object? value)
+        {
+            target
+                ?.GetType()
+                .GetProperty(propertyName)!
+                .SetValue(target, value);
+        }
+
         [Fact]
         public async Task Handle_Should_FilterByTransactionType_AndReturnLedgerProjection()
         {
-            var ingredientId = Guid.NewGuid();
+            var ingredient = Ingredient.Create("ING-01", "Salt", "kg", 0, 10, 1, null);
+            var ingredientId = ingredient.IngredientId;
             var inventoryCheckTransaction = InventoryTransaction.CreateInventoryCheck(
                 ingredientId,
                 -2,
@@ -53,6 +62,9 @@ namespace FoodHub.Tests.Features.Inventory
                 10,
                 "NK-01"
             );
+
+            SetProperty(inventoryCheckTransaction, "Ingredient", ingredient);
+            SetProperty(stockInTransaction, "Ingredient", ingredient);
             SetDate(stockInTransaction, "OccurredAt", new DateTime(2026, 3, 10, 7, 0, 0, DateTimeKind.Utc));
 
             _mockTransactionRepo
@@ -62,7 +74,9 @@ namespace FoodHub.Tests.Features.Inventory
                     {
                         inventoryCheckTransaction,
                         stockInTransaction,
-                    }.AsQueryable().BuildMock()
+                    }
+                    .AsQueryable()
+                    .BuildMock()
                 );
 
             var result = await _handler.Handle(
@@ -76,8 +90,9 @@ namespace FoodHub.Tests.Features.Inventory
             );
 
             result.IsSuccess.Should().BeTrue();
-            result.Data.Should().ContainSingle();
-            var item = result.Data!.Single();
+            result.Data.Should().NotBeNull();
+            result.Data!.Items.Should().ContainSingle();
+            var item = result.Data.Items.Single();
             item.TransactionType.Should().Be(InventoryTransactionType.InventoryCheck);
             item.ReferenceNo.Should().Be("CHECK-01");
             item.QuantityDelta.Should().Be(-2);

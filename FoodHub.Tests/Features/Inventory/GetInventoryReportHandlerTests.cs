@@ -116,10 +116,10 @@ namespace FoodHub.Tests.Features.Inventory
             report.TotalStockIn.Should().Be(5);
             report.TotalStockOut.Should().Be(3);
             report.TotalSaleDeduction.Should().Be(2);
-            report.TotalOutbound.Should().Be(3); // StockOut only, SaleDeduction is display only (not double counted)
-            report.ClosingStock.Should().Be(12); // 10 + 5 - 3 = 12
+            report.TotalOutbound.Should().Be(5); // StockOut + SaleDeduction
+            report.ClosingStock.Should().Be(10); // 10 + 5 - 5 = 10
             report.AverageUnitCost.Should().Be(4);
-            report.ClosingStockValue.Should().Be(48); // 12 * 4 = 48
+            report.ClosingStockValue.Should().Be(40); // 10 * 4 = 40
         }
 
         private static void SetDate(object target, string propertyName, DateTime value)

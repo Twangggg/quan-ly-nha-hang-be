@@ -1,4 +1,5 @@
 using FoodHub.Domain.Common;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
 {

@@ -39,17 +39,10 @@ namespace FoodHub.Tests.Features.Options.Commands
         public async Task Handle_Should_ReturnSuccess_When_OptionGroupDeleted()
         {
             // Arrange
-            var optionGroupId = Guid.NewGuid();
+            var existingOptionGroup = OptionGroup.Create("Size", OptionGroupType.Single, true);
+            existingOptionGroup.AttachLegacyMenuItem(Guid.NewGuid());
+            var optionGroupId = existingOptionGroup.OptionGroupId;
             var command = new DeleteOptionGroupCommand(optionGroupId);
-
-            var existingOptionGroup = new OptionGroup
-            {
-                OptionGroupId = optionGroupId,
-                MenuItemId = Guid.NewGuid(),
-                Name = "Size",
-                OptionType = OptionGroupType.Single,
-                IsRequired = true
-            };
 
             var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
             mockRepo
@@ -99,18 +92,11 @@ namespace FoodHub.Tests.Features.Options.Commands
         public async Task Handle_Should_SetDeletedAt_And_UpdatedAt_When_Deleted()
         {
             // Arrange
-            var optionGroupId = Guid.NewGuid();
             var userId = Guid.NewGuid().ToString();
+            var existingOptionGroup = OptionGroup.Create("Size", OptionGroupType.Single, true);
+            existingOptionGroup.AttachLegacyMenuItem(Guid.NewGuid());
+            var optionGroupId = existingOptionGroup.OptionGroupId;
             var command = new DeleteOptionGroupCommand(optionGroupId);
-
-            var existingOptionGroup = new OptionGroup
-            {
-                OptionGroupId = optionGroupId,
-                MenuItemId = Guid.NewGuid(),
-                Name = "Size",
-                OptionType = OptionGroupType.Single,
-                IsRequired = true
-            };
 
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId);
 

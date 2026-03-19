@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FoodHub.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddMenuItemOptionGroups : Migration
+    public partial class SyncModelChanges_0319 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,14 +23,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                 oldClrType: typeof(Guid),
                 oldType: "uuid");
 
-            migrationBuilder.AddForeignKey(
-                name: "fk_option_groups_menu_item_id",
-                table: "option_groups",
-                column: "menu_item_id",
-                principalTable: "menu_items",
-                principalColumn: "menu_item_id",
-                onDelete: ReferentialAction.SetNull);
-
             migrationBuilder.CreateTable(
                 name: "menu_item_option_groups",
                 columns: table => new
@@ -44,16 +36,14 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     sort_order = table.Column<int>(type: "integer", nullable: false),
                     is_visible = table.Column<bool>(type: "boolean", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    deleted_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
-                    updated_by = table.Column<Guid>(type: "uuid", nullable: true)
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    updated_by = table.Column<Guid>(type: "uuid", nullable: true),
+                    deleted_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey(
-                        "pk_menu_item_option_groups",
-                        x => x.menu_item_option_group_id);
+                    table.PrimaryKey("pk_menu_item_option_groups", x => x.menu_item_option_group_id);
                     table.ForeignKey(
                         name: "fk_menu_item_option_groups_menu_item_id",
                         column: x => x.menu_item_id,
@@ -79,11 +69,19 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                 column: "option_group_id");
 
             migrationBuilder.CreateIndex(
-                name: "idx_menu_item_option_groups_menu_item_id_option_group_id",
+                name: "ix_menu_item_option_groups_menu_item_id_option_group_id",
                 table: "menu_item_option_groups",
                 columns: new[] { "menu_item_id", "option_group_id" },
                 unique: true,
                 filter: "deleted_at IS NULL");
+
+            migrationBuilder.AddForeignKey(
+                name: "fk_option_groups_menu_item_id",
+                table: "option_groups",
+                column: "menu_item_id",
+                principalTable: "menu_items",
+                principalColumn: "menu_item_id",
+                onDelete: ReferentialAction.SetNull);
 
             migrationBuilder.Sql(
                 """
@@ -140,18 +138,19 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "menu_item_option_groups");
-
             migrationBuilder.DropForeignKey(
                 name: "fk_option_groups_menu_item_id",
                 table: "option_groups");
+
+            migrationBuilder.DropTable(
+                name: "menu_item_option_groups");
 
             migrationBuilder.AlterColumn<Guid>(
                 name: "menu_item_id",
                 table: "option_groups",
                 type: "uuid",
                 nullable: false,
-                defaultValue: Guid.Empty,
+                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"),
                 oldClrType: typeof(Guid),
                 oldType: "uuid",
                 oldNullable: true);
