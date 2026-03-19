@@ -42,6 +42,7 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLed
                 .Repository<InventoryTransaction>()
                 .Query()
                 .AsNoTracking()
+                .Include(x => x.Ingredient)
                 .Where(
                     x =>
                         x.OccurredAt >= from
@@ -70,7 +71,7 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLed
                     ReferenceNo = x.Reference,
                     QuantityDelta = x.Quantity,
                     BalanceAfter = x.BalanceAfter,
-                    Note = x.Ingredient != null ? x.Ingredient.Name : null,
+                    IngredientName = x.Ingredient.Name,
                     IngredientId = x.IngredientId,
                 })
                 .ToPagedResultAsync(
