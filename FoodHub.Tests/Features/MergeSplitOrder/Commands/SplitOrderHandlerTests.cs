@@ -3,7 +3,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -111,6 +116,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                     SourceOrderId: sourceOrderId,
                     DestinationOrderId: null,
                     DestinationTableId: destinationTableId,
+                    DestinationReservationId: null,
                     ItemsToSplit:
                     new List<SplitOrderItemCommand>
                     {
@@ -129,7 +135,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             sourceOrder.TotalAmount.Should().Be(0);
             destinationTable.Status.Should().Be(TableStatus.Occupied);
             sourceTable.Status.Should().Be(TableStatus.Available);
-            result.Data.DestinationOrderTotalAmount.Should().Be(26.40m);
+            result.Data.DestinationOrderTotalAmount.Should().Be(26.40m); // 24 * 1.1 = 26.40
             result.Data.DestinationOrderItems.Single().Quantity.Should().Be(2);
             auditRepo.Verify(r => r.AddAsync(It.IsAny<OrderAuditLog>()), Times.Once);
         }
@@ -184,6 +190,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                     SourceOrderId: sourceOrderId,
                     DestinationOrderId: null,
                     DestinationTableId: destinationTableId,
+                    DestinationReservationId: null,
                     ItemsToSplit:
                     new List<SplitOrderItemCommand>
                     {

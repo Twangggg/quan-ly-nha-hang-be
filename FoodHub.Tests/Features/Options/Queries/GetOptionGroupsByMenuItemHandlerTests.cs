@@ -1,7 +1,12 @@
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
@@ -146,8 +151,10 @@ namespace FoodHub.Tests.Features.Options.Queries
             firstGroup.Name.Should().Be("Size");
             firstGroup.Type.Should().Be((int)OptionGroupType.Single);
             firstGroup.IsRequired.Should().BeTrue();
-            firstGroup.OptionItems!.First().Label.Should().Be("Medium");
-            firstGroup.OptionItems.First().ExtraPrice.Should().Be(1.00m);
+            firstGroup.OptionItems.Should().NotBeNull();
+            var firstItem = firstGroup.OptionItems!.First();
+            firstItem.Label.Should().Be("Medium");
+            firstItem.ExtraPrice.Should().Be(1.00m);
         }
     }
 }

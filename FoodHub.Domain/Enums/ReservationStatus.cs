@@ -4,8 +4,8 @@ namespace FoodHub.Domain.Enums
     {
         Booked = 0,
         CheckIn = 1,
-        // Completed = 2,
-        Cancelled = 2,
-        NoShow = 3
+        Completed = 2,
+        Cancelled = 3,
+        NoShow = 4,
     }
 }

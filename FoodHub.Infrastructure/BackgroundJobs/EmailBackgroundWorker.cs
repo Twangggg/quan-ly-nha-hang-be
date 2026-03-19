@@ -1,8 +1,8 @@
-using System.Net.Sockets;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-using FoodHub.Infrastructure.Services;
+using FoodHub.Infrastructure.Services.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

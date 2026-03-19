@@ -1,6 +1,12 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Extensions;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -49,13 +55,16 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 userId
             );
 
-            // Validate Basic Logic
-            if (request.OrderType == OrderType.DineIn && request.TableId == null)
+            // Validate Basic Logic for dine-in
+            if (request.OrderType == OrderType.DineIn)
             {
-                return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.SelectTable),
-                    ResultErrorType.BadRequest
-                );
+                if (request.TableId == null && request.ReservationId == null)
+                {
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.SelectTable),
+                        ResultErrorType.BadRequest
+                    );
+                }
             }
 
             await _unitOfWork.BeginTransactionAsync();
@@ -96,7 +105,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                         );
                     }
 
-                    // Bàn phải ở trạng thái Available mới được tạo order
+                    // Table must be Available (or we could enforce checking the reservation status too, like Booked/CheckIn)
                     if (table.Status != TableStatus.Available)
                     {
                         _logger.LogWarning(
@@ -133,6 +142,60 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     }
                 }
 
+                // If table not from reservation, try fetch by TableId
+                if (
+                    table == null
+                    && request.OrderType == OrderType.DineIn
+                    && request.TableId.HasValue
+                )
+                {
+                    table = await _unitOfWork
+                        .Repository<Table>()
+                        .Query()
+                        .Include(t => t.Area)
+                        .FirstOrDefaultAsync(
+                            t => t.TableId == request.TableId.Value,
+                            cancellationToken
+                        );
+
+                    if (table is null)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Table.NotFound),
+                            ResultErrorType.NotFound
+                        );
+                    }
+
+                    if (table.Status != TableStatus.Available)
+                    {
+                        _logger.LogWarning(
+                            "Cannot create order — Table {TableId} is not Available (Status: {Status})",
+                            table.TableId,
+                            table.Status
+                        );
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Table.NotAvailable),
+                            ResultErrorType.Conflict
+                        );
+                    }
+
+                    if (table.Area!.Status == AreaStatus.Inactive)
+                    {
+                        _logger.LogWarning(
+                            "Cannot create order — Area {AreaId} for Table {TableId} is Inactive",
+                            table.AreaId,
+                            table.TableId
+                        );
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Area.Inactive),
+                            ResultErrorType.Conflict
+                        );
+                    }
+                }
+
                 // Generate Order Code inside transaction to prevent race condition
                 var orderCode = await GenerateOrderCodeAsync(cancellationToken);
 
@@ -146,8 +209,9 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     OrderCode = orderCode,
                     OrderType = request.OrderType,
                     Status = OrderStatus.Serving,
-                    TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
-                    ReservationId = request.ReservationId,
+                    TableId = request.OrderType == OrderType.DineIn ? table?.TableId : null,
+                    ReservationId =
+                        request.OrderType == OrderType.DineIn ? request.ReservationId : null,
                     Note = request.Note,
                     TotalAmount = 0,
                     IsPriority = isPriority,
@@ -214,10 +278,6 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             }
         }
 
-        /// <summary>
-        /// Generate unique order code in format: ORD-yyyyMMdd-xxxx.
-        /// Must be called inside a transaction to prevent race conditions.
-        /// </summary>
         private async Task<string> GenerateOrderCodeAsync(CancellationToken cancellationToken)
         {
             var today = DateTime.UtcNow.Date;

@@ -1,7 +1,12 @@
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngredient;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MockQueryable.Moq;
 using Moq;
@@ -37,12 +42,22 @@ namespace FoodHub.Tests.Features.Inventory
         public async Task Handle_Should_ReturnNotFound_When_IngredientDoesNotExist()
         {
             // Arrange
-            var command = new UpdateIngredientCommand(Guid.NewGuid(), "ING001", "Muối", "Kg", 1, null, true);
+            var command = new UpdateIngredientCommand(
+                Guid.NewGuid(),
+                "ING001",
+                "Muối",
+                "Kg",
+                1,
+                null,
+                true
+            );
 
             var repo = new Mock<IGenericRepository<Ingredient>>();
             repo.Setup(r => r.Query()).Returns(new List<Ingredient>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
-            _mockMessage.Setup(m => m.GetMessage("Ingredient.NotFound")).Returns("Ingredient not found");
+            _mockMessage
+                .Setup(m => m.GetMessage("Ingredient.NotFound"))
+                .Returns("Ingredient not found");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -61,16 +76,35 @@ namespace FoodHub.Tests.Features.Inventory
             var ingredient = Ingredient.Create("ING001", "Muối", "Kg", 2, 0, 0);
             typeof(Ingredient).GetProperty("IngredientId")!.SetValue(ingredient, ingredientId);
 
-            var command = new UpdateIngredientCommand(ingredientId, "ING001", "Đường", "Kg", 5, ingredient.Description, true);
+            var command = new UpdateIngredientCommand(
+                ingredientId,
+                "ING001",
+                "Đường",
+                "Kg",
+                5,
+                ingredient.Description,
+                true
+            );
 
             var repo = new Mock<IGenericRepository<Ingredient>>();
-            repo.Setup(r => r.Query()).Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
-            repo.SetupSequence(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Ingredient, bool>>>()))
+            repo.Setup(r => r.Query())
+                .Returns(
+                    new List<Ingredient> { ingredient }
+                        .AsQueryable()
+                        .BuildMock()
+                );
+            repo.SetupSequence(r =>
+                    r.AnyAsync(
+                        It.IsAny<System.Linq.Expressions.Expression<Func<Ingredient, bool>>>()
+                    )
+                )
                 .ReturnsAsync(false) // First call: Check code (no duplicate)
-                .ReturnsAsync(true);  // Second call: Check name (duplicate)
+                .ReturnsAsync(true); // Second call: Check name (duplicate)
 
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
-            _mockMessage.Setup(m => m.GetMessage("Ingredient.NameExists")).Returns("Tên nguyên liệu đã tồn tại");
+            _mockMessage
+                .Setup(m => m.GetMessage("Ingredient.NameExists"))
+                .Returns("Tên nguyên liệu đã tồn tại");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -91,8 +125,17 @@ namespace FoodHub.Tests.Features.Inventory
             typeof(Ingredient).GetProperty("IngredientId")!.SetValue(ingredient, ingredientId);
 
             var repo = new Mock<IGenericRepository<Ingredient>>();
-            repo.Setup(r => r.Query()).Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
-            repo.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Ingredient, bool>>>()))
+            repo.Setup(r => r.Query())
+                .Returns(
+                    new List<Ingredient> { ingredient }
+                        .AsQueryable()
+                        .BuildMock()
+                );
+            repo.Setup(r =>
+                    r.AnyAsync(
+                        It.IsAny<System.Linq.Expressions.Expression<Func<Ingredient, bool>>>()
+                    )
+                )
                 .ReturnsAsync(false);
 
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
@@ -100,7 +143,15 @@ namespace FoodHub.Tests.Features.Inventory
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockUow.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
 
-            var command = new UpdateIngredientCommand(ingredientId, "ING003", "Hành lá", "Bó", 10, "Rau thơm", false);
+            var command = new UpdateIngredientCommand(
+                ingredientId,
+                "ING003",
+                "Hành lá",
+                "Bó",
+                10,
+                "Rau thơm",
+                false
+            );
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -109,7 +160,7 @@ namespace FoodHub.Tests.Features.Inventory
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             ingredient.Name.Should().Be("Hành lá");
-            ingredient.Unit.Should().Be("Bó");
+            ingredient.BaseUnit.Should().Be("Bó");
             ingredient.LowStockThreshold.Should().Be(10);
             ingredient.IsActive.Should().BeFalse();
             ingredient.Description.Should().Be("Rau thơm");

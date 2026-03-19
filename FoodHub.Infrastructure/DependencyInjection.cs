@@ -1,16 +1,26 @@
 using FoodHub.Application.Features.KDS.Common;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Infrastructure.BackgroundJobs;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
-using FoodHub.Infrastructure.Services;
-using FoodHub.Infrastructure.Services.RateLimiting;
+using FoodHub.Infrastructure.Services.Inventory;
+using FoodHub.Infrastructure.Services.Reporting;
+using FoodHub.Infrastructure.Services.External;
+using FoodHub.Infrastructure.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
+using FoodHub.Infrastructure.Services.Common.RateLimiting;
+using FoodHub.Infrastructure.Services.Common;
+using FoodHub.Infrastructure.Services.Messaging;
 
 namespace FoodHub.Infrastructure
 {
@@ -18,7 +28,8 @@ namespace FoodHub.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(
             this IServiceCollection services,
-            IConfiguration configuration)
+            IConfiguration configuration
+        )
         {
             services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
@@ -70,7 +81,10 @@ namespace FoodHub.Infrastructure
 
             // Cache Service
             services.AddScoped<ICacheService, RedisCacheService>();
-            services.AddScoped<IInventoryAvailabilitySyncService, NoOpInventoryAvailabilitySyncService>();
+            services.AddScoped<
+                IInventoryAvailabilitySyncService,
+                InventoryAvailabilitySyncService
+            >();
 
             // Cloudinary Service
             services.AddScoped<ICloudinaryService, CloudinaryService>();
@@ -84,6 +98,9 @@ namespace FoodHub.Infrastructure
 
             // PDF Export Service
             services.AddScoped<IPdfService, PdfService>();
+
+            // Inventory Services
+            services.AddScoped<IInventoryDeductionService, InventoryDeductionService>();
 
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();

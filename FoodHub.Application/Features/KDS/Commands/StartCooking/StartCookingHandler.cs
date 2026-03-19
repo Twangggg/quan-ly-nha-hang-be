@@ -2,7 +2,12 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Features.KDS.Common;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -129,7 +134,10 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                     );
                 }
 
-                var auditLog = OrderAuditLog.CreateKdsStartCooking(orderItem.OrderId, auditorId.Value);
+                var auditLog = OrderAuditLog.CreateKdsStartCooking(
+                    orderItem.OrderId,
+                    auditorId.Value
+                );
 
                 orderItemRepository.Update(orderItem);
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);

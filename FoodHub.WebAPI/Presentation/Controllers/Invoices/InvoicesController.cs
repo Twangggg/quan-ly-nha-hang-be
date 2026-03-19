@@ -35,13 +35,13 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Invoices
         /// <returns>
         /// Trả về danh sách hóa đơn đã tạo, chi tiết từng hóa đơn, và trạng thái của chúng.
         /// Endpoint này sẽ trả về một danh sách các hóa đơn đã được tạo trong hệ thống, cùng với chi tiết của từng hóa đơn như số hóa đơn, ngày tạo, tên nhân viên thu ngân, số bàn, phương thức thanh toán và tổng số tiền.
-        /// Người dùng có thể sử dụng endpoint này để xem lại các hóa đơn đã tạo, kiểm tra chi tiết của [từng hóa đơn và theo dõi trạng thái của chúng (ví dụ: đã thanh toán, đang xử lý, v.v.).
+        /// Người dùng có thể sử dụng endpoint này để xem lại các hóa đơn đã tạo, kiểm tra chi tiết của từng hóa đơn và theo dõi trạng thái của chúng (ví dụ: đã thanh toán, đang xử lý, v.v.).
         /// Endpoint cũng hỗ trợ phân trang và lọc để người dùng có thể dễ dàng tìm kiếm và quản lý các hóa đơn theo nhu cầu của mình.
         /// </returns>
         [HttpGet]
         [HasPermission(Permissions.Invoices.View)]
         [ProducesResponseType(typeof(Result<PagedResult<GetInvoicesResponse>>), 200)]
-        public async Task<IActionResult> GetInvoicesAsync([FromQuery]PaginationParams pagination, [FromQuery] string? keyword, [FromQuery] DateTime? fromDate, DateTime? toDate)
+        public async Task<IActionResult> GetInvoicesAsync([FromQuery]PaginationParams pagination, [FromQuery] string? keyword, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
         {
             var query = new GetInvoicesQuery
             {
@@ -122,7 +122,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Invoices
         /// </returns>
         [HttpPost]
         [HasPermission(Permissions.Invoices.Create)]
-        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Result<CreateInvoiceResponse>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateInvoiceAsync(Guid orderId, decimal amountReceived)
         {
@@ -160,7 +160,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Invoices
                 return HandleResult(result);
             }
 
-            return Ok(result);
+            return HandleResult(result);
         }
     }
 }

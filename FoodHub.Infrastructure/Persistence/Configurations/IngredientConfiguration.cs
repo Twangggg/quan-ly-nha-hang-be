@@ -15,7 +15,11 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(e => e.Code).HasColumnName("code").HasMaxLength(20).IsRequired();
             builder.Property(e => e.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
-            builder.Property(e => e.Unit).HasColumnName("unit").HasMaxLength(20).IsRequired();
+            builder
+                .Property(e => e.BaseUnit)
+                .HasColumnName("base_unit")
+                .HasMaxLength(20)
+                .IsRequired();
             builder
                 .Property(e => e.CurrentStock)
                 .HasColumnName("current_stock")
@@ -27,7 +31,6 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(e => e.CostPrice).HasColumnName("cost_price").HasPrecision(18, 2);
             builder.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
             builder.Property(e => e.IsActive).HasColumnName("is_active");
-
 
             // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");

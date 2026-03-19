@@ -1,7 +1,12 @@
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -77,7 +82,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
                             Unit =
                                 ingredientQuery
                                     .Where(ing => ing.IngredientId == i.IngredientId)
-                                    .Select(ing => ing.Unit)
+                                    .Select(ing => ing.BaseUnit)
                                     .FirstOrDefault()
                                 ?? string.Empty,
                             Quantity = i.Quantity,

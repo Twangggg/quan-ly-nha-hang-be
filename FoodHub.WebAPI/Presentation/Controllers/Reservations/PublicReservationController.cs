@@ -1,7 +1,7 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Features.Areas.Queries.GetPublicAreas;
 using FoodHub.Application.Features.Reservations.Commands.CreateReservation;
 using FoodHub.Application.Features.Reservations.Queries.GetAvailableTables;
-using FoodHub.Application.Features.Areas.Queries.GetPublicAreas;
 using FoodHub.Presentation.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

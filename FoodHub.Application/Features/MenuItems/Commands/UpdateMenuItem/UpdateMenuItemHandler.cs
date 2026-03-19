@@ -2,7 +2,12 @@ using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -50,7 +55,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
                 );
 
             var name = request.Name.Trim();
-            var imageUrl = request.ImageUrl.Trim();
+            var imageUrl = request.ImageUrl?.Trim();
             var description = request.Description?.Trim();
             var categoryId = request.CategoryId;
             var station = (Station)request.Station;

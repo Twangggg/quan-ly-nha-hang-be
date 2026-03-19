@@ -1,5 +1,6 @@
 using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Domain.Entities;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;

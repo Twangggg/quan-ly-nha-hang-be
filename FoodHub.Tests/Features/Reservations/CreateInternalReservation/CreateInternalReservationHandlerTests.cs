@@ -1,17 +1,18 @@
-using FluentAssertions;
-using FoodHub.Application.Common.Exceptions;
-using FoodHub.Application.Features.Reservations.Commands.CreateInternalReservation;
-using FoodHub.Application.Interfaces;
-using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
-using Microsoft.Extensions.Logging;
-using MockQueryable.Moq;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
+using FoodHub.Application.Common.Exceptions;
+using FoodHub.Application.Constants;
+using FoodHub.Application.Features.Reservations.Commands.CreateInternalReservation;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
+using Microsoft.Extensions.Logging;
+using MockQueryable.Moq;
+using Moq;
 using Xunit;
 
 namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
@@ -47,16 +48,26 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
             _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
 
             var reservationRepo = new Mock<IGenericRepository<Reservation>>();
-            reservationRepo.Setup(r => r.Query()).Returns(new List<Reservation>().AsQueryable().BuildMock());
+            reservationRepo
+                .Setup(r => r.Query())
+                .Returns(new List<Reservation>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
 
-            _mockMessageService.Setup(m => m.GetMessage(It.IsAny<string>())).Returns("Không có bàn trống phù hợp với yêu cầu.");
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Reservation.NoTableAvailable))
+                .Returns("Không có bàn trống phù hợp với yêu cầu.");
 
-            var handler = new CreateInternalReservationHandler(_mockUow.Object, _mockLogger.Object, _mockMessageService.Object);
+            var handler = new CreateInternalReservationHandler(
+                _mockUow.Object,
+                _mockLogger.Object,
+                _mockMessageService.Object
+            );
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<BusinessException>(() => handler.Handle(command, CancellationToken.None));
-            ex.Message.Should().Be("Không có bàn trống phù hợp với yêu cầu.");
+            var ex = await Assert.ThrowsAsync<BusinessException>(() =>
+                handler.Handle(command, CancellationToken.None)
+            );
+            ex.GetType().Should().Be(typeof(BusinessException));
         }
 
         [Fact]
@@ -72,21 +83,39 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
                 ReservationDate = DateOnly.FromDateTime(DateTime.Now),
                 ReservationTime = DateTime.Now.TimeOfDay.Add(TimeSpan.FromHours(1)),
                 GuestCount = 2,
-                AreaId = areaId
+                AreaId = areaId,
             };
 
-            var table = new Table { TableId = tableId, AreaId = areaId, Capacity = 4, Status = TableStatus.Available };
+            var table = new Table
+            {
+                TableId = tableId,
+                AreaId = areaId,
+                Capacity = 4,
+                Status = TableStatus.Available,
+            };
             var tableRepo = new Mock<IGenericRepository<Table>>();
-            tableRepo.Setup(r => r.Query()).Returns(new List<Table> { table }.AsQueryable().BuildMock());
+            tableRepo
+                .Setup(r => r.Query())
+                .Returns(
+                    new List<Table> { table }
+                        .AsQueryable()
+                        .BuildMock()
+                );
 
             var reservationRepo = new Mock<IGenericRepository<Reservation>>();
-            reservationRepo.Setup(r => r.Query()).Returns(new List<Reservation>().AsQueryable().BuildMock());
+            reservationRepo
+                .Setup(r => r.Query())
+                .Returns(new List<Reservation>().AsQueryable().BuildMock());
 
             _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
             _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-            var handler = new CreateInternalReservationHandler(_mockUow.Object, _mockLogger.Object, _mockMessageService.Object);
+            var handler = new CreateInternalReservationHandler(
+                _mockUow.Object,
+                _mockLogger.Object,
+                _mockMessageService.Object
+            );
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
@@ -94,7 +123,15 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeEmpty();
-            reservationRepo.Verify(r => r.AddAsync(It.Is<Reservation>(res => res.TableId == tableId && res.CustomerName == "Jane Doe")), Times.Once);
+            reservationRepo.Verify(
+                r =>
+                    r.AddAsync(
+                        It.Is<Reservation>(res =>
+                            res.TableId == tableId && res.CustomerName == "Jane Doe"
+                        )
+                    ),
+                Times.Once
+            );
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
     }

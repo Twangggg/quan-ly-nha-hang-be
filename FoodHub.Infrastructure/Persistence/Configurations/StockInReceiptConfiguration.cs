@@ -14,6 +14,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(x => x.StockInReceiptId).HasColumnName("stock_in_receipt_id");
 
             builder.Property(x => x.ReceiptCode).HasColumnName("receipt_code").HasMaxLength(30).IsRequired();
+            builder.Property(x => x.ReceiptType).HasColumnName("receipt_type").IsRequired();
             builder.Property(x => x.ReceivedAt).HasColumnName("received_at").IsRequired();
             builder.Property(x => x.Note).HasColumnName("note").HasMaxLength(500);
             builder.Property(x => x.TotalLines).HasColumnName("total_lines").IsRequired();

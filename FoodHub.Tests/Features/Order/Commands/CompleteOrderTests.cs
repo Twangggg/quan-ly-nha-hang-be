@@ -3,7 +3,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Orders.Commands.CompleteOrder;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -22,6 +27,7 @@ namespace FoodHub.Tests.Features.Order.Commands
         private readonly Mock<IMapper> _mockMapper;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<ISignalRService> _mockSignalRService;
+        private readonly Mock<IInventoryDeductionService> _mockInventoryDeductionService;
         private readonly Mock<ILogger<CompleteOrderHandler>> _mockLogger;
         private readonly CompleteOrderHandler _handler;
 
@@ -32,6 +38,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockMapper = new Mock<IMapper>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockSignalRService = new Mock<ISignalRService>();
+            _mockInventoryDeductionService = new Mock<IInventoryDeductionService>();
             _mockLogger = new Mock<ILogger<CompleteOrderHandler>>();
 
             _handler = new CompleteOrderHandler(
@@ -40,6 +47,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 _mockMapper.Object,
                 _mockCurrentUserService.Object,
                 _mockSignalRService.Object,
+                _mockInventoryDeductionService.Object,
                 _mockLogger.Object
             );
         }
@@ -90,7 +98,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 },
             };
 
-            var expectedTotal = ((2 * 100) + ((10 * 1) * 2)) * 1.1m; // (200 + 20) + 10% VAT = 242m
+            var expectedTotal = (decimal)((2 * 100) + ((10 * 1) * 2)) * 1.1m; // 220 * 1.1 = 242
 
             var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
             var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
@@ -183,7 +191,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             order.Status.Should().Be(OrderStatus.Completed);
-            order.TotalAmount.Should().Be(55m); // 50 + 10% VAT
+            order.TotalAmount.Should().Be(55m);
             order.TableId.Should().BeNull(); // No table for takeaway
             order.CompletedAt.Should().NotBeNull();
             order.UpdatedAt.Should().NotBeNull();
@@ -311,7 +319,7 @@ namespace FoodHub.Tests.Features.Order.Commands
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            order.TotalAmount.Should().Be(110m); // 100 + 10% VAT
+            order.TotalAmount.Should().Be(110m); // Only completed item + 10% VAT
         }
 
         [Fact]

@@ -2,7 +2,12 @@ using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +57,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
 
             var ingredients = await ingredientRepo
                 .Query()
+                .Include(x => x.Conversions)
                 .Where(x => ingredientIds.Contains(x.IngredientId))
                 .ToListAsync(cancellationToken);
 
@@ -81,9 +87,15 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
 
                 foreach (var item in request.Items)
                 {
+                    var ingredient = ingredientMap[item.IngredientId];
+                    var baseQuantity = item.BaseUnit is null
+                        ? item.Quantity
+                        : ConvertToBase(ingredient, item.BaseUnit, item.Quantity);
+
                     var addItemResult = receipt.AddItem(
                         item.IngredientId,
-                        item.Quantity,
+                        baseQuantity,
+                        item.BaseUnit ?? ingredient.BaseUnit,
                         item.UnitCost,
                         NormalizeUtc(item.ExpiryDate),
                         item.BatchCode,
@@ -99,9 +111,8 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                         );
                     }
 
-                    var ingredient = ingredientMap[item.IngredientId];
                     var receiveResult = ingredient.ReceiveStock(
-                        item.Quantity,
+                        baseQuantity,
                         item.UnitCost,
                         actorId
                     );
@@ -118,7 +129,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                     await transactionRepo.AddAsync(
                         InventoryTransaction.CreateStockIn(
                             ingredient.IngredientId,
-                            item.Quantity,
+                            baseQuantity,
                             item.UnitCost,
                             ingredient.CurrentStock,
                             receiptCode,
@@ -201,6 +212,32 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                 DateTimeKind.Local => value.Value.ToUniversalTime(),
                 _ => DateTime.SpecifyKind(value.Value, DateTimeKind.Utc),
             };
+        }
+
+        private static decimal ConvertToBase(
+            Ingredient ingredient,
+            string fromUnit,
+            decimal quantity
+        )
+        {
+            if (string.Equals(fromUnit, ingredient.BaseUnit, StringComparison.OrdinalIgnoreCase))
+            {
+                return quantity;
+            }
+
+            var conversion = ingredient.Conversions.FirstOrDefault(x =>
+                string.Equals(x.FromUnit, fromUnit, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(x.ToUnit, ingredient.BaseUnit, StringComparison.OrdinalIgnoreCase)
+            );
+
+            if (conversion == null)
+            {
+                throw new BusinessException(
+                    $"Missing conversion from {fromUnit} to {ingredient.BaseUnit} for {ingredient.Name}"
+                );
+            }
+
+            return quantity * conversion.Factor;
         }
     }
 }

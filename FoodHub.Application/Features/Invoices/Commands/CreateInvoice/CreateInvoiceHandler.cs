@@ -1,6 +1,7 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -49,11 +50,11 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
             }
 
             // Check if an invoice already exists for the given order
-            if (invoiceRepo.Query().Any(i => i.OrderId == request.OrderId))
+            if (await invoiceRepo.Query().AnyAsync(i => i.OrderId == request.OrderId, cancellationToken))
             {
                 _logger.LogWarning("An invoice already exists for OrderId: {OrderId}", request.OrderId);
                 var errorMessage = _messageService.GetMessage(MessageKeys.Invoice.AlreadyExists);
-                return Result<CreateInvoiceResponse>.Failure(errorMessage);
+                return Result<CreateInvoiceResponse>.Failure(errorMessage, ResultErrorType.Conflict);
             }
 
             // Check if the employee (auditor) exists
@@ -94,9 +95,9 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
                 var invoiceId = Guid.NewGuid();
                 var orderId = order.OrderId;
                 var invoiceNumber = GenerateInvoiceNumber();
-                var subTotal = order.SubTotal; // Assuming TotalAmount is the sum of all order items
+                var subTotal = order.SubTotal;
                 var amountReceived = request.AmountReceived;
-                var taxAmount = order.VatAmount; // Assuming a 10% tax rate, adjust as needed
+                var taxAmount = order.VatAmount;
                 var discountAmount = 0m; // Assuming DiscountAmount is the total discount applied to the order
                 var totalAmount = order.TotalAmount;
                 var amountReturned = amountReceived - totalAmount;
@@ -123,7 +124,7 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
 
                 _logger.LogInformation("Creating invoice items for OrderId: {OrderId}", request.OrderId);
                 // Create invoice items based on order items
-                var InvoiceItems = order.OrderItems.Select(oi => new InvoiceItem
+                var invoiceItems = order.OrderItems.Select(oi => new InvoiceItem
                 {
                     InvoiceItemId = Guid.NewGuid(),
                     InvoiceId = invoiceId,
@@ -161,7 +162,7 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
 
 
                     // Set related invoice items
-                    Items = InvoiceItems
+                    Items = invoiceItems
                 };
 
                 _logger.LogInformation("Adding invoice to repository for OrderId: {OrderId}", request.OrderId);

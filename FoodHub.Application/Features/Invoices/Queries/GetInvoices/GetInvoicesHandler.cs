@@ -2,6 +2,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.Invoices.Queries.GetInvoicePdf;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +31,6 @@ namespace FoodHub.Application.Features.Invoices.Queries.GetInvoices
             var invoiceRepo = _unitOfWork.Repository<Invoice>();
             var query = invoiceRepo.Query().AsNoTracking();
 
-            _logger.LogInformation("Initial invoice count: {Count}", await query.CountAsync(cancellationToken));
             if (!string.IsNullOrEmpty(request.Keyword))
             {
                 var keywordLower = request.Keyword.ToLower();
@@ -49,7 +49,6 @@ namespace FoodHub.Application.Features.Invoices.Queries.GetInvoices
 
             query = query.OrderByDescending(i => i.CreatedAt);
 
-            _logger.LogInformation("Filtered invoice count: {Count}", await query.CountAsync(cancellationToken));
             var mappedQuery = query.Select(i => new GetInvoicesResponse
             {
                 InvoiceId = i.InvoiceId,
@@ -62,7 +61,6 @@ namespace FoodHub.Application.Features.Invoices.Queries.GetInvoices
                 TotalAmount = i.TotalAmount
             });
 
-            _logger.LogInformation("Mapped invoice count: {Count}", await mappedQuery.CountAsync(cancellationToken));
             var response = await mappedQuery.ToPagedResultAsync(request.Pagination, cancellationToken);
 
             return Result<PagedResult<GetInvoicesResponse>>.Success(response);
