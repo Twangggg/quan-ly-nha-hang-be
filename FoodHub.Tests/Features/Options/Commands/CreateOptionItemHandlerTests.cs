@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Exceptions;
 using FluentAssertions;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Options.Commands.CreateOptionItem;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -9,6 +10,7 @@ using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -17,12 +19,18 @@ namespace FoodHub.Tests.Features.Options.Commands
     public class CreateOptionItemHandlerTests
     {
         private readonly Mock<IUnitOfWork> _mockUow;
+        private readonly Mock<IMessageService> _mockMessageService;
         private readonly CreateOptionItemHandler _handler;
 
         public CreateOptionItemHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
-            _handler = new CreateOptionItemHandler(_mockUow.Object);
+            _mockMessageService = new Mock<IMessageService>();
+            _handler = new CreateOptionItemHandler(
+                _mockUow.Object,
+                NullLogger<CreateOptionItemHandler>.Instance,
+                _mockMessageService.Object
+            );
         }
 
         [Fact]
@@ -80,10 +88,11 @@ namespace FoodHub.Tests.Features.Options.Commands
             _mockUow.Setup(u => u.Repository<OptionItem>()).Returns(mockOptionItemRepo.Object);
 
             // Act
-            var act = () => _handler.Handle(command, CancellationToken.None);
+            var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            await act.Should().ThrowAsync<NotFoundException>();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorType.Should().Be(ResultErrorType.NotFound);
             _mockUow.Verify(
                 u => u.Repository<OptionItem>().AddAsync(It.IsAny<OptionItem>()),
                 Times.Never

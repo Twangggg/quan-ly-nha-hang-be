@@ -128,9 +128,9 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
 
             var subTotal = items.Sum(i => i.LineTotal);
             var discount = 0m;
+            var vatRate = Domain.Constants.OrderConstants.VatRate;
+            var vat = Math.Round(subTotal * vatRate, 0);
             var preTaxAmount = subTotal - discount;
-            var vatRate = 0m; // 10%
-            var vat = preTaxAmount * (vatRate / 100m);
             var totalAmount = preTaxAmount + vat;
 
             var response = new GetPreCheckBillResponse
@@ -147,7 +147,7 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                 SubTotal = subTotal,
                 PreTaxAmount = preTaxAmount,
                 Discount = discount,
-                VatRate = vatRate,
+                VatRate = vatRate * 100,
                 Vat = vat,
                 TotalAmount = totalAmount,
             };

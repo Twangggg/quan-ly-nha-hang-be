@@ -10,6 +10,7 @@ using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
+using Microsoft.Extensions.Logging.Abstractions;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -31,7 +32,8 @@ namespace FoodHub.Tests.Features.Options.Commands
             _handler = new DeleteOptionGroupHandler(
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
-                _mockMessageService.Object
+                _mockMessageService.Object,
+                NullLogger<DeleteOptionGroupHandler>.Instance
             );
         }
 

@@ -2,6 +2,7 @@ using Asp.Versioning.ApiExplorer;
 using FoodHub.Application;
 using FoodHub.Infrastructure;
 using FoodHub.Infrastructure.Persistence;
+using FoodHub.Infrastructure.Services.Hubs;
 using FoodHub.Infrastructure.Services.Messaging.Hubs;
 using FoodHub.Presentation.Middleware;
 using FoodHub.WebAPI.Presentation.Extensions;
@@ -111,6 +112,7 @@ try
     app.MapControllers(); // Map các API Controller
 
     app.MapHub<KdsHub>("/hubs/kds");
+    app.MapHub<BillingHub>("/hubs/billing");
     app.MapHealthCheckEndpoints(); // GET /health & /health/detail
 
     await app.RunAsync();

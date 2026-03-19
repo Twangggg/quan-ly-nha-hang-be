@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Exceptions;
 using FluentAssertions;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Options.Commands.UpdateOptionGroup;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -18,13 +19,19 @@ namespace FoodHub.Tests.Features.Options.Commands
 {
     public class UpdateOptionGroupHandlerTests
     {
-        private readonly Mock<IUnitOfWork> _mockUow;
+        private readonly Mock<IMessageService> _mockMessageService;
         private readonly UpdateOptionGroupHandler _handler;
+        private readonly Mock<IUnitOfWork> _mockUow;
 
         public UpdateOptionGroupHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
-            _handler = new UpdateOptionGroupHandler(_mockUow.Object, NullLogger<UpdateOptionGroupHandler>.Instance);
+            _mockMessageService = new Mock<IMessageService>();
+            _handler = new UpdateOptionGroupHandler(
+                _mockUow.Object,
+                NullLogger<UpdateOptionGroupHandler>.Instance,
+                _mockMessageService.Object
+            );
         }
 
         [Fact]
@@ -87,10 +94,11 @@ namespace FoodHub.Tests.Features.Options.Commands
             _mockUow.Setup(u => u.Repository<OptionGroup>()).Returns(mockRepo.Object);
 
             // Act
-            var act = () => _handler.Handle(command, CancellationToken.None);
+            var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            await act.Should().ThrowAsync<NotFoundException>();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorType.Should().Be(ResultErrorType.NotFound);
             _mockUow.Verify(
                 u => u.Repository<OptionGroup>().Update(It.IsAny<OptionGroup>()),
                 Times.Never

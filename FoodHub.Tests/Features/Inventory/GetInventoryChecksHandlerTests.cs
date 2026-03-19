@@ -26,11 +26,18 @@ namespace FoodHub.Tests.Features.Inventory
             processedCheck.MarkProcessed();
 
             var mockRepo = new Mock<IGenericRepository<InventoryCheck>>();
+            var mockEmployeeRepo = new Mock<IGenericRepository<Employee>>();
             var mockUnitOfWork = new Mock<IUnitOfWork>();
             mockUnitOfWork.Setup(x => x.Repository<InventoryCheck>()).Returns(mockRepo.Object);
+            mockUnitOfWork.Setup(x => x.Repository<Employee>()).Returns(mockEmployeeRepo.Object);
+            
             mockRepo
                 .Setup(x => x.Query())
                 .Returns(new List<InventoryCheck> { draftCheck, processedCheck }.AsQueryable().BuildMock());
+                
+            mockEmployeeRepo
+                .Setup(x => x.Query())
+                .Returns(new List<Employee>().AsQueryable().BuildMock());
 
             var handler = new GetInventoryChecksHandler(
                 mockUnitOfWork.Object,

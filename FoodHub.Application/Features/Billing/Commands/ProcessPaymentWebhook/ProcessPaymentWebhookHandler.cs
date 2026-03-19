@@ -50,6 +50,13 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                 return Result<bool>.Failure("Invalid Signature", ResultErrorType.BadRequest);
             }
 
+            // PayOS test webhook validation handler
+            if (orderCode == 123)
+            {
+                _logger.LogInformation("Received Test Webhook from PayOS. Returning 200 OK.");
+                return Result<bool>.Success(true);
+            }
+
             var lockKey = $"payos_webhook_lock_{orderCode}";
             var isLocked = await _cacheService.ExistsAsync(lockKey, cancellationToken);
             if (isLocked)
@@ -62,18 +69,22 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
 
             try
             {
+                await _unitOfWork.BeginTransactionAsync();
+                
                 var order = await _unitOfWork.Repository<Order>()
                     .Query()
                     .FirstOrDefaultAsync(o => o.TransactionCode == orderCode, cancellationToken);
 
                 if (order == null)
                 {
+                    await _unitOfWork.RollbackTransactionAsync();
                     _logger.LogWarning("Order with TransactionCode {OrderCode} not found for webhook.", orderCode);
                     return Result<bool>.Success(true);
                 }
 
                 if (order.Status == OrderStatus.Paid || order.Status == OrderStatus.Cancelled)
                 {
+                    await _unitOfWork.RollbackTransactionAsync();
                     _logger.LogInformation("Order {OrderId} already Paid/Cancelled.", order.OrderId);
                     return Result<bool>.Success(true);
                 }
@@ -81,6 +92,7 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                 var domainResult = order.Checkout(PaymentMethod.QRCode, order.TotalAmount);
                 if (!domainResult.IsSuccess)
                 {
+                    await _unitOfWork.RollbackTransactionAsync();
                     _logger.LogWarning("Order {OrderId} checkout failed via webhook: {Error}", order.OrderId, domainResult.ErrorCode);
                     return Result<bool>.Success(true);
                 }
@@ -90,18 +102,25 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                     var table = await _unitOfWork.Repository<Table>().GetByIdAsync(order.TableId.Value);
                     if (table != null)
                     {
-                        table.Status = TableStatus.Cleaning;
+                        table.MarkAsCleaning();
                         _unitOfWork.Repository<Table>().Update(table);
                     }
                 }
 
                 _unitOfWork.Repository<Order>().Update(order);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.CommitTransactionAsync();
 
                 await _signalRService.NotifyOrderStatusChangedAsync(order.OrderId, order.Status.ToString());
 
                 _logger.LogInformation("Successfully processed webhook for OrderId: {OrderId}", order.OrderId);
                 return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(ex, "Transaction failed while processing webhook for OrderCode: {OrderCode}", orderCode);
+                throw;
             }
             finally
             {

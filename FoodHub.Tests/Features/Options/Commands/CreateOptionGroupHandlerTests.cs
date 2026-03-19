@@ -20,12 +20,18 @@ namespace FoodHub.Tests.Features.Options.Commands
     public class CreateOptionGroupHandlerTests
     {
         private readonly Mock<IUnitOfWork> _mockUow;
+        private readonly Mock<IMessageService> _mockMessageService;
         private readonly CreateOptionGroupHandler _handler;
 
         public CreateOptionGroupHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
-            _handler = new CreateOptionGroupHandler(_mockUow.Object, NullLogger<CreateOptionGroupHandler>.Instance);
+            _mockMessageService = new Mock<IMessageService>();
+            _handler = new CreateOptionGroupHandler(
+                _mockUow.Object,
+                NullLogger<CreateOptionGroupHandler>.Instance,
+                _mockMessageService.Object
+            );
         }
 
         [Fact]
@@ -114,10 +120,11 @@ namespace FoodHub.Tests.Features.Options.Commands
                 .Returns(mockAssignmentRepo.Object);
 
             // Act
-            var act = () => _handler.Handle(command, CancellationToken.None);
+            var result = await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            await act.Should().ThrowAsync<NotFoundException>();
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorType.Should().Be(ResultErrorType.NotFound);
             _mockUow.Verify(
                 u => u.Repository<OptionGroup>().AddAsync(It.IsAny<OptionGroup>()),
                 Times.Never
