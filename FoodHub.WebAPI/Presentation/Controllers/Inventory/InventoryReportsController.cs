@@ -4,6 +4,7 @@ using FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLedger;
 using FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryReport;
 using FoodHub.Domain.Enums;
 using FoodHub.WebAPI.Presentation.Attributes;
+using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,18 +29,25 @@ namespace FoodHub.Presentation.Controllers
         [HttpGet("/api/v{version:apiVersion}/inventory/report")]
         [HasPermission(Permissions.Inventory.View)]
         [ProducesResponseType(
-            typeof(Result<IReadOnlyList<GetInventoryReportResponse>>),
+            typeof(Result<PagedResult<GetInventoryReportResponse>>),
             StatusCodes.Status200OK
         )]
         public async Task<IActionResult> GetInventoryReport(
+            [FromQuery] PaginationParams pagination,
             [FromQuery] DateOnly fromDate,
             [FromQuery] DateOnly toDate,
             [FromQuery] Guid? ingredientId
         )
         {
             var result = await _mediator.Send(
-                new GetInventoryReportQuery(fromDate, toDate, ingredientId)
+                new GetInventoryReportQuery(pagination, fromDate, toDate, ingredientId)
             );
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
+
             return HandleResult(result);
         }
 

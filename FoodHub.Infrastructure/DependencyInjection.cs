@@ -101,6 +101,7 @@ namespace FoodHub.Infrastructure
 
             // Inventory Services
             services.AddScoped<IInventoryDeductionService, InventoryDeductionService>();
+            services.AddScoped<IReceiptCodeGenerator, ReceiptCodeGenerator>();
 
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();

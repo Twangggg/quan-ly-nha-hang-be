@@ -19,6 +19,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Proces
         private readonly IInventoryAvailabilitySyncService _inventoryAvailabilitySyncService;
         private readonly ILogger<ProcessInventoryCheckHandler> _logger;
         private readonly IMessageService _messageService;
+        private readonly IReceiptCodeGenerator _receiptCodeGenerator;
         private readonly IUnitOfWork _unitOfWork;
 
         public ProcessInventoryCheckHandler(
@@ -26,6 +27,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Proces
             IMessageService messageService,
             ICurrentUserService currentUserService,
             IInventoryAvailabilitySyncService inventoryAvailabilitySyncService,
+            IReceiptCodeGenerator receiptCodeGenerator,
             ILogger<ProcessInventoryCheckHandler> logger
         )
         {
@@ -33,6 +35,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Proces
             _messageService = messageService;
             _currentUserService = currentUserService;
             _inventoryAvailabilitySyncService = inventoryAvailabilitySyncService;
+            _receiptCodeGenerator = receiptCodeGenerator;
             _logger = logger;
         }
 
@@ -103,7 +106,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Proces
                 if (stockInItems.Count > 0)
                 {
                     stockInReceipt = StockInReceipt.CreateInventoryAdjustment(
-                        await GenerateStockInReceiptCodeAsync(receiptTimestamp, cancellationToken),
+                        await _receiptCodeGenerator.GenerateStockInReceiptCodeAsync(receiptTimestamp, cancellationToken),
                         receiptTimestamp,
                         $"Inventory adjustment from check {inventoryCheck.InventoryCheckId}",
                         actorId
@@ -167,7 +170,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Proces
                 if (stockOutItems.Count > 0)
                 {
                     stockOutReceipt = StockOutReceipt.CreateInventoryAdjustment(
-                        await GenerateStockOutReceiptCodeAsync(receiptTimestamp, cancellationToken),
+                        await _receiptCodeGenerator.GenerateStockOutReceiptCodeAsync(receiptTimestamp, cancellationToken),
                         receiptTimestamp,
                         $"Inventory adjustment from check {inventoryCheck.InventoryCheckId}",
                         actorId
@@ -270,62 +273,6 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Proces
                 _logger.LogError(ex, "ProcessInventoryCheck transaction rolled back");
                 throw;
             }
-        }
-
-        private async Task<string> GenerateStockInReceiptCodeAsync(
-            DateTime receivedAt,
-            CancellationToken cancellationToken
-        )
-        {
-            var datePart = receivedAt.ToString("yyyyMMdd");
-            var prefix = $"NK-{datePart}-";
-
-            var lastReceipt = await _unitOfWork
-                .Repository<StockInReceipt>()
-                .Query()
-                .Where(x => x.ReceiptCode.StartsWith(prefix))
-                .OrderByDescending(x => x.ReceiptCode)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            var sequenceNumber = 1;
-            if (lastReceipt is not null)
-            {
-                var parts = lastReceipt.ReceiptCode.Split('-');
-                if (parts.Length == 3 && int.TryParse(parts[2], out var lastSequence))
-                {
-                    sequenceNumber = lastSequence + 1;
-                }
-            }
-
-            return $"{prefix}{sequenceNumber:D4}";
-        }
-
-        private async Task<string> GenerateStockOutReceiptCodeAsync(
-            DateTime stockOutDate,
-            CancellationToken cancellationToken
-        )
-        {
-            var datePart = stockOutDate.ToString("yyyyMMdd");
-            var prefix = $"XK-{datePart}-";
-
-            var lastReceipt = await _unitOfWork
-                .Repository<StockOutReceipt>()
-                .Query()
-                .Where(x => x.ReceiptCode.StartsWith(prefix))
-                .OrderByDescending(x => x.ReceiptCode)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            var sequenceNumber = 1;
-            if (lastReceipt is not null)
-            {
-                var parts = lastReceipt.ReceiptCode.Split('-');
-                if (parts.Length == 3 && int.TryParse(parts[2], out var lastSequence))
-                {
-                    sequenceNumber = lastSequence + 1;
-                }
-            }
-
-            return $"{prefix}{sequenceNumber:D4}";
         }
     }
 }
