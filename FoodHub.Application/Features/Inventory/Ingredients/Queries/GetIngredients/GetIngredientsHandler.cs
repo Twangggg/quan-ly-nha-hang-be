@@ -11,6 +11,7 @@ using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -58,12 +59,37 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredie
                 query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
 
                 // 2. Filters
+                var normalizedFilters = request.Pagination.Filters ?? new List<string>();
+                var stockStatusFilter = normalizedFilters
+                    .Select(filter => filter.Split(':', 2))
+                    .FirstOrDefault(parts =>
+                        parts.Length == 2
+                        && parts[0].Trim().Equals("status", StringComparison.OrdinalIgnoreCase)
+                    )?[1]
+                    ?.Trim();
+
+                if (!string.IsNullOrWhiteSpace(stockStatusFilter))
+                {
+                    query = ApplyStockStatusFilter(query, stockStatusFilter);
+                    normalizedFilters = normalizedFilters
+                        .Where(filter =>
+                        {
+                            var parts = filter.Split(':', 2);
+                            return parts.Length != 2
+                                || !parts[0].Trim().Equals(
+                                    "status",
+                                    StringComparison.OrdinalIgnoreCase
+                                );
+                        })
+                        .ToList();
+                }
+
                 var filterMapping = new Dictionary<string, Expression<Func<Ingredient, object?>>>
                 {
                     { "isActive", x => x.IsActive },
                     { "unit", x => x.BaseUnit },
                 };
-                query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
+                query = query.ApplyFilters(normalizedFilters, filterMapping);
 
                 // 3. Sorting
                 var sortMapping = new Dictionary<string, Expression<Func<Ingredient, object?>>>
@@ -95,6 +121,22 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredie
                 );
                 throw;
             }
+        }
+
+        private static IQueryable<Ingredient> ApplyStockStatusFilter(
+            IQueryable<Ingredient> query,
+            string rawStatus
+        )
+        {
+            return rawStatus.ToUpperInvariant() switch
+            {
+                "OUT_OF_STOCK" => query.Where(x => x.CurrentStock == 0),
+                "LOW_STOCK" => query.Where(
+                    x => x.CurrentStock > 0 && x.CurrentStock <= x.LowStockThreshold
+                ),
+                "NORMAL" => query.Where(x => x.CurrentStock > x.LowStockThreshold),
+                _ => query,
+            };
         }
     }
 }

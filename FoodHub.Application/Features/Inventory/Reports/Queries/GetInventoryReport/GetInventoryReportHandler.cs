@@ -83,6 +83,9 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryRep
                 .Where(
                     x =>
                         ingredientIds.Contains(x.IngredientId)
+                        && x.DeletedAt == null
+                        && x.StockInReceipt.DeletedAt == null
+                        && x.StockInReceipt.ReceiptType == InventoryReceiptType.Manual
                         && x.StockInReceipt.ReceivedAt >= from
                         && x.StockInReceipt.ReceivedAt < toExclusive
                 )
@@ -96,6 +99,9 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryRep
                 .Where(
                     x =>
                         ingredientIds.Contains(x.IngredientId)
+                        && x.DeletedAt == null
+                        && x.StockOutReceipt.DeletedAt == null
+                        && x.StockOutReceipt.ReceiptType == InventoryReceiptType.Manual
                         && x.StockOutReceipt.StockOutDate >= from
                         && x.StockOutReceipt.StockOutDate < toExclusive
                 )
@@ -148,7 +154,7 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryRep
                     var totalSaleDeduction = saleDeductionMap.GetValueOrDefault(
                         ingredient.IngredientId
                     );
-                    var totalOutbound = totalStockOut + totalSaleDeduction;
+                    var totalOutbound = totalStockOut;
                     var closingStock = openingStock + totalStockIn - totalOutbound;
 
                     return new GetInventoryReportResponse

@@ -6,17 +6,22 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLed
 {
     public class GetInventoryLedgerValidator : AbstractValidator<GetInventoryLedgerQuery>
     {
+        private const int MaxDateRangeDays = 365;
+
         public GetInventoryLedgerValidator(IMessageService messageService)
         {
-            RuleFor(x => x.IngredientId)
-                .NotEmpty()
-                .WithMessage(
-                    messageService.GetMessage(MessageKeys.InventoryCheck.IngredientIdRequired)
-                );
-
             RuleFor(x => x.ToDate)
                 .GreaterThanOrEqualTo(x => x.FromDate)
                 .WithMessage(messageService.GetMessage(MessageKeys.Common.ToDateAfterFromDate));
+
+            RuleFor(x => x)
+                .Must(HaveValidDateRange)
+                .WithMessage($"Date range cannot exceed {MaxDateRangeDays} days.");
+        }
+
+        private static bool HaveValidDateRange(GetInventoryLedgerQuery query)
+        {
+            return query.ToDate.DayNumber - query.FromDate.DayNumber <= MaxDateRangeDays;
         }
     }
 }

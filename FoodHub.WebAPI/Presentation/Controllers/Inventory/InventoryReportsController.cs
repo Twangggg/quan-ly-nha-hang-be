@@ -52,16 +52,16 @@ namespace FoodHub.Presentation.Controllers
         }
 
         /// <summary>
-        /// Lấy sổ cái biến động tồn kho của một nguyên liệu.
+        /// Lấy sổ cái biến động tồn kho.
         /// </summary>
         [HttpGet("/api/v{version:apiVersion}/inventory/ledger")]
         [HasPermission(Permissions.Inventory.View)]
         [ProducesResponseType(
-            typeof(Result<IReadOnlyList<GetInventoryLedgerResponse>>),
+            typeof(Result<PagedResult<GetInventoryLedgerResponse>>),
             StatusCodes.Status200OK
         )]
         public async Task<IActionResult> GetInventoryLedger(
-            [FromQuery] Guid ingredientId,
+            [FromQuery] Guid? ingredientId,
             [FromQuery] DateOnly fromDate,
             [FromQuery] DateOnly toDate,
             [FromQuery] InventoryTransactionType? transactionType
