@@ -2,11 +2,16 @@ namespace FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem
 {
     public class OptionGroupResponse
     {
+        public Guid MenuItemOptionGroupId { get; set; }
         public Guid OptionGroupId { get; set; }
         public Guid MenuItemId { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Type { get; set; }
         public bool IsRequired { get; set; }
+        public int MinSelect { get; set; }
+        public int MaxSelect { get; set; }
+        public int SortOrder { get; set; }
+        public bool IsVisible { get; set; }
         public List<OptionItemResponse>? OptionItems { get; set; }
     }
 

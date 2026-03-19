@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -25,16 +26,12 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionItem
             var optionGroup = await optionGroupRepository.GetByIdAsync(request.OptionGroupId);
             if (optionGroup == null)
             {
-                return Result<CreateOptionItemResponse>.Failure($"Option group with ID {request.OptionGroupId} not found.", ResultErrorType.NotFound);
+                throw new NotFoundException(
+                    $"Option group with ID {request.OptionGroupId} not found."
+                );
             }
 
-            var optionItem = new OptionItem
-            {
-                OptionItemId = Guid.NewGuid(),
-                OptionGroupId = request.OptionGroupId,
-                Label = request.Label,
-                ExtraPrice = request.ExtraPrice
-            };
+            var optionItem = OptionItem.Create(request.OptionGroupId, request.Label, request.ExtraPrice);
 
             await _unitOfWork.Repository<OptionItem>().AddAsync(optionItem);
             await _unitOfWork.SaveChangeAsync(cancellationToken);

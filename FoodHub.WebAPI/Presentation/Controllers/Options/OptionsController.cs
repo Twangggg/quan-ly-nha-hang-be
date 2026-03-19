@@ -4,18 +4,13 @@ using FoodHub.Application.Features.Options.Commands.CreateOptionGroup;
 using FoodHub.Application.Features.Options.Commands.CreateOptionItem;
 using FoodHub.Application.Features.Options.Commands.DeleteOptionGroup;
 using FoodHub.Application.Features.Options.Commands.DeleteOptionItem;
+using FoodHub.Application.Features.Options.Commands.AssignOptionGroupToMenuItem;
+using FoodHub.Application.Features.Options.Commands.UpdateMenuItemOptionGroup;
 using FoodHub.Application.Features.Options.Commands.UpdateOptionGroup;
 using FoodHub.Application.Features.Options.Commands.UpdateOptionItem;
 using FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem;
-using FoodHub.Application.Interfaces.Common;
-using FoodHub.Application.Interfaces.Inventory;
-using FoodHub.Application.Interfaces.Messaging;
-using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
-using FoodHub.Application.Interfaces.Security;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers
@@ -28,12 +23,10 @@ namespace FoodHub.Presentation.Controllers
     public class OptionsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly IMessageService _messageService;
 
-        public OptionsController(IMediator mediator, IMessageService _ms)
+        public OptionsController(IMediator mediator)
         {
             _mediator = mediator;
-            _messageService = _ms;
         }
 
         #region OptionGroup
@@ -44,6 +37,7 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="menuItemId">Mã món ăn.</param>
         /// <response code="200">Trả về danh sách nhóm tùy chọn.</response>
         [HttpGet("menu-item/{menuItemId}")]
+        [HasPermission(Permissions.MenuItems.View)]
         [ProducesResponseType(typeof(Result<List<OptionGroupResponse>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOptionGroupsByMenuItem(Guid menuItemId)
         {
@@ -60,9 +54,23 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Tạo thành công.</response>
         [HttpPost("group")]
         [HasPermission(Permissions.MenuItems.UpdateOptions)]
-        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<CreateOptionGroupResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateOptionGroup(
             [FromBody] CreateOptionGroupCommand command
+        )
+        {
+            var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Gán một nhóm tùy chọn reusable vào món ăn với rule riêng cho món đó.
+        /// </summary>
+        [HttpPost("group/assign")]
+        [HasPermission(Permissions.MenuItems.UpdateOptions)]
+        [ProducesResponseType(typeof(Result<AssignOptionGroupToMenuItemResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AssignOptionGroupToMenuItem(
+            [FromBody] AssignOptionGroupToMenuItemCommand command
         )
         {
             var result = await _mediator.Send(command);
@@ -78,23 +86,28 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Cập nhật thành công.</response>
         [HttpPut("group/{id}")]
         [HasPermission(Permissions.MenuItems.UpdateOptions)]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<UpdateOptionGroupResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateOptionGroup(
             Guid id,
             [FromBody] UpdateOptionGroupCommand command
         )
         {
-            if (id != command.OptionGroupId)
-            {
-                return BadRequest(
-                    new ErrorResponse(
-                        StatusCodes.Status400BadRequest,
-                        _messageService.GetMessage(MessageKeys.Common.IdMismatch)
-                    )
-                );
-            }
+            var result = await _mediator.Send(command with { OptionGroupId = id });
+            return HandleResult(result);
+        }
 
-            var result = await _mediator.Send(command);
+        /// <summary>
+        /// Cập nhật rule hiển thị/chọn lựa của nhóm tùy chọn trên từng món ăn.
+        /// </summary>
+        [HttpPut("group/assignment/{id}")]
+        [HasPermission(Permissions.MenuItems.UpdateOptions)]
+        [ProducesResponseType(typeof(Result<UpdateMenuItemOptionGroupResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateMenuItemOptionGroup(
+            Guid id,
+            [FromBody] UpdateMenuItemOptionGroupCommand command
+        )
+        {
+            var result = await _mediator.Send(command with { MenuItemOptionGroupId = id });
             return HandleResult(result);
         }
 
@@ -106,7 +119,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Xóa thành công.</response>
         [HttpDelete("group/{id}")]
         [HasPermission(Permissions.MenuItems.UpdateOptions)]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<DeleteOptionGroupResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteOptionGroup(Guid id)
         {
             var result = await _mediator.Send(new DeleteOptionGroupCommand(id));
@@ -125,7 +138,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Tạo thành công.</response>
         [HttpPost("item")]
         [HasPermission(Permissions.MenuItems.UpdateOptions)]
-        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<CreateOptionItemResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateOptionItem(
             [FromBody] CreateOptionItemCommand command
         )
@@ -143,23 +156,13 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Cập nhật thành công.</response>
         [HttpPut("item/{id}")]
         [HasPermission(Permissions.MenuItems.UpdateOptions)]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<UpdateOptionItemResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateOptionItem(
             Guid id,
             [FromBody] UpdateOptionItemCommand command
         )
         {
-            if (id != command.OptionItemId)
-            {
-                return BadRequest(
-                    new ErrorResponse(
-                        StatusCodes.Status400BadRequest,
-                        _messageService.GetMessage(MessageKeys.Common.IdMismatch)
-                    )
-                );
-            }
-
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(command with { OptionItemId = id });
             return HandleResult(result);
         }
 
@@ -171,7 +174,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Xóa thành công.</response>
         [HttpDelete("item/{id}")]
         [HasPermission(Permissions.MenuItems.UpdateOptions)]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<DeleteOptionItemResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteOptionItem(Guid id)
         {
             var result = await _mediator.Send(new DeleteOptionItemCommand(id));

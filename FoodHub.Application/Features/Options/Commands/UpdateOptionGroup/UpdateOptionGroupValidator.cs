@@ -8,8 +8,11 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
     {
         public UpdateOptionGroupValidator(IStringLocalizer<ErrorMessages> localizer)
         {
+            RuleFor(x => x.OptionGroupId).NotEmpty();
+
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage(localizer["OptionGroup.NameRequired"]);
+                .NotEmpty().WithMessage(localizer["OptionGroup.NameRequired"])
+                .MaximumLength(100).WithMessage(localizer["OptionGroup.NameRequired"]);
         }
     }
 }

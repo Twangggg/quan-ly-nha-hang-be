@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -25,11 +26,12 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionItem
 
             if (optionItem == null)
             {
-                return Result<UpdateOptionItemResponse>.Failure($"Option item with ID {request.OptionItemId} not found.", ResultErrorType.NotFound);
+                throw new NotFoundException(
+                    $"Option item with ID {request.OptionItemId} not found."
+                );
             }
 
-            optionItem.Label = request.Label;
-            optionItem.ExtraPrice = request.ExtraPrice;
+            optionItem.Update(request.Label, request.ExtraPrice);
 
             _unitOfWork.Repository<OptionItem>().Update(optionItem);
             await _unitOfWork.SaveChangeAsync(cancellationToken);

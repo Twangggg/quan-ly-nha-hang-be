@@ -26,6 +26,8 @@ namespace FoodHub.Domain.Entities
         public bool IsOutOfStock { get; set; }
 
         public ICollection<OptionGroup> OptionGroups { get; set; } = new List<OptionGroup>();
+        public ICollection<MenuItemOptionGroup> MenuItemOptionGroups { get; set; } =
+            new List<MenuItemOptionGroup>();
         public ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();
         public virtual ICollection<MenuItemIngredient> Ingredients { get; set; } =
             new List<MenuItemIngredient>();

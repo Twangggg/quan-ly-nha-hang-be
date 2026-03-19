@@ -41,6 +41,7 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<MenuItem> MenuItems { get; set; } = null!;
         public DbSet<OptionGroup> OptionGroups { get; set; } = null!;
         public DbSet<OptionItem> OptionItems { get; set; } = null!;
+        public DbSet<MenuItemOptionGroup> MenuItemOptionGroups { get; set; } = null!;
         public DbSet<SetMenu> SetMenus { get; set; } = null!;
         public DbSet<SetMenuItem> SetMenuItems { get; set; } = null!;
 
