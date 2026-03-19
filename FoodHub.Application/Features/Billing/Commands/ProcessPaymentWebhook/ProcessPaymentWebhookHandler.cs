@@ -45,6 +45,13 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                 return Result<bool>.Failure("Invalid Signature", ResultErrorType.BadRequest);
             }
 
+            // PayOS test webhook validation handler
+            if (orderCode == 123)
+            {
+                _logger.LogInformation("Received Test Webhook from PayOS. Returning 200 OK.");
+                return Result<bool>.Success(true);
+            }
+
             var lockKey = $"payos_webhook_lock_{orderCode}";
             var isLocked = await _cacheService.ExistsAsync(lockKey, cancellationToken);
             if (isLocked)
