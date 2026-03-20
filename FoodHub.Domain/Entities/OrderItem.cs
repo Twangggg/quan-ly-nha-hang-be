@@ -32,14 +32,14 @@ namespace FoodHub.Domain.Entities
         public Order Order { get; set; } = null!;
         public MenuItem MenuItem { get; set; } = null!;
 
-        public bool IsFeeItem { get; set; } // Dùng cho các khoản phí như phí giao hàng, phí dịch vụ, không phải là món ăn thực tế
+        public bool IsFreeItem { get; set; } // Dùng để đánh dấu món ăn miễn phí được thêm vào bởi voucher loại FreeItem, không phụ thuộc vào giá trị UnitPriceSnapshot
 
         public ICollection<OrderItemOptionGroup> OptionGroups { get; set; } =
             new List<OrderItemOptionGroup>();
 
         public decimal GetTotalPrice()
         {
-            if (Status == OrderItemStatus.Cancelled || Status == OrderItemStatus.Rejected || IsFeeItem)
+            if (Status == OrderItemStatus.Cancelled || Status == OrderItemStatus.Rejected || IsFreeItem)
                 return 0;
 
             var optionsTotal =

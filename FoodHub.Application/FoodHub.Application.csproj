@@ -43,6 +43,8 @@
   <ItemGroup>
     <Folder Include="Features\KDS\Commands\" />
     <Folder Include="Features\KDS\Queries\" />
+    <Folder Include="Features\Vouchers\Commands\ApplyVoucher\" />
+    <Folder Include="Features\Vouchers\Commands\UnapplyVoucher\" />
   </ItemGroup>
 
   <PropertyGroup>

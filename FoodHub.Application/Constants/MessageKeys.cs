@@ -372,5 +372,11 @@ namespace FoodHub.Application.Constants
             public const string CreateFailed = "Invoice.CreateFailed";
             public const string InsufficientAmount = "Invoice.InsufficientAmount";
         }
+
+        public static class Voucher
+        {
+            public const string NotFound = "Voucher.NotFound";
+            public const string CodeAlreadyExists = "Voucher.CodeAlreadyExists";
+        }
     }
 }
