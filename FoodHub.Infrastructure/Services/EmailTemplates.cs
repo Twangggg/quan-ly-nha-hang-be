@@ -267,5 +267,68 @@ namespace FoodHub.Infrastructure.Services
 </body>
 </html>";
         }
+        public static string GetShiftAssignmentTemplate(string employeeName, string shiftName, DateOnly assignedDate, TimeSpan startTime, TimeSpan endTime, bool isCancelled)
+        {
+            var title = isCancelled ? "🚫 Thông báo hủy phân công ca" : "📅 Thông báo phân công ca mới";
+            var headerColor = isCancelled ? "linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%)" : "linear-gradient(135deg, #00b09b 0%, #96c93d 100%)";
+            var statusText = isCancelled ? "<span style='color: #e74c3c; font-weight: bold;'>ĐÃ HỦY</span>" : "<span style='color: #27ae60; font-weight: bold;'>ĐANG HOẠT ĐỘNG</span>";
+
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: {headerColor}; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #eee; }}
+        .info-box {{ background: white; border-left: 4px solid #00b09b; padding: 20px; margin: 20px 0; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }}
+        .info-row {{ margin: 12px 0; display: flex; border-bottom: 1px dashed #eee; padding-bottom: 8px; }}
+        .info-label {{ color: #666; width: 150px; flex-shrink: 0; }}
+        .info-value {{ color: #333; font-weight: bold; }}
+        .footer {{ text-align: center; margin-top: 20px; color: #999; font-size: 12px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>{title}</h1>
+        </div>
+        <div class='content'>
+            <p>Xin chào <strong>{employeeName}</strong>,</p>
+            <p>Hệ thống FoodHub thông báo về thay đổi lịch trình làm việc của bạn:</p>
+            
+            <div class='info-box'>
+                <div class='info-row'>
+                    <div class='info-label'>Trạng thái:</div>
+                    <div class='info-value'>{statusText}</div>
+                </div>
+                <div class='info-row'>
+                    <div class='info-label'>Ca làm việc:</div>
+                    <div class='info-value'>{shiftName}</div>
+                </div>
+                <div class='info-row'>
+                    <div class='info-label'>Ngày làm việc:</div>
+                    <div class='info-value'>{assignedDate:dd/MM/yyyy}</div>
+                </div>
+                <div class='info-row'>
+                    <div class='info-label'>Khung giờ:</div>
+                    <div class='info-value'>{startTime:hh\:mm} - {endTime:hh\:mm}</div>
+                </div>
+            </div>
+            
+            <p>Vui lòng sắp xếp thời gian để đảm bảo vận hành nhà hàng. Nếu có bất kỳ thắc mắc nào, hãy liên hệ với quản lý trực tiếp của bạn.</p>
+            
+            <p>Trân trọng,<br><strong>Đội ngũ vận hành FoodHub</strong></p>
+        </div>
+        <div class='footer'>
+            <p>Đây là email tự động từ hệ thống quản lý FoodHub. Vui lòng không phản hồi.</p>
+            <p>&copy; 2026 FoodHub Kitchen Management System.</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
     }
 }

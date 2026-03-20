@@ -58,12 +58,7 @@ namespace FoodHub.Domain.Entities
         /// <summary>
         /// Cập nhật thông tin ca làm việc.
         /// </summary>
-        /// <param name="name">Tên ca mới.</param>
-        /// <param name="startTime">Giờ bắt đầu mới.</param>
-        /// <param name="endTime">Giờ kết thúc mới.</param>
-        /// <param name="updatedBy">ID người cập nhật.</param>
-        /// <returns>Kết quả thực hiện nghiệp vụ.</returns>
-        public DomainResult Update(
+        public DomainResult UpdateDetails(
             string name,
             TimeSpan startTime,
             TimeSpan endTime,
@@ -80,6 +75,14 @@ namespace FoodHub.Domain.Entities
             UpdatedBy = updatedBy;
 
             return DomainResult.Success();
+        }
+
+        /// <summary>
+        /// Cập nhật trạng thái hoạt động của ca làm việc.
+        /// </summary>
+        public DomainResult UpdateStatus(bool isActive, Guid? updatedBy = null)
+        {
+            return isActive ? Activate(updatedBy) : Deactivate(updatedBy);
         }
 
         /// <summary>

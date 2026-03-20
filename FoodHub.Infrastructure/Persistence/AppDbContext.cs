@@ -19,6 +19,13 @@ namespace FoodHub.Infrastructure.Persistence
                         .CoreEventId
                         .PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning
                 );
+                warnings.Ignore(
+                    Microsoft
+                        .EntityFrameworkCore
+                        .Diagnostics
+                        .RelationalEventId
+                        .PendingModelChangesWarning
+                );
             });
             base.OnConfiguring(optionsBuilder);
         }
@@ -29,6 +36,7 @@ namespace FoodHub.Infrastructure.Persistence
 
         // HR / Master Data
         public DbSet<Shift> Shifts { get; set; } = null!;
+        public DbSet<ShiftAssignment> ShiftAssignments { get; set; } = null!;
         public DbSet<Category> Categories { get; set; } = null!;
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderItem> OrderItems { get; set; } = null!;

@@ -114,6 +114,14 @@ public static class CacheKey
     /// Example: string.Format(ShiftById, "id") → "shift:{id}"
     /// </summary>
     public const string ShiftById = "shift:{0}";
+
+    // ==================== SHIFT ASSIGNMENTS ====================
+    /// <summary>Key cho danh sách phân công (có filter).</summary>
+    public const string ShiftAssignmentList = "shift-assignment:list";
+    /// <summary>Key cho 1 phân công cụ thể theo ID.</summary>
+    public const string ShiftAssignmentById = "shift-assignment:{0}";
+    /// <summary>Key cho danh sách phân công theo nhân viên + ngày.</summary>
+    public const string ShiftAssignmentByEmployee = "shift-assignment:employee:{0}:{1}";
 }
 public static class CacheTTL
 {
@@ -128,4 +136,5 @@ public static class CacheTTL
     public static readonly TimeSpan Reservations = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan InventorySettings = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Shifts = TimeSpan.FromMinutes(15);
+    public static readonly TimeSpan ShiftAssignments = TimeSpan.FromMinutes(10);
 }

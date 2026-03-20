@@ -70,5 +70,26 @@ namespace FoodHub.Infrastructure.Services
             var body = EmailTemplates.GetPasswordResetTemplate(employeeName, resetLink);
             await EnqueueEmailAsync(email, "Password Reset - FoodHub", body, auditTargetId, performedByEmployeeId, cancellationToken);
         }
+
+        public async ValueTask EnqueueShiftAssignmentEmailAsync(
+            string email,
+            string employeeName,
+            string shiftName,
+            DateOnly assignedDate,
+            TimeSpan startTime,
+            TimeSpan endTime,
+            bool isCancelled = false,
+            Guid? auditTargetId = null,
+            Guid? performedByEmployeeId = null,
+            CancellationToken cancellationToken = default)
+        {
+            var subject = isCancelled
+                ? $"[FoodHub] Thông báo HỦY ca làm việc ngày {assignedDate:dd/MM/yyyy}"
+                : $"[FoodHub] Thông báo LỊCH LÀM VIỆC MỚI ngày {assignedDate:dd/MM/yyyy}";
+
+            var body = EmailTemplates.GetShiftAssignmentTemplate(employeeName, shiftName, assignedDate, startTime, endTime, isCancelled);
+
+            await EnqueueEmailAsync(email, subject, body, auditTargetId, performedByEmployeeId, cancellationToken);
+        }
     }
 }

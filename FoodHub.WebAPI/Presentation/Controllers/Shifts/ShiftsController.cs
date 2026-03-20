@@ -6,7 +6,10 @@ using FoodHub.Application.Features.Shifts.Commands.UpdateShift;
 using FoodHub.Application.Features.Shifts.Commands.UpdateShiftStatus;
 using FoodHub.Application.Features.Shifts.Queries.GetShiftById;
 using FoodHub.Application.Features.Shifts.Queries.GetShifts;
+using FoodHub.Application.Extensions.Pagination;
+using FoodHub.Application.Interfaces;
 using FoodHub.WebAPI.Presentation.Attributes;
+using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,106 +17,90 @@ using Microsoft.AspNetCore.Mvc;
 namespace FoodHub.Presentation.Controllers
 {
     /// <summary>
-    /// Quản lý thiết lập các ca làm việc trong hệ thống (Master Data).
+    /// Request object để cập nhật trạng thái hoạt động của ca làm việc.
     /// </summary>
+    public record UpdateShiftStatusRequest(
+        [property: JsonPropertyName("isActive")] bool IsActive
+    );
+ 
     [Tags("Ca làm việc (Shifts)")]
+    [Route("api/v1/shifts")]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class ShiftsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IMessageService _messageService;
 
-        public ShiftsController(IMediator mediator)
+        public ShiftsController(IMediator mediator, IMessageService messageService)
         {
             _mediator = mediator;
+            _messageService = messageService;
         }
 
         /// <summary>
-        /// Lấy danh sách tất cả các ca làm việc.
+        /// Lấy danh sách phân trang ca làm việc.
         /// </summary>
-        /// <returns code="200">Danh sách các ca làm việc.</returns>
         [HttpGet]
         [HasPermission(Permissions.Shifts.View)]
-        [ProducesResponseType(typeof(Result<List<GetShiftByIdResponse>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllShifts()
+        [ProducesResponseType(typeof(Result<PagedResult<GetShiftByIdResponse>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetShifts([FromQuery] PaginationParams pagination)
         {
-            var result = await _mediator.Send(new GetShiftsQuery());
+            var result = await _mediator.Send(new GetShiftsQuery(pagination));
+            if (result.IsSuccess && result.Data != null)
+                Response.AddPaginationHeaders(result.Data);
             return HandleResult(result);
         }
 
         /// <summary>
-        /// Lấy thông tin chi tiết một ca làm việc theo ID.
+        /// Lấy chi tiết ca làm việc theo ID.
         /// </summary>
-        /// <param name="id">ID của ca làm việc.</param>
-        /// <response code="200">Thông tin ca làm việc.</response>
-        /// <response code="404">Không tìm thấy ca làm việc.</response>
         [HttpGet("{id}")]
         [HasPermission(Permissions.Shifts.View)]
         [ProducesResponseType(typeof(Result<GetShiftByIdResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetShiftById(Guid id)
+        public async Task<IActionResult> GetShift(Guid id)
         {
-            var result = await _mediator.Send(new GetShiftByIdQuery(id));
-            return HandleResult(result);
+            return HandleResult(await _mediator.Send(new GetShiftByIdQuery(id)));
         }
-
+ 
         /// <summary>
-        /// Tạo một ca làm việc mới.
+        /// Tạo mới một ca làm việc.
         /// </summary>
-        /// <remarks>Yêu cầu quyền: Shifts.Create.</remarks>
-        /// <param name="command">Dữ liệu tạo ca làm việc.</param>
-        /// <response code="201">Ca làm việc đã được tạo thành công.</response>
-        /// <response code="400">Dữ liệu không hợp lệ.</response>
         [HttpPost]
         [HasPermission(Permissions.Shifts.Create)]
-        [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
+        [RateLimit(maxRequests: 10, windowMinutes: 1, blockMinutes: 5)]
         [ProducesResponseType(typeof(Result<CreateShiftResponse>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateShift([FromBody] CreateShiftCommand command)
         {
             var result = await _mediator.Send(command);
-            return HandleCreated(result, d => $"/api/v1/shifts/{d.ShiftId}");
+            if (!result.IsSuccess) return HandleResult(result);
+            return CreatedAtAction(nameof(GetShift), new { id = result.Data!.ShiftId }, result.Data);
         }
-
+ 
         /// <summary>
-        /// Cập nhật thông tin ca làm việc (Tên, Giờ bắt đầu/kết thúc).
+        /// Cập nhật thông tin ca làm việc.
         /// </summary>
-        /// <remarks>Yêu cầu quyền: Shifts.Update.</remarks>
-        /// <param name="id">ID của ca làm việc cần cập nhật.</param>
-        /// <param name="command">Dữ liệu cập nhật.</param>
-        /// <response code="200">Cập nhật thành công.</response>
-        /// <response code="400">Dữ liệu không hợp lệ.</response>
-        /// <response code="404">Không tìm thấy ca làm việc.</response>
         [HttpPut("{id}")]
         [HasPermission(Permissions.Shifts.Update)]
-        [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<UpdateShiftResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateShift(Guid id, [FromBody] UpdateShiftCommand command)
         {
             if (id != command.ShiftId)
-            {
-                return BadRequest("ID in path does not match ID in body.");
-            }
-            var result = await _mediator.Send(command);
-            return HandleResult(result);
+                return BadRequest(new ErrorResponse(StatusCodes.Status400BadRequest, _messageService.GetMessage(MessageKeys.Common.IdMismatch)));
+            
+            return HandleResult(await _mediator.Send(command));
         }
-
+ 
         /// <summary>
-        /// Cập nhật trạng thái hoạt động (Kích hoạt/Vô hiệu hóa) của ca làm việc.
+        /// Cập nhật trạng thái hoạt động của ca làm việc.
         /// </summary>
-        /// <param name="id">ID của ca làm việc.</param>
-        /// <param name="request">Thông tin trạng thái mới.</param>
-        /// <response code="200">Cập nhật trạng thái thành công.</response>
-        /// <response code="404">Không tìm thấy ca làm việc.</response>
         [HttpPatch("{id}/status")]
-        [HasPermission(Permissions.Shifts.Deactivate)]
+        [HasPermission(Permissions.Shifts.Update)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateShiftStatus(Guid id, [FromBody] UpdateShiftStatusRequest request)
+        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateShiftStatusRequest request)
         {
-            var result = await _mediator.Send(new UpdateShiftStatusCommand(id, request.IsActive));
-            return HandleResult(result);
+            return HandleResult(await _mediator.Send(new UpdateShiftStatusCommand(id, request.IsActive)));
         }
     }
 }
