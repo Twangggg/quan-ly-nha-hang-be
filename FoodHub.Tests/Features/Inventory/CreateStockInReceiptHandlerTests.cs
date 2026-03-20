@@ -22,6 +22,7 @@ namespace FoodHub.Tests.Features.Inventory
         private readonly Mock<IGenericRepository<Ingredient>> _mockIngredientRepo;
         private readonly Mock<IGenericRepository<InventoryTransaction>> _mockTransactionRepo;
         private readonly Mock<IGenericRepository<StockInReceipt>> _mockReceiptRepo;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly Mock<IUnitOfWork> _mockUnitOfWork;
 
         public CreateStockInReceiptHandlerTests()
@@ -29,6 +30,7 @@ namespace FoodHub.Tests.Features.Inventory
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockMessageService = new Mock<IMessageService>();
             _mockCurrentUser = new Mock<ICurrentUserService>();
+            _mockCache = new Mock<ICacheService>();
             _availabilitySyncService = new Mock<IInventoryAvailabilitySyncService>();
             _mockIngredientRepo = new Mock<IGenericRepository<Ingredient>>();
             _mockTransactionRepo = new Mock<IGenericRepository<InventoryTransaction>>();
@@ -46,6 +48,7 @@ namespace FoodHub.Tests.Features.Inventory
                 _mockUnitOfWork.Object,
                 _mockMessageService.Object,
                 _mockCurrentUser.Object,
+                _mockCache.Object,
                 _availabilitySyncService.Object,
                 Mock.Of<Microsoft.Extensions.Logging.ILogger<CreateStockInReceiptHandler>>()
             );

@@ -20,14 +20,17 @@ namespace FoodHub.Tests.Features.Options.Commands
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly CreateOptionItemHandler _handler;
 
         public CreateOptionItemHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockMessageService = new Mock<IMessageService>();
+            _mockCache = new Mock<ICacheService>();
             _handler = new CreateOptionItemHandler(
                 _mockUow.Object,
+                _mockCache.Object,
                 NullLogger<CreateOptionItemHandler>.Instance,
                 _mockMessageService.Object
             );

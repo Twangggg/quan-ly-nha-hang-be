@@ -1,3 +1,4 @@
+using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Inventory.Recipes.Queries.GetRecipe;
 using FoodHub.Application.Interfaces.Common;
@@ -16,14 +17,17 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
     public class GetRecipeHandlerTests
     {
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
-        private readonly Mock<IMessageService> _messageServiceMock;
+        private readonly Mock<ICacheService> _cacheServiceMock;
         private readonly GetRecipeHandler _handler;
 
         public GetRecipeHandlerTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
-            _messageServiceMock = new Mock<IMessageService>();
-            _handler = new GetRecipeHandler(_unitOfWorkMock.Object);
+            _cacheServiceMock = new Mock<ICacheService>();
+            _handler = new GetRecipeHandler(
+                _unitOfWorkMock.Object,
+                _cacheServiceMock.Object
+            );
         }
 
         [Fact]

@@ -30,6 +30,7 @@ namespace FoodHub.Tests.Features.Inventory
 
             var handler = new GetInventoryCheckCreateFormHandler(
                 mockUnitOfWork.Object,
+                Mock.Of<ICacheService>(),
                 Mock.Of<Microsoft.Extensions.Logging.ILogger<GetInventoryCheckCreateFormHandler>>()
             );
 

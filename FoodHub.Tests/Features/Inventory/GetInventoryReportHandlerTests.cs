@@ -15,11 +15,13 @@ namespace FoodHub.Tests.Features.Inventory
         private readonly Mock<IGenericRepository<InventoryTransaction>> _mockTransactionRepo;
         private readonly Mock<IGenericRepository<StockInReceiptItem>> _mockStockInReceiptItemRepo;
         private readonly Mock<IGenericRepository<StockOutReceiptItem>> _mockStockOutReceiptItemRepo;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly Mock<IUnitOfWork> _mockUnitOfWork;
 
         public GetInventoryReportHandlerTests()
         {
             _mockUnitOfWork = new Mock<IUnitOfWork>();
+            _mockCache = new Mock<ICacheService>();
             _mockIngredientRepo = new Mock<IGenericRepository<Ingredient>>();
             _mockTransactionRepo = new Mock<IGenericRepository<InventoryTransaction>>();
             _mockStockInReceiptItemRepo = new Mock<IGenericRepository<StockInReceiptItem>>();
@@ -38,6 +40,7 @@ namespace FoodHub.Tests.Features.Inventory
 
             _handler = new GetInventoryReportHandler(
                 _mockUnitOfWork.Object,
+                _mockCache.Object,
                 Mock.Of<Microsoft.Extensions.Logging.ILogger<GetInventoryReportHandler>>()
             );
         }

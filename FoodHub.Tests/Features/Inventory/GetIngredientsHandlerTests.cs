@@ -21,16 +21,19 @@ namespace FoodHub.Tests.Features.Inventory
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly GetIngredientsHandler _handler;
 
         public GetIngredientsHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockMapper = new Mock<IMapper>();
+            _mockCache = new Mock<ICacheService>();
 
             _handler = new GetIngredientsHandler(
                 _mockUow.Object,
                 _mockMapper.Object,
+                _mockCache.Object,
                 Mock.Of<ILogger<GetIngredientsHandler>>()
             );
         }

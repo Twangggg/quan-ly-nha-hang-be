@@ -41,6 +41,7 @@ namespace FoodHub.Tests.Features.Inventory
 
             var handler = new GetInventoryChecksHandler(
                 mockUnitOfWork.Object,
+                Mock.Of<ICacheService>(),
                 Mock.Of<Microsoft.Extensions.Logging.ILogger<GetInventoryChecksHandler>>()
             );
 

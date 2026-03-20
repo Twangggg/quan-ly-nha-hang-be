@@ -22,6 +22,7 @@ namespace FoodHub.Tests.Features.Options.Commands
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly DeleteOptionGroupHandler _handler;
 
         public DeleteOptionGroupHandlerTests()
@@ -29,8 +30,10 @@ namespace FoodHub.Tests.Features.Options.Commands
             _mockUow = new Mock<IUnitOfWork>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
+            _mockCache = new Mock<ICacheService>();
             _handler = new DeleteOptionGroupHandler(
                 _mockUow.Object,
+                _mockCache.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
                 NullLogger<DeleteOptionGroupHandler>.Instance

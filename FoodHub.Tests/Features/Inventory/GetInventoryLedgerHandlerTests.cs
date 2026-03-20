@@ -12,11 +12,13 @@ namespace FoodHub.Tests.Features.Inventory
     {
         private readonly GetInventoryLedgerHandler _handler;
         private readonly Mock<IGenericRepository<InventoryTransaction>> _mockTransactionRepo;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly Mock<IUnitOfWork> _mockUnitOfWork;
 
         public GetInventoryLedgerHandlerTests()
         {
             _mockUnitOfWork = new Mock<IUnitOfWork>();
+            _mockCache = new Mock<ICacheService>();
             _mockTransactionRepo = new Mock<IGenericRepository<InventoryTransaction>>();
 
             _mockUnitOfWork
@@ -25,6 +27,7 @@ namespace FoodHub.Tests.Features.Inventory
 
             _handler = new GetInventoryLedgerHandler(
                 _mockUnitOfWork.Object,
+                _mockCache.Object,
                 Mock.Of<Microsoft.Extensions.Logging.ILogger<GetInventoryLedgerHandler>>()
             );
         }

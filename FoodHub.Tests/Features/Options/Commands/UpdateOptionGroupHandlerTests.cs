@@ -20,15 +20,18 @@ namespace FoodHub.Tests.Features.Options.Commands
     public class UpdateOptionGroupHandlerTests
     {
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly UpdateOptionGroupHandler _handler;
         private readonly Mock<IUnitOfWork> _mockUow;
 
         public UpdateOptionGroupHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
+            _mockCache = new Mock<ICacheService>();
             _mockMessageService = new Mock<IMessageService>();
             _handler = new UpdateOptionGroupHandler(
                 _mockUow.Object,
+                _mockCache.Object,
                 NullLogger<UpdateOptionGroupHandler>.Instance,
                 _mockMessageService.Object
             );

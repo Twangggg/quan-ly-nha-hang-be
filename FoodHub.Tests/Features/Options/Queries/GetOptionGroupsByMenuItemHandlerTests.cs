@@ -19,13 +19,16 @@ namespace FoodHub.Tests.Features.Options.Queries
     public class GetOptionGroupsByMenuItemHandlerTests
     {
         private readonly Mock<IUnitOfWork> _mockUow;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly GetOptionGroupsByMenuItemHandler _handler;
 
         public GetOptionGroupsByMenuItemHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
+            _mockCache = new Mock<ICacheService>();
             _handler = new GetOptionGroupsByMenuItemHandler(
                 _mockUow.Object,
+                _mockCache.Object,
                 NullLogger<GetOptionGroupsByMenuItemHandler>.Instance
             );
         }

@@ -64,7 +64,8 @@ namespace FoodHub.Tests.Features.Billing.Commands
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Data.CheckoutUrl.Should().Be("https://payos.vn");
+            result.Data.Should().NotBeNull();
+            result.Data!.CheckoutUrl.Should().Be("https://payos.vn");
         }
 
         [Fact]
