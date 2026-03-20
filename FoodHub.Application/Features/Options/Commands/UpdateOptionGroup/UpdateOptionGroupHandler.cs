@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
@@ -17,16 +18,19 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
         : IRequestHandler<UpdateOptionGroupCommand, Result<UpdateOptionGroupResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<UpdateOptionGroupHandler> _logger;
         private readonly IMessageService _messageService;
 
         public UpdateOptionGroupHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ILogger<UpdateOptionGroupHandler> logger,
             IMessageService messageService
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _logger = logger;
             _messageService = messageService;
         }
@@ -62,6 +66,12 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
             _unitOfWork.Repository<OptionGroup>().Update(optionGroup);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
+            await _cacheService.RemoveByPatternAsync(
+                CacheKey.OptionReusableList,
+                cancellationToken
+            );
+            await _cacheService.RemoveByPatternAsync("option:menuitem:", cancellationToken);
+
             var response = new UpdateOptionGroupResponse
             {
                 OptionGroupId = optionGroup.OptionGroupId,
@@ -69,6 +79,8 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
                 Name = optionGroup.Name,
                 Type = (int)optionGroup.OptionType,
                 IsRequired = optionGroup.IsRequired,
+                CreatedAt = optionGroup.CreatedAt,
+                UpdatedAt = optionGroup.UpdatedAt,
             };
 
             _logger.LogInformation(

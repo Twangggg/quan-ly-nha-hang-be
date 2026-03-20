@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
@@ -20,16 +21,19 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateMenuItemOptionGrou
         >
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<UpdateMenuItemOptionGroupHandler> _logger;
         private readonly IMessageService _messageService;
 
         public UpdateMenuItemOptionGroupHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ILogger<UpdateMenuItemOptionGroupHandler> logger,
             IMessageService messageService
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _logger = logger;
             _messageService = messageService;
         }
@@ -69,6 +73,12 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateMenuItemOptionGrou
 
             _unitOfWork.Repository<MenuItemOptionGroup>().Update(assignment);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            await _cacheService.RemoveByPatternAsync(
+                CacheKey.OptionReusableList,
+                cancellationToken
+            );
+            await _cacheService.RemoveByPatternAsync("option:menuitem:", cancellationToken);
 
             _logger.LogInformation(
                 "End updating MenuItemOptionGroup OptionGroupId={OptionGroupId}",

@@ -20,6 +20,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
     {
         private readonly IInventoryAvailabilitySyncService _inventoryAvailabilitySyncService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<CreateStockOutReceiptHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly IUnitOfWork _unitOfWork;
@@ -28,6 +29,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            ICacheService cacheService,
             IInventoryAvailabilitySyncService inventoryAvailabilitySyncService,
             ILogger<CreateStockOutReceiptHandler> logger
         )
@@ -35,6 +37,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
             _inventoryAvailabilitySyncService = inventoryAvailabilitySyncService;
             _logger = logger;
         }
@@ -140,6 +143,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Creat
                     ingredientIds,
                     cancellationToken
                 );
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 _logger.LogInformation(
                     "End handling CreateStockOutReceipt with ReceiptCode={ReceiptCode}",

@@ -1,6 +1,8 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Helpers;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -20,18 +22,21 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredie
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cacheService;
         private readonly IMessageService _messageService;
         private readonly ILogger<GetIngredientByIdHandler> _logger;
 
         public GetIngredientByIdHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
+            ICacheService cacheService,
             IMessageService messageService,
             ILogger<GetIngredientByIdHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cacheService = cacheService;
             _messageService = messageService;
             _logger = logger;
         }
@@ -48,6 +53,20 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredie
 
             try
             {
+                var cacheKey = string.Format(CacheKey.InventoryIngredientById, request.IngredientId);
+                var cached = await _cacheService.GetAsync<GetIngredientByIdResponse>(
+                    cacheKey,
+                    cancellationToken
+                );
+                if (cached is not null)
+                {
+                    _logger.LogInformation(
+                        "End handling GetIngredientById for {IngredientId} (from cache)",
+                        request.IngredientId
+                    );
+                    return Result<GetIngredientByIdResponse>.Success(cached);
+                }
+
                 var response = await _unitOfWork
                     .Repository<Ingredient>()
                     .Query()
@@ -67,6 +86,12 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredie
                 _logger.LogInformation(
                     "End handling GetIngredientById for {IngredientId}",
                     request.IngredientId
+                );
+                await _cacheService.SetAsync(
+                    cacheKey,
+                    response,
+                    CacheTTL.Inventory,
+                    cancellationToken
                 );
                 return Result<GetIngredientByIdResponse>.Success(response);
             }

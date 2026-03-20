@@ -69,9 +69,19 @@ namespace FoodHub.Tests.Features.Options.Queries
             optionGroups[0].AttachOptionGroup(sizeGroup);
             optionGroups[1].AttachOptionGroup(toppingsGroup);
 
+            var optionItems = new List<OptionItem>
+            {
+                OptionItem.Create(sizeGroup.OptionGroupId, "Small", 0),
+                OptionItem.Create(sizeGroup.OptionGroupId, "Large", 2.00m),
+            };
+
             var mockRepo = new Mock<IGenericRepository<MenuItemOptionGroup>>();
             mockRepo.Setup(r => r.Query()).Returns(optionGroups.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<MenuItemOptionGroup>()).Returns(mockRepo.Object);
+
+            var mockOptionItemRepo = new Mock<IGenericRepository<OptionItem>>();
+            mockOptionItemRepo.Setup(r => r.Query()).Returns(optionItems.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<OptionItem>()).Returns(mockOptionItemRepo.Object);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -96,6 +106,10 @@ namespace FoodHub.Tests.Features.Options.Queries
             var mockRepo = new Mock<IGenericRepository<MenuItemOptionGroup>>();
             mockRepo.Setup(r => r.Query()).Returns(optionGroups.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<MenuItemOptionGroup>()).Returns(mockRepo.Object);
+
+            var mockOptionItemRepo = new Mock<IGenericRepository<OptionItem>>();
+            mockOptionItemRepo.Setup(r => r.Query()).Returns(Array.Empty<OptionItem>().AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<OptionItem>()).Returns(mockOptionItemRepo.Object);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -127,9 +141,18 @@ namespace FoodHub.Tests.Features.Options.Queries
             );
             assignment.AttachOptionGroup(optionGroup);
 
+            var optionItems = new List<OptionItem>
+            {
+                OptionItem.Create(optionGroup.OptionGroupId, "Medium", 1.00m),
+            };
+
             var mockRepo = new Mock<IGenericRepository<MenuItemOptionGroup>>();
             mockRepo.Setup(r => r.Query()).Returns(new List<MenuItemOptionGroup> { assignment }.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<MenuItemOptionGroup>()).Returns(mockRepo.Object);
+
+            var mockOptionItemRepo = new Mock<IGenericRepository<OptionItem>>();
+            mockOptionItemRepo.Setup(r => r.Query()).Returns(optionItems.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<OptionItem>()).Returns(mockOptionItemRepo.Object);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);

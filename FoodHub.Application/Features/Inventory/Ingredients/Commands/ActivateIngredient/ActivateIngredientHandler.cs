@@ -17,16 +17,19 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.ActivateIn
         : IRequestHandler<ActivateIngredientCommand, Result<Unit>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly IMessageService _messageService;
         private readonly ILogger<ActivateIngredientHandler> _logger;
 
         public ActivateIngredientHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             IMessageService messageService,
             ILogger<ActivateIngredientHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _messageService = messageService;
             _logger = logger;
         }
@@ -62,6 +65,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.ActivateIn
                 ingredient.Activate();
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 _logger.LogInformation(
                     "End handling ActivateIngredient for {IngredientId}",

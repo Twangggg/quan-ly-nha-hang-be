@@ -17,6 +17,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Proces
     {
         private readonly ICurrentUserService _currentUserService;
         private readonly IInventoryAvailabilitySyncService _inventoryAvailabilitySyncService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<ProcessInventoryCheckHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly IReceiptCodeGenerator _receiptCodeGenerator;
@@ -26,6 +27,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Proces
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            ICacheService cacheService,
             IInventoryAvailabilitySyncService inventoryAvailabilitySyncService,
             IReceiptCodeGenerator receiptCodeGenerator,
             ILogger<ProcessInventoryCheckHandler> logger
@@ -34,6 +36,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Proces
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
             _inventoryAvailabilitySyncService = inventoryAvailabilitySyncService;
             _receiptCodeGenerator = receiptCodeGenerator;
             _logger = logger;
@@ -248,6 +251,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Proces
                         cancellationToken
                     );
                 }
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 _logger.LogInformation(
                     "End handling ProcessInventoryCheck for InventoryCheckId={InventoryCheckId}",

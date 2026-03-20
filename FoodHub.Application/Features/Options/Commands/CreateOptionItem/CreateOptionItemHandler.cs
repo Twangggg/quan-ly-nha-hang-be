@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
@@ -16,16 +17,19 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionItem
         : IRequestHandler<CreateOptionItemCommand, Result<CreateOptionItemResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<CreateOptionItemHandler> _logger;
         private readonly IMessageService _messageService;
 
         public CreateOptionItemHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ILogger<CreateOptionItemHandler> logger,
             IMessageService messageService
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _logger = logger;
             _messageService = messageService;
         }
@@ -57,6 +61,12 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionItem
 
             await _unitOfWork.Repository<OptionItem>().AddAsync(optionItem);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            await _cacheService.RemoveByPatternAsync(
+                CacheKey.OptionReusableList,
+                cancellationToken
+            );
+            await _cacheService.RemoveByPatternAsync("option:menuitem:", cancellationToken);
 
             var response = new CreateOptionItemResponse
             {

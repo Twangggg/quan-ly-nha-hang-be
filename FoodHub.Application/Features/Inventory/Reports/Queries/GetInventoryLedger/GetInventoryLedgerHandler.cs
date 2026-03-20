@@ -1,4 +1,6 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Helpers;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
@@ -13,13 +15,16 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLed
     {
         private readonly ILogger<GetInventoryLedgerHandler> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
 
         public GetInventoryLedgerHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ILogger<GetInventoryLedgerHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -34,6 +39,21 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLed
                 request.FromDate,
                 request.ToDate
             );
+
+            var cacheKey = CacheKeyBuilder.Build(CacheKey.InventoryLedgerList, request);
+            var cached = await _cacheService.GetAsync<PagedResult<GetInventoryLedgerResponse>>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cached is not null)
+            {
+                _logger.LogInformation(
+                    "End handling GetInventoryLedger with {Count} items out of {TotalCount} (from cache)",
+                    cached.Items.Count,
+                    cached.TotalCount
+                );
+                return Result<PagedResult<GetInventoryLedgerResponse>>.Success(cached);
+            }
 
             var from = ToUtcStart(request.FromDate);
             var toExclusive = ToUtcExclusiveEnd(request.ToDate);
@@ -83,6 +103,13 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryLed
                 "End handling GetInventoryLedger with {Count} items out of {TotalCount}",
                 pagedResult.Items.Count,
                 pagedResult.TotalCount
+            );
+
+            await _cacheService.SetAsync(
+                cacheKey,
+                pagedResult,
+                CacheTTL.Inventory,
+                cancellationToken
             );
 
             return Result<PagedResult<GetInventoryLedgerResponse>>.Success(pagedResult);

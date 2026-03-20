@@ -1,4 +1,6 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Helpers;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -20,14 +22,17 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Queries.GetOpening
         >
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<GetOpeningStockListHandler> _logger;
 
         public GetOpeningStockListHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ILogger<GetOpeningStockListHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -41,6 +46,21 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Queries.GetOpening
                 request.Pagination.PageNumber,
                 request.Pagination.PageSize
             );
+
+            var cacheKey = CacheKeyBuilder.Build(CacheKey.InventoryOpeningStockList, request);
+            var cached = await _cacheService.GetAsync<PagedResult<GetOpeningStockListResponse>>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cached is not null)
+            {
+                _logger.LogInformation(
+                    "End handling GetOpeningStockList with {Count} items out of {TotalCount} (from cache)",
+                    cached.Items.Count,
+                    cached.TotalCount
+                );
+                return Result<PagedResult<GetOpeningStockListResponse>>.Success(cached);
+            }
 
             var query = _unitOfWork
                 .Repository<Ingredient>()
@@ -64,6 +84,13 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Queries.GetOpening
                 "End handling GetOpeningStockList with {Count} items out of {TotalCount}",
                 pagedResult.Items.Count,
                 pagedResult.TotalCount
+            );
+
+            await _cacheService.SetAsync(
+                cacheKey,
+                pagedResult,
+                CacheTTL.Inventory,
+                cancellationToken
             );
 
             return Result<PagedResult<GetOpeningStockListResponse>>.Success(pagedResult);

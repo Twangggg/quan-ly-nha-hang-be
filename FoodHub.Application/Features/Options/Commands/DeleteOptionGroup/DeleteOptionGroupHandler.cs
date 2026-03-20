@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
@@ -17,18 +18,21 @@ namespace FoodHub.Application.Features.Options.Commands.DeleteOptionGroup
         : IRequestHandler<DeleteOptionGroupCommand, Result<DeleteOptionGroupResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ILogger<DeleteOptionGroupHandler> _logger;
 
         public DeleteOptionGroupHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ICurrentUserService currentUserService,
             IMessageService messageService,
             ILogger<DeleteOptionGroupHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _currentUserService = currentUserService;
             _messageService = messageService;
             _logger = logger;
@@ -63,6 +67,12 @@ namespace FoodHub.Application.Features.Options.Commands.DeleteOptionGroup
                 : null;
 
             await _unitOfWork.SaveChangeAsync();
+
+            await _cacheService.RemoveByPatternAsync(
+                CacheKey.OptionReusableList,
+                cancellationToken
+            );
+            await _cacheService.RemoveByPatternAsync("option:menuitem:", cancellationToken);
 
             _logger.LogInformation(
                 "End deleting option group OptionGroupId={OptionGroupId}",

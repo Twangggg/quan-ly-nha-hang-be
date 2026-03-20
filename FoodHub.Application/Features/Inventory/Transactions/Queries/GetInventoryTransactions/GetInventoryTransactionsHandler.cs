@@ -1,5 +1,7 @@
 using System.Linq.Expressions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Helpers;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces.Common;
@@ -22,14 +24,17 @@ namespace FoodHub.Application.Features.Inventory.Transactions.Queries.GetInvento
         >
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<GetInventoryTransactionsHandler> _logger;
 
         public GetInventoryTransactionsHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ILogger<GetInventoryTransactionsHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -43,6 +48,21 @@ namespace FoodHub.Application.Features.Inventory.Transactions.Queries.GetInvento
                 request.Pagination.PageNumber,
                 request.Pagination.PageSize
             );
+
+            var cacheKey = CacheKeyBuilder.Build(CacheKey.InventoryTransactionsList, request);
+            var cached = await _cacheService.GetAsync<PagedResult<GetInventoryTransactionsResponse>>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cached is not null)
+            {
+                _logger.LogInformation(
+                    "End handling GetInventoryTransactions with {Count} items out of {TotalCount} (from cache)",
+                    cached.Items.Count,
+                    cached.TotalCount
+                );
+                return Result<PagedResult<GetInventoryTransactionsResponse>>.Success(cached);
+            }
 
             IQueryable<InventoryTransaction> query = _unitOfWork
                 .Repository<InventoryTransaction>()
@@ -103,6 +123,13 @@ namespace FoodHub.Application.Features.Inventory.Transactions.Queries.GetInvento
                 "End handling GetInventoryTransactions with {Count} items out of {TotalCount}",
                 pagedResult.Items.Count,
                 pagedResult.TotalCount
+            );
+
+            await _cacheService.SetAsync(
+                cacheKey,
+                pagedResult,
+                CacheTTL.Inventory,
+                cancellationToken
             );
 
             return Result<PagedResult<GetInventoryTransactionsResponse>>.Success(pagedResult);

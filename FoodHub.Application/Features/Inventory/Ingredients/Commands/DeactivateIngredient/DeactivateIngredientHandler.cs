@@ -17,16 +17,19 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.Deactivate
         : IRequestHandler<DeactivateIngredientCommand, Result<Unit>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly IMessageService _messageService;
         private readonly ILogger<DeactivateIngredientHandler> _logger;
 
         public DeactivateIngredientHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             IMessageService messageService,
             ILogger<DeactivateIngredientHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _messageService = messageService;
             _logger = logger;
         }
@@ -72,6 +75,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.Deactivate
                 }
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 _logger.LogInformation(
                     "End handling DeactivateIngredient for {IngredientId}",

@@ -11,6 +11,8 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
         public int MaxSelect { get; set; }
         public int SortOrder { get; set; }
         public bool IsVisible { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public List<OptionItemResponse>? OptionItems { get; set; }
     }
 

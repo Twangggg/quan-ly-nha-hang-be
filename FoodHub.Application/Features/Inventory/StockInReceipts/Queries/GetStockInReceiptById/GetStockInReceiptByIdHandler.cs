@@ -1,5 +1,7 @@
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Helpers;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -20,14 +22,17 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStoc
         private readonly ILogger<GetStockInReceiptByIdHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
 
         public GetStockInReceiptByIdHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             IMessageService messageService,
             ILogger<GetStockInReceiptByIdHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _messageService = messageService;
             _logger = logger;
         }
@@ -41,6 +46,20 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStoc
                 "Start handling GetStockInReceiptById for StockInReceiptId={StockInReceiptId}",
                 request.StockInReceiptId
             );
+
+            var cacheKey = string.Format(CacheKey.InventoryStockInReceiptById, request.StockInReceiptId);
+            var cached = await _cacheService.GetAsync<GetStockInReceiptByIdResponse>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cached is not null)
+            {
+                _logger.LogInformation(
+                    "End handling GetStockInReceiptById for StockInReceiptId={StockInReceiptId} (from cache)",
+                    request.StockInReceiptId
+                );
+                return Result<GetStockInReceiptByIdResponse>.Success(cached);
+            }
 
             var employeeQuery = _unitOfWork.Repository<Employee>().Query().AsNoTracking();
             var ingredientQuery = _unitOfWork.Repository<Ingredient>().Query().AsNoTracking();
@@ -101,6 +120,13 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStoc
             _logger.LogInformation(
                 "End handling GetStockInReceiptById for ReceiptCode={ReceiptCode}",
                 response.ReceiptCode
+            );
+
+            await _cacheService.SetAsync(
+                cacheKey,
+                response,
+                CacheTTL.Inventory,
+                cancellationToken
             );
 
             return Result<GetStockInReceiptByIdResponse>.Success(response);

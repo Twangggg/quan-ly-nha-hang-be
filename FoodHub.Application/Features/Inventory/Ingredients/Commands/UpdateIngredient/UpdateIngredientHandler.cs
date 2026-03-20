@@ -18,18 +18,21 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
         : IRequestHandler<UpdateIngredientCommand, Result<UpdateIngredientResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<UpdateIngredientHandler> _logger;
 
         public UpdateIngredientHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             IMessageService messageService,
             ILogger<UpdateIngredientHandler> logger,
             ICurrentUserService currentUserService
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _messageService = messageService;
             _logger = logger;
             _currentUserService = currentUserService;
@@ -116,6 +119,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
 
                     await _unitOfWork.SaveChangeAsync(cancellationToken);
                     await _unitOfWork.CommitTransactionAsync();
+                    await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                     var response = new UpdateIngredientResponse
                     {

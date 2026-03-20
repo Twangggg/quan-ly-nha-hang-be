@@ -218,6 +218,7 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
                 await _cacheService.RemoveAsync(CacheKey.InventorySettings, cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
                 await _cacheService.RemoveAsync(CacheKey.InventorySettings, cancellationToken);
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 var response = new ImportOpeningStockResponse
                 {

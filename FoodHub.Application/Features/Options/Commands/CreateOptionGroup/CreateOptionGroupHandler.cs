@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
@@ -13,16 +14,19 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
         : IRequestHandler<CreateOptionGroupCommand, Result<CreateOptionGroupResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<CreateOptionGroupHandler> _logger;
         private readonly IMessageService _messageService;
 
         public CreateOptionGroupHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ILogger<CreateOptionGroupHandler> logger,
             IMessageService messageService
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _logger = logger;
             _messageService = messageService;
         }
@@ -90,6 +94,12 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
 
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.OptionReusableList,
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync("option:menuitem:", cancellationToken);
+
                 var response = new CreateOptionGroupResponse
                 {
                     OptionGroupId = optionGroup.OptionGroupId,
@@ -100,7 +110,9 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
                     MinSelect = assignment?.MinSelect ?? optionGroup.GetDefaultMinSelect(),
                     MaxSelect = assignment?.MaxSelect ?? optionGroup.GetDefaultMaxSelect(),
                     SortOrder = assignment?.SortOrder ?? 0,
-                    IsVisible = assignment?.IsVisible ?? true,
+                    IsVisible = assignment?.IsVisible ?? request.IsVisible,
+                    CreatedAt = optionGroup.CreatedAt,
+                    UpdatedAt = optionGroup.UpdatedAt,
                     OptionItems = new List<OptionItemResponse>(),
                 };
 

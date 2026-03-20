@@ -15,6 +15,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Create
         : IRequestHandler<CreateInventoryCheckCommand, Result<CreateInventoryCheckResponse>>
     {
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<CreateInventoryCheckHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly IUnitOfWork _unitOfWork;
@@ -23,12 +24,14 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Create
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            ICacheService cacheService,
             ILogger<CreateInventoryCheckHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -91,6 +94,7 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Commands.Create
                 await _unitOfWork.Repository<InventoryCheck>().AddAsync(inventoryCheck);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 _logger.LogInformation(
                     "End handling CreateInventoryCheck with InventoryCheckId={InventoryCheckId}",

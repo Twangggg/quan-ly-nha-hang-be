@@ -20,6 +20,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
     {
         private readonly IInventoryAvailabilitySyncService _inventoryAvailabilitySyncService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<CreateStockInReceiptHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly IUnitOfWork _unitOfWork;
@@ -28,6 +29,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            ICacheService cacheService,
             IInventoryAvailabilitySyncService inventoryAvailabilitySyncService,
             ILogger<CreateStockInReceiptHandler> logger
         )
@@ -35,6 +37,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
             _inventoryAvailabilitySyncService = inventoryAvailabilitySyncService;
             _logger = logger;
         }
@@ -141,11 +144,11 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                 await receiptRepo.AddAsync(receipt);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
-
                 await _inventoryAvailabilitySyncService.SyncAfterStockChangeAsync(
                     ingredientIds,
                     cancellationToken
                 );
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 _logger.LogInformation(
                     "End handling CreateStockInReceipt with ReceiptCode={ReceiptCode}",

@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
@@ -15,14 +16,17 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInve
         private readonly ILogger<GetInventoryCheckByIdHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
 
         public GetInventoryCheckByIdHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             IMessageService messageService,
             ILogger<GetInventoryCheckByIdHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _messageService = messageService;
             _logger = logger;
         }
@@ -36,6 +40,20 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInve
                 "Start handling GetInventoryCheckById for InventoryCheckId={InventoryCheckId}",
                 request.InventoryCheckId
             );
+
+            var cacheKey = string.Format(CacheKey.InventoryCheckById, request.InventoryCheckId);
+            var cached = await _cacheService.GetAsync<GetInventoryCheckByIdResponse>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cached is not null)
+            {
+                _logger.LogInformation(
+                    "End handling GetInventoryCheckById for InventoryCheckId={InventoryCheckId} (from cache)",
+                    request.InventoryCheckId
+                );
+                return Result<GetInventoryCheckByIdResponse>.Success(cached);
+            }
 
             var employeeQuery = _unitOfWork.Repository<Employee>().Query().AsNoTracking();
 
@@ -84,6 +102,13 @@ namespace FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInve
             _logger.LogInformation(
                 "End handling GetInventoryCheckById for InventoryCheckId={InventoryCheckId}",
                 response.InventoryCheckId
+            );
+
+            await _cacheService.SetAsync(
+                cacheKey,
+                response,
+                CacheTTL.Inventory,
+                cancellationToken
             );
 
             return Result<GetInventoryCheckByIdResponse>.Success(response);

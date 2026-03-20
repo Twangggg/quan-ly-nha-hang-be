@@ -93,9 +93,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     await repo.AddAsync(ingredient);
                     await _unitOfWork.SaveChangeAsync(cancellationToken);
                     await _unitOfWork.CommitTransactionAsync();
-
-                    // Invalidate cache if needed
-                    // await _cacheService.RemoveAsync(CacheKey.IngredientList, cancellationToken);
+                    await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                     var response = new CreateIngredientResponse
                     {

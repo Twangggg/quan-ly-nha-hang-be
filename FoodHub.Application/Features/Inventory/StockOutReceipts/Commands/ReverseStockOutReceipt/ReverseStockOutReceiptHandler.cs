@@ -21,6 +21,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
     {
         private readonly IInventoryAvailabilitySyncService _inventoryAvailabilitySyncService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<ReverseStockOutReceiptHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly IUnitOfWork _unitOfWork;
@@ -29,6 +30,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            ICacheService cacheService,
             IInventoryAvailabilitySyncService inventoryAvailabilitySyncService,
             ILogger<ReverseStockOutReceiptHandler> logger
         )
@@ -36,6 +38,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
             _inventoryAvailabilitySyncService = inventoryAvailabilitySyncService;
             _logger = logger;
         }
@@ -125,6 +128,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
                     ingredientIds,
                     cancellationToken
                 );
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 _logger.LogInformation(
                     "End handling ReverseStockOutReceipt for ReceiptCode={ReceiptCode}",

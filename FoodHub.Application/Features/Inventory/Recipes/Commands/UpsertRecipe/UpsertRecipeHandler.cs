@@ -19,18 +19,21 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<UpsertRecipeHandler> _logger;
 
         public UpsertRecipeHandler(
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            ICacheService cacheService,
             ILogger<UpsertRecipeHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -130,6 +133,7 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 _logger.LogInformation(
                     "Successfully updated recipe for MenuItemId: {MenuItemId}. New Cost: {TotalCost}",
