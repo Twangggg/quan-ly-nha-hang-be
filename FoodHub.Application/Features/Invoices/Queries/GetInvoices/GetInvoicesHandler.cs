@@ -56,7 +56,7 @@ namespace FoodHub.Application.Features.Invoices.Queries.GetInvoices
                 OrderId = i.OrderId,
                 CreatedAt = i.CreatedAt,
                 CashierName = i.CashierName,
-                TableNumber = i.TableNumber,
+                TableNumber = i.TableNumber ?? string.Empty,
                 PaymentMethod = i.PaymentMethod,
                 TotalAmount = i.TotalAmount
             });

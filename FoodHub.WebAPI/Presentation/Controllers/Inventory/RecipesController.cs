@@ -16,11 +16,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers
 {
-    [ApiController]
-    [Authorize]
     /// <summary>
     /// Quản lý định lượng nguyên liệu (recipe) cho món ăn.
     /// </summary>
+    [ApiController]
+    [Authorize]
     [Tags("Kho hàng - Định lượng (Recipe)")]
     public class RecipesController : ApiControllerBase
     {

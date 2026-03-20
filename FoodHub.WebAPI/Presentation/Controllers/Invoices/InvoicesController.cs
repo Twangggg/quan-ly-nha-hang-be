@@ -129,7 +129,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Invoices
             var command = new CreateInvoiceCommand(orderId, amountReceived);
             var result = await _mediator.Send(command);
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && result.Data != null)
             {
                 return CreatedAtAction(nameof(GetInvoicePdf), new { id = result.Data.InvoiceId }, result);
             }

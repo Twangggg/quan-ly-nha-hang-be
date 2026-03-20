@@ -98,6 +98,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         /// Check-in khách hàng đã đặt bàn. Hệ thống sẽ tự động tạo đơn hàng (Order) phục vụ tại bàn tương ứng.
         /// </summary>
         /// <param name="id">Mã định danh của đơn đặt bàn (ReservationId).</param>
+        /// <param name="request">Thông tin về khu vực mới (nếu khách đổi bàn khi check-in).</param>
         /// <response code="200">Check-in thành công. Trả về thông tin OrderId và OrderCode.</response>
         /// <response code="400">Yêu cầu không hợp lệ (ví dụ: trạng thái đặt bàn không phù hợp).</response>
         /// <response code="404">Không tìm thấy thông tin đặt bàn.</response>
