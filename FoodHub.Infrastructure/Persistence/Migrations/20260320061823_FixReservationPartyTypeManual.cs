@@ -10,18 +10,22 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(name: "party_type", table: "reservations");
+            migrationBuilder.Sql(
+                """
+                ALTER TABLE IF EXISTS reservations
+                DROP COLUMN IF EXISTS party_type;
+                """
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "party_type",
-                table: "reservations",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0
+            migrationBuilder.Sql(
+                """
+                ALTER TABLE IF EXISTS reservations
+                ADD COLUMN IF NOT EXISTS party_type integer NOT NULL DEFAULT 4;
+                """
             );
         }
     }

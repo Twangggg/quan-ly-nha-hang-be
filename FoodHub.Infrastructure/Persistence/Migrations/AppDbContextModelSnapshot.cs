@@ -1836,10 +1836,6 @@ namespace FoodHub.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("note");
 
-                    b.Property<int>("PartyType")
-                        .HasColumnType("integer")
-                        .HasColumnName("party_type");
-
                     b.Property<DateOnly>("ReservationDate")
                         .HasColumnType("date")
                         .HasColumnName("reservation_date");
