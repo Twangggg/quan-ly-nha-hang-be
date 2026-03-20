@@ -30,12 +30,22 @@ namespace FoodHub.Application.Features.Options.Queries.GetReusableOptionGroups
         )
         {
             _logger.LogInformation("Start querying reusable option groups");
-            var pagedGroups = await _unitOfWork
+            var baseQuery = _unitOfWork
                 .Repository<OptionGroup>()
                 .Query()
                 .AsNoTracking()
                 .Where(og => og.MenuItemId == null) // REUSABLE
-                .OrderBy(og => og.Name)
+                .OrderBy(og => og.Name);
+
+            var totalCount = await baseQuery.CountAsync(cancellationToken);
+
+            var optionGroups = await baseQuery
+                .Include(og => og.OptionItems)
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync(cancellationToken);
+
+            var mappedGroups = optionGroups
                 .Select(og => new OptionGroupResponse
                 {
                     OptionGroupId = og.OptionGroupId,
@@ -53,7 +63,17 @@ namespace FoodHub.Application.Features.Options.Queries.GetReusableOptionGroups
                         })
                         .ToList(),
                 })
-                .ToPagedResultAsync(request.PageNumber, request.PageSize);
+                .ToList();
+
+            var pagedGroups = new PagedResult<OptionGroupResponse>(
+                mappedGroups,
+                new PaginationParams
+                {
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize,
+                },
+                totalCount
+            );
 
             _logger.LogInformation(
                 "End querying reusable option groups PageNumber={PageNumber} TotalCount={TotalCount}",

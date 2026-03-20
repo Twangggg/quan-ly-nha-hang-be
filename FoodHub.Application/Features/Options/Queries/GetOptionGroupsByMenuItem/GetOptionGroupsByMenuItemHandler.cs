@@ -41,9 +41,14 @@ namespace FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem
                 .Repository<MenuItemOptionGroup>()
                 .Query()
                 .AsNoTracking()
+                .Include(miog => miog.OptionGroup)
+                    .ThenInclude(og => og.OptionItems)
                 .Where(miog => miog.MenuItemId == request.MenuItemId && miog.IsVisible)
                 .OrderBy(miog => miog.SortOrder)
                 .ThenBy(miog => miog.OptionGroup.Name)
+                .ToListAsync(cancellationToken);
+
+            var mappedGroups = groups
                 .Select(miog => new OptionGroupResponse
                 {
                     MenuItemOptionGroupId = miog.MenuItemOptionGroupId,
@@ -67,15 +72,15 @@ namespace FoodHub.Application.Features.Options.Queries.GetOptionGroupsByMenuItem
                         })
                         .ToList(),
                 })
-                .ToListAsync(cancellationToken);
+                .ToList();
 
             _logger.LogInformation(
                 "End querying option groups for MenuItemId={MenuItemId} Count={OptionGroupCount}",
                 request.MenuItemId,
-                groups.Count
+                mappedGroups.Count
             );
 
-            return Result<List<OptionGroupResponse>>.Success(groups);
+            return Result<List<OptionGroupResponse>>.Success(mappedGroups);
         }
     }
 }
