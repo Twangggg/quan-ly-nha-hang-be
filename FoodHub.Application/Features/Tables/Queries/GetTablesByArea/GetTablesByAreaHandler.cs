@@ -44,6 +44,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTablesByArea
             var tableRepository = _unitOfWork.Repository<Table>();
             var tables = await tableRepository.Query()
                 .Include(t => t.Area)
+                .Include(t => t.Orders)
                 .Where(t => t.AreaId == request.AreaId)
                 .OrderBy(t => t.TableNumber)
                 .ProjectTo<GetTablesByAreaResponse>(_mapper.ConfigurationProvider)

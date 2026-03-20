@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
@@ -120,6 +121,14 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
 
                 _unitOfWork.Repository<Order>().Update(order);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    string.Format(CacheKey.TableListByArea, "*"),
+                    cancellationToken
+                );
                 await _unitOfWork.CommitTransactionAsync();
 
                 await _signalRService.NotifyOrderStatusChangedAsync(order.OrderId, order.Status.ToString());

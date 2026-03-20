@@ -22,6 +22,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
         private readonly Mock<IUnitOfWork> _mockUow = new();
         private readonly Mock<ICurrentUserService> _mockCurrentUserService = new();
         private readonly Mock<IMessageService> _mockMessageService = new();
+        private readonly Mock<ICacheService> _mockCacheService = new();
         private readonly Mock<ILogger<ChangeOrderTableHandler>> _mockLogger = new();
 
         [Fact]
@@ -81,6 +82,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                _mockCacheService.Object,
                 _mockLogger.Object
             );
 
@@ -152,6 +154,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                _mockCacheService.Object,
                 _mockLogger.Object
             );
 

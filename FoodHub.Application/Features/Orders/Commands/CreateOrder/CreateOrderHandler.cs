@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
@@ -20,18 +21,21 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<CreateOrderHandler> _logger;
 
         public CreateOrderHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ICacheService cacheService,
             ILogger<CreateOrderHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -241,6 +245,14 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 }
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    string.Format(CacheKey.TableListByArea, "*"),
+                    cancellationToken
+                );
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation(

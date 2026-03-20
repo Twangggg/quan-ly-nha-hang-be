@@ -2,6 +2,7 @@ using AutoMapper;
 using FoodHub.Application.Extensions.Mappings;
 using FoodHub.Application.Features.Tables.Queries.GetTables;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.Tables.Queries.GetTablesByArea
 {
@@ -27,7 +28,22 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTablesByArea
                 .ForMember(d => d.TableCode, opt => opt.MapFrom(s =>
                 (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix)) ? s.Area.CodePrefix + "_" + s.TableNumber : s.TableNumber.ToString()))
                 .ForMember(d => d.AreaName, opt => opt.MapFrom(s => s.Area.Name))
-                .ForMember(d => d.StatusName, opt => opt.MapFrom(s => s.Status.ToString()));
+                .ForMember(
+                    d => d.Status,
+                    opt => opt.MapFrom(s =>
+                        s.Orders.Any(o => o.Status == OrderStatus.Serving)
+                            ? (int)TableStatus.Occupied
+                            : (int)s.Status
+                    )
+                )
+                .ForMember(
+                    d => d.StatusName,
+                    opt => opt.MapFrom(s =>
+                        s.Orders.Any(o => o.Status == OrderStatus.Serving)
+                            ? TableStatus.Occupied.ToString()
+                            : s.Status.ToString()
+                    )
+                );
         }
     }
 }

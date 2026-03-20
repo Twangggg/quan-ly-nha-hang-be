@@ -71,6 +71,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
 
             var tables = await query
                 .Include(a => a.Area)
+                .Include(t => t.Orders)
                 .OrderBy(t => t.TableNumber)
                 .ProjectTo<GetTablesResponse>(_mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);

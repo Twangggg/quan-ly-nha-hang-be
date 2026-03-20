@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
@@ -22,6 +23,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
         private readonly ISignalRService _signalRService;
         private readonly ILogger<SubmitOrderToKitchenHandler> _logger;
 
@@ -29,6 +31,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ICacheService cacheService,
             ISignalRService signalRService,
             ILogger<SubmitOrderToKitchenHandler> logger
         )
@@ -36,6 +39,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
             _signalRService = signalRService;
             _logger = logger;
         }
@@ -104,6 +108,15 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 );
             }
 
+            Table? table = null;
+            if (orderType == OrderType.DineIn && tableId.HasValue)
+            {
+                table = await _unitOfWork
+                    .Repository<Table>()
+                    .Query()
+                    .FirstOrDefaultAsync(t => t.TableId == tableId.Value, cancellationToken);
+            }
+
             // Retrieve or Create Order
             if (order == null && orderType == OrderType.DineIn && tableId.HasValue)
             {
@@ -138,6 +151,12 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             else if (orderType == OrderType.DineIn && tableId.HasValue)
             {
                 order.TableId = tableId;
+            }
+
+            if (table != null && orderType == OrderType.DineIn)
+            {
+                table.MarkAsOccupied(userId.Value, DateTime.UtcNow);
+                _unitOfWork.Repository<Table>().Update(table);
             }
 
             // Group items by signature to merge duplicates within the same request
@@ -259,6 +278,14 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    string.Format(CacheKey.TableListByArea, "*"),
+                    cancellationToken
+                );
             }
             catch (DbUpdateConcurrencyException ex)
             {

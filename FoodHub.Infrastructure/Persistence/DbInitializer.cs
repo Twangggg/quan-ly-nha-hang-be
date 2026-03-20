@@ -603,6 +603,8 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
+            SyncOccupiedTablesFromActiveOrders();
+
             // Seed an invoice for the first order to demonstrate the relationship and for FE testing
             var environmentName = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var isDevOrDemo = string.Equals(environmentName, "Development", System.StringComparison.OrdinalIgnoreCase)
@@ -648,6 +650,40 @@ namespace FoodHub.Infrastructure.Persistence
 
                     _context.SaveChanges();
                 }
+            }
+
+            _context.SaveChanges();
+        }
+
+        private void SyncOccupiedTablesFromActiveOrders()
+        {
+            var occupiedTableIds = _context
+                .Orders
+                .AsNoTracking()
+                .Where(o => o.Status == OrderStatus.Serving && o.TableId.HasValue)
+                .Select(o => o.TableId!.Value)
+                .Distinct()
+                .ToList();
+
+            if (occupiedTableIds.Count == 0)
+            {
+                return;
+            }
+
+            var tablesToUpdate = _context
+                .Tables
+                .Where(t => occupiedTableIds.Contains(t.TableId) && t.Status != TableStatus.Occupied)
+                .ToList();
+
+            if (tablesToUpdate.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var table in tablesToUpdate)
+            {
+                table.Status = TableStatus.Occupied;
+                table.UpdatedAt = DateTime.UtcNow;
             }
 
             _context.SaveChanges();

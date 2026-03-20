@@ -25,6 +25,7 @@ namespace FoodHub.Tests.Features.Order.Commands
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<ICacheService> _mockCacheService;
         private readonly Mock<ILogger<CancelOrderHandler>> _mockLogger;
         private readonly CancelOrderHandler _handler;
 
@@ -34,6 +35,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
             _mockMapper = new Mock<IMapper>();
+            _mockCacheService = new Mock<ICacheService>();
             _mockLogger = new Mock<ILogger<CancelOrderHandler>>();
 
             _handler = new CancelOrderHandler(
@@ -41,6 +43,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
                 _mockMapper.Object,
+                _mockCacheService.Object,
                 _mockLogger.Object
             );
         }

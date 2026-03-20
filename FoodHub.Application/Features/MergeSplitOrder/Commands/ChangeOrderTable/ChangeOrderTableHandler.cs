@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
@@ -21,18 +22,21 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<ChangeOrderTableHandler> _logger;
 
         public ChangeOrderTableHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ICacheService cacheService,
             ILogger<ChangeOrderTableHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -165,6 +169,14 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
                 );
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    string.Format(CacheKey.TableListByArea, "*"),
+                    cancellationToken
+                );
                 await _unitOfWork.CommitTransactionAsync();
 
                 var response = new ChangeOrderTableResponse
