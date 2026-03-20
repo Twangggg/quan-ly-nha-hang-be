@@ -61,42 +61,35 @@ namespace FoodHub.Infrastructure.BackgroundJobs
             var today = DateOnly.FromDateTime(DateTime.Now);
             var overdueTime = DateTime.Now.TimeOfDay.Subtract(TimeSpan.FromMinutes(15));
 
-            // Get all booked tables where customers haven't arrived (Status = Booked) for today, and are 30 minutes overdue
-            var overdueReservations = await unitOfWork
+            // Only touch the columns we actually need so older DB schemas do not break the job.
+            var overdueReservations = unitOfWork
                 .Repository<Reservation>()
                 .Query()
                 .Where(r =>
                     r.Status == ReservationStatus.Booked
                     && r.ReservationDate == today
                     && r.ReservationTime <= overdueTime
-                )
-                .ToListAsync(cancellationToken);
+                );
 
-            if (!overdueReservations.Any())
+            var overdueCount = await overdueReservations.CountAsync(cancellationToken);
+            if (overdueCount == 0)
             {
                 return;
             }
 
             _logger.LogInformation(
                 "Found {Count} overdue reservations. Proceeding to cancel.",
-                overdueReservations.Count
+                overdueCount
             );
 
-            foreach (var reservation in overdueReservations)
-            {
-                _logger.LogInformation(
-                    "Cancelling Reservation {ReservationId} (Time: {Time}). Customer did not check-in after 30 minutes.",
-                    reservation.ReservationId,
-                    reservation.ReservationTime
-                );
+            await overdueReservations.ExecuteUpdateAsync(
+                setters => setters.SetProperty(r => r.Status, ReservationStatus.Cancelled),
+                cancellationToken
+            );
 
-                reservation.Status = ReservationStatus.Cancelled;
-            }
-
-            await unitOfWork.SaveChangeAsync(cancellationToken);
             _logger.LogInformation(
                 "Successfully cancelled {Count} overdue reservations.",
-                overdueReservations.Count
+                overdueCount
             );
         }
     }
