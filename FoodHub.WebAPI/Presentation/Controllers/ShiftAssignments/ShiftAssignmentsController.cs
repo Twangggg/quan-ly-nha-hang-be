@@ -19,7 +19,7 @@ namespace FoodHub.Presentation.Controllers
     /// Quản lý phân công ca làm việc cho nhân viên.
     /// </summary>
     [Tags("Phân công ca (Shift Assignments)")]
-    [Route("api/v1/shift-assignments")]
+    [HasPermission(Permissions.ShiftAssignments.View)]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class ShiftAssignmentsController : ApiControllerBase
     {
@@ -35,6 +35,11 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Lấy danh sách phân công ca làm việc.
         /// </summary>
+        /// <remarks>
+        /// Yêu cầu quyền: ShiftAssignments.View.
+        /// </remarks>
+        /// <param name="query">Tham số phân trang và lọc.</param>
+        /// <response code="200">Trả về danh sách phân công ca kèm Header phân trang.</response>
         [HttpGet]
         [HasPermission(Permissions.ShiftAssignments.View)]
         [ProducesResponseType(typeof(Result<PagedResult<GetShiftAssignmentsResponse>>), StatusCodes.Status200OK)]
@@ -42,40 +47,62 @@ namespace FoodHub.Presentation.Controllers
         {
             var result = await _mediator.Send(query);
             if (result.IsSuccess && result.Data != null)
+            {
                 Response.AddPaginationHeaders(result.Data);
+            }
             return HandleResult(result);
         }
 
         /// <summary>
         /// Lấy thông tin chi tiết một phân công ca theo ID.
         /// </summary>
-        [HttpGet("{id}")]
+        /// <remarks>
+        /// Yêu cầu quyền: ShiftAssignments.View.
+        /// </remarks>
+        /// <param name="id">Mã phân công ca.</param>
+        /// <response code="200">Trả về thông tin chi tiết phân công ca.</response>
+        /// <response code="404">Không tìm thấy phân công ca.</response>
+        [HttpGet("{id:guid}")]
         [HasPermission(Permissions.ShiftAssignments.View)]
         [ProducesResponseType(typeof(Result<GetShiftAssignmentByIdResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(Guid id)
         {
-            return HandleResult(await _mediator.Send(new GetShiftAssignmentByIdQuery(id)));
+            var result = await _mediator.Send(new GetShiftAssignmentByIdQuery(id));
+            return HandleResult(result);
         }
 
         /// <summary>
         /// Gán một ca làm việc cho nhân viên.
         /// </summary>
+        /// <remarks>
+        /// Yêu cầu quyền: ShiftAssignments.Create.
+        /// </remarks>
+        /// <param name="command">Thông tin gán ca.</param>
+        /// <response code="200">Đã gán ca thành công.</response>
+        /// <response code="400">Dữ liệu không hợp lệ.</response>
+        /// <response code="409">Xung đột lịch làm việc.</response>
         [HttpPost]
         [HasPermission(Permissions.ShiftAssignments.Create)]
-        [ProducesResponseType(typeof(Result<AssignShiftResponse>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(Result<AssignShiftResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> AssignShift([FromBody] AssignShiftCommand command)
         {
             var result = await _mediator.Send(command);
-            if (!result.IsSuccess) return HandleResult(result);
-            return CreatedAtAction(nameof(GetById), new { id = result.Data!.ShiftAssignmentId }, result);
+            return HandleResult(result);
         }
 
         /// <summary>
         /// Gán một ca làm việc cho nhân viên theo khoảng ngày.
         /// </summary>
+        /// <remarks>
+        /// Yêu cầu quyền: ShiftAssignments.Create.
+        /// </remarks>
+        /// <param name="command">Thông tin gán ca theo khoảng ngày.</param>
+        /// <response code="200">Đã gán ca thành công.</response>
+        /// <response code="400">Dữ liệu không hợp lệ.</response>
+        /// <response code="409">Xung đột lịch làm việc.</response>
         [HttpPost("range")]
         [HasPermission(Permissions.ShiftAssignments.Create)]
         [ProducesResponseType(typeof(Result<IEnumerable<AssignShiftResponse>>), StatusCodes.Status200OK)]
@@ -84,20 +111,26 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> AssignShiftRange([FromBody] AssignShiftRangeCommand command)
         {
             var result = await _mediator.Send(command);
-            if (!result.IsSuccess) return HandleResult(result);
-            return Ok(result);
+            return HandleResult(result);
         }
 
         /// <summary>
         /// Hủy phân công ca làm việc.
         /// </summary>
-        [HttpDelete("{id}")]
+        /// <remarks>
+        /// Yêu cầu quyền: ShiftAssignments.Delete.
+        /// </remarks>
+        /// <param name="id">Mã phân công ca cần hủy.</param>
+        /// <response code="200">Hủy thành công.</response>
+        /// <response code="404">Không tìm thấy phân công ca.</response>
+        [HttpDelete("{id:guid}")]
         [HasPermission(Permissions.ShiftAssignments.Delete)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CancelShiftAssignment(Guid id)
         {
-            return HandleResult(await _mediator.Send(new CancelShiftAssignmentCommand(id)));
+            var result = await _mediator.Send(new CancelShiftAssignmentCommand(id));
+            return HandleResult(result);
         }
     }
 }
