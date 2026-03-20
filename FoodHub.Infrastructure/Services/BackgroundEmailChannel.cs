@@ -91,5 +91,24 @@ namespace FoodHub.Infrastructure.Services
 
             await EnqueueEmailAsync(email, subject, body, auditTargetId, performedByEmployeeId, cancellationToken);
         }
+
+        public async ValueTask EnqueueShiftAssignmentRangeEmailAsync(
+            string email,
+            string employeeName,
+            string shiftName,
+            DateOnly fromDate,
+            DateOnly toDate,
+            TimeSpan startTime,
+            TimeSpan endTime,
+            List<DateOnly> assignedDates,
+            Guid? auditTargetId = null,
+            Guid? performedByEmployeeId = null,
+            CancellationToken cancellationToken = default)
+        {
+            var subject = $"[FoodHub] Thông báo LỊCH LÀM VIỆC MỚI từ {fromDate:dd/MM} đến {toDate:dd/MM}";
+            var body = EmailTemplates.GetShiftAssignmentRangeTemplate(employeeName, shiftName, fromDate, toDate, startTime, endTime, assignedDates);
+
+            await EnqueueEmailAsync(email, subject, body, auditTargetId, performedByEmployeeId, cancellationToken);
+        }
     }
 }

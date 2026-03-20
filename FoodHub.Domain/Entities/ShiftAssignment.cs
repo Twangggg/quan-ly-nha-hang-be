@@ -52,6 +52,22 @@ namespace FoodHub.Domain.Entities
         }
 
         /// <summary>
+        /// Cập nhật thông tin phân công.
+        /// </summary>
+        public void Update(
+            Guid shiftId,
+            DateOnly assignedDate,
+            string? note = null,
+            Guid? updatedBy = null)
+        {
+            ShiftId = shiftId;
+            AssignedDate = assignedDate;
+            Note = note?.Trim();
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+        }
+
+        /// <summary>
         /// Hủy phân công (soft-delete).
         /// </summary>
         public DomainResult Cancel(Guid? cancelledBy = null)

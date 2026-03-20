@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift;
@@ -14,6 +15,8 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShiftRang
         public required Guid ShiftId { get; init; }
         public required DateOnly FromDate { get; init; }
         public required DateOnly ToDate { get; init; }
+
+        public List<int>? DaysOfWeek { get; init; }
         public string? Note { get; init; }
     }
 }

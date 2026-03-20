@@ -86,6 +86,10 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShiftRang
  
             for (var d = request.FromDate; d <= request.ToDate; d = d.AddDays(1))
             {
+                var dayNumber = (int)d.DayOfWeek + 1;
+                if (request.DaysOfWeek != null && request.DaysOfWeek.Any() && !request.DaysOfWeek.Contains(dayNumber))
+                    continue;
+
                 var daily = existingInRange.Where(a => a.AssignedDate == d).ToList();
  
                 if (daily.Any(a => a.Shift.StartTime < shift.EndTime && a.Shift.EndTime > shift.StartTime))
@@ -108,8 +112,26 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShiftRang
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
  
                 // Summary Notification
-                await _emailSender.EnqueueEmailAsync(employee.Email, $"[FoodHub] New schedule {request.FromDate:dd/MM} to {request.ToDate:dd/MM}", $"You have been assigned to shift <strong>{shift.Name}</strong> for the mentioned period.", employee.EmployeeId, auditorId, cancellationToken);
-                await _signalRService.NotifyShiftAssignmentAsync(employee.EmployeeId, $"{shift.Name} (Range)", request.FromDate, false);
+                if (toCreate.Any())
+                {
+                    var assignedDates = toCreate.Select(a => a.AssignedDate).ToList();
+                    
+                    await _emailSender.EnqueueShiftAssignmentRangeEmailAsync(
+                        employee.Email, 
+                        employee.FullName, 
+                        shift.Name, 
+                        request.FromDate, 
+                        request.ToDate, 
+                        shift.StartTime, 
+                        shift.EndTime, 
+                        assignedDates, 
+                        employee.EmployeeId, 
+                        auditorId, 
+                        cancellationToken);
+
+                    var signalRMessage = $"{shift.Name} (Range: {assignedDates.Count} days)";
+                    await _signalRService.NotifyShiftAssignmentAsync(employee.EmployeeId, signalRMessage, request.FromDate, false);
+                }
  
                 await _unitOfWork.CommitTransactionAsync();
                 await _cacheService.RemoveByPatternAsync(CacheKey.ShiftAssignmentList, cancellationToken);

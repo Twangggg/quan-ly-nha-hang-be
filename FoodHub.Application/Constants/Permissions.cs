@@ -113,6 +113,7 @@ namespace FoodHub.Application.Constants
         {
             public const string View   = "Permissions.ShiftAssignments.View";
             public const string Create = "Permissions.ShiftAssignments.Create";
+            public const string Update = "Permissions.ShiftAssignments.Update";
             public const string Delete = "Permissions.ShiftAssignments.Delete";
         }
     }

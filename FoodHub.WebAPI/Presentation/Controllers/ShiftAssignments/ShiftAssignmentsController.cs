@@ -5,6 +5,7 @@ using FoodHub.Application.Features.ShiftAssignments.Commands.AssignShiftRange;
 using FoodHub.Application.Features.ShiftAssignments.Commands.CancelShiftAssignment;
 using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignmentById;
 using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignments;
+using FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssignment;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Interfaces;
 using FoodHub.WebAPI.Presentation.Attributes;
@@ -130,6 +131,35 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> CancelShiftAssignment(Guid id)
         {
             var result = await _mediator.Send(new CancelShiftAssignmentCommand(id));
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Cập nhật phân công ca làm việc.
+        /// </summary>
+        /// <remarks>
+        /// Yêu cầu quyền: ShiftAssignments.Update.
+        /// </remarks>
+        /// <param name="id">Mã phân công ca cần cập nhật.</param>
+        /// <param name="command">Thông tin cập nhật.</param>
+        /// <response code="200">Cập nhật thành công.</response>
+        /// <response code="400">Dữ liệu không hợp lệ.</response>
+        /// <response code="404">Không tìm thấy phân công ca.</response>
+        /// <response code="409">Xung đột lịch làm việc.</response>
+        [HttpPut("{id:guid}")]
+        [HasPermission(Permissions.ShiftAssignments.Update)]
+        [ProducesResponseType(typeof(Result<AssignShiftResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> UpdateShiftAssignment(Guid id, [FromBody] UpdateShiftAssignmentCommand command)
+        {
+            if (id != command.ShiftAssignmentId)
+            {
+                return BadRequest(new ErrorResponse(StatusCodes.Status400BadRequest, _messageService.GetMessage(MessageKeys.Common.IdMismatch)));
+            }
+
+            var result = await _mediator.Send(command);
             return HandleResult(result);
         }
     }
