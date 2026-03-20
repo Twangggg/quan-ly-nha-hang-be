@@ -75,16 +75,7 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
             employee.DeleteEmployee(auditorId);
             employeeRepository.Update(employee);
 
-            var auditLog = new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                Action = AuditAction.Deactivate,
-                TargetId = employee.EmployeeId,
-                PerformedByEmployeeId = auditorId,
-                CreatedAt = DateTimeOffset.UtcNow,
-                Reason = "Deactivate employee (Soft Delete)"
-            };
-            await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
+            employeeRepository.Update(employee);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
             await _cacheService.RemoveByPatternAsync("employee:list", cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.EmployeeById, request.EmployeeId), cancellationToken);

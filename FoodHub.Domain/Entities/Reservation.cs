@@ -20,6 +20,8 @@ namespace FoodHub.Domain.Entities
         public TimeSpan ReservationTime { get; set; }
 
         public int GuestCount { get; set; }
+        public PartyType PartyType { get; set; } = PartyType.Other;
+        public bool HasChildren { get; set; } = false;
         public string? Note { get; set; }
         public ReservationStatus Status { get; set; }
         public Guid? AreaId { get; set; }
@@ -35,7 +37,9 @@ namespace FoodHub.Domain.Entities
             int guestCount,
             string? note,
             Guid tableId,
-            Guid? areaId
+            Guid? areaId,
+            PartyType partyType = PartyType.Other,
+            bool hasChildren = false
         )
         {
             ReservationId = Guid.NewGuid();
@@ -48,6 +52,8 @@ namespace FoodHub.Domain.Entities
             Status = ReservationStatus.Booked;
             TableId = tableId;
             AreaId = areaId;
+            PartyType = partyType;
+            HasChildren = hasChildren;
         }
 
         public static Reservation CreateBooked(
@@ -58,7 +64,9 @@ namespace FoodHub.Domain.Entities
             int guestCount,
             string? note,
             Guid tableId,
-            Guid? areaId
+            Guid? areaId,
+            PartyType partyType = PartyType.Other,
+            bool hasChildren = false
         )
         {
             return new Reservation(
@@ -69,7 +77,9 @@ namespace FoodHub.Domain.Entities
                 guestCount,
                 note,
                 tableId,
-                areaId
+                areaId,
+                partyType,
+                hasChildren
             );
         }
 

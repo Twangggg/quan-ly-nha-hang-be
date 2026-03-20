@@ -375,6 +375,12 @@ namespace FoodHub.Application.Constants
             public const string InvalidStatus = "InventoryCheck.InvalidStatus";
         }
 
+        public static class AuditLog
+        {
+            public const string NotFound = "AuditLog.NotFound";
+            public const string QueryError = "AuditLog.QueryError";
+            public const string Unauthorized = "AuditLog.Unauthorized";
+        }
         public static class Invoice
         {
             public const string AlreadyExists = "Invoice.AlreadyExists";

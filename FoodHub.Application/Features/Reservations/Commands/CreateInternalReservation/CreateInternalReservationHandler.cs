@@ -85,7 +85,9 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                 Note = "Created by Internal User",
                 Status = ReservationStatus.Booked,
                 AreaId = availableTable.AreaId,
-                TableId = availableTable.TableId
+                TableId = availableTable.TableId,
+                PartyType = PartyType.Other,
+                HasChildren = false
             };
 
             await _unitOfWork.Repository<Reservation>().AddAsync(reservation);

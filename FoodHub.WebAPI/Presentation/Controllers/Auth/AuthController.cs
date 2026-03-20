@@ -153,7 +153,7 @@ namespace FoodHub.Presentation.Controllers
             }
 
             var revokeCommand = new RevokeTokenCommand { RefreshToken = refreshToken };
-            await _mediator.Send(revokeCommand);
+            var result = await _mediator.Send(revokeCommand);
 
             return NoContent();
         }

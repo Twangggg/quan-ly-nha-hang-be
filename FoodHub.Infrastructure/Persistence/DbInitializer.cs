@@ -102,18 +102,7 @@ namespace FoodHub.Infrastructure.Persistence
                         _context.Employees.Add(e);
 
                         // Add Audit Log for Seed Data
-                        _context.AuditLogs.Add(
-                            new AuditLog
-                            {
-                                LogId = Guid.NewGuid(),
-                                Action = AuditAction.Create,
-                                TargetId = e.EmployeeId,
-                                PerformedByEmployeeId = e.EmployeeId, // Self-created for seed
-                                CreatedAt = DateTimeOffset.UtcNow,
-                                Reason = "Seed data initialization",
-                                Metadata = "{\"info\": \"System generated\"}", // Valid JSON for jsonb column
-                            }
-                        );
+                        _context.Employees.Add(e);
                     }
                 }
                 _context.SaveChanges();
