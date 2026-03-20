@@ -11,6 +11,7 @@ using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Application.Features.Authentication.Commands.Login
 {

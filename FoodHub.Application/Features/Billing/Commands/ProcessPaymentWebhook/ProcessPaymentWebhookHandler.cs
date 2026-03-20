@@ -99,11 +99,22 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
 
                 if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
                 {
-                    var table = await _unitOfWork.Repository<Table>().GetByIdAsync(order.TableId.Value);
+                    var table = await _unitOfWork
+                        .Repository<Table>()
+                        .Query()
+                        .Include(t => t.Orders)
+                        .FirstOrDefaultAsync(t => t.TableId == order.TableId.Value, cancellationToken);
+
                     if (table != null)
                     {
-                        table.MarkAsCleaning();
+                        if (table.SetAvailable())
+                        {
+                            table.UpdatedAt = DateTime.UtcNow;
+                        }
+
                         _unitOfWork.Repository<Table>().Update(table);
+
+                        order.TableId = null;
                     }
                 }
 

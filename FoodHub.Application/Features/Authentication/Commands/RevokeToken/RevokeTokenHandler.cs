@@ -10,6 +10,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Application.Features.Authentication.Commands.RevokeToken
 {

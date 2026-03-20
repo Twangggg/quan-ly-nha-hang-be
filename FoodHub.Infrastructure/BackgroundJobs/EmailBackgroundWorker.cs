@@ -1,3 +1,4 @@
+using FoodHub.Application.Interfaces;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Entities;
