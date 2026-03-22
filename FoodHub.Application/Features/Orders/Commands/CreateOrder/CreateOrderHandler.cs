@@ -85,9 +85,9 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                         );
 
                     var bufferTime = TimeSpan.FromHours(2);
-                    var now = DateTime.Now;
-                    var currentTime = now.TimeOfDay;
-                    var today = DateOnly.FromDateTime(now);
+                    var vietnamTime = DateTime.UtcNow.AddHours(7);
+                    var currentTime = vietnamTime.TimeOfDay;
+                    var today = DateOnly.FromDateTime(vietnamTime);
                     var upcomingReservation = await _unitOfWork.Repository<Reservation>().Query()
                         .AnyAsync(r => r.TableId == request.TableId.Value
                                     && r.ReservationDate == today

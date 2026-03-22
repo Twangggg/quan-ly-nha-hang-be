@@ -70,5 +70,19 @@ namespace FoodHub.Infrastructure.Services.Messaging
                 Console.WriteLine($"SignalR Error in NotifyOrderStatusChangedAsync: {ex.Message}");
             }
         }
+
+        async Task FoodHub.Application.Interfaces.Messaging.ISignalRService.NotifyTableStatusChangedAsync(Guid tableId, FoodHub.Domain.Enums.TableStatus tableStatus, Guid areaId)
+        {
+            try
+            {
+                await _hubContext
+                     .Clients.All.SendAsync("TableStatusChanged",
+                     new { TableId = tableId, TableStatus = tableStatus, AreaId = areaId });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR Error in NotifyTableStatusChangedAsync: {ex.Message}");
+            }
+        }
     }
 }

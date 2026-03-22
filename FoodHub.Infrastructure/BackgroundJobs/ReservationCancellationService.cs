@@ -58,8 +58,9 @@ namespace FoodHub.Infrastructure.BackgroundJobs
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
             // Calculate the threshold: 30 minutes past today's reservation time
-            var today = DateOnly.FromDateTime(DateTime.Now);
-            var overdueTime = DateTime.Now.TimeOfDay.Subtract(TimeSpan.FromMinutes(15));
+            var vietnamTime = DateTime.UtcNow.AddHours(7);
+            var today = DateOnly.FromDateTime(vietnamTime);
+            var overdueTime = vietnamTime.TimeOfDay.Subtract(TimeSpan.FromMinutes(15));
 
             // Get all booked tables where customers haven't arrived (Status = Booked) for today, and are 30 minutes overdue
             var overdueReservations = await unitOfWork
