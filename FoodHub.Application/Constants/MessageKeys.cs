@@ -362,6 +362,25 @@ namespace FoodHub.Application.Constants
             public const string ReasonRequired = "StockOutReceipt.ReasonRequired";
             public const string ReasonMaxLength = "StockOutReceipt.ReasonMaxLength";
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
+            public const string ExpiredLot = "StockOutReceipt.ExpiredLot";
+            public const string LotInsufficient = "StockOutReceipt.LotInsufficient";
+        }
+
+        public static class InventoryLot
+        {
+            public const string NotFound = "InventoryLot.NotFound";
+            public const string QuantityMin = "InventoryLot.QuantityMin";
+            public const string ReasonRequired = "InventoryLot.ReasonRequired";
+            public const string ReasonMaxLength = "InventoryLot.ReasonMaxLength";
+            public const string Expired = "InventoryLot.Expired";
+            public const string InsufficientQuantity = "InventoryLot.InsufficientQuantity";
+            public const string AlreadyDisposed = "InventoryLot.AlreadyDisposed";
+            public const string InvalidAdjustment = "InventoryLot.InvalidAdjustment";
+        }
+
+        public static class InventoryCogs
+        {
+            public const string Completed = "InventoryCogs.Completed";
         }
 
         public static class InventoryCheck

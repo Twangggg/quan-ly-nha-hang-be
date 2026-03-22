@@ -2,10 +2,10 @@ using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -56,14 +56,14 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
             }
 
             _logger.LogInformation(
-                 "Starting split operation: SourceOrder={SourceOrderId}, DestinationOrder={DestinationOrderId}, DestinationTable={DestinationTableId}, DestinationReservation={DestinationReservationId}, ItemCount={ItemCount}, User={UserId}",
-                 request.SourceOrderId,
-                 request.DestinationOrderId,
-                 request.DestinationTableId,
-                 request.DestinationReservationId,
-                 request.ItemsToSplit.Count,
-                 auditorId
-             );
+                "Starting split operation: SourceOrder={SourceOrderId}, DestinationOrder={DestinationOrderId}, DestinationTable={DestinationTableId}, DestinationReservation={DestinationReservationId}, ItemCount={ItemCount}, User={UserId}",
+                request.SourceOrderId,
+                request.DestinationOrderId,
+                request.DestinationTableId,
+                request.DestinationReservationId,
+                request.ItemsToSplit.Count,
+                auditorId
+            );
 
             var reservationRepository = _unitOfWork.Repository<Reservation>();
             var orderRepository = _unitOfWork.Repository<Order>();

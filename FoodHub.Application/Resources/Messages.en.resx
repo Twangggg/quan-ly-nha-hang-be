@@ -186,6 +186,39 @@
   <data name="StockInReceipt.AlreadyReversed" xml:space="preserve">
     <value>This stock-in receipt has already been reversed.</value>
   </data>
+  <data name="StockOutReceipt.ExpiredLot" xml:space="preserve">
+    <value>Cannot issue stock because one or more lots are expired.</value>
+  </data>
+  <data name="StockOutReceipt.LotInsufficient" xml:space="preserve">
+    <value>Insufficient available lot quantity for this stock-out.</value>
+  </data>
+  <data name="InventoryLot.NotFound" xml:space="preserve">
+    <value>Inventory lot could not be found.</value>
+  </data>
+  <data name="InventoryLot.QuantityMin" xml:space="preserve">
+    <value>Quantity must be greater than 0.</value>
+  </data>
+  <data name="InventoryLot.ReasonRequired" xml:space="preserve">
+    <value>Reason is required.</value>
+  </data>
+  <data name="InventoryLot.ReasonMaxLength" xml:space="preserve">
+    <value>Reason must not exceed 500 characters.</value>
+  </data>
+  <data name="InventoryLot.Expired" xml:space="preserve">
+    <value>The lot is expired and cannot be issued.</value>
+  </data>
+  <data name="InventoryLot.InsufficientQuantity" xml:space="preserve">
+    <value>The lot does not have sufficient remaining quantity.</value>
+  </data>
+  <data name="InventoryLot.AlreadyDisposed" xml:space="preserve">
+    <value>This lot has already been disposed.</value>
+  </data>
+  <data name="InventoryLot.InvalidAdjustment" xml:space="preserve">
+    <value>The lot adjustment is invalid.</value>
+  </data>
+  <data name="InventoryCogs.Completed" xml:space="preserve">
+    <value>COGS recalculation completed.</value>
+  </data>
   <data name="Ingredient.PhysicalStockMin" xml:space="preserve">
     <value>Physical stock quantity must be greater than or equal to 0.</value>
   </data>

@@ -3,10 +3,10 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
@@ -56,13 +56,18 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Revers
 
             var actorId = _currentUserService.GetUserIdAsGuid();
             var receiptRepo = _unitOfWork.Repository<StockInReceipt>();
+            var inventoryLotRepo = _unitOfWork.Repository<InventoryLot>();
+            var inventoryLotMovementRepo = _unitOfWork.Repository<InventoryLotMovement>();
             var ingredientRepo = _unitOfWork.Repository<Ingredient>();
             var transactionRepo = _unitOfWork.Repository<InventoryTransaction>();
 
             var receipt = await receiptRepo
                 .Query()
                 .Include(x => x.Items)
-                .FirstOrDefaultAsync(x => x.StockInReceiptId == request.StockInReceiptId, cancellationToken);
+                .FirstOrDefaultAsync(
+                    x => x.StockInReceiptId == request.StockInReceiptId,
+                    cancellationToken
+                );
 
             if (receipt is null)
             {
@@ -112,6 +117,16 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Revers
             }
 
             var ingredientMap = ingredients.ToDictionary(x => x.IngredientId);
+            var itemIds = receipt.Items.Select(x => x.StockInReceiptItemId).ToList();
+            var lots = await inventoryLotRepo
+                .Query()
+                .Where(x =>
+                    x.StockInReceiptItemId.HasValue
+                    && itemIds.Contains(x.StockInReceiptItemId.Value)
+                )
+                .ToListAsync(cancellationToken);
+            var lotsByItemId = lots.Where(x => x.StockInReceiptItemId.HasValue)
+                .ToDictionary(x => x.StockInReceiptItemId!.Value);
 
             await _unitOfWork.BeginTransactionAsync();
 
@@ -146,6 +161,36 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Revers
                             actorId
                         )
                     );
+
+                    if (lotsByItemId.TryGetValue(item.StockInReceiptItemId, out var lot))
+                    {
+                        if (!lot.CanReverseSourceStockIn())
+                        {
+                            throw new BusinessException(
+                                _messageService.GetMessage(
+                                    MessageKeys.StockInReceipt.ReverseNotLatestMovement
+                                )
+                            );
+                        }
+
+                        await inventoryLotMovementRepo.AddAsync(
+                            InventoryLotMovement.Create(
+                                lot.InventoryLotId,
+                                InventoryLotTransactionType.StockInReverse,
+                                -item.Quantity,
+                                0,
+                                nameof(StockInReceipt),
+                                receipt.StockInReceiptId,
+                                receipt.ReceiptCode,
+                                receipt.ReceivedAt,
+                                item.UnitCost,
+                                receipt.Note,
+                                actorId
+                            )
+                        );
+
+                        lot.MarkDeleted(actorId);
+                    }
                 }
 
                 var reverseReceiptResult = receipt.Reverse(actorId);

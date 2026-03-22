@@ -193,10 +193,14 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<InventoryCheck> InventoryChecks { get; set; } = null!;
         public DbSet<InventoryCheckItem> InventoryCheckItems { get; set; } = null!;
         public DbSet<InventoryTransaction> InventoryTransactions { get; set; } = null!;
+        public DbSet<InventoryLot> InventoryLots { get; set; } = null!;
+        public DbSet<InventoryLotMovement> InventoryLotMovements { get; set; } = null!;
         public DbSet<StockInReceipt> StockInReceipts { get; set; } = null!;
         public DbSet<StockInReceiptItem> StockInReceiptItems { get; set; } = null!;
         public DbSet<StockOutReceipt> StockOutReceipts { get; set; } = null!;
         public DbSet<StockOutReceiptItem> StockOutReceiptItems { get; set; } = null!;
+        public DbSet<StockOutReceiptItemLotAllocation> StockOutReceiptItemLotAllocations { get; set; } =
+            null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

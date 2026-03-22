@@ -21,6 +21,8 @@ namespace FoodHub.Tests.Features.Inventory
         private readonly Mock<ICurrentUserService> _mockCurrentUser;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<IGenericRepository<Ingredient>> _mockIngredientRepo;
+        private readonly Mock<IGenericRepository<InventoryLot>> _mockInventoryLotRepo;
+        private readonly Mock<IGenericRepository<InventoryLotMovement>> _mockInventoryLotMovementRepo;
         private readonly Mock<IGenericRepository<InventoryTransaction>> _mockTransactionRepo;
         private readonly Mock<IGenericRepository<StockInReceipt>> _mockReceiptRepo;
         private readonly Mock<ICacheService> _mockCache;
@@ -34,10 +36,18 @@ namespace FoodHub.Tests.Features.Inventory
             _mockCache = new Mock<ICacheService>();
             _availabilitySyncService = new Mock<IInventoryAvailabilitySyncService>();
             _mockIngredientRepo = new Mock<IGenericRepository<Ingredient>>();
+            _mockInventoryLotRepo = new Mock<IGenericRepository<InventoryLot>>();
+            _mockInventoryLotMovementRepo = new Mock<IGenericRepository<InventoryLotMovement>>();
             _mockTransactionRepo = new Mock<IGenericRepository<InventoryTransaction>>();
             _mockReceiptRepo = new Mock<IGenericRepository<StockInReceipt>>();
 
             _mockUnitOfWork.Setup(x => x.Repository<Ingredient>()).Returns(_mockIngredientRepo.Object);
+            _mockUnitOfWork
+                .Setup(x => x.Repository<InventoryLot>())
+                .Returns(_mockInventoryLotRepo.Object);
+            _mockUnitOfWork
+                .Setup(x => x.Repository<InventoryLotMovement>())
+                .Returns(_mockInventoryLotMovementRepo.Object);
             _mockUnitOfWork
                 .Setup(x => x.Repository<InventoryTransaction>())
                 .Returns(_mockTransactionRepo.Object);
@@ -63,6 +73,15 @@ namespace FoodHub.Tests.Features.Inventory
 
             var receipt = StockInReceipt.Create("NK-20260315-0001", DateTime.UtcNow, null);
             receipt.AddItem(ingredient.IngredientId, 5, "Kg", 6, null, "BATCH-01");
+            var lot = InventoryLot.Create(
+                ingredient.IngredientId,
+                receipt.Items.Single().StockInReceiptItemId,
+                "BATCH-01",
+                receipt.ReceivedAt,
+                null,
+                6,
+                5
+            ).Value!;
 
             var existingTransactions = new List<InventoryTransaction>
             {
@@ -84,6 +103,12 @@ namespace FoodHub.Tests.Features.Inventory
             _mockTransactionRepo
                 .Setup(x => x.Query())
                 .Returns(existingTransactions.AsQueryable().BuildMock());
+            _mockInventoryLotRepo
+                .Setup(x => x.Query())
+                .Returns(new List<InventoryLot> { lot }.AsQueryable().BuildMock());
+            _mockInventoryLotMovementRepo
+                .Setup(x => x.AddAsync(It.IsAny<InventoryLotMovement>()))
+                .Returns(Task.CompletedTask);
             _mockUnitOfWork.Setup(x => x.BeginTransactionAsync()).Returns(Task.CompletedTask);
             _mockUnitOfWork.Setup(x => x.CommitTransactionAsync()).Returns(Task.CompletedTask);
             _mockUnitOfWork.Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -115,6 +140,15 @@ namespace FoodHub.Tests.Features.Inventory
 
             var receipt = StockInReceipt.Create("NK-20260315-0001", DateTime.UtcNow, null);
             receipt.AddItem(ingredient.IngredientId, 5, "Kg", 6, null, "BATCH-01");
+            var lot = InventoryLot.Create(
+                ingredient.IngredientId,
+                receipt.Items.Single().StockInReceiptItemId,
+                "BATCH-01",
+                receipt.ReceivedAt,
+                null,
+                6,
+                5
+            ).Value!;
 
             var existingTransactions = new List<InventoryTransaction>
             {
@@ -136,6 +170,9 @@ namespace FoodHub.Tests.Features.Inventory
             _mockTransactionRepo
                 .Setup(x => x.Query())
                 .Returns(existingTransactions.AsQueryable().BuildMock());
+            _mockInventoryLotRepo
+                .Setup(x => x.Query())
+                .Returns(new List<InventoryLot> { lot }.AsQueryable().BuildMock());
             _mockMessageService
                 .Setup(x => x.GetMessage("StockInReceipt.ReverseNotLatestMovement"))
                 .Returns("not latest");

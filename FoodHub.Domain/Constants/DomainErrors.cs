@@ -117,6 +117,20 @@ namespace FoodHub.Domain.Constants
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
         }
 
+        public static class InventoryLot
+        {
+            public const string InvalidQuantity = "InventoryLot.InvalidQuantity";
+            public const string InvalidUnitCost = "InventoryLot.InvalidUnitCost";
+            public const string LotCodeRequired = "InventoryLot.LotCodeRequired";
+            public const string LotCodeTooLong = "InventoryLot.LotCodeTooLong";
+            public const string NotesTooLong = "InventoryLot.NotesTooLong";
+            public const string InsufficientQuantity = "InventoryLot.InsufficientQuantity";
+            public const string Expired = "InventoryLot.Expired";
+            public const string AlreadyDisposed = "InventoryLot.AlreadyDisposed";
+            public const string InvalidAdjustment = "InventoryLot.InvalidAdjustment";
+            public const string ReasonRequired = "InventoryLot.ReasonRequired";
+        }
+
         public static class InventoryCheck
         {
             public const string ItemsRequired = "InventoryCheck.ItemsRequired";
