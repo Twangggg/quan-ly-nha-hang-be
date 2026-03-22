@@ -205,6 +205,64 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Never);
         }
 
+        [Fact]
+        public async Task Handle_Should_Return_Failure_When_Destination_Order_Is_The_Same_As_Source()
+        {
+            var userId = Guid.NewGuid();
+            var sourceOrderId = Guid.NewGuid();
+
+            var sourceOrder = new EntityOrder
+            {
+                OrderId = sourceOrderId,
+                OrderCode = "ORD-SRC",
+                OrderType = OrderType.DineIn,
+                Status = OrderStatus.Serving,
+                TableId = Guid.NewGuid(),
+                OrderItems = new List<OrderItem>(),
+            };
+
+            sourceOrder.OrderItems.Add(
+                CreateOrderItem(sourceOrderId, Guid.NewGuid(), 1, 8m, OrderItemStatus.Cooking)
+            );
+
+            var orderRepo = new Mock<IGenericRepository<EntityOrder>>();
+            orderRepo
+                .Setup(r => r.Query())
+                .Returns(new List<EntityOrder> { sourceOrder }.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<EntityOrder>()).Returns(orderRepo.Object);
+
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Order.InvalidAction))
+                .Returns("Invalid action");
+
+            var handler = new SplitOrderHandler(
+                _mockUow.Object,
+                _mockCurrentUserService.Object,
+                _mockMessageService.Object,
+                _mockMapper.Object,
+                _mockLogger.Object
+            );
+
+            var result = await handler.Handle(
+                new SplitOrderCommand(
+                    SourceOrderId: sourceOrderId,
+                    DestinationOrderId: sourceOrderId,
+                    DestinationTableId: null,
+                    DestinationReservationId: null,
+                    ItemsToSplit: new List<SplitOrderItemCommand>
+                    {
+                        new(sourceOrder.OrderItems.Single().OrderItemId, 1),
+                    }
+                ),
+                CancellationToken.None
+            );
+
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorType.Should().Be(ResultErrorType.BadRequest);
+            _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Never);
+        }
+
         private static OrderItem CreateOrderItem(
             Guid orderId,
             Guid menuItemId,

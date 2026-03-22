@@ -55,6 +55,18 @@ namespace FoodHub.Domain.Entities
             return true;
         }
 
+        public bool ReleaseIfNoActiveOrders(Guid? updatedBy, DateTime updatedAt)
+        {
+            if (!SetAvailable())
+            {
+                return false;
+            }
+
+            UpdatedBy = updatedBy;
+            UpdatedAt = updatedAt;
+            return true;
+        }
+
         /// <summary>
         /// Kiểm tra xem bàn có thể chuyển về trạng thái Available hay không (không có order nào đang phục vụ).
         /// </summary>
@@ -82,6 +94,31 @@ namespace FoodHub.Domain.Entities
         public void MarkAsOccupied(Guid? updatedBy, DateTime updatedAt)
         {
             Status = TableStatus.Occupied;
+            UpdatedBy = updatedBy;
+            UpdatedAt = updatedAt;
+        }
+
+        public void AttachOrder(Order order, Guid? updatedBy, DateTime updatedAt)
+        {
+            ArgumentNullException.ThrowIfNull(order);
+
+            if (!Orders.Any(o => o.OrderId == order.OrderId))
+            {
+                Orders.Add(order);
+            }
+
+            MarkAsOccupied(updatedBy, updatedAt);
+        }
+
+        public void DetachOrder(Guid orderId, Guid? updatedBy, DateTime updatedAt)
+        {
+            var existingOrder = Orders.FirstOrDefault(o => o.OrderId == orderId);
+            if (existingOrder == null)
+            {
+                return;
+            }
+
+            Orders.Remove(existingOrder);
             UpdatedBy = updatedBy;
             UpdatedAt = updatedAt;
         }

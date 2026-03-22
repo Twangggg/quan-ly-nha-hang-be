@@ -252,14 +252,7 @@ namespace FoodHub.Domain.Entities
                     continue;
                 }
 
-                var moveResult = sourceItem.MoveToOrder(OrderId, updatedAt);
-                if (!moveResult.IsSuccess)
-                {
-                    return DomainResult<MergeOrderPlan>.Failure(
-                        moveResult.ErrorCode ?? DomainErrors.Order.InvalidActionWithStatus
-                    );
-                }
-
+                sourceItem.ReassignToOrder(OrderId, updatedAt);
                 sourceOrder.OrderItems.Remove(sourceItem);
                 OrderItems.Add(sourceItem);
             }

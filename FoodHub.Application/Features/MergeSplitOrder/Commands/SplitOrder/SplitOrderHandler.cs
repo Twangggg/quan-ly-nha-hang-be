@@ -308,10 +308,11 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                         );
                         if (destReservation != null)
                         {
-                            destReservation.TableId = destinationTable.TableId;
-                            destReservation.Status = ReservationStatus.CheckIn;
-                            destReservation.UpdatedAt = now;
-                            destReservation.UpdatedBy = auditorId;
+                            destReservation.ReassignToTable(
+                                destinationTable.TableId,
+                                now,
+                                auditorId
+                            );
                             reservationRepository.Update(destReservation);
                         }
                     }
@@ -331,6 +332,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
             }
 
             await _unitOfWork.BeginTransactionAsync();
+            var committed = false;
 
             try
             {
@@ -348,7 +350,6 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
 
                 if (!splitResult.IsSuccess || splitResult.Value is null)
                 {
-                    await _unitOfWork.RollbackTransactionAsync();
                     _logger.LogWarning(
                         "Domain split rejected for source order {SourceOrderId}. Error={Error}",
                         sourceOrder.OrderId,
@@ -384,9 +385,14 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                         );
                 }
 
-                if (
+                if (destinationTable != null && createdNewOrder)
+                {
+                    destinationTable.AttachOrder(destinationOrder, auditorId, now);
+                    tableRepository.Update(destinationTable);
+                }
+                else if (
                     destinationTable != null
-                    && (createdNewOrder || destinationTable.Status != TableStatus.Occupied)
+                    && destinationTable.Status != TableStatus.Occupied
                 )
                 {
                     destinationTable.MarkAsOccupied(auditorId, now);
@@ -403,10 +409,11 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                             cancellationToken
                         );
 
-                    if (sourceTable != null && sourceTable.SetAvailable())
+                    if (
+                        sourceTable != null
+                        && sourceTable.ReleaseIfNoActiveOrders(auditorId, now)
+                    )
                     {
-                        sourceTable.UpdatedAt = now;
-                        sourceTable.UpdatedBy = auditorId;
                         tableRepository.Update(sourceTable);
                     }
                 }
@@ -426,6 +433,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+                committed = true;
 
                 _logger.LogInformation(
                     "Successfully split items from Order {SourceOrderCode} to Order {DestinationOrderCode}. SourceAmount={SourceAmount}, DestinationAmount={DestinationAmount}",
@@ -455,15 +463,12 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                     }
                 );
             }
-            catch (Exception ex)
+            finally
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(
-                    ex,
-                    "Failed to split Order {SourceOrderId}",
-                    request.SourceOrderId
-                );
-                throw;
+                if (!committed)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                }
             }
         }
 

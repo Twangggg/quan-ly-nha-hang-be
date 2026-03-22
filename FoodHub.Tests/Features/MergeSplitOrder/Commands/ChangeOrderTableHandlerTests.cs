@@ -167,5 +167,50 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             result.ErrorType.Should().Be(ResultErrorType.BadRequest);
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Never);
         }
+
+        [Fact]
+        public async Task Handle_Should_Return_Failure_When_New_Table_Is_The_Same_As_Current_Table()
+        {
+            var userId = Guid.NewGuid();
+            var orderId = Guid.NewGuid();
+            var tableId = Guid.NewGuid();
+
+            var order = new EntityOrder
+            {
+                OrderId = orderId,
+                OrderCode = "ORD-001",
+                OrderType = OrderType.DineIn,
+                Status = OrderStatus.Serving,
+                TableId = tableId,
+            };
+
+            var orderRepo = new Mock<IGenericRepository<EntityOrder>>();
+            orderRepo
+                .Setup(r => r.Query())
+                .Returns(new List<EntityOrder> { order }.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<EntityOrder>()).Returns(orderRepo.Object);
+
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Table.SameAsCurrentTable))
+                .Returns("Same table");
+
+            var handler = new ChangeOrderTableHandler(
+                _mockUow.Object,
+                _mockCurrentUserService.Object,
+                _mockMessageService.Object,
+                _mockCacheService.Object,
+                _mockLogger.Object
+            );
+
+            var result = await handler.Handle(
+                new ChangeOrderTableCommand(orderId, tableId),
+                CancellationToken.None
+            );
+
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorType.Should().Be(ResultErrorType.BadRequest);
+            _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Never);
+        }
     }
 }
