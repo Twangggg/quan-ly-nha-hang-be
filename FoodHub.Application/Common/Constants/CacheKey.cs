@@ -86,6 +86,7 @@ public static class CacheKey
     public const string InventoryStockInReceiptById = "inventory:stockin:{0}";
     public const string InventoryStockOutReceiptsList = "inventory:stockout:list";
     public const string InventoryStockOutReceiptById = "inventory:stockout:{0}";
+    public const string InventoryLotsList = "inventory:lots:list";
     public const string InventoryReportList = "inventory:report:list";
     public const string InventoryLedgerList = "inventory:ledger:list";
     public const string InventoryRecipeByMenuItem = "inventory:recipe:{0}";
