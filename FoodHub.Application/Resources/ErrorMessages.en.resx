@@ -262,7 +262,7 @@
     <value>Invalid action</value>
   </data>
   <data name="Order.InvalidActionWithStatus" xml:space="preserve">
-    <value>Invalid action with </value>
+    <value>Invalid action with current status.</value>
   </data>
   <data name="Order.MustHaveItem" xml:space="preserve">
     <value>Order must have item</value>

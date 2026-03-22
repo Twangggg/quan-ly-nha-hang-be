@@ -1,4 +1,5 @@
 using AutoMapper;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
@@ -22,11 +23,13 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
         private readonly IMessageService _messageService;
         private readonly ILogger<MergeOrderHandler> _logger;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cacheService;
 
         public MergeOrderHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ICacheService cacheService,
             IMapper mapper,
             ILogger<MergeOrderHandler> logger
         )
@@ -34,6 +37,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
             _logger = logger;
             _mapper = mapper;
         }
@@ -75,7 +79,6 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                 auditorId
             );
 
-            var reservationRepository = _unitOfWork.Repository<Reservation>();
             var orderRepository = _unitOfWork.Repository<Order>();
             var orderItemRepository = _unitOfWork.Repository<OrderItem>();
             var tableRepository = _unitOfWork.Repository<Table>();
@@ -130,12 +133,13 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                     secondOrder.Status
                 );
                 return Result<MergeOrderResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus),
+                    $"{_messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus)} First={firstOrder.Status}, Second={secondOrder.Status}",
                     ResultErrorType.BadRequest
                 );
             }
 
             await _unitOfWork.BeginTransactionAsync();
+            var committed = false;
 
             try
             {
@@ -144,7 +148,6 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 
                 if (!mergeResult.IsSuccess || mergeResult.Value is null)
                 {
-                    await _unitOfWork.RollbackTransactionAsync();
                     _logger.LogWarning(
                         "Domain merge rejected for orders {FirstOrderId} and {SecondOrderId}. Error={Error}",
                         request.FirstOrder,
@@ -152,9 +155,11 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                         mergeResult.ErrorCode
                     );
                     return Result<MergeOrderResponse>.Failure(
-                        _messageService.GetMessage(
-                            mergeResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
-                        ),
+                        mergeResult.ErrorCode == MessageKeys.Order.InvalidActionWithStatus
+                            ? $"{_messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus)} First={firstOrder.Status}, Second={secondOrder.Status}"
+                            : _messageService.GetMessage(
+                                mergeResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
+                            ),
                         ResultErrorType.BadRequest
                     );
                 }
@@ -177,9 +182,10 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                             cancellationToken
                         );
 
-                    // Ghi chú: Chúng ta KHÔNG giải phóng bàn hoặc reservation của đơn bị gộp (secondOrder) 
-                    // vì theo ý kiến người dùng, khách vẫn có thể ngồi tại bàn đó cho đến khi thanh toán xong toàn bộ.
-                    // Table của secondOrder sẽ ở trạng thái Occupied nhưng không còn Order gắn trực tiếp (vì đã gộp vào firstOrder).
+                    if (secondTable != null && secondTable.ReleaseIfNoActiveOrders(auditorId, now))
+                    {
+                        tableRepository.Update(secondTable);
+                    }
                 }
 
                 await auditLogRepository.AddAsync(
@@ -197,6 +203,28 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+                committed = true;
+
+                try
+                {
+                    await _cacheService.RemoveByPatternAsync(
+                        CacheKey.TableList + "*",
+                        cancellationToken
+                    );
+                    await _cacheService.RemoveByPatternAsync(
+                        string.Format(CacheKey.TableListByArea, "*"),
+                        cancellationToken
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Merge committed but table cache invalidation failed for FirstOrderId {FirstOrderId} and SecondOrderId {SecondOrderId}",
+                        request.FirstOrder,
+                        request.SecondOrder
+                    );
+                }
 
                 _logger.LogInformation(
                     "Successfully merged Order {SecondOrderCode} into {FirstOrderCode}. New TotalAmount={TotalAmount}",
@@ -215,16 +243,12 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                     }
                 );
             }
-            catch (Exception ex)
+            finally
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(
-                    ex,
-                    "Failed to merge Order {SecondOrderId} into {FirstOrderId}",
-                    request.SecondOrder,
-                    request.FirstOrder
-                );
-                throw;
+                if (!committed)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                }
             }
         }
     }

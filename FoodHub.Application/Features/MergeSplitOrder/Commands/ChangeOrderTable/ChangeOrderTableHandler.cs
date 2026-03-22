@@ -112,40 +112,16 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
             }
 
             await _unitOfWork.BeginTransactionAsync();
+            var committed = false;
 
             try
             {
                 var now = DateTime.UtcNow;
 
-                // Remove order from current table and attach to new table snapshot
-                if (currentTable.Orders != null)
-                {
-                    var toRemove = currentTable.Orders.FirstOrDefault(o =>
-                        o.OrderId == order.OrderId
-                    );
-                    if (toRemove != null)
-                    {
-                        currentTable.Orders.Remove(toRemove);
-                    }
-                }
-
+                currentTable.DetachOrder(order.OrderId, auditorId, now);
                 order.ChangeTable(request.TableId, now, auditorId);
-
-                if (
-                    newTable.Orders != null
-                    && !newTable.Orders.Any(o => o.OrderId == order.OrderId)
-                )
-                {
-                    newTable.Orders.Add(order);
-                }
-
-                newTable.MarkAsOccupied(auditorId, now);
-
-                if (currentTable.SetAvailable())
-                {
-                    currentTable.UpdatedAt = now;
-                    currentTable.UpdatedBy = auditorId;
-                }
+                newTable.AttachOrder(order, auditorId, now);
+                currentTable.ReleaseIfNoActiveOrders(auditorId, now);
 
                 orderRepository.Update(order);
                 tableRepository.Update(currentTable);
@@ -169,15 +145,28 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
                 );
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
-                await _cacheService.RemoveByPatternAsync(
-                    CacheKey.TableList + "*",
-                    cancellationToken
-                );
-                await _cacheService.RemoveByPatternAsync(
-                    string.Format(CacheKey.TableListByArea, "*"),
-                    cancellationToken
-                );
                 await _unitOfWork.CommitTransactionAsync();
+                committed = true;
+
+                try
+                {
+                    await _cacheService.RemoveByPatternAsync(
+                        CacheKey.TableList + "*",
+                        cancellationToken
+                    );
+                    await _cacheService.RemoveByPatternAsync(
+                        string.Format(CacheKey.TableListByArea, "*"),
+                        cancellationToken
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Order table change committed but table cache invalidation failed for OrderId {OrderId}",
+                        request.OrderId
+                    );
+                }
 
                 var response = new ChangeOrderTableResponse
                 {
@@ -191,15 +180,12 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
 
                 return Result<ChangeOrderTableResponse>.Success(response);
             }
-            catch (Exception ex)
+            finally
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(
-                    ex,
-                    "Failed to change order table for OrderId {OrderId}",
-                    request.OrderId
-                );
-                throw;
+                if (!committed)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                }
             }
         }
     }

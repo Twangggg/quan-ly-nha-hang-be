@@ -76,6 +76,14 @@ namespace FoodHub.Domain.Entities
             );
         }
 
+        public void ReassignToTable(Guid tableId, DateTime updatedAt, Guid? updatedBy)
+        {
+            TableId = tableId;
+            Status = ReservationStatus.CheckIn;
+            UpdatedAt = updatedAt;
+            UpdatedBy = updatedBy;
+        }
+
         public bool CanFitTable(Table table)
         {
             ArgumentNullException.ThrowIfNull(table);
