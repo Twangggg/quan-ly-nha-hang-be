@@ -51,14 +51,23 @@ namespace FoodHub.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public bool IsSuitableForOrder(Order order)
+        public bool IsBelowMinAmount(decimal totalAmount)
         {
-            // Kiểm tra điều kiện áp dụng voucher với order, ví dụ: item trong voucher có trong order hay không, giá trị đơn hàng có đủ điều kiện áp dụng voucher hay không, v.v.
-            if (MinOrderValue != null && order.TotalAmount < MinOrderValue)
+
+            if (MinOrderValue != null && totalAmount < MinOrderValue)
             {
-                return false;
+                return true;
             }
-            return true;
+            return false;
+        }
+
+        public bool IsFreeItemInOrder(Order order)
+        {
+            if (VoucherType != VoucherType.FreeItem || ItemtId == null)
+            {
+                return false; // Không phải voucher tặng món hoặc không có ItemId
+            }
+            return order.OrderItems.Any(oi => oi.MenuItemId == ItemtId);
         }
     }
 }

@@ -107,5 +107,14 @@ namespace FoodHub.Application.Constants
             public const string Create = "Permissions.Invoices.Create";
             public const string ViewPdf = "Permissions.Invoices.ViewPdf";
         }
+
+        public static class Vouchers
+        {
+            public const string View = "Permissions.Vouchers.View";
+            public const string Create = "Permissions.Vouchers.Create";
+            public const string Update = "Permissions.Vouchers.Update";
+            public const string Delete = "Permissions.Vouchers.Delete";
+            public const string Apply = "Permissions.Vouchers.Apply";
+        }
     }
 }
