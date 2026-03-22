@@ -22,6 +22,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
         private readonly Mock<IUnitOfWork> _mockUow = new();
         private readonly Mock<ICurrentUserService> _mockCurrentUserService = new();
         private readonly Mock<IMessageService> _mockMessageService = new();
+        private readonly Mock<ICacheService> _mockCacheService = new();
         private readonly Mock<IMapper> _mockMapper = new();
         private readonly Mock<ILogger<MergeOrderHandler>> _mockLogger = new();
 
@@ -106,6 +107,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                _mockCacheService.Object,
                 _mockMapper.Object,
                 _mockLogger.Object
             );
@@ -126,6 +128,14 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             auditRepo.Verify(r => r.AddAsync(It.IsAny<OrderAuditLog>()), Times.Once);
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(u => u.CommitTransactionAsync(), Times.Once);
+            _mockCacheService.Verify(
+                c => c.RemoveByPatternAsync("table:list*", It.IsAny<CancellationToken>()),
+                Times.Once
+            );
+            _mockCacheService.Verify(
+                c => c.RemoveByPatternAsync("table:area:*", It.IsAny<CancellationToken>()),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -141,6 +151,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                _mockCacheService.Object,
                 _mockMapper.Object,
                 _mockLogger.Object
             );
@@ -179,6 +190,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                _mockCacheService.Object,
                 _mockMapper.Object,
                 _mockLogger.Object
             );
@@ -253,6 +265,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                _mockCacheService.Object,
                 _mockMapper.Object,
                 _mockLogger.Object
             );

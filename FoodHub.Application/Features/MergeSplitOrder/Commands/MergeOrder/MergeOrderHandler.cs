@@ -1,4 +1,5 @@
 using AutoMapper;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
@@ -22,11 +23,13 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
         private readonly IMessageService _messageService;
         private readonly ILogger<MergeOrderHandler> _logger;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cacheService;
 
         public MergeOrderHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ICacheService cacheService,
             IMapper mapper,
             ILogger<MergeOrderHandler> logger
         )
@@ -34,6 +37,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
             _logger = logger;
             _mapper = mapper;
         }
@@ -200,6 +204,27 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
                 committed = true;
+
+                try
+                {
+                    await _cacheService.RemoveByPatternAsync(
+                        CacheKey.TableList + "*",
+                        cancellationToken
+                    );
+                    await _cacheService.RemoveByPatternAsync(
+                        string.Format(CacheKey.TableListByArea, "*"),
+                        cancellationToken
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Merge committed but table cache invalidation failed for FirstOrderId {FirstOrderId} and SecondOrderId {SecondOrderId}",
+                        request.FirstOrder,
+                        request.SecondOrder
+                    );
+                }
 
                 _logger.LogInformation(
                     "Successfully merged Order {SecondOrderCode} into {FirstOrderCode}. New TotalAmount={TotalAmount}",
