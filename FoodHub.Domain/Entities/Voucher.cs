@@ -22,10 +22,43 @@ namespace FoodHub.Domain.Entities
         public int UsedCount { get; set; } // Số lần voucher đã được sử dụng, cần được cập nhật mỗi khi voucher được áp dụng thành công
         public virtual ICollection<Order> Orders { get; set; } // Quan hệ một-nhiều với Order, mỗi voucher có thể áp dụng cho nhiều đơn hàng
 
+        // Các phương thức liên quan đến logic của voucher
         public bool IsValid()
         {
             var now = DateTime.UtcNow;
-            return IsActive && now >= StartDate && now <= EndDate && (UsageLimit == null || UsedCount < UsageLimit);
+            return IsActive
+                && now >= StartDate && now <= EndDate
+                && (UsageLimit == null || UsedCount < UsageLimit)
+                && (StartTime == null || now.TimeOfDay >= StartTime)
+                && (EndTime == null || now.TimeOfDay <= EndTime);
+        }
+
+        public void Used(Guid auditorId)
+        {
+            UsedCount++;
+
+            UpdatedBy = auditorId;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void UnUsed(Guid auditorId)
+        {
+            if (UsedCount > 0)
+            {
+                UsedCount--;
+            }
+            UpdatedBy = auditorId;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public bool IsSuitableForOrder(Order order)
+        {
+            // Kiểm tra điều kiện áp dụng voucher với order, ví dụ: item trong voucher có trong order hay không, giá trị đơn hàng có đủ điều kiện áp dụng voucher hay không, v.v.
+            if (MinOrderValue != null && order.TotalAmount < MinOrderValue)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

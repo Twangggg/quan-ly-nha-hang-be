@@ -533,6 +533,60 @@ namespace FoodHub.Domain.Entities
             return string.Join("|", allValues);
         }
 
+        // Vùng logic liên quan đến voucher - có thể phức tạp tùy theo yêu cầu kinh doanh, nên tách riêng để dễ quản lý và mở rộng sau này
+        public void ApplyVoucher(Voucher? voucher, Guid auditorId)
+        {
+            // If voucher is null, it means we are unapplying any existing voucher from the order
+            Voucher = voucher;
+            VoucherId = voucher?.VoucherId ?? null;
+            DiscountAmount = CalculateDiscount();
+            ApplyFreeItemForVoucher();
+            RecalculateTotalAmount();
+
+            // Log the voucher application in audit logs
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = auditorId;
+        }
+
+        public void ApplyFreeItemForVoucher() 
+        {
+            if (Voucher == null || Voucher.VoucherType != VoucherType.FreeItem || Voucher.ItemtId == null)
+            {
+                List<OrderItem> freeItems = OrderItems.Where(oi => oi.IsFreeItem).ToList();
+                foreach (var freeItem in freeItems)
+                {
+                    OrderItems.Remove(freeItem);
+                }
+
+                return;
+            }
+            var freeItemMenu = Voucher.Item;
+            if (freeItemMenu == null)
+                return;
+            var existingFreeItem = OrderItems.FirstOrDefault(oi =>
+                oi.MenuItemId == freeItemMenu.MenuItemId
+                && oi.Status != OrderItemStatus.Cancelled
+                && oi.Status != OrderItemStatus.Rejected
+            );
+            if (existingFreeItem != null)
+            {
+                existingFreeItem.Quantity = Math.Max(existingFreeItem.Quantity, Voucher.FreeQuantity ?? 0);
+                existingFreeItem.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                var freeOrderItem = CreateOrderItem(
+                    freeItemMenu,
+                    Voucher.FreeQuantity ?? 0,
+                    $"Free item from voucher {Voucher.VoucherCode}",
+                    new List<(OptionGroup Group, List<(OptionItem Item, int Quantity, string? Note)> Selections)>()
+                );
+                freeOrderItem.UnitPriceSnapshot = 0; // Ensure the price is set to 0 for free item
+                OrderItems.Add(freeOrderItem);
+            }
+            RecalculateTotalAmount();
+        }
+
         public decimal CalculateDiscount()
         {
             if (Voucher == null || !Voucher.IsValid())
@@ -550,17 +604,12 @@ namespace FoodHub.Domain.Entities
                 case VoucherType.Fixed:
                     return Math.Min(Voucher.DiscountValue ?? 0, SubTotal);
                 case VoucherType.FreeItem:
-                    if (Voucher.ItemtId.HasValue && Voucher.FreeQuantity.HasValue)
-                    {
-                        var freeItemTotal = OrderItems
-                            .Where(oi => oi.MenuItemId == Voucher.ItemtId.Value)
-                            .Sum(oi => oi.UnitPriceSnapshot * Math.Min(oi.Quantity, Voucher.FreeQuantity.Value));
-                        return Math.Min(freeItemTotal, SubTotal);
-                    }
+                    // Với voucher miễn phí món, logic tính discount có thể phức tạp hơn và thường liên quan đến việc xác định giá trị của món được miễn phí. Để đơn giản, chúng ta sẽ không áp dụng giảm giá trực tiếp vào tổng tiền mà sẽ xử lý logic này ở cấp độ OrderItem khi tính toán tổng tiền.
                     return 0;
                 default:
                     return 0;
             }
+            // Kết thúc vùng logic của voucher
         }
 
     }

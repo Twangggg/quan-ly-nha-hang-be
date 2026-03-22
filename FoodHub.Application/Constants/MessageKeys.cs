@@ -132,6 +132,7 @@ namespace FoodHub.Application.Constants
             public const string NoValidItems = "Order.NoValidItems";
             public const string EmptyOrder = "Order.EmptyOrder";
             public const string HasBeenPlaced = "Order.HasBeenPlaced";
+            public const string VoucherAlreadyApplied = "Order.VoucherAlreadyApplied";
         }
 
         public static class OrderItem
@@ -377,6 +378,8 @@ namespace FoodHub.Application.Constants
         {
             public const string NotFound = "Voucher.NotFound";
             public const string CodeAlreadyExists = "Voucher.CodeAlreadyExists";
+            public const string Invalid = "Voucher.Invalid";
+            public const string NotSuitableForOrder = "Voucher.NotSuitableForOrder";
         }
     }
 }
