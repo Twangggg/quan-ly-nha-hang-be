@@ -1,0 +1,2 @@
+   4:8>d:\OJT\FoodHub_BE\FoodHub.Application\Features\MergeSplitOrder\Commands\ChangeOrderTable\ChangeOrderTableHandler.cs(153,27): error CS0103: The name '_cacheService' does not exist in the current context [d:\OJT\FoodHub_BE\FoodHub.Application\FoodHub.Application.csproj]
+   4:8>d:\OJT\FoodHub_BE\FoodHub.Application\Features\MergeSplitOrder\Commands\ChangeOrderTable\ChangeOrderTableHandler.cs(157,27): error CS0103: The name '_cacheService' does not exist in the current context [d:\OJT\FoodHub_BE\FoodHub.Application\FoodHub.Application.csproj]
