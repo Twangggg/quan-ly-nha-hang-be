@@ -48,10 +48,10 @@ namespace FoodHub.Application.Features.Vouchers.Commands.UpdateVoucher
             var voucherRepository = _unitOfWork.Repository<Voucher>();
             var menuItemRepository = _unitOfWork.Repository<MenuItem>();
 
-            var voucher = voucherRepository
+            var voucher = await voucherRepository
                 .Query()
                 .Include(v => v.Item)
-                .FirstOrDefault(v => v.VoucherId == request.VoucherId);
+                .FirstOrDefaultAsync(v => v.VoucherId == request.VoucherId, cancellationToken);
             if (voucher == null)
             {
                 _logger.LogWarning("Voucher with ID {VoucherId} not found", request.VoucherId);
