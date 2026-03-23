@@ -45,6 +45,19 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
             return HandleResult(result);
         }
 
+        /// <summary>
+        /// Alias tuong thich nguoc de lay danh sach ban theo khu vuc.
+        /// </summary>
+        /// <param name="areaId">ID cua khu vuc can loc.</param>
+        /// <returns code="200">Danh sach cac ban an trong khu vuc.</returns>
+        [HttpGet("area/{areaId:guid}")]
+        [HasPermission(Permissions.Tables.View)]
+        [ProducesResponseType(typeof(Result<List<GetTablesResponse>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetTablesByArea(Guid areaId)
+        {
+            return await GetTables(areaId);
+        }
+
 
 
         /// <summary>

@@ -459,8 +459,8 @@
   <data name="OrderItem.MustBePreparingToStartCooking" xml:space="preserve">
     <value>Món phải đang ở trạng thái Chuẩn bị để bắt đầu nấu.</value>
   </data>
-  <data name="OrderItem.MustBeCookingToReady" xml:space="preserve">
-    <value>Món phải đang nấu để chuyển sang trạng thái Sẵn sàng.</value>
+  <data name="OrderItem.MustBeCookingToComplete" xml:space="preserve">
+    <value>Món phải đang nấu để chuyển sang trạng thái Hoàn tất.</value>
   </data>
   <data name="OrderItem.MustBeCookingToReject" xml:space="preserve">
     <value>Món phải đang nấu để từ chối.</value>

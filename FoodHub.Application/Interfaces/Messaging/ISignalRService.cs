@@ -14,7 +14,7 @@ namespace FoodHub.Application.Interfaces.Messaging
         Task NotifyNewOrderItemAsync(Guid orderId, Guid orderItemId, string station);
 
         /// <summary>
-        /// Thông báo khi trạng thái món ăn thay đổi (StartCooking, MarkReady, Reject, Return).
+        /// Thông báo khi trạng thái món ăn thay đổi (StartCooking, CompleteCooking, Reject, Return).
         /// Frontend sẽ dựa vào status này để di chuyển item giữa các cột/màn hình.
         /// </summary>
         Task NotifyOrderItemStatusChangedAsync(

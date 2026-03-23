@@ -64,7 +64,7 @@ namespace FoodHub.Tests.Features.Dashboard
                     new OrderItem
                     {
                         OrderItemId = Guid.NewGuid(),
-                        Status = OrderItemStatus.Ready,
+                        Status = OrderItemStatus.Completed,
                         Quantity = 1,
                         CreatedAt = DateTime.UtcNow.AddMinutes(-18),
                     },
@@ -150,7 +150,7 @@ namespace FoodHub.Tests.Features.Dashboard
             result.Data.CleaningTables.Should().Be(1);
             result.Data.PendingKitchenItems.Should().Be(1);
             result.Data.CookingItems.Should().Be(0);
-            result.Data.ReadyItems.Should().Be(1);
+            result.Data.CompletedItems.Should().Be(2);
             result.Data.WaitingCheckoutOrders.Should().Be(1);
             result.Data.TodayPaidOrders.Should().Be(1);
             result.Data.TodayRevenue.Should().Be(150_000);

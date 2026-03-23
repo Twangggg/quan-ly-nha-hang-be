@@ -13,7 +13,7 @@ namespace FoodHub.Application.Interfaces.Inventory
         Task DeductStockAsync(Guid orderId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Deducts stock for a single order item when it's marked as Ready.
+        /// Deducts stock for a single order item when cooking is completed.
         /// </summary>
         /// <param name="orderItemId">The ID of the order item.</param>
         /// <param name="cancellationToken">Cancellation token.</param>

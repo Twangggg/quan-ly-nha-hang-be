@@ -43,17 +43,23 @@ namespace FoodHub.Domain.Entities
         {
             if (quantity <= 0)
             {
-                return DomainResult<InventoryLot>.Failure(DomainErrors.InventoryLot.InvalidQuantity);
+                return DomainResult<InventoryLot>.Failure(
+                    DomainErrors.InventoryLot.InvalidQuantity
+                );
             }
 
             if (unitCost < 0)
             {
-                return DomainResult<InventoryLot>.Failure(DomainErrors.InventoryLot.InvalidUnitCost);
+                return DomainResult<InventoryLot>.Failure(
+                    DomainErrors.InventoryLot.InvalidUnitCost
+                );
             }
 
             if (string.IsNullOrWhiteSpace(lotCode))
             {
-                return DomainResult<InventoryLot>.Failure(DomainErrors.InventoryLot.LotCodeRequired);
+                return DomainResult<InventoryLot>.Failure(
+                    DomainErrors.InventoryLot.LotCodeRequired
+                );
             }
 
             var normalizedLotCode = lotCode.Trim();
@@ -114,7 +120,11 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
-        public DomainResult ReverseConsume(decimal quantity, DateTime occurredAt, Guid? updatedBy = null)
+        public DomainResult ReverseConsume(
+            decimal quantity,
+            DateTime occurredAt,
+            Guid? updatedBy = null
+        )
         {
             if (quantity <= 0)
             {
@@ -202,7 +212,11 @@ namespace FoodHub.Domain.Entities
 
         public void MarkExpired(DateTime currentDate, Guid? updatedBy = null)
         {
-            if (ExpiryDate.HasValue && ExpiryDate.Value.Date < currentDate.Date && RemainingQuantity > 0)
+            if (
+                ExpiryDate.HasValue
+                && ExpiryDate.Value.Date < currentDate.Date
+                && RemainingQuantity > 0
+            )
             {
                 Status = InventoryLotStatus.Expired;
                 Touch(updatedBy);
@@ -237,7 +251,9 @@ namespace FoodHub.Domain.Entities
 
         public bool CanReverseSourceStockIn()
         {
-            return !DeletedAt.HasValue && RemainingQuantity == OriginalQuantity && Status != InventoryLotStatus.Disposed;
+            return !DeletedAt.HasValue
+                && RemainingQuantity == OriginalQuantity
+                && Status != InventoryLotStatus.Disposed;
         }
 
         public void RefreshStatus(DateTime currentDate, int expiryWarningDays = 7)

@@ -75,8 +75,8 @@ namespace FoodHub.Application.Features.Dashboard.Orders.Queries.GetOrderDashboar
                 CookingItems = activeOrders.Sum(x =>
                     x.OrderItems.Count(item => item.Status == OrderItemStatus.Cooking)
                 ),
-                ReadyItems = activeOrders.Sum(x =>
-                    x.OrderItems.Count(item => item.Status == OrderItemStatus.Ready)
+                CompletedItems = activeOrders.Sum(x =>
+                    x.OrderItems.Count(item => item.Status == OrderItemStatus.Completed)
                 ),
                 WaitingCheckoutOrders = activeOrders.Count(x =>
                     x.OrderItems.Any() && x.OrderItems.All(item => item.IsFinished())

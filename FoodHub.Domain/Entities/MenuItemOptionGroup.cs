@@ -44,7 +44,13 @@ namespace FoodHub.Domain.Entities
                 UpdatedBy = actorId,
             };
 
-            assignment.ApplyConfiguration(optionGroupType, isRequired, minSelect, maxSelect, actorId);
+            assignment.ApplyConfiguration(
+                optionGroupType,
+                isRequired,
+                minSelect,
+                maxSelect,
+                actorId
+            );
             return assignment;
         }
 

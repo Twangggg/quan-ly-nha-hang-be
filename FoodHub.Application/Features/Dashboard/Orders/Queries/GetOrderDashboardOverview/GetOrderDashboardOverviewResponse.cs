@@ -13,7 +13,7 @@ namespace FoodHub.Application.Features.Dashboard.Orders.Queries.GetOrderDashboar
         public int CleaningTables { get; set; }
         public int PendingKitchenItems { get; set; }
         public int CookingItems { get; set; }
-        public int ReadyItems { get; set; }
+        public int CompletedItems { get; set; }
         public int WaitingCheckoutOrders { get; set; }
         public int TodayPaidOrders { get; set; }
         public decimal TodayRevenue { get; set; }

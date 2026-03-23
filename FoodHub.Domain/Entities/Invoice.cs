@@ -2,9 +2,10 @@ using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
 {
-    public class Invoice: BaseEntity
+    public class Invoice : BaseEntity
     {
         public Guid InvoiceId { get; set; }
+
         // Tham chiếu đến đơn hàng ban đầu
         public Guid OrderId { get; set; }
 

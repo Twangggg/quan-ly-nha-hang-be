@@ -5,7 +5,6 @@ using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
 
-
 namespace FoodHub.Domain.Entities
 {
     public class Category : BaseEntity

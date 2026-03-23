@@ -525,7 +525,7 @@ namespace FoodHub.Domain.Entities
         public void ApplyVoucher(Voucher? voucher, Guid auditorId)
         {
             Voucher = voucher;
-            VoucherId = voucher?.VoucherId;     
+            VoucherId = voucher?.VoucherId;
             RecalculateTotalAmount();
 
             // Log the voucher application in audit logs
@@ -544,10 +544,11 @@ namespace FoodHub.Domain.Entities
             {
                 VoucherType.Percent => Math.Min(
                     SubTotal * (Voucher.DiscountValue ?? 0) / 100,
-                    Voucher.MaxDiscount ?? decimal.MaxValue),
+                    Voucher.MaxDiscount ?? decimal.MaxValue
+                ),
                 VoucherType.Fixed => Math.Min(Voucher.DiscountValue ?? 0, SubTotal),
                 VoucherType.FreeItem => 0, // Logic tính discount miễn phí món xử lý ở cấp độ OrderItem
-                _ => 0
+                _ => 0,
             };
         }
         // Kết thúc vùng logic của voucher

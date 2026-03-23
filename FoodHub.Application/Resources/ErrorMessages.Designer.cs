@@ -1125,9 +1125,9 @@ namespace FoodHub.Application.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Món phải đang nấu để chuyển sang trạng thái Sẵn sàng..
         /// </summary>
-        public static string OrderItem_MustBeCookingToReady {
+        public static string OrderItem_MustBeCookingToComplete {
             get {
-                return ResourceManager.GetString("OrderItem.MustBeCookingToReady", resourceCulture);
+                return ResourceManager.GetString("OrderItem.MustBeCookingToComplete", resourceCulture);
             }
         }
         

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using FoodHub.Domain.Enums;
 using FoodHub.Domain.Common;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Entities
 {
@@ -32,7 +32,11 @@ namespace FoodHub.Domain.Entities
         public virtual ICollection<MenuItemIngredient> Ingredients { get; set; } =
             new List<MenuItemIngredient>();
 
-        public record RecipeItemInput(Guid IngredientId, decimal QuantityPerServing, string BaseUnit);
+        public record RecipeItemInput(
+            Guid IngredientId,
+            decimal QuantityPerServing,
+            string BaseUnit
+        );
 
         public record RecipeUpdateResult(
             IReadOnlyCollection<MenuItemIngredient> Added,
@@ -67,12 +71,16 @@ namespace FoodHub.Domain.Entities
 
             if (inputList.Any(i => i.QuantityPerServing <= 0))
             {
-                return DomainResult<RecipeUpdateResult>.Failure("MenuItemIngredient.InvalidQuantity");
+                return DomainResult<RecipeUpdateResult>.Failure(
+                    "MenuItemIngredient.InvalidQuantity"
+                );
             }
 
             if (inputList.Select(i => i.IngredientId).Distinct().Count() != inputList.Count)
             {
-                return DomainResult<RecipeUpdateResult>.Failure("MenuItemIngredient.DuplicateIngredient");
+                return DomainResult<RecipeUpdateResult>.Failure(
+                    "MenuItemIngredient.DuplicateIngredient"
+                );
             }
 
             var removed = Ingredients
@@ -104,7 +112,11 @@ namespace FoodHub.Domain.Entities
                 }
                 else
                 {
-                    var updateResult = line.Update(input.QuantityPerServing, input.BaseUnit, actorId);
+                    var updateResult = line.Update(
+                        input.QuantityPerServing,
+                        input.BaseUnit,
+                        actorId
+                    );
                     if (!updateResult.IsSuccess)
                     {
                         return DomainResult<RecipeUpdateResult>.Failure(updateResult.ErrorCode!);

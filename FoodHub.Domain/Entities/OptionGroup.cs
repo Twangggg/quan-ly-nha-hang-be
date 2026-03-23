@@ -107,13 +107,15 @@ namespace FoodHub.Domain.Entities
 
         public decimal GetMaxExtraPrice()
         {
-            if (!OptionItems.Any()) return 0;
+            if (!OptionItems.Any())
+                return 0;
             return OptionItems.Max(oi => oi.ExtraPrice);
         }
 
         public decimal GetMinExtraPrice()
         {
-            if (!OptionItems.Any()) return 0;
+            if (!OptionItems.Any())
+                return 0;
             return OptionItems.Min(oi => oi.ExtraPrice);
         }
     }

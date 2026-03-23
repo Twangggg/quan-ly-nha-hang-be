@@ -27,7 +27,8 @@ namespace FoodHub.Domain.Entities
         {
             var now = DateTime.UtcNow;
             return IsActive
-                && now >= StartDate && now <= EndDate
+                && now >= StartDate
+                && now <= EndDate
                 && (UsageLimit == null || UsedCount < UsageLimit)
                 && (StartTime == null || now.TimeOfDay >= StartTime)
                 && (EndTime == null || now.TimeOfDay <= EndTime);
@@ -53,7 +54,6 @@ namespace FoodHub.Domain.Entities
 
         public bool IsBelowMinAmount(decimal totalAmount)
         {
-
             if (MinOrderValue != null && totalAmount < MinOrderValue)
             {
                 return true;
