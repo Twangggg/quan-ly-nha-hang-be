@@ -5,6 +5,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
 using Moq;
+using OrderEntity = FoodHub.Domain.Entities.Order;
 
 namespace FoodHub.Tests.Features.Dashboard
 {
@@ -14,7 +15,7 @@ namespace FoodHub.Tests.Features.Dashboard
         public async Task Handle_Should_ReturnOrderDashboardSummary()
         {
             var mockUnitOfWork = new Mock<IUnitOfWork>();
-            var mockOrderRepo = new Mock<IGenericRepository<Order>>();
+            var mockOrderRepo = new Mock<IGenericRepository<OrderEntity>>();
             var mockTableRepo = new Mock<IGenericRepository<Table>>();
 
             var area = new Area { AreaId = Guid.NewGuid(), Name = "Tang 1", CodePrefix = "T1" };
@@ -40,7 +41,7 @@ namespace FoodHub.Tests.Features.Dashboard
                 Area = area,
             };
 
-            var servingOrder = new Order
+            var servingOrder = new OrderEntity
             {
                 OrderId = Guid.NewGuid(),
                 OrderCode = "ORD-001",
@@ -70,7 +71,7 @@ namespace FoodHub.Tests.Features.Dashboard
                 ],
             };
 
-            var waitingCheckoutOrder = new Order
+            var waitingCheckoutOrder = new OrderEntity
             {
                 OrderId = Guid.NewGuid(),
                 OrderCode = "ORD-002",
@@ -98,7 +99,7 @@ namespace FoodHub.Tests.Features.Dashboard
                 ],
             };
 
-            var paidOrderToday = new Order
+            var paidOrderToday = new OrderEntity
             {
                 OrderId = Guid.NewGuid(),
                 OrderCode = "ORD-003",
@@ -109,13 +110,13 @@ namespace FoodHub.Tests.Features.Dashboard
                 CreatedAt = DateTime.UtcNow.AddHours(-2),
             };
 
-            mockUnitOfWork.Setup(x => x.Repository<Order>()).Returns(mockOrderRepo.Object);
+            mockUnitOfWork.Setup(x => x.Repository<OrderEntity>()).Returns(mockOrderRepo.Object);
             mockUnitOfWork.Setup(x => x.Repository<Table>()).Returns(mockTableRepo.Object);
 
             mockOrderRepo
                 .Setup(x => x.Query())
                 .Returns(
-                    new List<Order> { servingOrder, waitingCheckoutOrder, paidOrderToday }
+                     new List<OrderEntity> { servingOrder, waitingCheckoutOrder, paidOrderToday }
                         .AsQueryable()
                         .BuildMock()
                 );
