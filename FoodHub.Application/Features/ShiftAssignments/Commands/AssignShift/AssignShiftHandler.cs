@@ -96,7 +96,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift
 
                 await _unitOfWork.CommitTransactionAsync();
                 await _cacheService.RemoveByPatternAsync(CacheKey.ShiftAssignmentList, cancellationToken);
-                
+
                 assignment.Employee = employee;
                 assignment.Shift = shift;
 
