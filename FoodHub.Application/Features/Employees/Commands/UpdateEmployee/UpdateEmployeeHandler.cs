@@ -101,16 +101,7 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
 
             employeeRepository.Update(employee);
 
-            var auditLog = new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                Action = AuditAction.Update,
-                TargetId = employee.EmployeeId,
-                PerformedByEmployeeId = auditorId,
-                CreatedAt = DateTimeOffset.UtcNow,
-                Reason = "Update employee details",
-            };
-            await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
+            employeeRepository.Update(employee);
 
             try
             {

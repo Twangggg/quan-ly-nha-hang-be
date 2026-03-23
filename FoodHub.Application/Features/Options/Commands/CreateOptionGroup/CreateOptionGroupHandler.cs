@@ -1,13 +1,12 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
-using FoodHub.Application.Interfaces.Inventory;
-using FoodHub.Application.Interfaces.Messaging;
-using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
-using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
 {
@@ -15,10 +14,21 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
         : IRequestHandler<CreateOptionGroupCommand, Result<CreateOptionGroupResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
+        private readonly ILogger<CreateOptionGroupHandler> _logger;
+        private readonly IMessageService _messageService;
 
-        public CreateOptionGroupHandler(IUnitOfWork unitOfWork)
+        public CreateOptionGroupHandler(
+            IUnitOfWork unitOfWork,
+            ICacheService cacheService,
+            ILogger<CreateOptionGroupHandler> logger,
+            IMessageService messageService
+        )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
+            _logger = logger;
+            _messageService = messageService;
         }
 
         public async Task<Result<CreateOptionGroupResponse>> Handle(
@@ -26,39 +36,100 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
             CancellationToken cancellationToken
         )
         {
-            var menuItemRepository = _unitOfWork.Repository<MenuItem>();
-            var menuItem = await menuItemRepository.GetByIdAsync(request.MenuItemId);
-            if (menuItem == null)
+            _logger.LogInformation(
+                "Start creating option group Name={OptionGroupName} LegacyMenuItemId={MenuItemId}",
+                request.Name,
+                request.MenuItemId
+            );
+
+            MenuItem? menuItem = null;
+            if (request.MenuItemId.HasValue)
             {
-                return Result<CreateOptionGroupResponse>.Failure(
-                    $"Menu item with ID {request.MenuItemId} not found.",
-                    ResultErrorType.NotFound
-                );
+                menuItem = await _unitOfWork
+                    .Repository<MenuItem>()
+                    .Query()
+                    .FirstOrDefaultAsync(
+                        x => x.MenuItemId == request.MenuItemId.Value,
+                        cancellationToken
+                    );
+
+                if (menuItem == null)
+                {
+                    return Result<CreateOptionGroupResponse>.NotFound(
+                        _messageService.GetMessage(MessageKeys.MenuItem.NotFound, request.MenuItemId.Value)
+                    );
+                }
             }
 
-            var optionGroup = new OptionGroup
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
             {
-                OptionGroupId = Guid.NewGuid(),
-                MenuItemId = request.MenuItemId,
-                Name = request.Name,
-                OptionType = (OptionGroupType)request.Type,
-                IsRequired = request.IsRequired,
-            };
+                var optionGroup = OptionGroup.Create(
+                    request.Name,
+                    request.Type,
+                    request.IsRequired,
+                    request.MenuItemId
+                );
 
-            await _unitOfWork.Repository<OptionGroup>().AddAsync(optionGroup);
-            await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.Repository<OptionGroup>().AddAsync(optionGroup);
 
-            var response = new CreateOptionGroupResponse
+                MenuItemOptionGroup? assignment = null;
+                if (menuItem != null)
+                {
+                    assignment = MenuItemOptionGroup.Create(
+                        menuItem.MenuItemId,
+                        optionGroup.OptionGroupId,
+                        request.Type,
+                        request.IsRequired,
+                        request.MinSelect,
+                        request.MaxSelect,
+                        request.SortOrder,
+                        request.IsVisible
+                    );
+
+                    await _unitOfWork.Repository<MenuItemOptionGroup>().AddAsync(assignment);
+                }
+
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _unitOfWork.CommitTransactionAsync();
+
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.OptionReusableList,
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync("option:menuitem:", cancellationToken);
+
+                var response = new CreateOptionGroupResponse
+                {
+                    OptionGroupId = optionGroup.OptionGroupId,
+                    MenuItemId = optionGroup.MenuItemId,
+                    Name = optionGroup.Name,
+                    Type = (int)optionGroup.OptionType,
+                    IsRequired = assignment?.IsRequired ?? optionGroup.IsRequired,
+                    MinSelect = assignment?.MinSelect ?? optionGroup.GetDefaultMinSelect(),
+                    MaxSelect = assignment?.MaxSelect ?? optionGroup.GetDefaultMaxSelect(),
+                    SortOrder = assignment?.SortOrder ?? 0,
+                    IsVisible = assignment?.IsVisible ?? request.IsVisible,
+                    CreatedAt = optionGroup.CreatedAt,
+                    UpdatedAt = optionGroup.UpdatedAt,
+                    OptionItems = new List<OptionItemResponse>(),
+                };
+
+                _logger.LogInformation(
+                    "End creating option group OptionGroupId={OptionGroupId} MenuItemOptionGroupCreated={HasAssignment}",
+                    optionGroup.OptionGroupId,
+                    assignment != null
+                );
+
+                return Result<CreateOptionGroupResponse>.Success(response);
+            }
+            catch (Exception ex)
             {
-                OptionGroupId = optionGroup.OptionGroupId,
-                MenuItemId = optionGroup.MenuItemId,
-                Name = optionGroup.Name,
-                Type = (int)optionGroup.OptionType,
-                IsRequired = optionGroup.IsRequired,
-                OptionItems = new List<OptionItemResponse>(),
-            };
-
-            return Result<CreateOptionGroupResponse>.Success(response);
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(ex, "CreateOptionGroup transaction rolled back");
+                throw;
+            }
         }
     }
 }

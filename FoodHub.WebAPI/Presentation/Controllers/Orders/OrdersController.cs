@@ -29,7 +29,7 @@ namespace FoodHub.Presentation.Controllers
     /// Quản lý các hoạt động liên quan đến Đơn hàng (Orders) và Chi tiết đơn hàng (OrderItems).
     /// </summary>
     [Tags("Đơn hàng (Orders)")]
-    [RateLimit(maxRequests: 200, windowMinutes: 1, blockMinutes: 5)]
+    [RateLimit(maxRequests: 1000, windowMinutes: 1, blockMinutes: 5)]
     public class OrdersController : ApiControllerBase
     {
         private readonly IMediator _mediator;
@@ -53,7 +53,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="400">Dữ liệu không hợp lệ (ví dụ: bàn đã có người).</response>
         [HttpPost]
         [HasPermission(Permissions.Orders.Create)]
-        [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
+        [RateLimit(maxRequests: 200, windowMinutes: 1, blockMinutes: 5)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

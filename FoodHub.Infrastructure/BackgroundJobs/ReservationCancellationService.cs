@@ -1,8 +1,8 @@
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -20,7 +20,8 @@ namespace FoodHub.Infrastructure.BackgroundJobs
 
         public ReservationCancellationService(
             IServiceProvider serviceProvider,
-            ILogger<ReservationCancellationService> logger)
+            ILogger<ReservationCancellationService> logger
+        )
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
@@ -38,7 +39,10 @@ namespace FoodHub.Infrastructure.BackgroundJobs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error occurred executing Reservation Cancellation Service.");
+                    _logger.LogError(
+                        ex,
+                        "Error occurred executing Reservation Cancellation Service."
+                    );
                 }
 
                 // Chạy mỗi 10p một lần
@@ -57,29 +61,41 @@ namespace FoodHub.Infrastructure.BackgroundJobs
             var today = DateOnly.FromDateTime(DateTime.Now);
             var overdueTime = DateTime.Now.TimeOfDay.Subtract(TimeSpan.FromMinutes(15));
 
-            // Get all booked tables where customers haven't arrived (Status = Booked) for today, and are 30 minutes overdue
-            var overdueReservations = await unitOfWork.Repository<Reservation>().Query()
-                .Where(r => r.Status == ReservationStatus.Booked
-                            && r.ReservationDate == today
-                            && r.ReservationTime <= overdueTime)
-                .ToListAsync(cancellationToken);
+            // Only touch the columns we actually need so older DB schemas do not break the job.
+            var overdueReservations = unitOfWork
+                .Repository<Reservation>()
+                .Query()
+                .Where(r =>
+                    r.Status == ReservationStatus.Booked
+                    && r.ReservationDate == today
+                    && r.ReservationTime <= overdueTime
+                );
 
-            if (!overdueReservations.Any())
+            var overdueCount = await overdueReservations.CountAsync(cancellationToken);
+            if (overdueCount == 0)
             {
                 return;
             }
 
-            _logger.LogInformation("Found {Count} overdue reservations. Proceeding to cancel.", overdueReservations.Count);
+            _logger.LogInformation(
+                "Found {Count} overdue reservations. Proceeding to cancel.",
+                overdueCount
+            );
 
-            foreach (var reservation in overdueReservations)
+            var reservationsToCancel = await overdueReservations.ToListAsync(cancellationToken);
+            foreach (var reservation in reservationsToCancel)
             {
-                _logger.LogInformation("Cancelling Reservation {ReservationId} (Time: {Time}). Customer did not check-in after 30 minutes.", reservation.ReservationId, reservation.ReservationTime);
-
                 reservation.Status = ReservationStatus.Cancelled;
+                reservation.UpdatedAt = DateTime.UtcNow;
+                unitOfWork.Repository<Reservation>().Update(reservation);
             }
 
             await unitOfWork.SaveChangeAsync(cancellationToken);
-            _logger.LogInformation("Successfully cancelled {Count} overdue reservations.", overdueReservations.Count);
+
+            _logger.LogInformation(
+                "Successfully cancelled {Count} overdue reservations.",
+                overdueCount
+            );
         }
     }
 }

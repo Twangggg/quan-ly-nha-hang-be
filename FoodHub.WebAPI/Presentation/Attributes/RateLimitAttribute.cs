@@ -1,8 +1,8 @@
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -17,16 +17,20 @@ namespace FoodHub.WebAPI.Presentation.Attributes
         private readonly int _blockMinutes;
 
         public RateLimitAttribute(
-            int maxRequests = 100,
+            int maxRequests = 500,
             int windowMinutes = 1,
-            int blockMinutes = 5)
+            int blockMinutes = 2
+        )
         {
             _maxRequests = maxRequests;
             _windowMinutes = windowMinutes;
             _blockMinutes = blockMinutes;
         }
 
-        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        public async Task OnActionExecutionAsync(
+            ActionExecutingContext context,
+            ActionExecutionDelegate next
+        )
         {
             var rateLimiter = context.HttpContext.RequestServices.GetService<IRateLimiter>();
             if (rateLimiter == null)
@@ -36,26 +40,34 @@ namespace FoodHub.WebAPI.Presentation.Attributes
             }
 
             var clientId = GetClientIdentifer(context.HttpContext);
-            var endpoint = $"{context.HttpContext.Request.Method}:{context.HttpContext.Request.Path}";
+            var endpoint =
+                $"{context.HttpContext.Request.Method}:{context.HttpContext.Request.Path}";
             var rateLimitKey = $"rateLimit:{endpoint}:{clientId}";
 
             if (await rateLimiter.IsBlockedAsync(rateLimitKey, CancellationToken.None))
             {
-                context.Result = new ObjectResult(new
+                context.Result = new ObjectResult(
+                    new
+                    {
+                        error = "Too many requests. Please try again later.",
+                        retryAfter = _blockMinutes * 60,
+                    }
+                )
                 {
-                    error = "Too many requests. Please try again later.",
-                    retryAfter = _blockMinutes * 60
-                })
-                {
-                    StatusCode = 429
+                    StatusCode = 429,
                 };
-                context.HttpContext.Response.Headers.Append("Retry-After", (_blockMinutes * 60).ToString());
+                context.HttpContext.Response.Headers.Append(
+                    "Retry-After",
+                    (_blockMinutes * 60).ToString()
+                );
                 return;
             }
 
             var executedContext = await next();
-            if (executedContext.Exception != null ||
-                (executedContext.Result is ObjectResult result && result.StatusCode >= 400))
+            if (
+                executedContext.Exception != null
+                || (executedContext.Result is ObjectResult result && result.StatusCode >= 400)
+            )
             {
                 await rateLimiter.RegisterFailAsync(
                     rateLimitKey,
@@ -63,13 +75,15 @@ namespace FoodHub.WebAPI.Presentation.Attributes
                     TimeSpan.FromMinutes(_windowMinutes),
                     TimeSpan.FromMinutes(_blockMinutes),
                     CancellationToken.None
-                    );
+                );
             }
         }
 
         private string GetClientIdentifer(HttpContext context)
         {
-            var userId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userId = context
+                .User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                ?.Value;
 
             var ipAdress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 

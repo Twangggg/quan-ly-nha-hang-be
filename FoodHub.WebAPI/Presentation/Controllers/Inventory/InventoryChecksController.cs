@@ -2,6 +2,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Commands.CreateInventoryCheck;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Commands.ProcessInventoryCheck;
+using FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInventoryCheckById;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInventoryCheckCreateForm;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInventoryChecks;
 using FoodHub.Domain.Enums;
@@ -50,6 +51,21 @@ namespace FoodHub.Presentation.Controllers
                 Response.AddPaginationHeaders(result.Data);
             }
 
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Lấy chi tiết một phiếu kiểm kê.
+        /// </summary>
+        [HttpGet("/api/v{version:apiVersion}/inventory/check/{id:guid}")]
+        [HasPermission(Permissions.Inventory.View)]
+        [ProducesResponseType(
+            typeof(Result<GetInventoryCheckByIdResponse>),
+            StatusCodes.Status200OK
+        )]
+        public async Task<IActionResult> GetInventoryCheckById(Guid id)
+        {
+            var result = await _mediator.Send(new GetInventoryCheckByIdQuery(id));
             return HandleResult(result);
         }
 

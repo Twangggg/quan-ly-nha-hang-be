@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Exceptions;
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Options.Commands.CreateOptionItem;
@@ -9,6 +10,7 @@ using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -17,12 +19,21 @@ namespace FoodHub.Tests.Features.Options.Commands
     public class CreateOptionItemHandlerTests
     {
         private readonly Mock<IUnitOfWork> _mockUow;
+        private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly CreateOptionItemHandler _handler;
 
         public CreateOptionItemHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
-            _handler = new CreateOptionItemHandler(_mockUow.Object);
+            _mockMessageService = new Mock<IMessageService>();
+            _mockCache = new Mock<ICacheService>();
+            _handler = new CreateOptionItemHandler(
+                _mockUow.Object,
+                _mockCache.Object,
+                NullLogger<CreateOptionItemHandler>.Instance,
+                _mockMessageService.Object
+            );
         }
 
         [Fact]
@@ -36,14 +47,7 @@ namespace FoodHub.Tests.Features.Options.Commands
                 ExtraPrice: 0
             );
 
-            var optionGroup = new OptionGroup
-            {
-                OptionGroupId = optionGroupId,
-                MenuItemId = Guid.NewGuid(),
-                Name = "Size",
-                OptionType = OptionGroupType.Single,
-                IsRequired = true
-            };
+            var optionGroup = OptionGroup.Create("Size", OptionGroupType.Single, true, Guid.NewGuid());
             var mockOptionGroupRepo = new Mock<IGenericRepository<OptionGroup>>();
             mockOptionGroupRepo.Setup(r => r.GetByIdAsync(optionGroupId)).ReturnsAsync(optionGroup);
             _mockUow.Setup(u => u.Repository<OptionGroup>()).Returns(mockOptionGroupRepo.Object);
@@ -68,7 +72,7 @@ namespace FoodHub.Tests.Features.Options.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnFailure_When_OptionGroupNotFound()
+        public async Task Handle_Should_ThrowNotFound_When_OptionGroupNotFound()
         {
             // Arrange
             var optionGroupId = Guid.NewGuid();
@@ -109,14 +113,7 @@ namespace FoodHub.Tests.Features.Options.Commands
                 ExtraPrice: 2.50m
             );
 
-            var optionGroup = new OptionGroup
-            {
-                OptionGroupId = optionGroupId,
-                MenuItemId = Guid.NewGuid(),
-                Name = "Size",
-                OptionType = OptionGroupType.Single,
-                IsRequired = true
-            };
+            var optionGroup = OptionGroup.Create("Size", OptionGroupType.Single, true, Guid.NewGuid());
             var mockOptionGroupRepo = new Mock<IGenericRepository<OptionGroup>>();
             mockOptionGroupRepo.Setup(r => r.GetByIdAsync(optionGroupId)).ReturnsAsync(optionGroup);
             _mockUow.Setup(u => u.Repository<OptionGroup>()).Returns(mockOptionGroupRepo.Object);

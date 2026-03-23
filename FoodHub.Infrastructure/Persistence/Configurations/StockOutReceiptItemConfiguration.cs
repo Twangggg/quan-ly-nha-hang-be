@@ -1,4 +1,5 @@
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -31,6 +32,11 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasColumnName("line_amount")
                 .HasPrecision(18, 2)
                 .IsRequired();
+            builder.Property(x => x.CostCalculatedAt).HasColumnName("cost_calculated_at");
+            builder
+                .Property(x => x.CostCalculationSource)
+                .HasColumnName("cost_calculation_source")
+                .HasDefaultValue(InventoryCostCalculationSource.Realtime);
 
             builder.Property(x => x.CreatedAt).HasColumnName("created_at");
             builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");

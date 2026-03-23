@@ -8,6 +8,7 @@ using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
+using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
@@ -19,16 +20,19 @@ namespace FoodHub.Tests.Features.Authentication
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<IAuditLogService> _mockAuditLogService;
         private readonly RevokeTokenHandler _handler;
 
         public RevokeTokenHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockMessageService = new Mock<IMessageService>();
+            _mockAuditLogService = new Mock<IAuditLogService>();
 
             _handler = new RevokeTokenHandler(
                 _mockUow.Object,
-                _mockMessageService.Object);
+                _mockMessageService.Object,
+                _mockAuditLogService.Object);
         }
 
         [Fact]

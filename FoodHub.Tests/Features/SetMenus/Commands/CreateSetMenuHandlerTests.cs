@@ -310,7 +310,8 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Data.Price.Should().Be(25.00m);
+            result.Data.Should().NotBeNull();
+            result.Data!.Price.Should().Be(25.00m);
             result.Data.CostPrice.Should().Be(18.00m);
             result.Data.Items.Should().NotBeEmpty();
         }

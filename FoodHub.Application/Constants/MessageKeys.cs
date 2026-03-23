@@ -181,11 +181,21 @@ namespace FoodHub.Application.Constants
         public static class OptionGroup
         {
             public const string NotFound = "OptionGroup.NotFound";
+            public const string AlreadyAssigned = "OptionGroup.AlreadyAssigned";
+            public const string NotAssignedToMenuItem = "OptionGroup.NotAssignedToMenuItem";
+            public const string RequiredWithName = "OptionGroup.RequiredWithName";
+            public const string MinSelectRequired = "OptionGroup.MinSelectRequired";
+            public const string MaxSelectAllowed = "OptionGroup.MaxSelectAllowed";
+            public const string Required = "OptionGroup.Required";
+            public const string NameRequired = "OptionGroup.NameRequired";
         }
 
         public static class OptionItem
         {
             public const string NotFound = "OptionItem.NotFound";
+            public const string NotBelongToGroup = "OptionItem.NotBelongToGroup";
+            public const string LabelRequired = "OptionItem.LabelRequired";
+            public const string ExtraPriceInvalid = "OptionItem.ExtraPriceInvalid";
         }
 
         public static class SetMenu
@@ -355,6 +365,25 @@ namespace FoodHub.Application.Constants
             public const string ReasonRequired = "StockOutReceipt.ReasonRequired";
             public const string ReasonMaxLength = "StockOutReceipt.ReasonMaxLength";
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
+            public const string ExpiredLot = "StockOutReceipt.ExpiredLot";
+            public const string LotInsufficient = "StockOutReceipt.LotInsufficient";
+        }
+
+        public static class InventoryLot
+        {
+            public const string NotFound = "InventoryLot.NotFound";
+            public const string QuantityMin = "InventoryLot.QuantityMin";
+            public const string ReasonRequired = "InventoryLot.ReasonRequired";
+            public const string ReasonMaxLength = "InventoryLot.ReasonMaxLength";
+            public const string Expired = "InventoryLot.Expired";
+            public const string InsufficientQuantity = "InventoryLot.InsufficientQuantity";
+            public const string AlreadyDisposed = "InventoryLot.AlreadyDisposed";
+            public const string InvalidAdjustment = "InventoryLot.InvalidAdjustment";
+        }
+
+        public static class InventoryCogs
+        {
+            public const string Completed = "InventoryCogs.Completed";
         }
 
         public static class InventoryCheck
@@ -368,6 +397,12 @@ namespace FoodHub.Application.Constants
             public const string InvalidStatus = "InventoryCheck.InvalidStatus";
         }
 
+        public static class AuditLog
+        {
+            public const string NotFound = "AuditLog.NotFound";
+            public const string QueryError = "AuditLog.QueryError";
+            public const string Unauthorized = "AuditLog.Unauthorized";
+        }
         public static class Invoice
         {
             public const string AlreadyExists = "Invoice.AlreadyExists";

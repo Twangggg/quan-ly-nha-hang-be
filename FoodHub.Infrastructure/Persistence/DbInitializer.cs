@@ -102,18 +102,7 @@ namespace FoodHub.Infrastructure.Persistence
                         _context.Employees.Add(e);
 
                         // Add Audit Log for Seed Data
-                        _context.AuditLogs.Add(
-                            new AuditLog
-                            {
-                                LogId = Guid.NewGuid(),
-                                Action = AuditAction.Create,
-                                TargetId = e.EmployeeId,
-                                PerformedByEmployeeId = e.EmployeeId, // Self-created for seed
-                                CreatedAt = DateTimeOffset.UtcNow,
-                                Reason = "Seed data initialization",
-                                Metadata = "{\"info\": \"System generated\"}", // Valid JSON for jsonb column
-                            }
-                        );
+                        _context.Employees.Add(e);
                     }
                 }
                 _context.SaveChanges();
@@ -614,6 +603,8 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
+            SyncOccupiedTablesFromActiveOrders();
+
             // Seed an invoice for the first order to demonstrate the relationship and for FE testing
             var environmentName = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var isDevOrDemo = string.Equals(environmentName, "Development", System.StringComparison.OrdinalIgnoreCase)
@@ -693,6 +684,40 @@ namespace FoodHub.Infrastructure.Persistence
 
                 _context.Vouchers.AddRange(voucher1, voucher2);
                 _context.SaveChanges();
+            }
+
+            _context.SaveChanges();
+        }
+
+        private void SyncOccupiedTablesFromActiveOrders()
+        {
+            var occupiedTableIds = _context
+                .Orders
+                .AsNoTracking()
+                .Where(o => o.Status == OrderStatus.Serving && o.TableId.HasValue)
+                .Select(o => o.TableId!.Value)
+                .Distinct()
+                .ToList();
+
+            if (occupiedTableIds.Count == 0)
+            {
+                return;
+            }
+
+            var tablesToUpdate = _context
+                .Tables
+                .Where(t => occupiedTableIds.Contains(t.TableId) && t.Status != TableStatus.Occupied)
+                .ToList();
+
+            if (tablesToUpdate.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var table in tablesToUpdate)
+            {
+                table.Status = TableStatus.Occupied;
+                table.UpdatedAt = DateTime.UtcNow;
             }
 
             _context.SaveChanges();

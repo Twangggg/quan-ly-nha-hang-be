@@ -55,7 +55,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Đăng nhập thành công.</response>
         /// <response code="401">Thông tin đăng nhập không chính xác.</response>
         [HttpPost("login")]
-        [RateLimit(maxRequests: 10, windowMinutes: 10, blockMinutes: 5)]
+        [RateLimit(maxRequests: 50, windowMinutes: 10, blockMinutes: 5)]
         [ProducesResponseType(typeof(Result<LoginResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
@@ -153,7 +153,7 @@ namespace FoodHub.Presentation.Controllers
             }
 
             var revokeCommand = new RevokeTokenCommand { RefreshToken = refreshToken };
-            await _mediator.Send(revokeCommand);
+            var result = await _mediator.Send(revokeCommand);
 
             return NoContent();
         }
@@ -181,7 +181,7 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="command">Email nhận link qua mật khẩu.</param>
         /// <response code="200">Đã gửi mail thành công.</response>
         [HttpPost("request-password-reset")]
-        [RateLimit(maxRequests: 3, windowMinutes: 10, blockMinutes: 10)]
+        [RateLimit(maxRequests: 20, windowMinutes: 10, blockMinutes: 5)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> RequestPasswordReset(
             [FromBody] RequestPasswordResetCommand command

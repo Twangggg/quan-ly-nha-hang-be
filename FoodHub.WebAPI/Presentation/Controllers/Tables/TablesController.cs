@@ -20,7 +20,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
     /// Quản lý các bàn ăn trong nhà hàng (Tables).
     /// </summary>
     [Tags("Bàn ăn (Tables)")]
-    [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
+    [RateLimit(maxRequests: 500, windowMinutes: 1, blockMinutes: 5)]
     public class TablesController : ApiControllerBase
     {
         private readonly IMediator _mediator;

@@ -21,6 +21,7 @@ namespace FoodHub.Tests.Features.Inventory
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<IMapper> _mockMapper;
         private readonly Mock<IMessageService> _mockMessage;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly GetIngredientByIdHandler _handler;
 
         public GetIngredientByIdHandlerTests()
@@ -28,6 +29,7 @@ namespace FoodHub.Tests.Features.Inventory
             _mockUow = new Mock<IUnitOfWork>();
             _mockMapper = new Mock<IMapper>();
             _mockMessage = new Mock<IMessageService>();
+            _mockCache = new Mock<ICacheService>();
 
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
@@ -38,6 +40,7 @@ namespace FoodHub.Tests.Features.Inventory
             _handler = new GetIngredientByIdHandler(
                 _mockUow.Object,
                 _mockMapper.Object,
+                _mockCache.Object,
                 _mockMessage.Object,
                 Mock.Of<ILogger<GetIngredientByIdHandler>>()
             );

@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -21,18 +22,21 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
         private readonly ILogger<CheckoutOrderHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
 
         public CheckoutOrderHandler(
             IUnitOfWork unitOfWork,
             ILogger<CheckoutOrderHandler> logger,
             IMessageService messageService,
-            ICurrentUserService currentUserService
+            ICurrentUserService currentUserService,
+            ICacheService cacheService
         )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -158,6 +162,14 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 }
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    string.Format(CacheKey.TableListByArea, "*"),
+                    cancellationToken
+                );
                 await _unitOfWork.CommitTransactionAsync();
             }
             catch (Exception ex)

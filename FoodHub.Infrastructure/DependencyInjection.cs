@@ -21,6 +21,7 @@ using StackExchange.Redis;
 using FoodHub.Infrastructure.Services.Common.RateLimiting;
 using FoodHub.Infrastructure.Services.Common;
 using FoodHub.Infrastructure.Services.Messaging;
+using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Infrastructure
 {
@@ -56,6 +57,7 @@ namespace FoodHub.Infrastructure
             services.AddHttpContextAccessor();
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IAuditLogService, Services.AuditLogService>();
 
             // Register Redis Connection
             services.AddSingleton<IConnectionMultiplexer>(sp =>
@@ -101,6 +103,7 @@ namespace FoodHub.Infrastructure
 
             // Inventory Services
             services.AddScoped<IInventoryDeductionService, InventoryDeductionService>();
+            services.AddScoped<IReceiptCodeGenerator, ReceiptCodeGenerator>();
 
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();

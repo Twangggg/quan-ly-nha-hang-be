@@ -117,28 +117,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
 
             await _unitOfWork.Repository<Employee>().AddAsync(newEmployee);
 
-            var logDeactivate = new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                Action = AuditAction.Update,
-                TargetId = oldEmployee.EmployeeId,
-                PerformedByEmployeeId = auditorId,
-                CreatedAt = DateTimeOffset.UtcNow,
-                Reason = $"[Change Role - Deactivate] {request.Reason}",
-            };
-
-            var logCreate = new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                Action = AuditAction.Create,
-                TargetId = newEmployee.EmployeeId,
-                PerformedByEmployeeId = auditorId,
-                CreatedAt = DateTimeOffset.UtcNow,
-                Reason = $"[Change Role - Create] {request.Reason}",
-            };
-
-            await _unitOfWork.Repository<AuditLog>().AddAsync(logDeactivate);
-            await _unitOfWork.Repository<AuditLog>().AddAsync(logCreate);
+            await _unitOfWork.Repository<Employee>().AddAsync(newEmployee);
 
             try
             {

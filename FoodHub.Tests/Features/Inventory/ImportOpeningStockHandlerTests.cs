@@ -24,6 +24,8 @@ namespace FoodHub.Tests.Features.Inventory
         private readonly Mock<IGenericRepository<Ingredient>> _ingredientRepo;
         private readonly Mock<IGenericRepository<InventoryTransaction>> _transactionRepo;
         private readonly Mock<IGenericRepository<InventorySettings>> _settingsRepo;
+        private readonly Mock<IGenericRepository<StockInReceipt>> _stockInReceiptRepo;
+        private readonly Mock<IReceiptCodeGenerator> _receiptCodeGenerator;
         private readonly ImportOpeningStockHandler _handler;
 
         public ImportOpeningStockHandlerTests()
@@ -35,16 +37,20 @@ namespace FoodHub.Tests.Features.Inventory
             _ingredientRepo = new Mock<IGenericRepository<Ingredient>>();
             _transactionRepo = new Mock<IGenericRepository<InventoryTransaction>>();
             _settingsRepo = new Mock<IGenericRepository<InventorySettings>>();
+            _stockInReceiptRepo = new Mock<IGenericRepository<StockInReceipt>>();
+            _receiptCodeGenerator = new Mock<IReceiptCodeGenerator>();
 
             _mockUow.Setup(x => x.Repository<Ingredient>()).Returns(_ingredientRepo.Object);
             _mockUow.Setup(x => x.Repository<InventoryTransaction>()).Returns(_transactionRepo.Object);
             _mockUow.Setup(x => x.Repository<InventorySettings>()).Returns(_settingsRepo.Object);
+            _mockUow.Setup(x => x.Repository<StockInReceipt>()).Returns(_stockInReceiptRepo.Object);
 
             _handler = new ImportOpeningStockHandler(
                 _mockUow.Object,
                 _mockCacheService.Object,
                 _mockMessage.Object,
                 _mockCurrentUser.Object,
+                _receiptCodeGenerator.Object,
                 Mock.Of<Microsoft.Extensions.Logging.ILogger<ImportOpeningStockHandler>>()
             );
         }
@@ -62,14 +68,21 @@ namespace FoodHub.Tests.Features.Inventory
             _ingredientRepo
                 .Setup(x => x.Query())
                 .Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
-            _settingsRepo.Setup(x => x.Query()).Returns(new List<InventorySettings>().AsQueryable().BuildMock());
+            _settingsRepo
+                .Setup(x => x.Query())
+                .Returns(new List<InventorySettings>().AsQueryable().BuildMock());
+            _receiptCodeGenerator
+                .Setup(x => x.GenerateStockInReceiptCodeAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("RCPT-001");
+            _stockInReceiptRepo.Setup(x => x.AddAsync(It.IsAny<StockInReceipt>()))
+                .Returns(Task.CompletedTask);
             _mockUow.Setup(x => x.BeginTransactionAsync()).Returns(Task.CompletedTask);
             _mockUow.Setup(x => x.CommitTransactionAsync()).Returns(Task.CompletedTask);
             _mockUow.Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockCacheService
                 .Setup(x => x.RemoveAsync(CacheKey.InventorySettings, It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
-
+            
             var result = await _handler.Handle(
                 new ImportOpeningStockCommand(items, true),
                 CancellationToken.None
@@ -193,6 +206,11 @@ namespace FoodHub.Tests.Features.Inventory
             _settingsRepo
                 .Setup(x => x.Query())
                 .Returns(new List<InventorySettings> { settings }.AsQueryable().BuildMock());
+            _receiptCodeGenerator
+                .Setup(x => x.GenerateStockInReceiptCodeAsync(It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync("RCPT-LOCKED");
+            _stockInReceiptRepo.Setup(x => x.AddAsync(It.IsAny<StockInReceipt>()))
+                .Returns(Task.CompletedTask);
             _mockMessage
                 .Setup(x => x.GetMessage("OpeningStock.AlreadyLocked"))
                 .Returns("already locked");

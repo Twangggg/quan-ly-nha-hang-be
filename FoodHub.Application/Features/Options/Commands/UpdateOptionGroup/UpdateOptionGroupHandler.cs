@@ -1,14 +1,16 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
-using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
 {
@@ -16,10 +18,21 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
         : IRequestHandler<UpdateOptionGroupCommand, Result<UpdateOptionGroupResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
+        private readonly ILogger<UpdateOptionGroupHandler> _logger;
+        private readonly IMessageService _messageService;
 
-        public UpdateOptionGroupHandler(IUnitOfWork unitOfWork)
+        public UpdateOptionGroupHandler(
+            IUnitOfWork unitOfWork,
+            ICacheService cacheService,
+            ILogger<UpdateOptionGroupHandler> logger,
+            IMessageService messageService
+        )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
+            _logger = logger;
+            _messageService = messageService;
         }
 
         public async Task<Result<UpdateOptionGroupResponse>> Handle(
@@ -27,6 +40,11 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
             CancellationToken cancellationToken
         )
         {
+            _logger.LogInformation(
+                "Start updating option group OptionGroupId={OptionGroupId}",
+                request.OptionGroupId
+            );
+
             var optionGroup = await _unitOfWork
                 .Repository<OptionGroup>()
                 .Query()
@@ -38,18 +56,21 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
 
             if (optionGroup == null)
             {
-                return Result<UpdateOptionGroupResponse>.Failure(
-                    $"Option group with ID {request.OptionGroupId} not found.",
-                    ResultErrorType.NotFound
+                return Result<UpdateOptionGroupResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.OptionGroup.NotFound, request.OptionGroupId)
                 );
             }
 
-            optionGroup.Name = request.Name;
-            optionGroup.OptionType = (OptionGroupType)request.Type;
-            optionGroup.IsRequired = request.IsRequired;
+            optionGroup.Update(request.Name, request.Type, request.IsRequired);
 
             _unitOfWork.Repository<OptionGroup>().Update(optionGroup);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            await _cacheService.RemoveByPatternAsync(
+                CacheKey.OptionReusableList,
+                cancellationToken
+            );
+            await _cacheService.RemoveByPatternAsync("option:menuitem:", cancellationToken);
 
             var response = new UpdateOptionGroupResponse
             {
@@ -58,7 +79,14 @@ namespace FoodHub.Application.Features.Options.Commands.UpdateOptionGroup
                 Name = optionGroup.Name,
                 Type = (int)optionGroup.OptionType,
                 IsRequired = optionGroup.IsRequired,
+                CreatedAt = optionGroup.CreatedAt,
+                UpdatedAt = optionGroup.UpdatedAt,
             };
+
+            _logger.LogInformation(
+                "End updating option group OptionGroupId={OptionGroupId}",
+                optionGroup.OptionGroupId
+            );
 
             return Result<UpdateOptionGroupResponse>.Success(response);
         }

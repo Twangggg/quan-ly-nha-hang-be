@@ -7,6 +7,7 @@ using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
+using FoodHub.Application.Features.Options.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -74,8 +75,9 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             var menuItem = await _unitOfWork
                 .Repository<MenuItem>()
                 .Query()
-                .Include(m => m.OptionGroups)
-                    .ThenInclude(og => og.OptionItems)
+                .Include(m => m.MenuItemOptionGroups)
+                    .ThenInclude(miog => miog.OptionGroup)
+                        .ThenInclude(og => og.OptionItems)
                 .FirstOrDefaultAsync(x => x.MenuItemId == request.MenuItemId, cancellationToken);
 
             if (menuItem == null)
@@ -93,46 +95,32 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             }
 
             // Prepare Domain-ready options
-            var domainOptions =
-                new List<(
-                    OptionGroup Group,
-                    List<(OptionItem Item, int Quantity, string? Note)> Selections
-                )>();
-            if (request.SelectedOptions != null)
+            var selectionValidation = OptionSelectionValidation.ValidateForMenuItem(
+                menuItem,
+                request.SelectedOptions
+                    ?.Select(
+                        x =>
+                            new RequestedOptionSelection(
+                                x.OptionGroupId,
+                                x.SelectedValues
+                                    .Select(v => new RequestedOptionValue(v.OptionItemId, v.Quantity, v.Note))
+                                    .ToList()
+                            )
+                    )
+                    .ToList(),
+                _messageService
+            );
+            if (!selectionValidation.IsSuccess)
             {
-                var optionGroupIds = request
-                    .SelectedOptions.Select(og => og.OptionGroupId)
-                    .ToList();
-                var optionItemIds = request
-                    .SelectedOptions.SelectMany(og => og.SelectedValues)
-                    .Select(v => v.OptionItemId)
-                    .ToList();
-
-                var optionGroups = await _unitOfWork
-                    .Repository<OptionGroup>()
-                    .Query()
-                    .Where(og => optionGroupIds.Contains(og.OptionGroupId))
-                    .ToDictionaryAsync(og => og.OptionGroupId, cancellationToken);
-
-                var optionItems = await _unitOfWork
-                    .Repository<OptionItem>()
-                    .Query()
-                    .Where(oi => optionItemIds.Contains(oi.OptionItemId))
-                    .ToDictionaryAsync(oi => oi.OptionItemId, cancellationToken);
-
-                foreach (var optDto in request.SelectedOptions)
-                {
-                    if (optionGroups.TryGetValue(optDto.OptionGroupId, out var og))
-                    {
-                        var selections = optDto
-                            .SelectedValues.Where(v => optionItems.ContainsKey(v.OptionItemId))
-                            .Select(v => (optionItems[v.OptionItemId], v.Quantity, v.Note))
-                            .ToList();
-
-                        domainOptions.Add((og, selections));
-                    }
-                }
+                return Result<Guid>.Failure(
+                    selectionValidation.Error!,
+                    selectionValidation.ErrorType
+                );
             }
+
+            var domainOptions = selectionValidation
+                .Data!.Select(x => (x.Assignment, x.Group, x.Selections))
+                .ToList();
 
             // Delegate logic to Domain Entity
             var result = order.AddOrUpdateItem(

@@ -24,12 +24,14 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<ImportOpeningStockHandler> _logger;
+        private readonly IReceiptCodeGenerator _receiptCodeGenerator;
 
         public ImportOpeningStockHandler(
             IUnitOfWork unitOfWork,
             ICacheService cacheService,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            IReceiptCodeGenerator receiptCodeGenerator,
             ILogger<ImportOpeningStockHandler> logger
         )
         {
@@ -37,6 +39,7 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
             _cacheService = cacheService;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _receiptCodeGenerator = receiptCodeGenerator;
             _logger = logger;
         }
 
@@ -104,6 +107,7 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
 
             var ingredientMap = ingredients.ToDictionary(x => x.IngredientId);
             var transactionRepo = _unitOfWork.Repository<InventoryTransaction>();
+            var stockInReceiptRepo = _unitOfWork.Repository<StockInReceipt>();
 
             await _unitOfWork.BeginTransactionAsync();
 
@@ -116,11 +120,28 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
                 }
 
                 var transactionCount = 0;
+                StockInReceipt? openingStockReceipt = null;
 
                 if (settings is null)
                 {
                     settings = InventorySettings.CreateDefault(actorId);
                     await settingsRepo.AddAsync(settings);
+                }
+
+                var openingStockItems = request.Items.Where(x => x.Quantity > 0).ToList();
+                if (openingStockItems.Count > 0)
+                {
+                    var receiptTimestamp = DateTime.UtcNow;
+                    var receiptCode = await _receiptCodeGenerator.GenerateStockInReceiptCodeAsync(
+                        receiptTimestamp,
+                        cancellationToken
+                    );
+                    openingStockReceipt = StockInReceipt.Create(
+                        receiptCode,
+                        receiptTimestamp,
+                        "Opening stock import",
+                        actorId
+                    );
                 }
 
                 foreach (var item in request.Items)
@@ -148,6 +169,31 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
 
                     if (item.Quantity > 0)
                     {
+                        var addReceiptItemResult = openingStockReceipt!.AddItem(
+                            ingredient.IngredientId,
+                            item.Quantity,
+                            ingredient.BaseUnit,
+                            item.CostPrice,
+                            null,
+                            null,
+                            actorId
+                        );
+
+                        if (!addReceiptItemResult.IsSuccess)
+                        {
+                            _logger.LogWarning(
+                                "ImportOpeningStock failed to create stock-in receipt item for IngredientId={IngredientId} with error {ErrorCode}",
+                                item.IngredientId,
+                                addReceiptItemResult.ErrorCode
+                            );
+                            throw new BusinessException(
+                                _messageService.GetMessage(
+                                    addReceiptItemResult.ErrorCode
+                                        ?? MessageKeys.Common.ValidationFailed
+                                )
+                            );
+                        }
+
                         await transactionRepo.AddAsync(
                             InventoryTransaction.CreateOpeningStock(
                                 ingredient.IngredientId,
@@ -162,11 +208,17 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
                     }
                 }
 
+                if (openingStockReceipt is not null)
+                {
+                    await stockInReceiptRepo.AddAsync(openingStockReceipt);
+                }
+
                 settings.CompleteOpeningStock(actorId);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _cacheService.RemoveAsync(CacheKey.InventorySettings, cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
                 await _cacheService.RemoveAsync(CacheKey.InventorySettings, cancellationToken);
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 var response = new ImportOpeningStockResponse
                 {

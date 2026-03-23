@@ -9,6 +9,7 @@ using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
     {
         private readonly IInventoryAvailabilitySyncService _inventoryAvailabilitySyncService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<CreateStockInReceiptHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly IUnitOfWork _unitOfWork;
@@ -28,6 +30,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            ICacheService cacheService,
             IInventoryAvailabilitySyncService inventoryAvailabilitySyncService,
             ILogger<CreateStockInReceiptHandler> logger
         )
@@ -35,6 +38,7 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
             _inventoryAvailabilitySyncService = inventoryAvailabilitySyncService;
             _logger = logger;
         }
@@ -52,6 +56,8 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
             var actorId = _currentUserService.GetUserIdAsGuid();
             var ingredientIds = request.Items.Select(x => x.IngredientId).Distinct().ToList();
             var ingredientRepo = _unitOfWork.Repository<Ingredient>();
+            var inventoryLotRepo = _unitOfWork.Repository<InventoryLot>();
+            var inventoryLotMovementRepo = _unitOfWork.Repository<InventoryLotMovement>();
             var receiptRepo = _unitOfWork.Repository<StockInReceipt>();
             var transactionRepo = _unitOfWork.Repository<InventoryTransaction>();
 
@@ -136,16 +142,56 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                             actorId
                         )
                     );
+
+                    var createdItem = receipt.Items.Single(x => x.IngredientId == item.IngredientId);
+                    var lotCode = BuildLotCode(receiptCode, createdItem, item.BatchCode);
+                    var lotResult = InventoryLot.Create(
+                        ingredient.IngredientId,
+                        createdItem.StockInReceiptItemId,
+                        lotCode,
+                        receivedAt,
+                        NormalizeUtc(item.ExpiryDate),
+                        item.UnitCost ?? ingredient.CostPrice,
+                        baseQuantity,
+                        request.Note,
+                        actorId
+                    );
+
+                    if (!lotResult.IsSuccess || lotResult.Value is null)
+                    {
+                        throw new BusinessException(
+                            _messageService.GetMessage(
+                                lotResult.ErrorCode ?? MessageKeys.Common.ValidationFailed
+                            )
+                        );
+                    }
+
+                    await inventoryLotRepo.AddAsync(lotResult.Value);
+                    await inventoryLotMovementRepo.AddAsync(
+                        InventoryLotMovement.Create(
+                            lotResult.Value.InventoryLotId,
+                            InventoryLotTransactionType.StockIn,
+                            baseQuantity,
+                            lotResult.Value.RemainingQuantity,
+                            nameof(StockInReceipt),
+                            receipt.StockInReceiptId,
+                            receiptCode,
+                            receivedAt,
+                            item.UnitCost ?? ingredient.CostPrice,
+                            request.Note,
+                            actorId
+                        )
+                    );
                 }
 
                 await receiptRepo.AddAsync(receipt);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
-
                 await _inventoryAvailabilitySyncService.SyncAfterStockChangeAsync(
                     ingredientIds,
                     cancellationToken
                 );
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 _logger.LogInformation(
                     "End handling CreateStockInReceipt with ReceiptCode={ReceiptCode}",
@@ -237,7 +283,21 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Create
                 );
             }
 
-            return quantity * conversion.Factor;
+            return Math.Round(quantity * conversion.Factor, 3, MidpointRounding.AwayFromZero);
+        }
+
+        private static string BuildLotCode(
+            string receiptCode,
+            StockInReceiptItem receiptItem,
+            string? batchCode
+        )
+        {
+            if (!string.IsNullOrWhiteSpace(batchCode))
+            {
+                return batchCode.Trim();
+            }
+
+            return $"{receiptCode}-{receiptItem.StockInReceiptItemId.ToString("N")[..8].ToUpperInvariant()}";
         }
     }
 }

@@ -58,6 +58,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTableById
             var table = await _unitOfWork.Repository<Table>()
                 .Query()
                 .Include(t => t.Area)
+                .Include(t => t.Orders)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.TableId == request.Id, cancellationToken);
             if (table == null)

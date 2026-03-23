@@ -144,6 +144,12 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
+        public void ReassignToOrder(Guid destinationOrderId, DateTime updatedAt)
+        {
+            OrderId = destinationOrderId;
+            UpdatedAt = updatedAt;
+        }
+
         public OrderItem CloneForOrder(Guid destinationOrderId, int quantity, DateTime createdAt)
         {
             var clonedItem = new OrderItem

@@ -11,6 +11,7 @@ using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Application.Services;
+using FoodHub.Domain.Services;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,6 +43,9 @@ namespace FoodHub.Application
             // Đăng ký Application Services
             services.AddScoped<IEmployeeServices, EmployeeServices>();
             services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<InventoryCostService>();
+            services.AddScoped<InventoryAlertService>();
+            services.AddScoped<InventoryLotAllocationService>();
 
             return services;
         }

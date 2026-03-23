@@ -28,25 +28,25 @@ namespace FoodHub.Application.Features.Employees.Queries.GetAuditLogs
 
         public async Task<Result<PagedResult<GetAuditLogsResponse>>> Handle(GetAuditLogsQuery request, CancellationToken cancellationToken)
         {
+            var entityIdJson = $"{{\"EmployeeId\":\"{request.EmployeeId}\"}}";
             var query = _unitOfWork.Repository<AuditLog>().Query()
-                .Where(x => x.TargetId == request.EmployeeId);
+                .Where(x => x.EntityName == "Employee" && x.EntityId == entityIdJson);
 
             var filterMapping = new Dictionary<string, Expression<Func<AuditLog, object?>>>
             {
-                { "action", x => x.Action.ToString() }
+                { "action", x => x.Action }
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
-            var sortMappping = new Dictionary<string, Expression<Func<AuditLog, object?>>>
+            var sortMapping = new Dictionary<string, Expression<Func<AuditLog, object?>>>
             {
                     { "action", x => x.Action },
-                    { "time", x => x.CreatedAt },
-                    { "actor", x => x.PerformedBy.FullName }
+                    { "time", x => x.CreatedAt }
             };
 
             query = query.ApplySorting(
                 request.Pagination.OrderBy,
-                sortMappping,
+                sortMapping,
                 x => x.LogId
             );
 

@@ -1,4 +1,7 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Helpers;
+using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -9,31 +12,51 @@ using Microsoft.Extensions.Logging;
 namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryReport
 {
     public class GetInventoryReportHandler
-        : IRequestHandler<GetInventoryReportQuery, Result<IReadOnlyList<GetInventoryReportResponse>>>
+        : IRequestHandler<GetInventoryReportQuery, Result<PagedResult<GetInventoryReportResponse>>>
     {
         private readonly ILogger<GetInventoryReportHandler> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
 
         public GetInventoryReportHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ILogger<GetInventoryReportHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
-        public async Task<Result<IReadOnlyList<GetInventoryReportResponse>>> Handle(
+        public async Task<Result<PagedResult<GetInventoryReportResponse>>> Handle(
             GetInventoryReportQuery request,
             CancellationToken cancellationToken
         )
         {
             _logger.LogInformation(
-                "Start handling GetInventoryReport from {FromDate} to {ToDate} for IngredientId={IngredientId}",
+                "Start handling GetInventoryReport from {FromDate} to {ToDate} for IngredientId={IngredientId}, Page={Page}, Size={Size}",
                 request.FromDate,
                 request.ToDate,
-                request.IngredientId
+                request.IngredientId,
+                request.Pagination.PageNumber,
+                request.Pagination.PageSize
             );
+
+            var cacheKey = CacheKeyBuilder.Build(CacheKey.InventoryReportList, request);
+            var cached = await _cacheService.GetAsync<PagedResult<GetInventoryReportResponse>>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cached is not null)
+            {
+                _logger.LogInformation(
+                    "End handling GetInventoryReport with {Count} items out of {TotalCount} (from cache)",
+                    cached.Items.Count,
+                    cached.TotalCount
+                );
+                return Result<PagedResult<GetInventoryReportResponse>>.Success(cached);
+            }
 
             var from = ToUtcStart(request.FromDate);
             var toExclusive = ToUtcExclusiveEnd(request.ToDate);
@@ -46,11 +69,22 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryRep
                 );
             }
 
-            var ingredients = await ingredientsQuery
+            var ingredientIds = await ingredientsQuery
                 .OrderBy(x => x.Name)
+                .Skip((request.Pagination.PageNumber - 1) * request.Pagination.PageSize)
+                .Take(request.Pagination.PageSize)
+                .Select(x => x.IngredientId)
                 .ToListAsync(cancellationToken);
 
-            var ingredientIds = ingredients.Select(x => x.IngredientId).ToList();
+            if (ingredientIds.Count == 0)
+            {
+                var emptyResult = new PagedResult<GetInventoryReportResponse>(
+                    Array.Empty<GetInventoryReportResponse>(),
+                    request.Pagination,
+                    0
+                );
+                return Result<PagedResult<GetInventoryReportResponse>>.Success(emptyResult);
+            }
 
             var priorTransactions = await _unitOfWork
                 .Repository<InventoryTransaction>()
@@ -69,6 +103,8 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryRep
                 .Where(
                     x =>
                         ingredientIds.Contains(x.IngredientId)
+                        && x.DeletedAt == null
+                        && x.StockInReceipt.DeletedAt == null
                         && x.StockInReceipt.ReceivedAt >= from
                         && x.StockInReceipt.ReceivedAt < toExclusive
                 )
@@ -82,6 +118,8 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryRep
                 .Where(
                     x =>
                         ingredientIds.Contains(x.IngredientId)
+                        && x.DeletedAt == null
+                        && x.StockOutReceipt.DeletedAt == null
                         && x.StockOutReceipt.StockOutDate >= from
                         && x.StockOutReceipt.StockOutDate < toExclusive
                 )
@@ -98,6 +136,15 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryRep
                         && x.OccurredAt >= from
                         && x.OccurredAt < toExclusive
                 )
+                .ToListAsync(cancellationToken);
+
+            var totalCount = await ingredientsQuery.CountAsync(cancellationToken);
+
+            var ingredients = await _unitOfWork
+                .Repository<Ingredient>()
+                .Query()
+                .AsNoTracking()
+                .Where(x => ingredientIds.Contains(x.IngredientId))
                 .ToListAsync(cancellationToken);
 
             var openingMap = priorTransactions
@@ -131,7 +178,9 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryRep
                     return new GetInventoryReportResponse
                     {
                         IngredientId = ingredient.IngredientId,
+                        IngredientCode = ingredient.Code,
                         IngredientName = ingredient.Name,
+                        Unit = ingredient.BaseUnit,
                         OpeningStock = openingStock,
                         TotalStockIn = totalStockIn,
                         TotalStockOut = totalStockOut,
@@ -144,12 +193,26 @@ namespace FoodHub.Application.Features.Inventory.Reports.Queries.GetInventoryRep
                 })
                 .ToList();
 
-            _logger.LogInformation(
-                "End handling GetInventoryReport with {Count} items",
-                responses.Count
+            var pagedResult = new PagedResult<GetInventoryReportResponse>(
+                responses,
+                request.Pagination,
+                totalCount
             );
 
-            return Result<IReadOnlyList<GetInventoryReportResponse>>.Success(responses);
+            _logger.LogInformation(
+                "End handling GetInventoryReport with {Count} items out of {TotalCount}",
+                responses.Count,
+                totalCount
+            );
+
+            await _cacheService.SetAsync(
+                cacheKey,
+                pagedResult,
+                CacheTTL.Inventory,
+                cancellationToken
+            );
+
+            return Result<PagedResult<GetInventoryReportResponse>>.Success(pagedResult);
         }
 
         private static DateTime ToUtcStart(DateOnly value)

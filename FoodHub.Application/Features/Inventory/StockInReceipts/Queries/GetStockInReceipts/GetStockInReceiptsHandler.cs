@@ -1,4 +1,6 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Helpers;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
@@ -18,13 +20,16 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStoc
     {
         private readonly ILogger<GetStockInReceiptsHandler> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
 
         public GetStockInReceiptsHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ILogger<GetStockInReceiptsHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -38,6 +43,21 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStoc
                 request.Pagination.PageNumber,
                 request.Pagination.PageSize
             );
+
+            var cacheKey = CacheKeyBuilder.Build(CacheKey.InventoryStockInReceiptsList, request);
+            var cached = await _cacheService.GetAsync<PagedResult<GetStockInReceiptsResponse>>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cached is not null)
+            {
+                _logger.LogInformation(
+                    "End handling GetStockInReceipts with {Count} items out of {TotalCount} (from cache)",
+                    cached.Items.Count,
+                    cached.TotalCount
+                );
+                return Result<PagedResult<GetStockInReceiptsResponse>>.Success(cached);
+            }
 
             var employeeQuery = _unitOfWork.Repository<Employee>().Query().AsNoTracking();
             var query = _unitOfWork.Repository<StockInReceipt>().Query().AsNoTracking();
@@ -86,6 +106,13 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Queries.GetStoc
                 "End handling GetStockInReceipts with {Count} items out of {TotalCount}",
                 pagedResult.Items.Count,
                 pagedResult.TotalCount
+            );
+
+            await _cacheService.SetAsync(
+                cacheKey,
+                pagedResult,
+                CacheTTL.Inventory,
+                cancellationToken
             );
 
             return Result<PagedResult<GetStockInReceiptsResponse>>.Success(pagedResult);

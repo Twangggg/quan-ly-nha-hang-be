@@ -22,6 +22,7 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IMessageService> _messageServiceMock;
         private readonly Mock<ICurrentUserService> _currentUserServiceMock;
+        private readonly Mock<ICacheService> _cacheServiceMock;
         private readonly Mock<ILogger<UpsertRecipeHandler>> _loggerMock;
         private readonly UpsertRecipeHandler _handler;
 
@@ -30,6 +31,7 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _messageServiceMock = new Mock<IMessageService>();
             _currentUserServiceMock = new Mock<ICurrentUserService>();
+            _cacheServiceMock = new Mock<ICacheService>();
             _loggerMock = new Mock<ILogger<UpsertRecipeHandler>>();
 
             _messageServiceMock
@@ -40,6 +42,7 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
                 _unitOfWorkMock.Object,
                 _messageServiceMock.Object,
                 _currentUserServiceMock.Object,
+                _cacheServiceMock.Object,
                 _loggerMock.Object
             );
         }

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Infrastructure.Persistence
 {
@@ -76,7 +77,20 @@ namespace FoodHub.Infrastructure.Persistence
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             optionsBuilder.UseNpgsql(connectionString).UseSnakeCaseNamingConvention();
 
-            return new AppDbContext(optionsBuilder.Options);
+            return new AppDbContext(optionsBuilder.Options, new DesignTimeAuditLogService());
+        }
+
+        private class DesignTimeAuditLogService : IAuditLogService
+        {
+            public string GetActorInfo() => "{\"type\":\"System\",\"info\":\"DesignTime\"}";
+
+            public Task LogActivityAsync(
+                FoodHub.Domain.Enums.AuditAction action,
+                string entityName,
+                string? entityId = null,
+                object? oldValues = null,
+                object? newValues = null
+            ) => Task.CompletedTask;
         }
     }
 }

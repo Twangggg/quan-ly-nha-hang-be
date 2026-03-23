@@ -23,6 +23,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
         private readonly Mock<ILogger<CheckoutOrderHandler>> _mockLogger = new();
         private readonly Mock<IMessageService> _mockMessageService = new();
         private readonly Mock<ICurrentUserService> _mockCurrentUserService = new();
+        private readonly Mock<ICacheService> _mockCacheService = new();
 
         [Fact]
         public async Task Handle_Should_ReturnSuccess_When_DineInOrderCheckoutSucceeds()
@@ -70,7 +71,8 @@ namespace FoodHub.Tests.Features.Billing.Commands
                 _mockUow.Object,
                 _mockLogger.Object,
                 _mockMessageService.Object,
-                _mockCurrentUserService.Object
+                _mockCurrentUserService.Object,
+                _mockCacheService.Object
             );
 
             var result = await handler.Handle(command, CancellationToken.None);
@@ -103,7 +105,8 @@ namespace FoodHub.Tests.Features.Billing.Commands
                 _mockUow.Object,
                 _mockLogger.Object,
                 _mockMessageService.Object,
-                _mockCurrentUserService.Object
+                _mockCurrentUserService.Object,
+                _mockCacheService.Object
             );
 
             var result = await handler.Handle(command, CancellationToken.None);

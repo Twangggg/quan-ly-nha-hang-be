@@ -46,6 +46,7 @@ namespace FoodHub.Tests.Features.Inventory
 
             var handler = new GetOpeningStockListHandler(
                 mockUow.Object,
+                Mock.Of<ICacheService>(),
                 Mock.Of<Microsoft.Extensions.Logging.ILogger<GetOpeningStockListHandler>>()
             );
 
