@@ -38,8 +38,6 @@ namespace FoodHub.Application.Features.Vouchers.Commands.UpdateVoucher
                 .WithMessage("End time must be greater than or equal to 00:00:00.");
             RuleFor(x => x.UsageLimit)
                 .GreaterThanOrEqualTo(0).WithMessage("Usage limit must be greater than or equal to 0.");
-            RuleFor(x => x.IsActive)
-                .NotNull().WithMessage("IsActive is required.");
         }
     }
 }
