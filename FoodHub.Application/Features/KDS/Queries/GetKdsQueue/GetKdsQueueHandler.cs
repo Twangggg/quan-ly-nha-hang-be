@@ -61,6 +61,8 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
                     && oi.Status == OrderItemStatus.Preparing
                 )
                 .Include(oi => oi.Order)
+                .Include(oi => oi.OptionGroups)
+                    .ThenInclude(og => og.OptionValues)
                 .OrderBy(oi => oi.CreatedAt)
                 .Take(50)
                 .ToListAsync(cancellationToken);
