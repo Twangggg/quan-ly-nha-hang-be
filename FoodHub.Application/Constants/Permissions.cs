@@ -57,6 +57,7 @@ namespace FoodHub.Application.Constants
             public const string Checkout = "Permissions.Billing.Checkout";
             public const string ViewHistory = "Permissions.Billing.ViewHistory";
             public const string PreCheckBill = "Permissions.Billing.PreCheckBill";
+            public const string SplitBill = "Permissions.Billing.SplitBill";
         }
 
         public static class Kds

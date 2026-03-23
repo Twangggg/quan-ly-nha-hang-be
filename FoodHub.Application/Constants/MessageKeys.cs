@@ -331,6 +331,8 @@ namespace FoodHub.Application.Constants
         public static class Billing
         {
             public const string PdfExportError = "Billing.PdfExportError";
+            public const string SplitBillRequiresItems = "Billing.SplitBillRequiresItems";
+            public const string SplitBillFailed = "Billing.SplitBillFailed";
         }
 
         public static class StockInReceipt
