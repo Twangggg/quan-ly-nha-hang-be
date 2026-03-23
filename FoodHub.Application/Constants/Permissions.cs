@@ -123,6 +123,7 @@ namespace FoodHub.Application.Constants
             public const string Create = "Permissions.Shifts.Create";
             public const string Update = "Permissions.Shifts.Update";
             public const string Deactivate = "Permissions.Shifts.Deactivate";
+            public const string ViewMyShifts = "Permissions.Shifts.ViewMyShifts";
         }
 
         public static class ShiftAssignments

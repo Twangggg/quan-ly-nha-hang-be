@@ -24,6 +24,8 @@ namespace FoodHub.Domain.Entities
         /// <summary>Trạng thái hoạt động (Active/Inactive).</summary>
         public ShiftStatus Status { get; set; }
 
+        public virtual ICollection<ShiftAssignment> ShiftAssignments { get; set; } = new List<ShiftAssignment>();
+
         public Shift()
         {
         }

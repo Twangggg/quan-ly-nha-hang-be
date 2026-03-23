@@ -2,6 +2,7 @@ using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -40,12 +41,7 @@ namespace FoodHub.Application.Features.Vouchers.Commands.CreateVoucher
             _logger.LogInformation("Handling CreateVoucherCommand for voucher code: {VoucherCode}", request.VoucherCode);
 
             // Attempt to parse the current user's ID for auditing purposes
-            Guid? auditorId = null;
-            if (Guid.TryParse(_currentUserService.UserId, out var parsedId))
-            {
-                _logger.LogInformation("Current user ID parsed successfully: {UserId}", parsedId);
-                auditorId = parsedId;
-            }
+            var auditorId = _currentUserService.GetUserIdAsGuid();
 
             // Get the necessary repositories for vouchers and menu items
             var voucherRepository = _unitOfWork.Repository<Voucher>();

@@ -13,6 +13,7 @@ using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using FoodHub.Application.Features.Shifts.Queries.GetShiftsByEmployeeId;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -137,6 +138,21 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateShiftStatusRequest request)
         {
             var result = await _mediator.Send(new UpdateShiftStatusCommand(id, request.IsActive));
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Lấy danh sách ca làm việc của nhân viên hiện tại.
+        /// </summary>
+        /// <returns></returns>
+        [HttpPatch("myShift")]
+        [HasPermission(Permissions.Shifts.ViewMyShifts)]
+        [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
+        [ProducesResponseType(typeof(Result<List<GetShiftsByEmployeeIdResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetShiftsByEmployeeId()
+        {
+            var result = await _mediator.Send(new GetShiftsByEmployeeIdQuery());
             return HandleResult(result);
         }
     }
