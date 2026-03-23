@@ -52,7 +52,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
                         Quantity = 2,
                         UnitPriceSnapshot = 50000,
                         OptionGroups = new List<OrderItemOptionGroup>(),
-                    }
+                    },
                 },
             };
 
@@ -60,13 +60,23 @@ namespace FoodHub.Tests.Features.Billing.Commands
             var orderItemRepo = new Mock<IGenericRepository<OrderItem>>();
             var auditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
 
-            orderRepo.Setup(r => r.Query()).Returns(new List<FoodHub.Domain.Entities.Order> { sourceOrder }.AsQueryable().BuildMock());
-            orderRepo.Setup(r => r.AddAsync(It.IsAny<FoodHub.Domain.Entities.Order>())).Returns(System.Threading.Tasks.Task.CompletedTask);
+            orderRepo
+                .Setup(r => r.Query())
+                .Returns(
+                    new List<FoodHub.Domain.Entities.Order> { sourceOrder }
+                        .AsQueryable()
+                        .BuildMock()
+                );
+            orderRepo
+                .Setup(r => r.AddAsync(It.IsAny<FoodHub.Domain.Entities.Order>()))
+                .Returns(System.Threading.Tasks.Task.CompletedTask);
             orderRepo.Setup(r => r.Update(It.IsAny<FoodHub.Domain.Entities.Order>()));
             orderItemRepo.Setup(r => r.Delete(It.IsAny<OrderItem>()));
             auditRepo.Setup(r => r.AddAsync(It.IsAny<OrderAuditLog>())).Returns(Task.CompletedTask);
 
-            _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(orderRepo.Object);
+            _mockUow
+                .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
+                .Returns(orderRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(orderItemRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(auditRepo.Object);
             _mockUow.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
@@ -79,15 +89,17 @@ namespace FoodHub.Tests.Features.Billing.Commands
             _mockMapper
                 .Setup(m => m.Map<List<SplitBillItemDto>>(It.IsAny<List<OrderItem>>()))
                 .Returns<List<OrderItem>>(items =>
-                    items.Select(item => new SplitBillItemDto
-                    {
-                        OrderItemId = item.OrderItemId,
-                        OrderId = item.OrderId,
-                        MenuItemId = item.MenuItemId,
-                        ItemNameSnapshot = item.ItemNameSnapshot,
-                        Quantity = item.Quantity,
-                        UnitPriceSnapshot = item.UnitPriceSnapshot,
-                    }).ToList()
+                    items
+                        .Select(item => new SplitBillItemDto
+                        {
+                            OrderItemId = item.OrderItemId,
+                            OrderId = item.OrderId,
+                            MenuItemId = item.MenuItemId,
+                            ItemNameSnapshot = item.ItemNameSnapshot,
+                            Quantity = item.Quantity,
+                            UnitPriceSnapshot = item.UnitPriceSnapshot,
+                        })
+                        .ToList()
                 );
 
             var handler = new SplitBillHandler(
@@ -104,7 +116,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
                     OrderId = sourceOrderId,
                     ItemsToSplit = new List<SplitBillItemCommand>
                     {
-                        new() { OrderItemId = sourceItemId, QuantityToSplit = 1 }
+                        new() { OrderItemId = sourceItemId, QuantityToSplit = 1 },
                     },
                 },
                 CancellationToken.None
@@ -146,14 +158,22 @@ namespace FoodHub.Tests.Features.Billing.Commands
                         Quantity = 1,
                         UnitPriceSnapshot = 40000,
                         OptionGroups = new List<OrderItemOptionGroup>(),
-                    }
+                    },
                 },
             };
 
             var orderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
-            orderRepo.Setup(r => r.Query()).Returns(new List<FoodHub.Domain.Entities.Order> { sourceOrder }.AsQueryable().BuildMock());
+            orderRepo
+                .Setup(r => r.Query())
+                .Returns(
+                    new List<FoodHub.Domain.Entities.Order> { sourceOrder }
+                        .AsQueryable()
+                        .BuildMock()
+                );
 
-            _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(orderRepo.Object);
+            _mockUow
+                .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
+                .Returns(orderRepo.Object);
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
 
             var handler = new SplitBillHandler(
@@ -170,7 +190,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
                     OrderId = sourceOrderId,
                     ItemsToSplit = new List<SplitBillItemCommand>
                     {
-                        new() { OrderItemId = sourceItemId, QuantityToSplit = 2 }
+                        new() { OrderItemId = sourceItemId, QuantityToSplit = 2 },
                     },
                 },
                 CancellationToken.None
