@@ -80,5 +80,45 @@ namespace FoodHub.Infrastructure.Services.Messaging
             var body = EmailTemplates.GetPasswordResetTemplate(employeeName, resetLink);
             await EnqueueEmailAsync(email, "Password Reset - FoodHub", body, auditTargetId, performedByEmployeeId, cancellationToken);
         }
+
+        public async ValueTask EnqueueShiftAssignmentEmailAsync(
+            string email,
+            string employeeName,
+            string shiftName,
+            DateOnly assignedDate,
+            TimeSpan startTime,
+            TimeSpan endTime,
+            bool isCancelled = false,
+            Guid? auditTargetId = null,
+            Guid? performedByEmployeeId = null,
+            CancellationToken cancellationToken = default)
+        {
+            var subject = isCancelled
+                ? $"[FoodHub] Thông báo HỦY ca làm việc ngày {assignedDate:dd/MM/yyyy}"
+                : $"[FoodHub] Thông báo LỊCH LÀM VIỆC MỚI ngày {assignedDate:dd/MM/yyyy}";
+
+            var body = EmailTemplates.GetShiftAssignmentTemplate(employeeName, shiftName, assignedDate, startTime, endTime, isCancelled);
+
+            await EnqueueEmailAsync(email, subject, body, auditTargetId, performedByEmployeeId, cancellationToken);
+        }
+
+        public async ValueTask EnqueueShiftAssignmentRangeEmailAsync(
+            string email,
+            string employeeName,
+            string shiftName,
+            DateOnly fromDate,
+            DateOnly toDate,
+            TimeSpan startTime,
+            TimeSpan endTime,
+            List<DateOnly> assignedDates,
+            Guid? auditTargetId = null,
+            Guid? performedByEmployeeId = null,
+            CancellationToken cancellationToken = default)
+        {
+            var subject = $"[FoodHub] Thông báo LỊCH LÀM VIỆC MỚI từ {fromDate:dd/MM} đến {toDate:dd/MM}";
+            var body = EmailTemplates.GetShiftAssignmentRangeTemplate(employeeName, shiftName, fromDate, toDate, startTime, endTime, assignedDates);
+
+            await EnqueueEmailAsync(email, subject, body, auditTargetId, performedByEmployeeId, cancellationToken);
+        }
     }
 }

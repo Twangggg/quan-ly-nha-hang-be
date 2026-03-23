@@ -40,6 +40,23 @@ namespace FoodHub.Domain.Constants
             public const string AlreadyInactive = "Area.AlreadyInactive";
         }
 
+        public static class Shift
+        {
+            public const string OverlappingTime = "Shift.OverlappingTime";
+            public const string AlreadyInactive = "Shift.AlreadyInactive";
+            public const string NotFound = "Shift.NotFound";
+            public const string AlreadyActive = "Shift.AlreadyActive";
+        }
+
+        public static class ShiftAssignment
+        {
+            public const string NotFound = "ShiftAssignment.NotFound";
+            public const string OverlappingShift = "ShiftAssignment.OverlappingShift";
+            public const string ShiftNotActive = "ShiftAssignment.ShiftNotActive";
+            public const string EmployeeNotActive = "ShiftAssignment.EmployeeNotActive";
+            public const string OvertimeExceeded = "ShiftAssignment.OvertimeExceeded";
+        }
+
         public static class SetMenu
         {
             public const string NotFound = "SetMenu.NotFound";
