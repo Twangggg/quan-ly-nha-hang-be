@@ -6,7 +6,12 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -66,6 +71,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
 
             var tables = await query
                 .Include(a => a.Area)
+                .Include(t => t.Orders)
                 .OrderBy(t => t.TableNumber)
                 .ProjectTo<GetTablesResponse>(_mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);

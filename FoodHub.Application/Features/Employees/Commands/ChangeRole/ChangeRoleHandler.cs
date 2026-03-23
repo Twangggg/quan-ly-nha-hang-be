@@ -1,7 +1,12 @@
 using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -112,28 +117,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
 
             await _unitOfWork.Repository<Employee>().AddAsync(newEmployee);
 
-            var logDeactivate = new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                Action = AuditAction.Update,
-                TargetId = oldEmployee.EmployeeId,
-                PerformedByEmployeeId = auditorId,
-                CreatedAt = DateTimeOffset.UtcNow,
-                Reason = $"[Change Role - Deactivate] {request.Reason}",
-            };
-
-            var logCreate = new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                Action = AuditAction.Create,
-                TargetId = newEmployee.EmployeeId,
-                PerformedByEmployeeId = auditorId,
-                CreatedAt = DateTimeOffset.UtcNow,
-                Reason = $"[Change Role - Create] {request.Reason}",
-            };
-
-            await _unitOfWork.Repository<AuditLog>().AddAsync(logDeactivate);
-            await _unitOfWork.Repository<AuditLog>().AddAsync(logCreate);
+            await _unitOfWork.Repository<Employee>().AddAsync(newEmployee);
 
             try
             {

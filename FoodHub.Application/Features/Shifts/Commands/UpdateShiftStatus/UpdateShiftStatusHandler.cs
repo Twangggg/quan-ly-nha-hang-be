@@ -1,12 +1,12 @@
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
- 
+
 namespace FoodHub.Application.Features.Shifts.Commands.UpdateShiftStatus
 {
     public class UpdateShiftStatusHandler : IRequestHandler<UpdateShiftStatusCommand, Result<bool>>
@@ -15,7 +15,7 @@ namespace FoodHub.Application.Features.Shifts.Commands.UpdateShiftStatus
         private readonly ICacheService _cacheService;
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
- 
+
         public UpdateShiftStatusHandler(
             IUnitOfWork unitOfWork,
             ICacheService cacheService,
@@ -28,7 +28,7 @@ namespace FoodHub.Application.Features.Shifts.Commands.UpdateShiftStatus
             _messageService = messageService;
             _currentUserService = currentUserService;
         }
- 
+
         public async Task<Result<bool>> Handle(
             UpdateShiftStatusCommand request,
             CancellationToken cancellationToken
@@ -41,22 +41,22 @@ namespace FoodHub.Application.Features.Shifts.Commands.UpdateShiftStatus
                     ResultErrorType.Unauthorized
                 );
             }
- 
+
             var shift = await _unitOfWork.Repository<Shift>().Query()
                 .FirstOrDefaultAsync(s => s.ShiftId == request.ShiftId, cancellationToken);
- 
+
             if (shift is null)
                 return Result<bool>.NotFound(_messageService.GetMessage(MessageKeys.Shift.NotFound));
- 
+
             var domainResult = shift.UpdateStatus(request.IsActive, auditorId);
             if (!domainResult.IsSuccess)
                 return Result<bool>.Failure(domainResult.ErrorCode ?? "Domain Error");
- 
+
             await _unitOfWork.SaveChangeAsync(cancellationToken);
- 
+
             await _cacheService.RemoveByPatternAsync(CacheKey.ShiftList, cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.ShiftById, request.ShiftId), cancellationToken);
- 
+
             return Result<bool>.Success(true);
         }
     }

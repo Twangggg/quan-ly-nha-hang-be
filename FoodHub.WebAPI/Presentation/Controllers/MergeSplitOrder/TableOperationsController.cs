@@ -22,7 +22,9 @@ namespace FoodHub.WebAPI.Presentation.Controllers.MergeSplitOrder
             _mediator = mediator;
         }
 
-        /// <summary>Đổi bàn cho một đơn hàng. Món ăn và thông tin đơn được chuyển sang bàn mới.</summary>
+        /// <summary>
+        /// Đổi bàn cho một đơn hàng (đơn hàng và món đi kèm được chuyển sang bàn mới).
+        /// </summary>
         [HttpPatch("{id:guid}/change-table")]
         [HasPermission(Permissions.Orders.ChangeTable)] // Hoặc cần quyền chuyên biệt
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
@@ -32,7 +34,10 @@ namespace FoodHub.WebAPI.Presentation.Controllers.MergeSplitOrder
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ChangeOrderTable(Guid id, [FromBody] ChangeOrderTableCommand command)
+        public async Task<IActionResult> ChangeOrderTable(
+            Guid id,
+            [FromBody] ChangeOrderTableCommand command
+        )
         {
             var result = await _mediator.Send(command with { OrderId = id });
             return HandleResult(result);

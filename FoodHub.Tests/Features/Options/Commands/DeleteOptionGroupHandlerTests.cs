@@ -2,9 +2,15 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Options.Commands.DeleteOptionGroup;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
+using Microsoft.Extensions.Logging.Abstractions;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -16,6 +22,7 @@ namespace FoodHub.Tests.Features.Options.Commands
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly DeleteOptionGroupHandler _handler;
 
         public DeleteOptionGroupHandlerTests()
@@ -23,10 +30,13 @@ namespace FoodHub.Tests.Features.Options.Commands
             _mockUow = new Mock<IUnitOfWork>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
+            _mockCache = new Mock<ICacheService>();
             _handler = new DeleteOptionGroupHandler(
                 _mockUow.Object,
+                _mockCache.Object,
                 _mockCurrentUserService.Object,
-                _mockMessageService.Object
+                _mockMessageService.Object,
+                NullLogger<DeleteOptionGroupHandler>.Instance
             );
         }
 
@@ -34,17 +44,10 @@ namespace FoodHub.Tests.Features.Options.Commands
         public async Task Handle_Should_ReturnSuccess_When_OptionGroupDeleted()
         {
             // Arrange
-            var optionGroupId = Guid.NewGuid();
+            var existingOptionGroup = OptionGroup.Create("Size", OptionGroupType.Single, true);
+            existingOptionGroup.AttachLegacyMenuItem(Guid.NewGuid());
+            var optionGroupId = existingOptionGroup.OptionGroupId;
             var command = new DeleteOptionGroupCommand(optionGroupId);
-
-            var existingOptionGroup = new OptionGroup
-            {
-                OptionGroupId = optionGroupId,
-                MenuItemId = Guid.NewGuid(),
-                Name = "Size",
-                OptionType = OptionGroupType.Single,
-                IsRequired = true
-            };
 
             var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
             mockRepo
@@ -94,22 +97,14 @@ namespace FoodHub.Tests.Features.Options.Commands
         public async Task Handle_Should_SetDeletedAt_And_UpdatedAt_When_Deleted()
         {
             // Arrange
-            var optionGroupId = Guid.NewGuid();
             var userId = Guid.NewGuid().ToString();
+            var existingOptionGroup = OptionGroup.Create("Size", OptionGroupType.Single, true);
+            existingOptionGroup.AttachLegacyMenuItem(Guid.NewGuid());
+            var optionGroupId = existingOptionGroup.OptionGroupId;
             var command = new DeleteOptionGroupCommand(optionGroupId);
-
-            var existingOptionGroup = new OptionGroup
-            {
-                OptionGroupId = optionGroupId,
-                MenuItemId = Guid.NewGuid(),
-                Name = "Size",
-                OptionType = OptionGroupType.Single,
-                IsRequired = true
-            };
 
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId);
 
-            OptionGroup? capturedOptionGroup = null;
             var mockRepo = new Mock<IGenericRepository<OptionGroup>>();
             mockRepo
                 .Setup(r => r.Query())

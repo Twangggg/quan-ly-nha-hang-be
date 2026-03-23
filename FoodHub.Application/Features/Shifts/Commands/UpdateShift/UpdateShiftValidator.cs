@@ -1,6 +1,6 @@
 using FluentValidation;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +21,12 @@ namespace FoodHub.Application.Features.Shifts.Commands.UpdateShift
                     .WithMessage(messageService.GetMessage(MessageKeys.Shift.InvalidTime));
 
             RuleFor(x => x)
+                .Must(x => x.StartTime >= new TimeSpan(10, 30, 0) && x.EndTime <= new TimeSpan(23, 0, 0))
+                .WithMessage(messageService.GetMessage(MessageKeys.Shift.OutsideOperatingHours))
+                .Must(x => !(x.StartTime < new TimeSpan(17, 0, 0) && x.EndTime > new TimeSpan(14, 0, 0)))
+                .WithMessage(messageService.GetMessage(MessageKeys.Shift.DuringBreakTime));
+
+            RuleFor(x => x)
                 .MustAsync(async (cmd, cancellation) =>
                 {
                     // Check for duplicate, excluding the shift being updated
@@ -28,8 +34,8 @@ namespace FoodHub.Application.Features.Shifts.Commands.UpdateShift
                         .Query()
                         .AnyAsync(s =>
                             s.ShiftId != cmd.ShiftId &&
-                            s.StartTime == cmd.StartTime &&
-                            s.EndTime == cmd.EndTime &&
+                            s.StartTime < cmd.EndTime &&
+                            s.EndTime > cmd.StartTime &&
                             s.Status == ShiftStatus.Active,
                             cancellation);
                 })

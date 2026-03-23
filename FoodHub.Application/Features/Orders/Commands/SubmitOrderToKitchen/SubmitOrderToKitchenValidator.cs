@@ -1,6 +1,11 @@
 using FluentValidation;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 
 namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 {
@@ -22,6 +27,17 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             RuleForEach(x => x.Items)
                 .ChildRules(item =>
                 {
+                    item.RuleFor(i => i.Quantity)
+                        .GreaterThan(0)
+                        .WithMessage(messageService.GetMessage(MessageKeys.OrderItem.InvalidQuantity));
+
+                    item.RuleFor(i => i.SelectedOptions)
+                        .Must(options =>
+                            options == null
+                            || options.Select(o => o.OptionGroupId).Distinct().Count() == options.Count
+                        )
+                        .WithMessage("Duplicate option groups are not allowed.");
+
                     // Existing rules...
                     item.When(i => i.SelectedOptions != null && i.SelectedOptions.Any(), () =>
                     {

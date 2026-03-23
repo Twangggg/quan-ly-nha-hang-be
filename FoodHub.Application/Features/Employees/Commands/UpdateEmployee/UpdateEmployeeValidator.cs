@@ -5,7 +5,7 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
 {
     public class UpdateEmployeeValidator : AbstractValidator<UpdateEmployeeCommand>
     {
-        public UpdateEmployeeValidator(Interfaces.IUnitOfWork unitOfWork, Interfaces.IMessageService messageService)
+        public UpdateEmployeeValidator(Interfaces.Common.IUnitOfWork unitOfWork, Interfaces.Common.IMessageService messageService)
         {
             RuleFor(x => x.EmployeeId).NotEmpty();
 

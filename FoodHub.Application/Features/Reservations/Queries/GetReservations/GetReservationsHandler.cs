@@ -1,15 +1,9 @@
-using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
 {
@@ -47,7 +41,7 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
             if (!string.IsNullOrEmpty(request.Status))
             {
                 var inputStatus = request.Status.ToUpper();
-                if (inputStatus != "ALL") 
+                if (inputStatus != "ALL")
                 {
                     ReservationStatus parsedStatus = ReservationStatus.Booked;
                     switch (inputStatus)

@@ -4,6 +4,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Shifts.Commands.CreateShift;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using Moq;
 using Microsoft.EntityFrameworkCore;

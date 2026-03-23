@@ -2,7 +2,12 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Inventory.Ingredients;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -73,7 +78,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                 var ingredient = Ingredient.Create(
                     generatedCode,
                     request.Name,
-                    request.Unit,
+                    request.BaseUnit,
                     request.LowStockThreshold,
                     0,
                     0,
@@ -88,16 +93,14 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     await repo.AddAsync(ingredient);
                     await _unitOfWork.SaveChangeAsync(cancellationToken);
                     await _unitOfWork.CommitTransactionAsync();
-
-                    // Invalidate cache if needed
-                    // await _cacheService.RemoveAsync(CacheKey.IngredientList, cancellationToken);
+                    await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                     var response = new CreateIngredientResponse
                     {
                         IngredientId = ingredient.IngredientId,
                         Code = ingredient.Code,
                         Name = ingredient.Name,
-                        Unit = ingredient.Unit,
+                        BaseUnit = ingredient.BaseUnit,
                         CurrentStock = ingredient.CurrentStock,
                         CostPrice = ingredient.CostPrice,
                         LowStockThreshold = ingredient.LowStockThreshold,

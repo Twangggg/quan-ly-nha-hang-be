@@ -1,12 +1,10 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FoodHub.Application.Features.Reservations.Commands.CancelReservation
 {
@@ -35,7 +33,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CancelReservation
             }
 
             reservation.Status = ReservationStatus.Cancelled;
-            
+
             _unitOfWork.Repository<Reservation>().Update(reservation);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 

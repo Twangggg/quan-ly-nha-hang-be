@@ -1,7 +1,6 @@
 using FluentValidation;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
-using System;
+using FoodHub.Application.Interfaces.Common;
 
 namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReservation
 {
@@ -36,7 +35,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
         {
             var now = DateTime.Now;
             var reservationDateTime = date.ToDateTime(TimeOnly.FromTimeSpan(time));
-            
+
             return reservationDateTime > now;
         }
 
@@ -44,7 +43,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
         {
             var now = DateTime.Now;
             var reservationDateTime = date.ToDateTime(TimeOnly.FromTimeSpan(time));
-            
+
             // Phải cách thời điểm hiện tại ít nhất 45 phút
             return reservationDateTime >= now.AddMinutes(45);
         }

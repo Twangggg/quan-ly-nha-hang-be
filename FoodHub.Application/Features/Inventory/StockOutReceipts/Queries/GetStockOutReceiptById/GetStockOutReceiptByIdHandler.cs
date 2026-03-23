@@ -1,7 +1,14 @@
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Helpers;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -15,14 +22,17 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
         private readonly ILogger<GetStockOutReceiptByIdHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
 
         public GetStockOutReceiptByIdHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             IMessageService messageService,
             ILogger<GetStockOutReceiptByIdHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _messageService = messageService;
             _logger = logger;
         }
@@ -36,6 +46,20 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
                 "Start handling GetStockOutReceiptById for StockOutReceiptId={StockOutReceiptId}",
                 request.StockOutReceiptId
             );
+
+            var cacheKey = string.Format(CacheKey.InventoryStockOutReceiptById, request.StockOutReceiptId);
+            var cached = await _cacheService.GetAsync<GetStockOutReceiptByIdResponse>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cached is not null)
+            {
+                _logger.LogInformation(
+                    "End handling GetStockOutReceiptById for StockOutReceiptId={StockOutReceiptId} (from cache)",
+                    request.StockOutReceiptId
+                );
+                return Result<GetStockOutReceiptByIdResponse>.Success(cached);
+            }
 
             var employeeQuery = _unitOfWork.Repository<Employee>().Query().AsNoTracking();
             var ingredientQuery = _unitOfWork.Repository<Ingredient>().Query().AsNoTracking();
@@ -77,7 +101,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
                             Unit =
                                 ingredientQuery
                                     .Where(ing => ing.IngredientId == i.IngredientId)
-                                    .Select(ing => ing.Unit)
+                                    .Select(ing => ing.BaseUnit)
                                     .FirstOrDefault()
                                 ?? string.Empty,
                             Quantity = i.Quantity,
@@ -94,6 +118,13 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
                     _messageService.GetMessage(MessageKeys.StockOutReceipt.ReceiptNotFound)
                 );
             }
+
+            await _cacheService.SetAsync(
+                cacheKey,
+                response,
+                CacheTTL.Inventory,
+                cancellationToken
+            );
 
             return Result<GetStockOutReceiptByIdResponse>.Success(response);
         }

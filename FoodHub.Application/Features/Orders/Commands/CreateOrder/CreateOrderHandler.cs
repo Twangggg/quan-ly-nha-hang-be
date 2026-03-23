@@ -1,7 +1,13 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -15,18 +21,21 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<CreateOrderHandler> _logger;
 
         public CreateOrderHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ICacheService cacheService,
             ILogger<CreateOrderHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -35,8 +44,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             CancellationToken cancellationToken
         )
         {
-            var userId = _currentUserService.GetUserIdAsGuid();
-            if (userId == null)
+            if (!Guid.TryParse(_currentUserService.UserId, out var userId))
             {
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
@@ -45,54 +53,63 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             }
 
             _logger.LogInformation(
-                "Creating new order. Type: {OrderType}, Reservation: {ReservationId}, CreatedBy: {UserId}",
+                "Creating new order. Type: {OrderType}, Table: {TableId}, CreatedBy: {UserId}",
                 request.OrderType,
-                request.ReservationId,
+                request.TableId,
                 userId
             );
 
-            // Validate Basic Logic
-            if (request.OrderType == OrderType.DineIn && request.ReservationId == null)
+            // Validate Basic Logic for dine-in
+            if (request.OrderType == OrderType.DineIn)
             {
-                return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.SelectTable), // You may want to create a new message key for this later if needed like "SelectReservation"
-                    ResultErrorType.BadRequest
-                );
+                if (request.TableId == null && request.ReservationId == null)
+                {
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.SelectTable),
+                        ResultErrorType.BadRequest
+                    );
+                }
             }
 
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var reservationRepository = _unitOfWork.Repository<Reservation>();
+                var tableRepository = _unitOfWork.Repository<Table>();
 
-                Reservation? reservation = null;
                 Table? table = null;
-                if (request.OrderType == OrderType.DineIn && request.ReservationId.HasValue)
+                if (request.OrderType == OrderType.DineIn && request.TableId.HasValue)
                 {
-                    // Load reservation + table + area in one query
-                    reservation = await reservationRepository
+                    // Load table + area in one query
+                    table = await tableRepository
                         .Query()
-                        .Include(r => r.Table)
-                        .ThenInclude(t => t.Area)
+                        .Include(t => t.Area)
                         .FirstOrDefaultAsync(
-                            r => r.ReservationId == request.ReservationId.Value,
+                            t => t.TableId == request.TableId.Value,
                             cancellationToken
                         );
 
-                    if (reservation is null)
+                    var bufferTime = TimeSpan.FromHours(2);
+                    var now = DateTime.Now;
+                    var currentTime = now.TimeOfDay;
+                    var today = DateOnly.FromDateTime(now);
+                    var upcomingReservation = await _unitOfWork.Repository<Reservation>().Query()
+                        .AnyAsync(r => r.TableId == request.TableId.Value
+                                    && r.ReservationDate == today
+                                    && r.Status == ReservationStatus.Booked
+                                    && r.ReservationTime > currentTime
+                                    && r.ReservationTime <= currentTime.Add(bufferTime),
+                                    cancellationToken);
+
+                    if (table is null)
                     {
                         await _unitOfWork.RollbackTransactionAsync();
                         return Result<Guid>.Failure(
-                            _messageService.GetMessage(MessageKeys.Reservation.NotFound),
+                            _messageService.GetMessage(MessageKeys.Table.NotFound),
                             ResultErrorType.NotFound
                         );
                     }
 
-                    table = reservation.Table;
-
                     // Table must be Available (or we could enforce checking the reservation status too, like Booked/CheckIn)
-                    // Depending on your requirements, if a reservation is checked in, maybe the table is already Occupied,
-                    // but according to previous logic, table must be Available.
                     if (table.Status != TableStatus.Available)
                     {
                         _logger.LogWarning(
@@ -108,6 +125,66 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     }
 
                     // Khu vực phải Active mới cho tạo order
+                    if (table.Area.Status == AreaStatus.Inactive)
+                    {
+                        _logger.LogWarning(
+                            "Cannot create order — Area {AreaId} for Table {TableId} is Inactive",
+                            table.AreaId,
+                            table.TableId
+                        );
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Area.Inactive),
+                            ResultErrorType.Conflict
+                        );
+                    }
+
+                    //Bàn bị đặt trước
+                    if (upcomingReservation)
+                    {
+                        return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.HasBeenPlaced));
+                    }
+                }
+
+                // If table not from reservation, try fetch by TableId
+                if (
+                    table == null
+                    && request.OrderType == OrderType.DineIn
+                    && request.TableId.HasValue
+                )
+                {
+                    table = await _unitOfWork
+                        .Repository<Table>()
+                        .Query()
+                        .Include(t => t.Area)
+                        .FirstOrDefaultAsync(
+                            t => t.TableId == request.TableId.Value,
+                            cancellationToken
+                        );
+
+                    if (table is null)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Table.NotFound),
+                            ResultErrorType.NotFound
+                        );
+                    }
+
+                    if (table.Status != TableStatus.Available)
+                    {
+                        _logger.LogWarning(
+                            "Cannot create order — Table {TableId} is not Available (Status: {Status})",
+                            table.TableId,
+                            table.Status
+                        );
+                        await _unitOfWork.RollbackTransactionAsync();
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Table.NotAvailable),
+                            ResultErrorType.Conflict
+                        );
+                    }
+
                     if (table.Area!.Status == AreaStatus.Inactive)
                     {
                         _logger.LogWarning(
@@ -137,23 +214,27 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     OrderType = request.OrderType,
                     Status = OrderStatus.Serving,
                     TableId = request.OrderType == OrderType.DineIn ? table?.TableId : null,
-                    ReservationId = request.OrderType == OrderType.DineIn ? request.ReservationId : null,
+                    ReservationId =
+                        request.OrderType == OrderType.DineIn ? request.ReservationId : null,
                     Note = request.Note,
                     TotalAmount = 0,
                     IsPriority = isPriority,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedBy = userId.Value,
+                    CreatedBy = userId,
                 };
 
                 await _unitOfWork.Repository<Order>().AddAsync(newOrder);
 
-                var auditLog = OrderAuditLog.CreateOrderCreated(
-                    newOrder.OrderId,
-                    userId.Value,
-                    newOrder.OrderCode,
-                    newOrder.OrderType,
-                    newOrder.TableId
-                );
+                var auditLog = new OrderAuditLog
+                {
+                    LogId = Guid.NewGuid(),
+                    OrderId = newOrder.OrderId,
+                    EmployeeId = userId,
+                    Action = AuditLogActions.CreateOrder,
+                    NewValue =
+                        $"{{\"orderCode\": \"{newOrder.OrderCode}\", \"orderType\": \"{newOrder.OrderType}\", \"tableId\": \"{newOrder.TableId}\"}}",
+                    CreatedAt = DateTime.UtcNow,
+                };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
                 // Cập nhật trạng thái bàn sang Occupied
@@ -164,6 +245,14 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 }
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    string.Format(CacheKey.TableListByArea, "*"),
+                    cancellationToken
+                );
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation(
@@ -179,9 +268,9 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(
                     ex,
-                    "Database error while creating order. Type: {OrderType}, Reservation: {ReservationId}",
+                    "Database error while creating order. Type: {OrderType}, Table: {TableId}",
                     request.OrderType,
-                    request.ReservationId
+                    request.TableId
                 );
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError),
@@ -193,18 +282,14 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(
                     ex,
-                    "Unexpected error while creating order. Type: {OrderType}, Reservation: {ReservationId}",
+                    "Unexpected error while creating order. Type: {OrderType}, Table: {TableId}",
                     request.OrderType,
-                    request.ReservationId
+                    request.TableId
                 );
                 throw;
             }
         }
 
-        /// <summary>
-        /// Generate unique order code in format: ORD-yyyyMMdd-xxxx.
-        /// Must be called inside a transaction to prevent race conditions.
-        /// </summary>
         private async Task<string> GenerateOrderCodeAsync(CancellationToken cancellationToken)
         {
             var today = DateTime.UtcNow.Date;

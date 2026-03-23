@@ -6,7 +6,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
     public record CreateIngredientCommand(
         string? Code,
         string Name,
-        string Unit,
+        string BaseUnit,
         decimal LowStockThreshold,
         string? Description = null
     ) : IRequest<Result<CreateIngredientResponse>>;

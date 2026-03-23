@@ -98,6 +98,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         /// Check-in khách hàng đã đặt bàn. Hệ thống sẽ tự động tạo đơn hàng (Order) phục vụ tại bàn tương ứng.
         /// </summary>
         /// <param name="id">Mã định danh của đơn đặt bàn (ReservationId).</param>
+        /// <param name="request">Thông tin về khu vực mới (nếu khách đổi bàn khi check-in).</param>
         /// <response code="200">Check-in thành công. Trả về thông tin OrderId và OrderCode.</response>
         /// <response code="400">Yêu cầu không hợp lệ (ví dụ: trạng thái đặt bàn không phù hợp).</response>
         /// <response code="404">Không tìm thấy thông tin đặt bàn.</response>
@@ -108,12 +109,21 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> CheckIn(Guid id)
+        public async Task<IActionResult> CheckIn(Guid id, [FromBody] CheckInReservationRequest? request)
         {
-            var command = new CheckInReservationCommand { ReservationId = id };
+            var command = new CheckInReservationCommand 
+            { 
+                ReservationId = id, 
+                NewAreaId = request?.NewAreaId 
+            };
+            
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
+    }
 
+    public class CheckInReservationRequest
+    {
+        public Guid? NewAreaId { get; set; }
     }
 }

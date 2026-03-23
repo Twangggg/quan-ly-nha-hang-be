@@ -1,7 +1,12 @@
 using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -51,14 +56,16 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
             }
 
             _logger.LogInformation(
-                "Starting split operation: SourceOrder={SourceOrderId}, DestinationOrder={DestinationOrderId}, DestinationTable={DestinationTableId}, ItemCount={ItemCount}, User={UserId}",
+                "Starting split operation: SourceOrder={SourceOrderId}, DestinationOrder={DestinationOrderId}, DestinationTable={DestinationTableId}, DestinationReservation={DestinationReservationId}, ItemCount={ItemCount}, User={UserId}",
                 request.SourceOrderId,
                 request.DestinationOrderId,
                 request.DestinationTableId,
+                request.DestinationReservationId,
                 request.ItemsToSplit.Count,
                 auditorId
             );
 
+            var reservationRepository = _unitOfWork.Repository<Reservation>();
             var orderRepository = _unitOfWork.Repository<Order>();
             var orderItemRepository = _unitOfWork.Repository<OrderItem>();
             var tableRepository = _unitOfWork.Repository<Table>();
@@ -73,7 +80,10 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
 
             if (sourceOrder is null)
             {
-                _logger.LogWarning("Source order {OrderId} was not found for split.", request.SourceOrderId);
+                _logger.LogWarning(
+                    "Source order {OrderId} was not found for split.",
+                    request.SourceOrderId
+                );
                 return Result<SplitOrderResponse>.NotFound(
                     _messageService.GetMessage(MessageKeys.Order.NotFound, request.SourceOrderId)
                 );
@@ -94,8 +104,8 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
 
             foreach (var itemToSplit in request.ItemsToSplit)
             {
-                var orderItem = sourceOrder.OrderItems.FirstOrDefault(
-                    oi => oi.OrderItemId == itemToSplit.OrderItemId
+                var orderItem = sourceOrder.OrderItems.FirstOrDefault(oi =>
+                    oi.OrderItemId == itemToSplit.OrderItemId
                 );
 
                 if (orderItem is null)
@@ -276,15 +286,36 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                     }
 
                     createdNewOrder = true;
-                    destinationOrder = Order.CreateSplitOrder(
+                    destinationOrder = FoodHub.Domain.Entities.Order.CreateSplitOrder(
                         await GenerateOrderCodeAsync(cancellationToken),
                         sourceOrder,
                         destinationTable.TableId,
+                        request.DestinationReservationId,
                         now,
                         auditorId
                     );
 
                     await orderRepository.AddAsync(destinationOrder);
+
+                    // Nếu tách sang bàn mới và có ReservationId mới, cần đảm bảo Reservation đó cũng trỏ về bàn này
+                    if (
+                        request.DestinationReservationId.HasValue
+                        && request.DestinationReservationId != sourceOrder.ReservationId
+                    )
+                    {
+                        var destReservation = await reservationRepository.GetByIdAsync(
+                            request.DestinationReservationId.Value
+                        );
+                        if (destReservation != null)
+                        {
+                            destReservation.ReassignToTable(
+                                destinationTable.TableId,
+                                now,
+                                auditorId
+                            );
+                            reservationRepository.Update(destReservation);
+                        }
+                    }
                 }
             }
 
@@ -301,15 +332,17 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
             }
 
             await _unitOfWork.BeginTransactionAsync();
+            var committed = false;
 
             try
             {
                 var splitResult = sourceOrder.SplitItemsTo(
                     destinationOrder,
                     request
-                        .ItemsToSplit.Select(item =>
-                            new OrderItemSplitRequest(item.OrderItemId, item.QuantityToSplit)
-                        )
+                        .ItemsToSplit.Select(item => new OrderItemSplitRequest(
+                            item.OrderItemId,
+                            item.QuantityToSplit
+                        ))
                         .ToList(),
                     now,
                     auditorId
@@ -317,7 +350,6 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
 
                 if (!splitResult.IsSuccess || splitResult.Value is null)
                 {
-                    await _unitOfWork.RollbackTransactionAsync();
                     _logger.LogWarning(
                         "Domain split rejected for source order {SourceOrderId}. Error={Error}",
                         sourceOrder.OrderId,
@@ -353,19 +385,21 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                         );
                 }
 
-                if (
+                if (destinationTable != null && createdNewOrder)
+                {
+                    destinationTable.AttachOrder(destinationOrder, auditorId, now);
+                    tableRepository.Update(destinationTable);
+                }
+                else if (
                     destinationTable != null
-                    && (createdNewOrder || destinationTable.Status != TableStatus.Occupied)
+                    && destinationTable.Status != TableStatus.Occupied
                 )
                 {
                     destinationTable.MarkAsOccupied(auditorId, now);
                     tableRepository.Update(destinationTable);
                 }
 
-                if (
-                    sourceOrder.TableId.HasValue
-                    && sourceOrder.TableId != destinationOrder.TableId
-                )
+                if (sourceOrder.TableId.HasValue && sourceOrder.TableId != destinationOrder.TableId)
                 {
                     var sourceTable = await tableRepository
                         .Query()
@@ -375,10 +409,11 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                             cancellationToken
                         );
 
-                    if (sourceTable != null && sourceTable.SetAvailable())
+                    if (
+                        sourceTable != null
+                        && sourceTable.ReleaseIfNoActiveOrders(auditorId, now)
+                    )
                     {
-                        sourceTable.UpdatedAt = now;
-                        sourceTable.UpdatedBy = auditorId;
                         tableRepository.Update(sourceTable);
                     }
                 }
@@ -398,6 +433,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+                committed = true;
 
                 _logger.LogInformation(
                     "Successfully split items from Order {SourceOrderCode} to Order {DestinationOrderCode}. SourceAmount={SourceAmount}, DestinationAmount={DestinationAmount}",
@@ -427,11 +463,12 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                     }
                 );
             }
-            catch (Exception ex)
+            finally
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(ex, "Failed to split Order {SourceOrderId}", request.SourceOrderId);
-                throw;
+                if (!committed)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                }
             }
         }
 

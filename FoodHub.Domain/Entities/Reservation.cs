@@ -7,9 +7,7 @@ namespace FoodHub.Domain.Entities
     {
         public const int DefaultOverlapBufferHours = 2;
 
-        public Reservation()
-        {
-        }
+        public Reservation() { }
 
         public Guid ReservationId { get; set; }
 
@@ -20,6 +18,7 @@ namespace FoodHub.Domain.Entities
         public TimeSpan ReservationTime { get; set; }
 
         public int GuestCount { get; set; }
+        public bool HasChildren { get; set; } = false;
         public string? Note { get; set; }
         public ReservationStatus Status { get; set; }
         public Guid? AreaId { get; set; }
@@ -35,7 +34,8 @@ namespace FoodHub.Domain.Entities
             int guestCount,
             string? note,
             Guid tableId,
-            Guid? areaId
+            Guid? areaId,
+            bool hasChildren = false
         )
         {
             ReservationId = Guid.NewGuid();
@@ -48,6 +48,7 @@ namespace FoodHub.Domain.Entities
             Status = ReservationStatus.Booked;
             TableId = tableId;
             AreaId = areaId;
+            HasChildren = hasChildren;
         }
 
         public static Reservation CreateBooked(
@@ -58,7 +59,8 @@ namespace FoodHub.Domain.Entities
             int guestCount,
             string? note,
             Guid tableId,
-            Guid? areaId
+            Guid? areaId,
+            bool hasChildren = false
         )
         {
             return new Reservation(
@@ -69,8 +71,17 @@ namespace FoodHub.Domain.Entities
                 guestCount,
                 note,
                 tableId,
-                areaId
+                areaId,
+                hasChildren
             );
+        }
+
+        public void ReassignToTable(Guid tableId, DateTime updatedAt, Guid? updatedBy)
+        {
+            TableId = tableId;
+            Status = ReservationStatus.CheckIn;
+            UpdatedAt = updatedAt;
+            UpdatedBy = updatedBy;
         }
 
         public bool CanFitTable(Table table)

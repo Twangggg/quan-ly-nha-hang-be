@@ -7,7 +7,7 @@ using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignmentBy
 using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignments;
 using FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssignment;
 using FoodHub.Application.Extensions.Pagination;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;

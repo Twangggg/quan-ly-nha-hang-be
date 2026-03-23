@@ -1,8 +1,14 @@
 using AutoMapper;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -19,6 +25,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<CancelOrderHandler> _logger;
 
         public CancelOrderHandler(
@@ -26,6 +33,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             ICurrentUserService currentUserService,
             IMessageService messageService,
             IMapper mapper,
+            ICacheService cacheService,
             ILogger<CancelOrderHandler> logger
         )
         {
@@ -33,6 +41,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             _currentUserService = currentUserService;
             _messageService = messageService;
             _mapper = mapper;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -112,6 +121,14 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             try
             {
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    string.Format(CacheKey.TableListByArea, "*"),
+                    cancellationToken
+                );
             }
             catch (DbUpdateException ex)
             {

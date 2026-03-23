@@ -1,4 +1,5 @@
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,30 +13,33 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.HasKey(x => x.LogId);
 
+            builder.Property(x => x.EntityName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            builder.Property(x => x.EntityId)
+                .IsRequired()
+                .HasMaxLength(100);
+
             builder.Property(x => x.Action)
-                .IsRequired();
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasConversion<string>();
 
-            builder.Property(x => x.TargetId)
-                .IsRequired();
+            builder.Property(x => x.OldValues)
+                .HasColumnType("jsonb");
 
-            builder.Property(x => x.Reason)
+            builder.Property(x => x.NewValues)
+                .HasColumnType("jsonb");
+
+            builder.Property(x => x.ActorInfo)
                 .HasMaxLength(500);
-
-            builder.Property(x => x.Metadata)
-                .HasColumnType("jsonb"); // PostgreSQL jsonb for flexible metadata
 
             builder.Property(x => x.CreatedAt)
                 .IsRequired();
-
-            builder.HasOne(x => x.Target)
-                .WithMany(e => e.TargetLogs)
-                .HasForeignKey(x => x.TargetId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(x => x.PerformedBy)
-                .WithMany(e => e.PerformedLogs)
-                .HasForeignKey(x => x.PerformedByEmployeeId)
-                .OnDelete(DeleteBehavior.Restrict);
+            
+            builder.HasIndex(x => new { x.EntityName, x.EntityId });
+            builder.HasIndex(x => x.CreatedAt);
         }
     }
 }

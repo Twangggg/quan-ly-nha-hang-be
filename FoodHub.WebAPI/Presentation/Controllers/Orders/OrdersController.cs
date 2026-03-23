@@ -3,16 +3,21 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;
+using FoodHub.Application.Features.OrderItems.Commands.AdjustOrderItemQuantity;
 using FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem;
 using FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem;
-using FoodHub.Application.Features.OrderItems.Commands.AdjustOrderItemQuantity;
 using FoodHub.Application.Features.Orders.Commands.CancelOrder;
 using FoodHub.Application.Features.Orders.Commands.CompleteOrder;
 using FoodHub.Application.Features.Orders.Commands.CreateOrder;
 using FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen;
 using FoodHub.Application.Features.Orders.Queries.GetOrderById;
 using FoodHub.Application.Features.Orders.Queries.GetOrders;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
@@ -24,7 +29,7 @@ namespace FoodHub.Presentation.Controllers
     /// Quản lý các hoạt động liên quan đến Đơn hàng (Orders) và Chi tiết đơn hàng (OrderItems).
     /// </summary>
     [Tags("Đơn hàng (Orders)")]
-    [RateLimit(maxRequests: 200, windowMinutes: 1, blockMinutes: 5)]
+    [RateLimit(maxRequests: 1000, windowMinutes: 1, blockMinutes: 5)]
     public class OrdersController : ApiControllerBase
     {
         private readonly IMediator _mediator;
@@ -48,7 +53,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="400">Dữ liệu không hợp lệ (ví dụ: bàn đã có người).</response>
         [HttpPost]
         [HasPermission(Permissions.Orders.Create)]
-        [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
+        [RateLimit(maxRequests: 200, windowMinutes: 1, blockMinutes: 5)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

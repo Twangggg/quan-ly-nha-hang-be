@@ -1,13 +1,13 @@
 using FluentValidation;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
-using System;
+using FoodHub.Application.Interfaces.Common;
 
 namespace FoodHub.Application.Features.Reservations.Commands.UpdateReservation
 {
-    public class UpdateReservationCommandValidator : AbstractValidator<UpdateReservationCommand>  
+    public class UpdateReservationCommandValidator : AbstractValidator<UpdateReservationCommand>
     {
-        public UpdateReservationCommandValidator(IMessageService messageService) {
+        public UpdateReservationCommandValidator(IMessageService messageService)
+        {
             RuleFor(x => x.ReservationId)
                 .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Common.IdRequired));
 

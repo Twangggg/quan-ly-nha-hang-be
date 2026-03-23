@@ -40,7 +40,7 @@ public static class WebExtensions
                 policyName: "fixed",
                 opt =>
                 {
-                    opt.PermitLimit = 100;
+                    opt.PermitLimit = 1000;
                     opt.Window = TimeSpan.FromMinutes(1);
                     opt.QueueLimit = 0;
                 }
@@ -52,7 +52,7 @@ public static class WebExtensions
                     factory: partition => new FixedWindowRateLimiterOptions
                     {
                         AutoReplenishment = true,
-                        PermitLimit = 100,
+                        PermitLimit = 1000,
                         Window = TimeSpan.FromMinutes(1),
                     }
                 )

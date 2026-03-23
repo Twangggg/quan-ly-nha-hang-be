@@ -2,7 +2,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -95,9 +100,9 @@ namespace FoodHub.Tests.Features.Billing.Queries
             result.Data.EmployeeName.Should().Be("Nguyễn Văn A");
             result.Data.Items.Should().HaveCount(2);
             result.Data.SubTotal.Should().Be(145000);
-            result.Data.TotalAmount.Should().Be(145000);
+            result.Data.Vat.Should().Be(14500); // 10% VAT
+            result.Data.TotalAmount.Should().Be(159500); // SubTotal + VAT
             result.Data.Discount.Should().Be(0);
-            result.Data.Vat.Should().Be(0);
         }
 
         [Fact]
@@ -209,7 +214,8 @@ namespace FoodHub.Tests.Features.Billing.Queries
             result.Data!.Items.Should().HaveCount(1);
             result.Data.Items[0].ItemName.Should().Be("Phở Bò");
             result.Data.SubTotal.Should().Be(50000);
-            result.Data.TotalAmount.Should().Be(50000);
+            result.Data.Vat.Should().Be(5000); // 10% VAT
+            result.Data.TotalAmount.Should().Be(55000);
         }
     }
 }

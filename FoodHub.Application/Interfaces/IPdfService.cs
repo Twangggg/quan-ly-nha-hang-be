@@ -1,9 +1,0 @@
-using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
-
-namespace FoodHub.Application.Interfaces
-{
-    public interface IPdfService
-    {
-        byte[] GeneratePreCheckBill(GetPreCheckBillResponse data);
-    }
-}

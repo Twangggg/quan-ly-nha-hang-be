@@ -2,7 +2,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
@@ -85,7 +90,18 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 .Returns(Task.CompletedTask);
 
             var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
-            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            mockCategoryRepo
+                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(
+                    new Category
+                    {
+                        CategoryId = categoryId,
+                        Name = "Combo",
+                        CodePrefix = "CB",
+                        CategoryType = CategoryType.Combo,
+                        IsActive = true,
+                    }
+                );
             _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
 
             // Act
@@ -143,7 +159,18 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
                 .Returns("Menu item not found");
 
             var mockCategoryRepo = new Mock<IGenericRepository<Category>>();
-            mockCategoryRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Category { CategoryId = categoryId, Name = "Combo", CodePrefix = "CB", CategoryType = CategoryType.Combo, IsActive = true });
+            mockCategoryRepo
+                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(
+                    new Category
+                    {
+                        CategoryId = categoryId,
+                        Name = "Combo",
+                        CodePrefix = "CB",
+                        CategoryType = CategoryType.Combo,
+                        IsActive = true,
+                    }
+                );
             _mockUow.Setup(u => u.Repository<Category>()).Returns(mockCategoryRepo.Object);
 
             // Act
@@ -283,7 +310,8 @@ namespace FoodHub.Tests.Features.SetMenus.Commands
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Data.Price.Should().Be(25.00m);
+            result.Data.Should().NotBeNull();
+            result.Data!.Price.Should().Be(25.00m);
             result.Data.CostPrice.Should().Be(18.00m);
             result.Data.Items.Should().NotBeEmpty();
         }

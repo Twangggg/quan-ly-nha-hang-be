@@ -103,18 +103,24 @@ namespace FoodHub.Application.Constants
 
         public static class Shifts
         {
-            public const string View       = "Permissions.Shifts.View";
-            public const string Create     = "Permissions.Shifts.Create";
-            public const string Update     = "Permissions.Shifts.Update";
+            public const string View = "Permissions.Shifts.View";
+            public const string Create = "Permissions.Shifts.Create";
+            public const string Update = "Permissions.Shifts.Update";
             public const string Deactivate = "Permissions.Shifts.Deactivate";
         }
 
         public static class ShiftAssignments
         {
-            public const string View   = "Permissions.ShiftAssignments.View";
+            public const string View = "Permissions.ShiftAssignments.View";
             public const string Create = "Permissions.ShiftAssignments.Create";
             public const string Update = "Permissions.ShiftAssignments.Update";
             public const string Delete = "Permissions.ShiftAssignments.Delete";
+        }
+        public static class Invoices
+        {
+            public const string View = "Permissions.Invoices.View";
+            public const string Create = "Permissions.Invoices.Create";
+            public const string ViewPdf = "Permissions.Invoices.ViewPdf";
         }
     }
 }

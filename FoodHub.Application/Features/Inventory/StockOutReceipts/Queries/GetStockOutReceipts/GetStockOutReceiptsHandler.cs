@@ -1,6 +1,13 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Helpers;
 using FoodHub.Application.Extensions.Pagination;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -16,13 +23,16 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
     {
         private readonly ILogger<GetStockOutReceiptsHandler> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
 
         public GetStockOutReceiptsHandler(
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
             ILogger<GetStockOutReceiptsHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -36,6 +46,21 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
                 request.Pagination.PageNumber,
                 request.Pagination.PageSize
             );
+
+            var cacheKey = CacheKeyBuilder.Build(CacheKey.InventoryStockOutReceiptsList, request);
+            var cached = await _cacheService.GetAsync<PagedResult<GetStockOutReceiptsResponse>>(
+                cacheKey,
+                cancellationToken
+            );
+            if (cached is not null)
+            {
+                _logger.LogInformation(
+                    "End handling GetStockOutReceipts with {Count} items out of {TotalCount} (from cache)",
+                    cached.Items.Count,
+                    cached.TotalCount
+                );
+                return Result<PagedResult<GetStockOutReceiptsResponse>>.Success(cached);
+            }
 
             var employeeQuery = _unitOfWork.Repository<Employee>().Query().AsNoTracking();
             var query = _unitOfWork.Repository<StockOutReceipt>().Query().AsNoTracking();
@@ -77,6 +102,13 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Queries.GetSto
 
             var pagedResult = await projection.ToPagedResultAsync(
                 request.Pagination,
+                cancellationToken
+            );
+
+            await _cacheService.SetAsync(
+                cacheKey,
+                pagedResult,
+                CacheTTL.Inventory,
                 cancellationToken
             );
 

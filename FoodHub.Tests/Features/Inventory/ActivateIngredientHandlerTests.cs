@@ -1,7 +1,12 @@
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.ActivateIngredient;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -14,15 +19,18 @@ namespace FoodHub.Tests.Features.Inventory
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<IMessageService> _mockMessage;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly ActivateIngredientHandler _handler;
 
         public ActivateIngredientHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockMessage = new Mock<IMessageService>();
-
+            _mockCache = new Mock<ICacheService>();
+ 
             _handler = new ActivateIngredientHandler(
                 _mockUow.Object,
+                _mockCache.Object,
                 _mockMessage.Object,
                 Mock.Of<ILogger<ActivateIngredientHandler>>()
             );

@@ -1,6 +1,11 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -85,15 +90,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
                 _unitOfWork.Repository<Domain.Entities.RefreshToken>().Update(token);
             }
 
-            //Log password reset
-            await _unitOfWork.Repository<AuditLog>().AddAsync(new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                TargetId = employee.EmployeeId,
-                PerformedByEmployeeId = employee.EmployeeId, // self-change
-                Reason = "SelfChange",
-                CreatedAt = DateTimeOffset.UtcNow
-            });
+            // UpdatedAt is enough, automatic audit log will capture the password hash change
+            employee.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
