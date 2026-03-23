@@ -147,5 +147,78 @@ namespace FoodHub.Tests.Features.ShiftAssignments.Commands.AutoAssignShift
             result.Data.Should().HaveCount(1); // Only for day 2
             result.Data.First().AssignedDate.Should().Be(toDate);
         }
+        [Fact]
+        public async Task Handle_ShouldReturnNotFound_WhenEmployeeDoesNotExist()
+        {
+            // Arrange
+            var command = new AutoAssignShiftCommand { EmployeeId = Guid.NewGuid(), ShiftId = Guid.NewGuid(), FromDate = DateOnly.FromDateTime(DateTime.UtcNow), ToDate = DateOnly.FromDateTime(DateTime.UtcNow) };
+            
+            var empRepo = new Mock<IGenericRepository<Employee>>();
+            empRepo.Setup(r => r.Query()).Returns(new List<Employee>().AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<Employee>()).Returns(empRepo.Object);
+
+            var handler = new AutoAssignShiftHandler(
+                _mockUow.Object, _mockMapper.Object, _mockCurrentUser.Object, _mockMessage.Object,
+                _mockCache.Object, _mockEmail.Object, _mockSignalR.Object, _mockLogger.Object);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorType.Should().Be(ResultErrorType.NotFound);
+        }
+
+        [Fact]
+        public async Task Handle_ShouldReturnFailure_WhenEmployeeIsInactive()
+        {
+            // Arrange
+            var employeeId = Guid.NewGuid();
+            var command = new AutoAssignShiftCommand { EmployeeId = employeeId, ShiftId = Guid.NewGuid(), FromDate = DateOnly.FromDateTime(DateTime.UtcNow), ToDate = DateOnly.FromDateTime(DateTime.UtcNow) };
+            
+            var employee = new Employee { EmployeeId = employeeId, Status = EmployeeStatus.Inactive };
+            var empRepo = new Mock<IGenericRepository<Employee>>();
+            empRepo.Setup(r => r.Query()).Returns(new List<Employee> { employee }.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<Employee>()).Returns(empRepo.Object);
+
+            var handler = new AutoAssignShiftHandler(
+                _mockUow.Object, _mockMapper.Object, _mockCurrentUser.Object, _mockMessage.Object,
+                _mockCache.Object, _mockEmail.Object, _mockSignalR.Object, _mockLogger.Object);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task Handle_ShouldReturnNotFound_WhenShiftDoesNotExist()
+        {
+            // Arrange
+            var employeeId = Guid.NewGuid();
+            var command = new AutoAssignShiftCommand { EmployeeId = employeeId, ShiftId = Guid.NewGuid(), FromDate = DateOnly.FromDateTime(DateTime.UtcNow), ToDate = DateOnly.FromDateTime(DateTime.UtcNow) };
+            
+            var employee = new Employee { EmployeeId = employeeId, Status = EmployeeStatus.Active };
+            var empRepo = new Mock<IGenericRepository<Employee>>();
+            empRepo.Setup(r => r.Query()).Returns(new List<Employee> { employee }.AsQueryable().BuildMock());
+            
+            var shiftRepo = new Mock<IGenericRepository<Shift>>();
+            shiftRepo.Setup(r => r.Query()).Returns(new List<Shift>().AsQueryable().BuildMock());
+
+            _mockUow.Setup(u => u.Repository<Employee>()).Returns(empRepo.Object);
+            _mockUow.Setup(u => u.Repository<Shift>()).Returns(shiftRepo.Object);
+
+            var handler = new AutoAssignShiftHandler(
+                _mockUow.Object, _mockMapper.Object, _mockCurrentUser.Object, _mockMessage.Object,
+                _mockCache.Object, _mockEmail.Object, _mockSignalR.Object, _mockLogger.Object);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorType.Should().Be(ResultErrorType.NotFound);
+        }
     }
 }

@@ -50,8 +50,12 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AutoAssignShift
             CancellationToken cancellationToken
         )
         {
+            _logger.LogInformation("Bắt đầu tự động gán ca cho nhân viên {EmployeeId} từ {From} đến {To}", 
+                request.EmployeeId, request.FromDate, request.ToDate);
+
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
+                _logger.LogWarning("Không xác định được ID người dùng hiện tại khi gán ca");
                 return Result<List<AssignShiftResponse>>.Failure(
                     _messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser),
                     ResultErrorType.Unauthorized
@@ -109,7 +113,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AutoAssignShift
                     assignedDates.Add(date);
                 }
 
-                if (assignedDates.Any())
+                if (assignedDates.Count > 0)
                 {
                     await _unitOfWork.SaveChangeAsync(cancellationToken);
 
@@ -127,18 +131,40 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AutoAssignShift
                         auditorId,
                         cancellationToken);
 
-                    // Thông báo SignalR
-                    await _signalRService.NotifyShiftAssignmentAsync(employee.EmployeeId, shift.Name, request.FromDate, false);
+                    // Thông báo SignalR cho từng ngày được gán thành công
+                    foreach (var d in assignedDates)
+                    {
+                        await _signalRService.NotifyShiftAssignmentAsync(employee.EmployeeId, shift.Name, d, false);
+                    }
                     
                     await _unitOfWork.CommitTransactionAsync();
+                    _logger.LogInformation("Đã gán thành công {Count} ca cho nhân viên {Id}", assignedDates.Count, employee.EmployeeId);
                     await _cacheService.RemoveByPatternAsync(CacheKey.ShiftAssignmentList, cancellationToken);
+
+                    var response = _mapper.Map<List<AssignShiftResponse>>(assignments);
+                    
+                    // Tính toán số lượng ngày bị bỏ qua để cảnh báo người dùng
+                    int totalDaysRequested = request.ToDate.DayNumber - request.FromDate.DayNumber + 1;
+                    int skippedCount = totalDaysRequested - assignedDates.Count;
+
+                    if (skippedCount > 0)
+                    {
+                        var warningMsg = $"Đã gán {assignedDates.Count} ca thành công. {skippedCount} ngày bị bỏ qua do đã có lịch làm việc trước đó.";
+                        return Result<List<AssignShiftResponse>>.SuccessWithWarning(response, warningMsg);
+                    }
+
+                    return Result<List<AssignShiftResponse>>.Success(response);
                 }
                 else
                 {
                     await _unitOfWork.RollbackTransactionAsync();
+                    
+                    // Trường hợp không có ngày nào được gán (tất cả đều bị trùng)
+                    return Result<List<AssignShiftResponse>>.Failure(
+                        "Không có ca nào được gán. Tất cả các ngày trong khoảng thời gian này nhân viên đều đã có lịch làm việc.",
+                        ResultErrorType.Conflict
+                    );
                 }
-
-                return Result<List<AssignShiftResponse>>.Success(_mapper.Map<List<AssignShiftResponse>>(assignments));
             }
             catch (Exception ex)
             {
