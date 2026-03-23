@@ -3,7 +3,7 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Billing.Commands.SplitBill;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -27,7 +27,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
             var userId = Guid.NewGuid();
             var sourceOrderId = Guid.NewGuid();
             var sourceItemId = Guid.NewGuid();
-            var sourceOrder = new Order
+            var sourceOrder = new FoodHub.Domain.Entities.Order
             {
                 OrderId = sourceOrderId,
                 OrderCode = "ORD-20260323-0001",
@@ -54,17 +54,17 @@ namespace FoodHub.Tests.Features.Billing.Commands
                 },
             };
 
-            var orderRepo = new Mock<IGenericRepository<Order>>();
+            var orderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
             var orderItemRepo = new Mock<IGenericRepository<OrderItem>>();
             var auditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
 
-            orderRepo.Setup(r => r.Query()).Returns(new List<Order> { sourceOrder }.AsQueryable().BuildMock());
-            orderRepo.Setup(r => r.AddAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
-            orderRepo.Setup(r => r.Update(It.IsAny<Order>()));
+            orderRepo.Setup(r => r.Query()).Returns(new List<FoodHub.Domain.Entities.Order> { sourceOrder }.AsQueryable().BuildMock());
+            orderRepo.Setup(r => r.AddAsync(It.IsAny<FoodHub.Domain.Entities.Order>())).Returns(Task.CompletedTask);
+            orderRepo.Setup(r => r.Update(It.IsAny<FoodHub.Domain.Entities.Order>()));
             orderItemRepo.Setup(r => r.Delete(It.IsAny<OrderItem>()));
             auditRepo.Setup(r => r.AddAsync(It.IsAny<OrderAuditLog>())).Returns(Task.CompletedTask);
 
-            _mockUow.Setup(u => u.Repository<Order>()).Returns(orderRepo.Object);
+            _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(orderRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(orderItemRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(auditRepo.Object);
             _mockUow.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
@@ -122,7 +122,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
             var userId = Guid.NewGuid();
             var sourceOrderId = Guid.NewGuid();
             var sourceItemId = Guid.NewGuid();
-            var sourceOrder = new Order
+            var sourceOrder = new FoodHub.Domain.Entities.Order
             {
                 OrderId = sourceOrderId,
                 OrderCode = "ORD-20260323-0002",
@@ -148,10 +148,10 @@ namespace FoodHub.Tests.Features.Billing.Commands
                 },
             };
 
-            var orderRepo = new Mock<IGenericRepository<Order>>();
-            orderRepo.Setup(r => r.Query()).Returns(new List<Order> { sourceOrder }.AsQueryable().BuildMock());
+            var orderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
+            orderRepo.Setup(r => r.Query()).Returns(new List<FoodHub.Domain.Entities.Order> { sourceOrder }.AsQueryable().BuildMock());
 
-            _mockUow.Setup(u => u.Repository<Order>()).Returns(orderRepo.Object);
+            _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(orderRepo.Object);
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
 
             var handler = new SplitBillHandler(

@@ -1,6 +1,6 @@
 using FluentValidation;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 
 namespace FoodHub.Application.Features.Billing.Commands.SplitBill
 {
@@ -10,22 +10,35 @@ namespace FoodHub.Application.Features.Billing.Commands.SplitBill
         {
             RuleFor(x => x.OrderId)
                 .NotEmpty()
-                .WithMessage(messageService.GetMessage(MessageKeys.Common.IdRequired, new { Field = "OrderId" }));
+                .WithMessage(
+                    messageService.GetMessage(
+                        MessageKeys.Common.IdRequired,
+                        new { Field = "OrderId" }
+                    )
+                );
 
             RuleFor(x => x.ItemsToSplit)
                 .NotEmpty()
                 .WithMessage(messageService.GetMessage(MessageKeys.Billing.SplitBillRequiresItems));
 
-            RuleForEach(x => x.ItemsToSplit).ChildRules(item =>
-            {
-                item.RuleFor(x => x.OrderItemId)
-                    .NotEmpty()
-                    .WithMessage(messageService.GetMessage(MessageKeys.Common.IdRequired, new { Field = "OrderItemId" }));
+            RuleForEach(x => x.ItemsToSplit)
+                .ChildRules(item =>
+                {
+                    item.RuleFor(x => x.OrderItemId)
+                        .NotEmpty()
+                        .WithMessage(
+                            messageService.GetMessage(
+                                MessageKeys.Common.IdRequired,
+                                new { Field = "OrderItemId" }
+                            )
+                        );
 
-                item.RuleFor(x => x.QuantityToSplit)
-                    .GreaterThan(0)
-                    .WithMessage(messageService.GetMessage(MessageKeys.OrderItem.InvalidQuantity));
-            });
+                    item.RuleFor(x => x.QuantityToSplit)
+                        .GreaterThan(0)
+                        .WithMessage(
+                            messageService.GetMessage(MessageKeys.OrderItem.InvalidQuantity)
+                        );
+                });
         }
     }
 }
