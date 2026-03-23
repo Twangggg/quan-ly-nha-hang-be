@@ -1,6 +1,11 @@
 using FluentValidation;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
@@ -24,8 +29,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             RuleFor(x => x.GuestCount)
                 .GreaterThan(0).WithMessage(_messageService.GetMessage(MessageKeys.Order.InvalidQuantity));
 
-            RuleFor(x => x.PartyType)
-                .IsInEnum().WithMessage(_messageService.GetMessage(MessageKeys.Common.InvalidFormat));
 
             RuleFor(x => x.AreaId)
                 .NotEmpty().WithMessage(_messageService.GetMessage(MessageKeys.Common.IdRequired));

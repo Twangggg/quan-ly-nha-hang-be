@@ -11,6 +11,7 @@ namespace FoodHub.Domain.Entities
         public Guid OrderItemId { get; set; }
         public Guid OrderId { get; set; }
         public Guid MenuItemId { get; set; }
+        public bool StockDeducted { get; set; }
 
         // Snapshots
         public string ItemCodeSnapshot { get; set; } = null!;
@@ -138,6 +139,12 @@ namespace FoodHub.Domain.Entities
             OrderId = destinationOrderId;
             UpdatedAt = updatedAt;
             return DomainResult.Success();
+        }
+
+        public void ReassignToOrder(Guid destinationOrderId, DateTime updatedAt)
+        {
+            OrderId = destinationOrderId;
+            UpdatedAt = updatedAt;
         }
 
         public OrderItem CloneForOrder(Guid destinationOrderId, int quantity, DateTime createdAt)

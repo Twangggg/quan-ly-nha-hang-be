@@ -2,7 +2,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -17,6 +22,7 @@ namespace FoodHub.Tests.Features.Order.Commands
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ICacheService> _mockCacheService;
         private readonly Mock<ISignalRService> _mockSignalRService;
         private readonly Mock<ILogger<SubmitOrderToKitchenHandler>> _mockLogger;
         private readonly SubmitOrderToKitchenHandler _handler;
@@ -26,6 +32,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockUow = new Mock<IUnitOfWork>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
+            _mockCacheService = new Mock<ICacheService>();
             _mockSignalRService = new Mock<ISignalRService>();
             _mockLogger = new Mock<ILogger<SubmitOrderToKitchenHandler>>();
 
@@ -33,6 +40,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                _mockCacheService.Object,
                 _mockSignalRService.Object,
                 _mockLogger.Object
             );
@@ -152,8 +160,16 @@ namespace FoodHub.Tests.Features.Order.Commands
                 ImageUrl = "",
             };
 
+            var table = new Table
+            {
+                TableId = tableId,
+                TableNumber = 12,
+                Status = TableStatus.Available,
+            };
+
             var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
             var mockMenuRepo = new Mock<IGenericRepository<MenuItem>>();
+            var mockTableRepo = new Mock<IGenericRepository<Table>>();
             var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
             var mockOrderItemRepo = new Mock<IGenericRepository<OrderItem>>();
 
@@ -161,6 +177,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 .Setup(u => u.Repository<FoodHub.Domain.Entities.Order>())
                 .Returns(mockOrderRepo.Object);
             _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuRepo.Object);
+            _mockUow.Setup(u => u.Repository<Table>()).Returns(mockTableRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockOrderItemRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -175,6 +192,9 @@ namespace FoodHub.Tests.Features.Order.Commands
                         .AsQueryable()
                         .BuildMock()
                 );
+            mockTableRepo
+                .Setup(r => r.Query())
+                .Returns(new List<Table> { table }.AsQueryable().BuildMock());
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -193,6 +213,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                         ),
                 Times.Once
             );
+            table.Status.Should().Be(TableStatus.Occupied);
         }
 
         [Fact]

@@ -2,7 +2,10 @@ using FluentAssertions;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Billing.Commands.CreateQrPayment;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using DomainOrder = FoodHub.Domain.Entities.Order;
 using FoodHub.Domain.Enums;
@@ -61,7 +64,8 @@ namespace FoodHub.Tests.Features.Billing.Commands
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Data.CheckoutUrl.Should().Be("https://payos.vn");
+            result.Data.Should().NotBeNull();
+            result.Data!.CheckoutUrl.Should().Be("https://payos.vn");
         }
 
         [Fact]

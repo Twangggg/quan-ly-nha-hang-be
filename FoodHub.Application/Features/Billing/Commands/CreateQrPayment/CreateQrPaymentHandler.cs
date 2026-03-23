@@ -1,6 +1,11 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -46,6 +51,9 @@ namespace FoodHub.Application.Features.Billing.Commands.CreateQrPayment
             var order = await _unitOfWork
                 .Repository<Order>()
                 .Query()
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.OptionGroups)
+                        .ThenInclude(og => og.OptionValues)
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
 
             if (order == null)
@@ -66,6 +74,15 @@ namespace FoodHub.Application.Features.Billing.Commands.CreateQrPayment
 
             try
             {
+                // Recalculate total to ensure VAT is included (handles orders created before VAT was added)
+                order.RecalculateTotalAmount();
+
+                // Regenerate a unique TransactionCode to avoid "Đơn thanh toán đã tồn tại" error on repeated generation
+                // Using int precision (9 digits) to fit TransactionCode type
+                order.TransactionCode = int.Parse(DateTimeOffset.Now.ToString("HHmmssfff"));
+                _unitOfWork.Repository<Order>().Update(order);
+                await _unitOfWork.SaveChangeAsync(cancellationToken);
+
                 var paymentLink = await _paymentService.CreatePaymentLinkAsync(order, cancellationToken);
                 _logger.LogInformation("Payment link successfully generated for OrderId: {OrderId}", request.OrderId);
                 return Result<PaymentLinkResponse>.Success(paymentLink);

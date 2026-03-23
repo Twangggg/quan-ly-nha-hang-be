@@ -1,7 +1,10 @@
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using DomainOrder = FoodHub.Domain.Entities.Order;
 using FoodHub.Domain.Enums;
@@ -59,7 +62,9 @@ namespace FoodHub.Tests.Features.Billing.Commands
 
             var table = new Table { TableId = tableId, Status = TableStatus.Occupied };
             var repoTable = new Mock<IGenericRepository<Table>>();
-            repoTable.Setup(r => r.GetByIdAsync(tableId)).ReturnsAsync(table);
+            repoTable
+                .Setup(r => r.Query())
+                .Returns(new List<Table> { table }.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Table>()).Returns(repoTable.Object);
 
             // Act
@@ -68,7 +73,8 @@ namespace FoodHub.Tests.Features.Billing.Commands
             // Assert
             result.IsSuccess.Should().BeTrue();
             order.Status.Should().Be(OrderStatus.Paid);
-            table.Status.Should().Be(TableStatus.Cleaning);
+            table.Status.Should().Be(TableStatus.Available);
+            order.TableId.Should().BeNull();
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(u => u.CommitTransactionAsync(), Times.Once);
             _mockSignalR.Verify(s => s.NotifyOrderStatusChangedAsync(orderId, "Paid"), Times.Once);

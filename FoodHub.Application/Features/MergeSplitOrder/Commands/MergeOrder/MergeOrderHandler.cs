@@ -1,7 +1,13 @@
 using AutoMapper;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -10,19 +16,20 @@ using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 {
-    public class MergeOrderHandler
-        : IRequestHandler<MergeOrderCommand, Result<MergeOrderResponse>>
+    public class MergeOrderHandler : IRequestHandler<MergeOrderCommand, Result<MergeOrderResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ILogger<MergeOrderHandler> _logger;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cacheService;
 
         public MergeOrderHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ICacheService cacheService,
             IMapper mapper,
             ILogger<MergeOrderHandler> logger
         )
@@ -30,6 +37,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
             _logger = logger;
             _mapper = mapper;
         }
@@ -85,7 +93,10 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 
             if (firstOrder is null)
             {
-                _logger.LogWarning("Primary order {OrderId} was not found for merge.", request.FirstOrder);
+                _logger.LogWarning(
+                    "Primary order {OrderId} was not found for merge.",
+                    request.FirstOrder
+                );
                 return Result<MergeOrderResponse>.NotFound(
                     _messageService.GetMessage(MessageKeys.Order.NotFound, request.FirstOrder)
                 );
@@ -100,7 +111,10 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 
             if (secondOrder is null)
             {
-                _logger.LogWarning("Secondary order {OrderId} was not found for merge.", request.SecondOrder);
+                _logger.LogWarning(
+                    "Secondary order {OrderId} was not found for merge.",
+                    request.SecondOrder
+                );
                 return Result<MergeOrderResponse>.NotFound(
                     _messageService.GetMessage(MessageKeys.Order.NotFound, request.SecondOrder)
                 );
@@ -119,12 +133,13 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                     secondOrder.Status
                 );
                 return Result<MergeOrderResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus),
+                    $"{_messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus)} First={firstOrder.Status}, Second={secondOrder.Status}",
                     ResultErrorType.BadRequest
                 );
             }
 
             await _unitOfWork.BeginTransactionAsync();
+            var committed = false;
 
             try
             {
@@ -133,7 +148,6 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 
                 if (!mergeResult.IsSuccess || mergeResult.Value is null)
                 {
-                    await _unitOfWork.RollbackTransactionAsync();
                     _logger.LogWarning(
                         "Domain merge rejected for orders {FirstOrderId} and {SecondOrderId}. Error={Error}",
                         request.FirstOrder,
@@ -141,9 +155,11 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                         mergeResult.ErrorCode
                     );
                     return Result<MergeOrderResponse>.Failure(
-                        _messageService.GetMessage(
-                            mergeResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
-                        ),
+                        mergeResult.ErrorCode == MessageKeys.Order.InvalidActionWithStatus
+                            ? $"{_messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus)} First={firstOrder.Status}, Second={secondOrder.Status}"
+                            : _messageService.GetMessage(
+                                mergeResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
+                            ),
                         ResultErrorType.BadRequest
                     );
                 }
@@ -166,10 +182,8 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                             cancellationToken
                         );
 
-                    if (secondTable != null && secondTable.SetAvailable())
+                    if (secondTable != null && secondTable.ReleaseIfNoActiveOrders(auditorId, now))
                     {
-                        secondTable.UpdatedAt = now;
-                        secondTable.UpdatedBy = auditorId;
                         tableRepository.Update(secondTable);
                     }
                 }
@@ -189,6 +203,28 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+                committed = true;
+
+                try
+                {
+                    await _cacheService.RemoveByPatternAsync(
+                        CacheKey.TableList + "*",
+                        cancellationToken
+                    );
+                    await _cacheService.RemoveByPatternAsync(
+                        string.Format(CacheKey.TableListByArea, "*"),
+                        cancellationToken
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Merge committed but table cache invalidation failed for FirstOrderId {FirstOrderId} and SecondOrderId {SecondOrderId}",
+                        request.FirstOrder,
+                        request.SecondOrder
+                    );
+                }
 
                 _logger.LogInformation(
                     "Successfully merged Order {SecondOrderCode} into {FirstOrderCode}. New TotalAmount={TotalAmount}",
@@ -207,16 +243,12 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
                     }
                 );
             }
-            catch (Exception ex)
+            finally
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(
-                    ex,
-                    "Failed to merge Order {SecondOrderId} into {FirstOrderId}",
-                    request.SecondOrder,
-                    request.FirstOrder
-                );
-                throw;
+                if (!committed)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                }
             }
         }
     }

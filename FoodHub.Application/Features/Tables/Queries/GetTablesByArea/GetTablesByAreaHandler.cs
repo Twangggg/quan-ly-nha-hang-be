@@ -7,7 +7,12 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +44,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTablesByArea
             var tableRepository = _unitOfWork.Repository<Table>();
             var tables = await tableRepository.Query()
                 .Include(t => t.Area)
+                .Include(t => t.Orders)
                 .Where(t => t.AreaId == request.AreaId)
                 .OrderBy(t => t.TableNumber)
                 .ProjectTo<GetTablesByAreaResponse>(_mapper.ConfigurationProvider)

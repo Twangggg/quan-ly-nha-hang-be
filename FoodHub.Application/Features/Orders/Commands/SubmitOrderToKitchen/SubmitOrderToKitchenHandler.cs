@@ -1,7 +1,14 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
+using FoodHub.Application.Features.Options.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -16,6 +23,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ICacheService _cacheService;
         private readonly ISignalRService _signalRService;
         private readonly ILogger<SubmitOrderToKitchenHandler> _logger;
 
@@ -23,6 +31,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ICacheService cacheService,
             ISignalRService signalRService,
             ILogger<SubmitOrderToKitchenHandler> logger
         )
@@ -30,6 +39,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _cacheService = cacheService;
             _signalRService = signalRService;
             _logger = logger;
         }
@@ -48,15 +58,26 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 );
             }
 
-            //Validate Table for dine in
-            if (request.OrderType == OrderType.DineIn)
+            // Retrieve existing order early if provided
+            Order? order = null;
+            if (request.OrderId != Guid.Empty)
             {
-                if (!request.TableId.HasValue)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.Order.SelectTable)
-                    );
-                }
+                order = await _unitOfWork
+                    .Repository<Order>()
+                    .Query()
+                    .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
+            }
+
+            // Determine effective order type and table (prefer request, fallback to existing order)
+            var orderType = order?.OrderType ?? request.OrderType;
+            var tableId = request.TableId ?? order?.TableId;
+
+            //Validate Table for dine in
+            if (orderType == OrderType.DineIn && !tableId.HasValue)
+            {
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Order.SelectTable)
+                );
             }
 
             //Validate All Menu Items Exist
@@ -65,6 +86,9 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 .Repository<MenuItem>()
                 .Query()
                 .Where(m => menuItemIds.Contains(m.MenuItemId))
+                .Include(m => m.MenuItemOptionGroups)
+                    .ThenInclude(miog => miog.OptionGroup)
+                        .ThenInclude(og => og.OptionItems)
                 .ToDictionaryAsync(m => m.MenuItemId, cancellationToken);
             if (menuItems.Count != menuItemIds.Count)
             {
@@ -72,51 +96,6 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.MenuItem.NotFound)
                 );
-            }
-
-            // Validate Options Exist (if provided)
-            var allOptionGroupIds = request
-                .Items.Where(i => i.SelectedOptions != null)
-                .SelectMany(i => i.SelectedOptions!)
-                .Select(og => og.OptionGroupId)
-                .Distinct()
-                .ToList();
-            var allOptionItemIds = request
-                .Items.Where(i => i.SelectedOptions != null)
-                .SelectMany(i => i.SelectedOptions!)
-                .SelectMany(og => og.SelectedValues)
-                .Select(v => v.OptionItemId)
-                .Distinct()
-                .ToList();
-            Dictionary<Guid, OptionGroup> optionGroups = new();
-            Dictionary<Guid, OptionItem> optionItems = new();
-            if (allOptionGroupIds.Any())
-            {
-                optionGroups = await _unitOfWork
-                    .Repository<OptionGroup>()
-                    .Query()
-                    .Where(og => allOptionGroupIds.Contains(og.OptionGroupId))
-                    .ToDictionaryAsync(og => og.OptionGroupId, cancellationToken);
-                if (optionGroups.Count != allOptionGroupIds.Count)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.OptionGroup.NotFound)
-                    );
-                }
-            }
-            if (allOptionItemIds.Any())
-            {
-                optionItems = await _unitOfWork
-                    .Repository<OptionItem>()
-                    .Query()
-                    .Where(oi => allOptionItemIds.Contains(oi.OptionItemId))
-                    .ToDictionaryAsync(oi => oi.OptionItemId, cancellationToken);
-                if (optionItems.Count != allOptionItemIds.Count)
-                {
-                    return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.OptionItem.NotFound)
-                    );
-                }
             }
 
             //Check Out of Stock
@@ -129,25 +108,24 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 );
             }
 
-            // Retrieve or Create Order
-            Order? order = null;
-
-            if (request.OrderId != Guid.Empty)
+            Table? table = null;
+            if (orderType == OrderType.DineIn && tableId.HasValue)
             {
-                order = await _unitOfWork
-                    .Repository<Order>()
+                table = await _unitOfWork
+                    .Repository<Table>()
                     .Query()
-                    .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
+                    .FirstOrDefaultAsync(t => t.TableId == tableId.Value, cancellationToken);
             }
 
-            if (order == null && request.OrderType == OrderType.DineIn && request.TableId.HasValue)
+            // Retrieve or Create Order
+            if (order == null && orderType == OrderType.DineIn && tableId.HasValue)
             {
                 // Check for existing active order at this table (also lightweight)
                 order = await _unitOfWork
                     .Repository<Order>()
                     .Query()
                     .FirstOrDefaultAsync(
-                        x => x.TableId == request.TableId && x.Status == OrderStatus.Serving,
+                        x => x.TableId == tableId && x.Status == OrderStatus.Serving,
                         cancellationToken
                     );
             }
@@ -161,14 +139,24 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 {
                     OrderId = Guid.NewGuid(),
                     OrderCode = orderCode,
-                    OrderType = request.OrderType,
+                    OrderType = orderType,
                     Status = OrderStatus.Serving,
-                    TableId = request.OrderType == OrderType.DineIn ? request.TableId : null,
+                    TableId = orderType == OrderType.DineIn ? tableId : null,
                     Note = request.Note,
                     TotalAmount = 0,
                     CreatedBy = userId.Value,
                     CreatedAt = DateTime.UtcNow,
                 };
+            }
+            else if (orderType == OrderType.DineIn && tableId.HasValue)
+            {
+                order.TableId = tableId;
+            }
+
+            if (table != null && orderType == OrderType.DineIn)
+            {
+                table.MarkAsOccupied(userId.Value, DateTime.UtcNow);
+                _unitOfWork.Repository<Table>().Update(table);
             }
 
             // Group items by signature to merge duplicates within the same request
@@ -179,25 +167,39 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 var menuItem = menuItems[itemDto.MenuItemId];
 
                 // Prepare options for Domain method
-                var domainOptions =
-                    new List<(
-                        OptionGroup Group,
-                        List<(OptionItem Item, int Quantity, string? Note)> Selections
-                    )>();
-                if (itemDto.SelectedOptions != null)
+                var selectionValidation = OptionSelectionValidation.ValidateForMenuItem(
+                    menuItem,
+                    itemDto.SelectedOptions
+                        ?.Select(
+                            x =>
+                                new RequestedOptionSelection(
+                                    x.OptionGroupId,
+                                    x.SelectedValues
+                                        .Select(
+                                            v =>
+                                                new RequestedOptionValue(
+                                                    v.OptionItemId,
+                                                    v.Quantity,
+                                                    v.Note
+                                                )
+                                        )
+                                        .ToList()
+                                )
+                        )
+                        .ToList(),
+                    _messageService
+                );
+                if (!selectionValidation.IsSuccess)
                 {
-                    foreach (var optDto in itemDto.SelectedOptions)
-                    {
-                        if (optionGroups.TryGetValue(optDto.OptionGroupId, out var og))
-                        {
-                            var selections = optDto
-                                .SelectedValues.Where(v => optionItems.ContainsKey(v.OptionItemId))
-                                .Select(v => (optionItems[v.OptionItemId], v.Quantity, v.Note))
-                                .ToList();
-                            domainOptions.Add((og, selections));
-                        }
-                    }
+                    return Result<Guid>.Failure(
+                        selectionValidation.Error!,
+                        selectionValidation.ErrorType
+                    );
                 }
+
+                var domainOptions = selectionValidation
+                    .Data!.Select(x => (x.Assignment, x.Group, x.Selections))
+                    .ToList();
 
                 // Create Item using lightweight method
                 var newItem = order.CreateOrderItem(
@@ -276,6 +278,14 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    string.Format(CacheKey.TableListByArea, "*"),
+                    cancellationToken
+                );
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -291,9 +301,10 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             }
 
             // 4. Notify KDS
+            // 4. Notify KDS
             foreach (var item in processedItems)
             {
-                _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                await _signalRService.NotifyOrderItemStatusChangedAsync(
                     item.OrderItemId,
                     item.Status,
                     item.StationSnapshot

@@ -1,8 +1,9 @@
-using System.Net.Sockets;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
-using FoodHub.Infrastructure.Services;
+using FoodHub.Infrastructure.Services.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -95,28 +96,28 @@ namespace FoodHub.Infrastructure.BackgroundJobs
 
                 if (message.AuditTargetId.HasValue && message.PerformedByEmployeeId.HasValue)
                 {
-                    await LogFailureToAudit(unitOfWork, message, lastException?.Message ?? "Unknown error");
+                    await LogFailureToAudit(scope, message, lastException?.Message ?? "Unknown error");
                 }
             }
         }
 
-        private async Task LogFailureToAudit(IUnitOfWork unitOfWork, EmailMessage message, string errorDetails)
+        private async Task LogFailureToAudit(IServiceScope scope, EmailMessage message, string errorDetails)
         {
             try
             {
-                var auditLog = new AuditLog
-                {
-                    LogId = Guid.NewGuid(),
-                    Action = AuditAction.EmailFailure,
-                    TargetId = message.AuditTargetId!.Value,
-                    PerformedByEmployeeId = message.PerformedByEmployeeId!.Value,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                    Reason = "Email Delivery Failed",
-                    Metadata = $"To: {message.To}, Subject: {message.Subject}, Error: {errorDetails}"
-                };
-
-                await unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
-                await unitOfWork.SaveChangeAsync();
+                var auditLogService = scope.ServiceProvider.GetRequiredService<IAuditLogService>();
+                await auditLogService.LogActivityAsync(
+                    AuditAction.EmailFailure,
+                    "Email",
+                    $"{{\"AuditTargetId\":\"{message.AuditTargetId}\"}}",
+                    null,
+                    new
+                    {
+                        To = message.To,
+                        Subject = message.Subject,
+                        Error = errorDetails,
+                        PerformedByEmployeeId = message.PerformedByEmployeeId
+                    });
 
                 _logger.LogInformation("Logged failure to AuditLog for target {Target}", message.AuditTargetId);
             }

@@ -3,6 +3,7 @@ using FoodHub.Application;
 using FoodHub.Infrastructure;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Services.Hubs;
+using FoodHub.Infrastructure.Services.Messaging.Hubs;
 using FoodHub.Presentation.Middleware;
 using FoodHub.WebAPI.Presentation.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -84,9 +85,11 @@ try
                 }
 
                 logger.LogWarning(
-                    "Database not ready. Retry {Count}/{Max}...",
+                    ex,
+                    "Database not ready. Retry {Count}/{Max}... Error: {ErrorMessage}",
                     retryCount,
-                    maxRetries
+                    maxRetries,
+                    ex.Message
                 );
                 await Task.Delay(3000);
             }

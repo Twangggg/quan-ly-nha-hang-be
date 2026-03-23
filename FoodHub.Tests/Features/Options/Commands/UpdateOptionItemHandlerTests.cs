@@ -1,8 +1,15 @@
+using FoodHub.Application.Common.Exceptions;
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Options.Commands.UpdateOptionItem;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -11,12 +18,21 @@ namespace FoodHub.Tests.Features.Options.Commands
     public class UpdateOptionItemHandlerTests
     {
         private readonly Mock<IUnitOfWork> _mockUow;
+        private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly UpdateOptionItemHandler _handler;
 
         public UpdateOptionItemHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
-            _handler = new UpdateOptionItemHandler(_mockUow.Object);
+            _mockMessageService = new Mock<IMessageService>();
+            _mockCache = new Mock<ICacheService>();
+            _handler = new UpdateOptionItemHandler(
+                _mockUow.Object,
+                _mockCache.Object,
+                NullLogger<UpdateOptionItemHandler>.Instance,
+                _mockMessageService.Object
+            );
         }
 
         [Fact]
@@ -30,13 +46,7 @@ namespace FoodHub.Tests.Features.Options.Commands
                 ExtraPrice: 1.50m
             );
 
-            var existingOptionItem = new OptionItem
-            {
-                OptionItemId = optionItemId,
-                OptionGroupId = Guid.NewGuid(),
-                Label = "Small",
-                ExtraPrice = 0
-            };
+            var existingOptionItem = OptionItem.Create(Guid.NewGuid(), "Small", 0);
 
             var mockRepo = new Mock<IGenericRepository<OptionItem>>();
             mockRepo.Setup(r => r.GetByIdAsync(optionItemId)).ReturnsAsync(existingOptionItem);
@@ -59,7 +69,7 @@ namespace FoodHub.Tests.Features.Options.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnFailure_When_OptionItemNotFound()
+        public async Task Handle_Should_ThrowNotFound_When_OptionItemNotFound()
         {
             // Arrange
             var optionItemId = Guid.NewGuid();
@@ -97,13 +107,7 @@ namespace FoodHub.Tests.Features.Options.Commands
                 ExtraPrice: 2.00m
             );
 
-            var existingOptionItem = new OptionItem
-            {
-                OptionItemId = optionItemId,
-                OptionGroupId = Guid.NewGuid(),
-                Label = "Small",
-                ExtraPrice = 0
-            };
+            var existingOptionItem = OptionItem.Create(Guid.NewGuid(), "Small", 0);
 
             var mockRepo = new Mock<IGenericRepository<OptionItem>>();
             mockRepo.Setup(r => r.GetByIdAsync(optionItemId)).ReturnsAsync(existingOptionItem);

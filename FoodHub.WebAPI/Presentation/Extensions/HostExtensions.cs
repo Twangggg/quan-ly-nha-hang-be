@@ -62,6 +62,11 @@ public static class HostExtensions
         MapEnv("CLOUDINARY_CLOUD_NAME", "Cloudinary:CloudName");
         MapEnv("CLOUDINARY_API_KEY", "Cloudinary:ApiKey");
         MapEnv("CLOUDINARY_API_SECRET", "Cloudinary:ApiSecret");
+        MapEnv("PAYOS_CLIENT_ID", "PayOS:ClientId");
+        MapEnv("PAYOS_API_KEY", "PayOS:ApiKey");
+        MapEnv("PAYOS_CHECKSUM_KEY", "PayOS:ChecksumKey");
+        MapEnv("PAYOS_RETURN_URL", "PayOS:ReturnUrl");
+        MapEnv("PAYOS_CANCEL_URL", "PayOS:CancelUrl");
     }
 
     /// <summary>

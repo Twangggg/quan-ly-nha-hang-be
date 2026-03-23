@@ -2,7 +2,12 @@ using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -16,6 +21,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
     {
         private readonly IInventoryAvailabilitySyncService _inventoryAvailabilitySyncService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<ReverseStockOutReceiptHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly IUnitOfWork _unitOfWork;
@@ -24,6 +30,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            ICacheService cacheService,
             IInventoryAvailabilitySyncService inventoryAvailabilitySyncService,
             ILogger<ReverseStockOutReceiptHandler> logger
         )
@@ -31,6 +38,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
             _inventoryAvailabilitySyncService = inventoryAvailabilitySyncService;
             _logger = logger;
         }
@@ -47,6 +55,9 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
 
             var actorId = _currentUserService.GetUserIdAsGuid();
             var receiptRepo = _unitOfWork.Repository<StockOutReceipt>();
+            var allocationRepo = _unitOfWork.Repository<StockOutReceiptItemLotAllocation>();
+            var inventoryLotRepo = _unitOfWork.Repository<InventoryLot>();
+            var inventoryLotMovementRepo = _unitOfWork.Repository<InventoryLotMovement>();
             var ingredientRepo = _unitOfWork.Repository<Ingredient>();
             var transactionRepo = _unitOfWork.Repository<InventoryTransaction>();
 
@@ -66,12 +77,23 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
             }
 
             var ingredientIds = receipt.Items.Select(x => x.IngredientId).Distinct().ToList();
+            var stockOutItemIds = receipt.Items.Select(x => x.StockOutReceiptItemId).ToList();
             var ingredients = await ingredientRepo
                 .Query()
                 .Where(x => ingredientIds.Contains(x.IngredientId))
                 .ToListAsync(cancellationToken);
+            var allocations = await allocationRepo
+                .Query()
+                .Where(x => stockOutItemIds.Contains(x.StockOutReceiptItemId))
+                .ToListAsync(cancellationToken);
+            var lotIds = allocations.Select(x => x.InventoryLotId).Distinct().ToList();
+            var lots = await inventoryLotRepo
+                .Query()
+                .Where(x => lotIds.Contains(x.InventoryLotId))
+                .ToListAsync(cancellationToken);
 
             var ingredientMap = ingredients.ToDictionary(x => x.IngredientId);
+            var lotsById = lots.ToDictionary(x => x.InventoryLotId);
 
             await _unitOfWork.BeginTransactionAsync();
 
@@ -79,6 +101,45 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
             {
                 foreach (var item in receipt.Items)
                 {
+                    foreach (var allocation in allocations.Where(x => x.StockOutReceiptItemId == item.StockOutReceiptItemId))
+                    {
+                        if (lotsById.TryGetValue(allocation.InventoryLotId, out var lot))
+                        {
+                            var reverseConsumeResult = lot.ReverseConsume(
+                                allocation.Quantity,
+                                receipt.StockOutDate,
+                                actorId
+                            );
+
+                            if (!reverseConsumeResult.IsSuccess)
+                            {
+                                throw new BusinessException(
+                                    _messageService.GetMessage(
+                                        reverseConsumeResult.ErrorCode ?? MessageKeys.Common.ValidationFailed
+                                    )
+                                );
+                            }
+
+                            await inventoryLotMovementRepo.AddAsync(
+                                InventoryLotMovement.Create(
+                                    lot.InventoryLotId,
+                                    InventoryLotTransactionType.StockOutReverse,
+                                    allocation.Quantity,
+                                    lot.RemainingQuantity,
+                                    nameof(StockOutReceipt),
+                                    receipt.StockOutReceiptId,
+                                    receipt.ReceiptCode,
+                                    receipt.StockOutDate,
+                                    allocation.UnitCost,
+                                    receipt.Reason,
+                                    actorId
+                                )
+                            );
+
+                            allocation.MarkDeleted(actorId);
+                        }
+                    }
+
                     var ingredient = ingredientMap[item.IngredientId];
                     var reverseResult = ingredient.ReverseReducedStock(item.Quantity, actorId);
 
@@ -120,6 +181,7 @@ namespace FoodHub.Application.Features.Inventory.StockOutReceipts.Commands.Rever
                     ingredientIds,
                     cancellationToken
                 );
+                await _cacheService.RemoveByPatternAsync("inventory:", cancellationToken);
 
                 _logger.LogInformation(
                     "End handling ReverseStockOutReceipt for ReceiptCode={ReceiptCode}",

@@ -9,11 +9,25 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.MergeOrder
     /// </summary>
     public class MergeOrderResponse
     {
+        /// <summary>
+        /// Identifier of the merged destination order.
+        /// </summary>
         public Guid MergedOrderId { get; set; }
-        public string MergedOrderCode { get; set; } = string.Empty;
-        public decimal MergedOrderTotalAmount { get; set; }
-        public List<OrderItemDto> Items { get; set; } = new List<OrderItemDto>();
 
+        /// <summary>
+        /// Code of the merged destination order.
+        /// </summary>
+        public string MergedOrderCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Total amount of the destination order after merge.
+        /// </summary>
+        public decimal MergedOrderTotalAmount { get; set; }
+
+        /// <summary>
+        /// Consolidated order item snapshot after merge.
+        /// </summary>
+        public List<OrderItemDto> Items { get; set; } = new List<OrderItemDto>();
     }
 
     /// <summary>

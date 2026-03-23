@@ -2,6 +2,7 @@ using System.Linq;
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
+using static FoodHub.Domain.Constants.OrderConstants;
 
 namespace FoodHub.Domain.Entities
 {
@@ -18,6 +19,9 @@ namespace FoodHub.Domain.Entities
         public Guid? ReservationId { get; set; }
 
         public string? Note { get; set; }
+        public decimal SubTotal { get; set; }
+        public decimal VatRate { get; set; } = 0.10m; // Default 10% VAT
+        public decimal VatAmount { get; set; }
         public decimal TotalAmount { get; set; }
         public bool IsPriority { get; set; }
 
@@ -109,8 +113,8 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
-        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived)
-            => ProcessCheckout(paymentMethod, amountReceived);
+        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived) =>
+            ProcessCheckout(paymentMethod, amountReceived);
 
         public bool CanComplete() =>
             Status == OrderStatus.Serving && OrderItems.All(oi => oi.IsFinished());
@@ -128,11 +132,7 @@ namespace FoodHub.Domain.Entities
             }
 
             Status = OrderStatus.Completed;
-            TotalAmount = OrderItems
-                .Where(oi =>
-                    oi.Status != OrderItemStatus.Cancelled && oi.Status != OrderItemStatus.Rejected
-                )
-                .Sum(oi => oi.GetTotalPrice());
+            RecalculateTotalAmount();
 
             CompletedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
@@ -142,7 +142,7 @@ namespace FoodHub.Domain.Entities
 
         public void RecalculateTotalAmount()
         {
-            TotalAmount = OrderItems
+            SubTotal = OrderItems
                 .Where(x =>
                     x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected
                 )
@@ -155,6 +155,7 @@ namespace FoodHub.Domain.Entities
                         ?? 0;
                     return itemTotal + (optionsTotal * item.Quantity);
                 });
+            TotalAmount = Math.Round(SubTotal * (1 + VatRate), 0);
         }
 
         public void ChangeTable(Guid newTableId, DateTime updatedAt, Guid? updatedBy)
@@ -195,6 +196,7 @@ namespace FoodHub.Domain.Entities
             string orderCode,
             Order sourceOrder,
             Guid destinationTableId,
+            Guid? destinationReservationId,
             DateTime createdAt,
             Guid? createdBy
         )
@@ -206,6 +208,7 @@ namespace FoodHub.Domain.Entities
                 OrderType = sourceOrder.OrderType,
                 Status = OrderStatus.Serving,
                 TableId = destinationTableId,
+                ReservationId = destinationReservationId ?? sourceOrder.ReservationId,
                 Note = $"Split from Order {sourceOrder.OrderCode}",
                 TotalAmount = 0,
                 IsPriority = sourceOrder.IsPriority,
@@ -228,7 +231,9 @@ namespace FoodHub.Domain.Entities
                 || sourceOrder.OrderType != OrderType.DineIn
             )
             {
-                return DomainResult<MergeOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+                return DomainResult<MergeOrderPlan>.Failure(
+                    DomainErrors.Order.InvalidActionWithStatus
+                );
             }
 
             var deletedSourceItems = new List<OrderItem>();
@@ -247,14 +252,7 @@ namespace FoodHub.Domain.Entities
                     continue;
                 }
 
-                var moveResult = sourceItem.MoveToOrder(OrderId, updatedAt);
-                if (!moveResult.IsSuccess)
-                {
-                    return DomainResult<MergeOrderPlan>.Failure(
-                        moveResult.ErrorCode ?? DomainErrors.Order.InvalidActionWithStatus
-                    );
-                }
-
+                sourceItem.ReassignToOrder(OrderId, updatedAt);
                 sourceOrder.OrderItems.Remove(sourceItem);
                 OrderItems.Add(sourceItem);
             }
@@ -285,7 +283,9 @@ namespace FoodHub.Domain.Entities
                 || destinationOrder.OrderType != OrderType.DineIn
             )
             {
-                return DomainResult<SplitOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+                return DomainResult<SplitOrderPlan>.Failure(
+                    DomainErrors.Order.InvalidActionWithStatus
+                );
             }
 
             var newDestinationItems = new List<OrderItem>();
@@ -293,16 +293,25 @@ namespace FoodHub.Domain.Entities
 
             foreach (var splitRequest in splitRequests)
             {
-                var sourceItem = OrderItems.First(item => item.OrderItemId == splitRequest.OrderItemId);
+                var sourceItem = OrderItems.First(item =>
+                    item.OrderItemId == splitRequest.OrderItemId
+                );
 
                 if (!sourceItem.CanBeMoved())
                 {
-                    return DomainResult<SplitOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+                    return DomainResult<SplitOrderPlan>.Failure(
+                        DomainErrors.Order.InvalidActionWithStatus
+                    );
                 }
 
-                if (splitRequest.QuantityToSplit <= 0 || splitRequest.QuantityToSplit > sourceItem.Quantity)
+                if (
+                    splitRequest.QuantityToSplit <= 0
+                    || splitRequest.QuantityToSplit > sourceItem.Quantity
+                )
                 {
-                    return DomainResult<SplitOrderPlan>.Failure(DomainErrors.OrderItem.InvalidQuantity);
+                    return DomainResult<SplitOrderPlan>.Failure(
+                        DomainErrors.OrderItem.InvalidQuantity
+                    );
                 }
 
                 if (splitRequest.QuantityToSplit == sourceItem.Quantity)
@@ -332,7 +341,10 @@ namespace FoodHub.Domain.Entities
                     continue;
                 }
 
-                var reduceResult = sourceItem.ReduceQuantity(splitRequest.QuantityToSplit, updatedAt);
+                var reduceResult = sourceItem.ReduceQuantity(
+                    splitRequest.QuantityToSplit,
+                    updatedAt
+                );
                 if (!reduceResult.IsSuccess)
                 {
                     return DomainResult<SplitOrderPlan>.Failure(
@@ -383,6 +395,7 @@ namespace FoodHub.Domain.Entities
             int quantity,
             string? note,
             List<(
+                MenuItemOptionGroup Assignment,
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
             )> options
@@ -411,7 +424,7 @@ namespace FoodHub.Domain.Entities
                     OrderItemId = newItem.OrderItemId,
                     GroupNameSnapshot = optGroup.Group.Name,
                     GroupTypeSnapshot = optGroup.Group.OptionType.ToString(),
-                    IsRequiredSnapshot = optGroup.Group.IsRequired,
+                    IsRequiredSnapshot = optGroup.Assignment.IsRequired,
                     CreatedAt = DateTime.UtcNow,
                 };
 
@@ -441,6 +454,7 @@ namespace FoodHub.Domain.Entities
             int quantity,
             string? note,
             List<(
+                MenuItemOptionGroup Assignment,
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
             )> options
@@ -475,6 +489,7 @@ namespace FoodHub.Domain.Entities
 
         public string GenerateSignature(
             List<(
+                MenuItemOptionGroup Assignment,
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
             )> options

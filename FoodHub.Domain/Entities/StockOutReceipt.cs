@@ -1,5 +1,6 @@
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
+using FoodHub.Domain.Enums;
 using static FoodHub.Domain.Constants.DomainErrors;
 
 namespace FoodHub.Domain.Entities
@@ -10,6 +11,7 @@ namespace FoodHub.Domain.Entities
 
         public Guid StockOutReceiptId { get; private set; }
         public string ReceiptCode { get; private set; } = string.Empty;
+        public InventoryReceiptType ReceiptType { get; private set; }
         public DateTime StockOutDate { get; private set; }
         public string Reason { get; private set; } = string.Empty;
         public decimal TotalAmount { get; private set; }
@@ -28,6 +30,27 @@ namespace FoodHub.Domain.Entities
             {
                 StockOutReceiptId = Guid.NewGuid(),
                 ReceiptCode = receiptCode,
+                ReceiptType = InventoryReceiptType.Manual,
+                StockOutDate = stockOutDate,
+                Reason = reason.Trim(),
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = createdBy,
+                UpdatedBy = createdBy,
+            };
+        }
+
+        public static StockOutReceipt CreateInventoryAdjustment(
+            string receiptCode,
+            DateTime stockOutDate,
+            string reason,
+            Guid? createdBy = null
+        )
+        {
+            return new StockOutReceipt
+            {
+                StockOutReceiptId = Guid.NewGuid(),
+                ReceiptCode = receiptCode,
+                ReceiptType = InventoryReceiptType.InventoryAdjustment,
                 StockOutDate = stockOutDate,
                 Reason = reason.Trim(),
                 CreatedAt = DateTime.UtcNow,

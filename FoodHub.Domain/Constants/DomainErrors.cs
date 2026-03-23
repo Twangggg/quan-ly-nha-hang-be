@@ -87,6 +87,8 @@ namespace FoodHub.Domain.Constants
             public const string InvalidOpeningStockQuantity =
                 "Ingredient.InvalidOpeningStockQuantity";
             public const string InvalidOpeningStockCost = "Ingredient.InvalidOpeningStockCost";
+            public const string InvalidPhysicalStockQuantity =
+                "Ingredient.InvalidPhysicalStockQuantity";
         }
 
         public static class InventorySettings
@@ -113,6 +115,28 @@ namespace FoodHub.Domain.Constants
             public const string InvalidQuantity = "StockOutReceipt.InvalidQuantity";
             public const string InvalidUnitCost = "StockOutReceipt.InvalidUnitCost";
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
+        }
+
+        public static class InventoryLot
+        {
+            public const string InvalidQuantity = "InventoryLot.InvalidQuantity";
+            public const string InvalidUnitCost = "InventoryLot.InvalidUnitCost";
+            public const string LotCodeRequired = "InventoryLot.LotCodeRequired";
+            public const string LotCodeTooLong = "InventoryLot.LotCodeTooLong";
+            public const string NotesTooLong = "InventoryLot.NotesTooLong";
+            public const string InsufficientQuantity = "InventoryLot.InsufficientQuantity";
+            public const string Expired = "InventoryLot.Expired";
+            public const string AlreadyDisposed = "InventoryLot.AlreadyDisposed";
+            public const string InvalidAdjustment = "InventoryLot.InvalidAdjustment";
+            public const string ReasonRequired = "InventoryLot.ReasonRequired";
+        }
+
+        public static class InventoryCheck
+        {
+            public const string ItemsRequired = "InventoryCheck.ItemsRequired";
+            public const string DuplicateIngredient = "InventoryCheck.DuplicateIngredient";
+            public const string InvalidQuantity = "InventoryCheck.InvalidQuantity";
+            public const string InvalidStatus = "InventoryCheck.InvalidStatus";
         }
     }
 }

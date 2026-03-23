@@ -68,6 +68,30 @@ public static class CacheKey
     /// </summary>
     public const string OptionGroupsByMenuItem = "option:menuitem:{0}";
 
+    /// <summary>
+    /// Key cho danh sách reusable option groups theo trang
+    /// Example: string.Format(OptionReusableList, 1, 100) → "option:reusable:list:1:100"
+    /// </summary>
+    public const string OptionReusableList = "option:reusable:list:{0}:{1}";
+
+    // ==================== INVENTORY ====================
+
+    public const string InventoryIngredientsList = "inventory:ingredients:list";
+    public const string InventoryIngredientById = "inventory:ingredient:{0}";
+    public const string InventoryChecksList = "inventory:checks:list";
+    public const string InventoryCheckById = "inventory:check:{0}";
+    public const string InventoryCheckCreateForm = "inventory:check:create-form";
+    public const string InventoryOpeningStockList = "inventory:opening-stock:list";
+    public const string InventoryStockInReceiptsList = "inventory:stockin:list";
+    public const string InventoryStockInReceiptById = "inventory:stockin:{0}";
+    public const string InventoryStockOutReceiptsList = "inventory:stockout:list";
+    public const string InventoryStockOutReceiptById = "inventory:stockout:{0}";
+    public const string InventoryLotsList = "inventory:lots:list";
+    public const string InventoryReportList = "inventory:report:list";
+    public const string InventoryLedgerList = "inventory:ledger:list";
+    public const string InventoryRecipeByMenuItem = "inventory:recipe:{0}";
+    public const string InventoryTransactionsList = "inventory:transactions:list";
+
     // ==================== ORDERS ====================
     public const string OrderList = "order:list";
     public const string OrderById = "order:{0}";
@@ -111,6 +135,7 @@ public static class CacheTTL
     public static readonly TimeSpan Employees = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan SetMenus = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Options = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan Inventory = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan Orders = TimeSpan.FromMinutes(5);
     public static readonly TimeSpan Areas = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan Tables = TimeSpan.FromMinutes(10);

@@ -1,6 +1,11 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -90,18 +95,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
                 token.Revoke();
             }
 
-            var auditLog = new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                Action = AuditAction.ResetPassword,
-                TargetId = employee.EmployeeId,
-                PerformedByEmployeeId = managerGuid,
-                Reason = request.Reason,
-                Metadata =
-                    $"{{\"info\": \"Reset by Manager: {manager.FullName} ({manager.EmployeeCode})\"}}",
-                CreatedAt = DateTimeOffset.UtcNow,
-            };
-            await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
+            employee.ResetPassword(_passwordService.HashPassword(newPassword), managerGuid);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             await _emailSender.EnqueuePasswordResetByManagerEmailAsync(

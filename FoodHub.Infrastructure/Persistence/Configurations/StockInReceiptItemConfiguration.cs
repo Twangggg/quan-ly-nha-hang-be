@@ -13,11 +13,19 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasKey(x => x.StockInReceiptItemId);
             builder.Property(x => x.StockInReceiptItemId).HasColumnName("stock_in_receipt_item_id");
 
-            builder.Property(x => x.StockInReceiptId).HasColumnName("stock_in_receipt_id").IsRequired();
+            builder
+                .Property(x => x.StockInReceiptId)
+                .HasColumnName("stock_in_receipt_id")
+                .IsRequired();
             builder.Property(x => x.IngredientId).HasColumnName("ingredient_id").IsRequired();
             builder.Property(x => x.Quantity).HasColumnName("quantity").HasPrecision(18, 2);
             builder.Property(x => x.UnitCost).HasColumnName("unit_cost").HasPrecision(18, 2);
             builder.Property(x => x.LineAmount).HasColumnName("line_amount").HasPrecision(18, 2);
+            builder
+                .Property(x => x.BaseUnit)
+                .HasColumnName("base_unit")
+                .HasMaxLength(20)
+                .IsRequired();
             builder.Property(x => x.ExpiryDate).HasColumnName("expiry_date");
             builder.Property(x => x.BatchCode).HasColumnName("batch_code").HasMaxLength(100);
 
@@ -29,7 +37,10 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.HasQueryFilter(x => x.DeletedAt == null);
 
-            builder.HasIndex(x => new { x.StockInReceiptId, x.IngredientId }).IsUnique().HasFilter("deleted_at IS NULL");
+            builder
+                .HasIndex(x => new { x.StockInReceiptId, x.IngredientId })
+                .IsUnique()
+                .HasFilter("deleted_at IS NULL");
             builder.HasIndex(x => x.IngredientId);
 
             builder

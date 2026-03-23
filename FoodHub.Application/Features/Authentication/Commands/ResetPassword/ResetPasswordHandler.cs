@@ -2,7 +2,12 @@ using System.Security.Cryptography;
 using System.Text;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -95,17 +100,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.ResetPassword
                 token.UpdatedAt = DateTime.UtcNow;
             }
 
-            // Log the password reset using the standardized AuditLog
-            await _unitOfWork.Repository<AuditLog>().AddAsync(new AuditLog
-            {
-                LogId = Guid.NewGuid(),
-                Action = FoodHub.Domain.Enums.AuditAction.ResetPassword,
-                TargetId = employee.EmployeeId,
-                PerformedByEmployeeId = employee.EmployeeId, // User reset their own password
-                Reason = "ForgotPassword flow",
-                CreatedAt = DateTimeOffset.UtcNow,
-                Metadata = "{\"info\": \"Password reset via email token\"}"
-            });
+            // UpdatedAt is enough, automatic audit log will capture the password hash change
+            employee.UpdatedAt = DateTime.UtcNow;
 
             // Save all changes
             await _unitOfWork.SaveChangeAsync(cancellationToken);

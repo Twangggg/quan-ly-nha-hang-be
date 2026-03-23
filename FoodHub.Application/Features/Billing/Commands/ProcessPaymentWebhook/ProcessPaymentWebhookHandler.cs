@@ -1,5 +1,11 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -45,6 +51,13 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                 return Result<bool>.Failure("Invalid Signature", ResultErrorType.BadRequest);
             }
 
+            // PayOS test webhook validation handler
+            if (orderCode == 123)
+            {
+                _logger.LogInformation("Received Test Webhook from PayOS. Returning 200 OK.");
+                return Result<bool>.Success(true);
+            }
+
             var lockKey = $"payos_webhook_lock_{orderCode}";
             var isLocked = await _cacheService.ExistsAsync(lockKey, cancellationToken);
             if (isLocked)
@@ -87,16 +100,35 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
 
                 if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
                 {
-                    var table = await _unitOfWork.Repository<Table>().GetByIdAsync(order.TableId.Value);
+                    var table = await _unitOfWork
+                        .Repository<Table>()
+                        .Query()
+                        .Include(t => t.Orders)
+                        .FirstOrDefaultAsync(t => t.TableId == order.TableId.Value, cancellationToken);
+
                     if (table != null)
                     {
-                        table.MarkAsCleaning();
+                        if (table.SetAvailable())
+                        {
+                            table.UpdatedAt = DateTime.UtcNow;
+                        }
+
                         _unitOfWork.Repository<Table>().Update(table);
+
+                        order.TableId = null;
                     }
                 }
 
                 _unitOfWork.Repository<Order>().Update(order);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    string.Format(CacheKey.TableListByArea, "*"),
+                    cancellationToken
+                );
                 await _unitOfWork.CommitTransactionAsync();
 
                 await _signalRService.NotifyOrderStatusChangedAsync(order.OrderId, order.Status.ToString());

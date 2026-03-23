@@ -1,4 +1,9 @@
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Infrastructure.Persistence.Repositories;
 
 namespace FoodHub.Infrastructure.Persistence
@@ -19,7 +24,8 @@ namespace FoodHub.Infrastructure.Persistence
             _context.Dispose();
         }
 
-        public IGenericRepository<T> Repository<T>() where T : class
+        public IGenericRepository<T> Repository<T>()
+            where T : class
         {
             var type = typeof(T).Name;
 
@@ -41,7 +47,8 @@ namespace FoodHub.Infrastructure.Persistence
 
         public async Task BeginTransactionAsync()
         {
-            if (_currentTransaction != null) return;
+            if (_currentTransaction != null)
+                return;
             _currentTransaction = await _context.Database.BeginTransactionAsync();
         }
 

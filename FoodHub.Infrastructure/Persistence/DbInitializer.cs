@@ -1,4 +1,9 @@
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -97,18 +102,7 @@ namespace FoodHub.Infrastructure.Persistence
                         _context.Employees.Add(e);
 
                         // Add Audit Log for Seed Data
-                        _context.AuditLogs.Add(
-                            new AuditLog
-                            {
-                                LogId = Guid.NewGuid(),
-                                Action = AuditAction.Create,
-                                TargetId = e.EmployeeId,
-                                PerformedByEmployeeId = e.EmployeeId, // Self-created for seed
-                                CreatedAt = DateTimeOffset.UtcNow,
-                                Reason = "Seed data initialization",
-                                Metadata = "{\"info\": \"System generated\"}", // Valid JSON for jsonb column
-                            }
-                        );
+                        _context.Employees.Add(e);
                     }
                 }
                 _context.SaveChanges();
@@ -430,10 +424,19 @@ namespace FoodHub.Infrastructure.Persistence
                     new Area
                     {
                         AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                        Name = "VIP Room",
-                        CodePrefix = "VIP",
+                        Name = "Phòng VIP 1",
+                        CodePrefix = "VIP1",
                         Type = AreaType.VIP,
-                        Description = "Private VIP rooms",
+                        Description = "Phòng riêng VIP 1 - Sức chứa lớn",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000004"),
+                        Name = "Phòng VIP 2",
+                        CodePrefix = "VIP2",
+                        Type = AreaType.VIP,
+                        Description = "Phòng riêng VIP 2 - Sức chứa lớn",
                         CreatedAt = DateTime.UtcNow,
                     },
                 };
@@ -447,17 +450,36 @@ namespace FoodHub.Infrastructure.Persistence
                 var tableId = Guid.Parse($"00000000-0000-0000-0000-0000000000{i:D2}");
                 if (!_context.Tables.Any(t => t.TableId == tableId))
                 {
-                    var areaId =
-                        i <= 8 ? Guid.Parse("00000000-0000-0000-0000-000000000001")
-                        : i <= 10 ? Guid.Parse("00000000-0000-0000-0000-000000000002")
-                        : Guid.Parse("00000000-0000-0000-0000-000000000003");
+                    Guid areaId;
+                    int capacity;
+
+                    if (i <= 8)
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                        capacity = (i % 2 == 0 ? 4 : 2);
+                    }
+                    else if (i <= 10)
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+                        capacity = 4;
+                    }
+                    else if (i == 11)
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000003");
+                        capacity = 100; // Phòng VIP có thể chứa rất nhiều khách
+                    }
+                    else // i == 12
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000004");
+                        capacity = 100; // Phòng VIP có thể chứa rất nhiều khách
+                    }
 
                     _context.Tables.Add(
                         new Table
                         {
                             TableId = tableId,
                             TableNumber = i,
-                            Capacity = i <= 8 ? (i % 2 == 0 ? 4 : 2) : (i <= 10 ? 4 : 8),
+                            Capacity = capacity,
                             AreaId = areaId,
                             Status = TableStatus.Available,
                             CreatedAt = DateTime.UtcNow,
@@ -579,6 +601,89 @@ namespace FoodHub.Infrastructure.Persistence
 
                 _context.Orders.AddRange(order1, order2, order3);
                 _context.SaveChanges();
+            }
+
+            SyncOccupiedTablesFromActiveOrders();
+
+            // Seed an invoice for the first order to demonstrate the relationship and for FE testing
+            var environmentName = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var isDevOrDemo = string.Equals(environmentName, "Development", System.StringComparison.OrdinalIgnoreCase)
+                              || string.Equals(environmentName, "Demo", System.StringComparison.OrdinalIgnoreCase);
+
+            if (isDevOrDemo && !_context.Invoices.Any())
+            {
+                // Use the first available order (if any) without relying on hard-coded order codes/IDs
+                var order1 = _context.Orders.Include(o => o.OrderItems).FirstOrDefault();
+                if (order1 != null)
+                {
+                    var invoice1 = new Invoice
+                    {
+                        InvoiceId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        OrderId = order1.OrderId,
+                        InvoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-0001",
+                        SubTotal = order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot),
+                        TaxAmount = order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot) * 0.1m, // Assuming 10% tax
+                        DiscountAmount = 0m,
+                        TotalAmount = order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot) * 1.1m, // Subtotal + Tax
+                        AmountReceived = order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot) * 1.1m,
+                        AmountReturned = 0m,
+                        PaymentMethod = PaymentMethod.Cash,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Invoices.Add(invoice1);
+                    _context.SaveChanges();
+
+                    if (!_context.InvoiceItems.Any(ii => ii.InvoiceId == invoice1.InvoiceId))
+                    {
+                        var invoiceItems = order1.OrderItems.Select(oi => new InvoiceItem
+                        {
+                            InvoiceId = invoice1.InvoiceId,
+                            ItemName = oi.ItemNameSnapshot,
+                            Quantity = oi.Quantity,
+                            UnitPrice = oi.UnitPriceSnapshot,
+                            TotalPrice = oi.Quantity * oi.UnitPriceSnapshot,
+                            Note = oi.ItemNote,
+                            CreatedAt = DateTime.UtcNow
+                        }).ToList();
+                        _context.InvoiceItems.AddRange(invoiceItems);
+                    }
+
+                    _context.SaveChanges();
+                }
+            }
+
+            _context.SaveChanges();
+        }
+
+        private void SyncOccupiedTablesFromActiveOrders()
+        {
+            var occupiedTableIds = _context
+                .Orders
+                .AsNoTracking()
+                .Where(o => o.Status == OrderStatus.Serving && o.TableId.HasValue)
+                .Select(o => o.TableId!.Value)
+                .Distinct()
+                .ToList();
+
+            if (occupiedTableIds.Count == 0)
+            {
+                return;
+            }
+
+            var tablesToUpdate = _context
+                .Tables
+                .Where(t => occupiedTableIds.Contains(t.TableId) && t.Status != TableStatus.Occupied)
+                .ToList();
+
+            if (tablesToUpdate.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var table in tablesToUpdate)
+            {
+                table.Status = TableStatus.Occupied;
+                table.UpdatedAt = DateTime.UtcNow;
             }
 
             _context.SaveChanges();

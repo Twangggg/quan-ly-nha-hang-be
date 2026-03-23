@@ -3,7 +3,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredients;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -16,16 +21,19 @@ namespace FoodHub.Tests.Features.Inventory
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly GetIngredientsHandler _handler;
 
         public GetIngredientsHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockMapper = new Mock<IMapper>();
+            _mockCache = new Mock<ICacheService>();
 
             _handler = new GetIngredientsHandler(
                 _mockUow.Object,
                 _mockMapper.Object,
+                _mockCache.Object,
                 Mock.Of<ILogger<GetIngredientsHandler>>()
             );
         }

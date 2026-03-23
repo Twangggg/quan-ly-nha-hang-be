@@ -2,7 +2,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -17,6 +22,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
         private readonly Mock<IUnitOfWork> _mockUow = new();
         private readonly Mock<ICurrentUserService> _mockCurrentUserService = new();
         private readonly Mock<IMessageService> _mockMessageService = new();
+        private readonly Mock<ICacheService> _mockCacheService = new();
         private readonly Mock<ILogger<ChangeOrderTableHandler>> _mockLogger = new();
 
         [Fact]
@@ -76,6 +82,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                _mockCacheService.Object,
                 _mockLogger.Object
             );
 
@@ -147,11 +154,57 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                _mockCacheService.Object,
                 _mockLogger.Object
             );
 
             var result = await handler.Handle(
                 new ChangeOrderTableCommand(orderId, newTableId),
+                CancellationToken.None
+            );
+
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorType.Should().Be(ResultErrorType.BadRequest);
+            _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_Should_Return_Failure_When_New_Table_Is_The_Same_As_Current_Table()
+        {
+            var userId = Guid.NewGuid();
+            var orderId = Guid.NewGuid();
+            var tableId = Guid.NewGuid();
+
+            var order = new EntityOrder
+            {
+                OrderId = orderId,
+                OrderCode = "ORD-001",
+                OrderType = OrderType.DineIn,
+                Status = OrderStatus.Serving,
+                TableId = tableId,
+            };
+
+            var orderRepo = new Mock<IGenericRepository<EntityOrder>>();
+            orderRepo
+                .Setup(r => r.Query())
+                .Returns(new List<EntityOrder> { order }.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<EntityOrder>()).Returns(orderRepo.Object);
+
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Table.SameAsCurrentTable))
+                .Returns("Same table");
+
+            var handler = new ChangeOrderTableHandler(
+                _mockUow.Object,
+                _mockCurrentUserService.Object,
+                _mockMessageService.Object,
+                _mockCacheService.Object,
+                _mockLogger.Object
+            );
+
+            var result = await handler.Handle(
+                new ChangeOrderTableCommand(orderId, tableId),
                 CancellationToken.None
             );
 

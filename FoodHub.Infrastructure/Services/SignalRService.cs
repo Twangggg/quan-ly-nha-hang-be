@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Enums;
 using FoodHub.Infrastructure.Services.Hubs;
+using FoodHub.Infrastructure.Services.Messaging.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
 namespace FoodHub.Infrastructure.Services
@@ -15,7 +17,10 @@ namespace FoodHub.Infrastructure.Services
         private readonly IHubContext<KdsHub> _hubContext;
         private readonly IHubContext<BillingHub> _billingHubContext;
 
-        public SignalRService(IHubContext<KdsHub> hubContext, IHubContext<BillingHub> billingHubContext)
+        public SignalRService(
+            IHubContext<KdsHub> hubContext,
+            IHubContext<BillingHub> billingHubContext
+        )
         {
             _hubContext = hubContext;
             _billingHubContext = billingHubContext;

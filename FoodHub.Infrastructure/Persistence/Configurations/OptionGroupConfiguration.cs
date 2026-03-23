@@ -36,7 +36,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .WithMany(m => m.OptionGroups)
                 .HasForeignKey(e => e.MenuItemId)
                 .HasConstraintName("fk_option_groups_menu_item_id")
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Indexes
             builder.HasIndex(e => e.MenuItemId).HasDatabaseName("idx_option_groups_menu_item_id");

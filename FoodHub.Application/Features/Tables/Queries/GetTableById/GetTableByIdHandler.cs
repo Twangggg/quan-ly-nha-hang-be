@@ -2,7 +2,12 @@ using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -53,6 +58,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTableById
             var table = await _unitOfWork.Repository<Table>()
                 .Query()
                 .Include(t => t.Area)
+                .Include(t => t.Orders)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.TableId == request.Id, cancellationToken);
             if (table == null)

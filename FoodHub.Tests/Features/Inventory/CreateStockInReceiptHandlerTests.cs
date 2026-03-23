@@ -1,7 +1,12 @@
 using FluentAssertions;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Features.Inventory.StockInReceipts.Commands.CreateStockInReceipt;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MockQueryable.Moq;
 using Moq;
@@ -15,8 +20,11 @@ namespace FoodHub.Tests.Features.Inventory
         private readonly Mock<ICurrentUserService> _mockCurrentUser;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<IGenericRepository<Ingredient>> _mockIngredientRepo;
+        private readonly Mock<IGenericRepository<InventoryLot>> _mockInventoryLotRepo;
+        private readonly Mock<IGenericRepository<InventoryLotMovement>> _mockInventoryLotMovementRepo;
         private readonly Mock<IGenericRepository<InventoryTransaction>> _mockTransactionRepo;
         private readonly Mock<IGenericRepository<StockInReceipt>> _mockReceiptRepo;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly Mock<IUnitOfWork> _mockUnitOfWork;
 
         public CreateStockInReceiptHandlerTests()
@@ -24,12 +32,21 @@ namespace FoodHub.Tests.Features.Inventory
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockMessageService = new Mock<IMessageService>();
             _mockCurrentUser = new Mock<ICurrentUserService>();
+            _mockCache = new Mock<ICacheService>();
             _availabilitySyncService = new Mock<IInventoryAvailabilitySyncService>();
             _mockIngredientRepo = new Mock<IGenericRepository<Ingredient>>();
+            _mockInventoryLotRepo = new Mock<IGenericRepository<InventoryLot>>();
+            _mockInventoryLotMovementRepo = new Mock<IGenericRepository<InventoryLotMovement>>();
             _mockTransactionRepo = new Mock<IGenericRepository<InventoryTransaction>>();
             _mockReceiptRepo = new Mock<IGenericRepository<StockInReceipt>>();
 
             _mockUnitOfWork.Setup(x => x.Repository<Ingredient>()).Returns(_mockIngredientRepo.Object);
+            _mockUnitOfWork
+                .Setup(x => x.Repository<InventoryLot>())
+                .Returns(_mockInventoryLotRepo.Object);
+            _mockUnitOfWork
+                .Setup(x => x.Repository<InventoryLotMovement>())
+                .Returns(_mockInventoryLotMovementRepo.Object);
             _mockUnitOfWork
                 .Setup(x => x.Repository<InventoryTransaction>())
                 .Returns(_mockTransactionRepo.Object);
@@ -41,6 +58,7 @@ namespace FoodHub.Tests.Features.Inventory
                 _mockUnitOfWork.Object,
                 _mockMessageService.Object,
                 _mockCurrentUser.Object,
+                _mockCache.Object,
                 _availabilitySyncService.Object,
                 Mock.Of<Microsoft.Extensions.Logging.ILogger<CreateStockInReceiptHandler>>()
             );
@@ -61,6 +79,10 @@ namespace FoodHub.Tests.Features.Inventory
             _mockReceiptRepo
                 .Setup(x => x.AddAsync(It.IsAny<StockInReceipt>()))
                 .Callback<StockInReceipt>(receipt => capturedReceipt = receipt)
+                .Returns(Task.CompletedTask);
+            _mockInventoryLotRepo.Setup(x => x.AddAsync(It.IsAny<InventoryLot>())).Returns(Task.CompletedTask);
+            _mockInventoryLotMovementRepo
+                .Setup(x => x.AddAsync(It.IsAny<InventoryLotMovement>()))
                 .Returns(Task.CompletedTask);
             _mockUnitOfWork.Setup(x => x.BeginTransactionAsync()).Returns(Task.CompletedTask);
             _mockUnitOfWork.Setup(x => x.CommitTransactionAsync()).Returns(Task.CompletedTask);
@@ -106,6 +128,10 @@ namespace FoodHub.Tests.Features.Inventory
             _mockReceiptRepo
                 .Setup(x => x.Query())
                 .Returns(new List<StockInReceipt>().AsQueryable().BuildMock());
+            _mockInventoryLotRepo.Setup(x => x.AddAsync(It.IsAny<InventoryLot>())).Returns(Task.CompletedTask);
+            _mockInventoryLotMovementRepo
+                .Setup(x => x.AddAsync(It.IsAny<InventoryLotMovement>()))
+                .Returns(Task.CompletedTask);
             _mockMessageService
                 .Setup(x => x.GetMessage("Ingredient.NotFound"))
                 .Returns("ingredient not found");
@@ -137,6 +163,10 @@ namespace FoodHub.Tests.Features.Inventory
             _mockReceiptRepo
                 .Setup(x => x.Query())
                 .Returns(new List<StockInReceipt>().AsQueryable().BuildMock());
+            _mockInventoryLotRepo.Setup(x => x.AddAsync(It.IsAny<InventoryLot>())).Returns(Task.CompletedTask);
+            _mockInventoryLotMovementRepo
+                .Setup(x => x.AddAsync(It.IsAny<InventoryLotMovement>()))
+                .Returns(Task.CompletedTask);
             _mockMessageService
                 .Setup(x => x.GetMessage("Ingredient.Inactive"))
                 .Returns("ingredient inactive");
@@ -167,6 +197,10 @@ namespace FoodHub.Tests.Features.Inventory
             _mockReceiptRepo
                 .Setup(x => x.Query())
                 .Returns(new List<StockInReceipt>().AsQueryable().BuildMock());
+            _mockInventoryLotRepo.Setup(x => x.AddAsync(It.IsAny<InventoryLot>())).Returns(Task.CompletedTask);
+            _mockInventoryLotMovementRepo
+                .Setup(x => x.AddAsync(It.IsAny<InventoryLotMovement>()))
+                .Returns(Task.CompletedTask);
             _mockUnitOfWork.Setup(x => x.BeginTransactionAsync()).Returns(Task.CompletedTask);
             _mockUnitOfWork.Setup(x => x.RollbackTransactionAsync()).Returns(Task.CompletedTask);
             _mockUnitOfWork

@@ -100,5 +100,12 @@ namespace FoodHub.Application.Constants
             public const string Update = "Permissions.Inventory.Update";
             public const string Deactivate = "Permissions.Inventory.Deactivate";
         }
+
+        public static class Invoices
+        {
+            public const string View = "Permissions.Invoices.View";
+            public const string Create = "Permissions.Invoices.Create";
+            public const string ViewPdf = "Permissions.Invoices.ViewPdf";
+        }
     }
 }
