@@ -183,7 +183,7 @@ namespace FoodHub.Tests.Features.KDS.Queries
                     Employee = employee,
                     Action = "KDS_COMPLETE_COOKING",
                     ChangeReason = null,
-                    NewValue = "Ready",
+                    NewValue = "Completed",
                     CreatedAt = DateTime.UtcNow.AddDays(-3),
                 },
             };

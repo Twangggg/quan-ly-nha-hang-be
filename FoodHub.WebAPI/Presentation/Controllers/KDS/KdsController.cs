@@ -97,7 +97,9 @@ namespace FoodHub.WebAPI.Presentation.Controllers.KDS
         [HasPermission(Permissions.Kds.Manage)]
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 1)]
         [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> MarkReadyAlias([FromBody] CompleteCookingCommand command)
+        public async Task<IActionResult> CompleteCookingLegacyAlias(
+            [FromBody] CompleteCookingCommand command
+        )
         {
             var result = await _mediator.Send(command);
             return HandleResult(result);
@@ -135,24 +137,30 @@ namespace FoodHub.WebAPI.Presentation.Controllers.KDS
         [HttpGet("audit-logs")]
         [HasPermission(Permissions.Kds.View)]
         [Produces(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(Result<List<GetKdsAuditLogsResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(
+            typeof(Result<List<GetKdsAuditLogsResponse>>),
+            StatusCodes.Status200OK
+        )]
         public async Task<IActionResult> GetAuditLogs(
             [FromQuery] string? station = null,
             [FromQuery] string? action = null,
             [FromQuery] DateTime? fromDate = null,
             [FromQuery] DateTime? toDate = null,
             [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 50)
+            [FromQuery] int pageSize = 50
+        )
         {
-            var result = await _mediator.Send(new GetKdsAuditLogsQuery
-            {
-                Station = station,
-                Action = action,
-                FromDate = fromDate,
-                ToDate = toDate,
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            });
+            var result = await _mediator.Send(
+                new GetKdsAuditLogsQuery
+                {
+                    Station = station,
+                    Action = action,
+                    FromDate = fromDate,
+                    ToDate = toDate,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                }
+            );
             return HandleResult(result);
         }
     }
