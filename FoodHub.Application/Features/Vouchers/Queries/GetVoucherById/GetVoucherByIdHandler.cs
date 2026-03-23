@@ -34,7 +34,7 @@ namespace FoodHub.Application.Features.Vouchers.Queries.GetVoucherById
 
         public async Task<Result<GetVoucherByIdResponse>> Handle(GetVoucherByIdQuery request, CancellationToken cancellationToken)
         {
-            _logger .LogInformation("Handling GetVoucherByIdQuery for VoucherId: {VoucherId}", request.VoucherId);
+            _logger.LogInformation("Handling GetVoucherByIdQuery for VoucherId: {VoucherId}", request.VoucherId);
             var cacheKey = string.Format(CacheKey.VoucherById, request.VoucherId);
             var cachedVoucher = await _cacheService.GetAsync<GetVoucherByIdResponse>(cacheKey, cancellationToken);
             if (cachedVoucher != null)
