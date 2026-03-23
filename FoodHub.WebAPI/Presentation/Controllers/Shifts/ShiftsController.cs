@@ -7,7 +7,7 @@ using FoodHub.Application.Features.Shifts.Commands.UpdateShiftStatus;
 using FoodHub.Application.Features.Shifts.Queries.GetShiftById;
 using FoodHub.Application.Features.Shifts.Queries.GetShifts;
 using FoodHub.Application.Extensions.Pagination;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
@@ -22,7 +22,7 @@ namespace FoodHub.Presentation.Controllers
     public record UpdateShiftStatusRequest(
         [property: JsonPropertyName("isActive")] bool IsActive
     );
- 
+
     [Tags("Ca làm việc (Shifts)")]
     [HasPermission(Permissions.Shifts.View)]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
@@ -75,7 +75,7 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(new GetShiftByIdQuery(id));
             return HandleResult(result);
         }
- 
+
         /// <summary>
         /// Tạo mới một ca làm việc.
         /// </summary>
@@ -95,7 +95,7 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
- 
+
         /// <summary>
         /// Cập nhật thông tin ca làm việc.
         /// </summary>
@@ -121,7 +121,7 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
- 
+
         /// <summary>
         /// Cập nhật trạng thái hoạt động của ca làm việc.
         /// </summary>

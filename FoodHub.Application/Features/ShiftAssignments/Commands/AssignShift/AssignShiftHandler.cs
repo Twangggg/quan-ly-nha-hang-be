@@ -2,13 +2,14 @@ using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
- 
+
 namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift
 {
     public class AssignShiftHandler : IRequestHandler<AssignShiftCommand, Result<AssignShiftResponse>>
@@ -22,7 +23,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift
         private readonly IBackgroundEmailSender _emailSender;
         private readonly ISignalRService _signalRService;
         private readonly ILogger<AssignShiftHandler> _logger;
- 
+
         public AssignShiftHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
@@ -43,7 +44,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift
             _signalRService = signalRService;
             _logger = logger;
         }
- 
+
         public async Task<Result<AssignShiftResponse>> Handle(
             AssignShiftCommand request,
             CancellationToken cancellationToken
@@ -56,60 +57,60 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift
                     ResultErrorType.Unauthorized
                 );
             }
- 
+
             var employee = await _unitOfWork.Repository<Employee>().Query()
                 .FirstOrDefaultAsync(e => e.EmployeeId == request.EmployeeId, cancellationToken);
- 
+
             if (employee is null)
                 return Result<AssignShiftResponse>.NotFound(_messageService.GetMessage(MessageKeys.Employee.NotFound));
- 
+
             var shift = await _unitOfWork.Repository<Shift>().Query().AsNoTracking()
                 .FirstOrDefaultAsync(s => s.ShiftId == request.ShiftId, cancellationToken);
- 
+
             if (shift is null)
                 return Result<AssignShiftResponse>.NotFound(_messageService.GetMessage(MessageKeys.Shift.NotFound));
- 
+
             if (shift.Status != ShiftStatus.Active)
                 return Result<AssignShiftResponse>.Failure(_messageService.GetMessage(MessageKeys.ShiftAssignment.ShiftNotActive));
- 
+
             var existing = await _unitOfWork.Repository<ShiftAssignment>().Query()
                 .Include(a => a.Shift)
                 .Where(a => a.EmployeeId == request.EmployeeId && a.AssignedDate == request.AssignedDate)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
- 
-            if (existing.Any(a => a.Shift.StartTime < shift.EndTime && a.Shift.EndTime > shift.StartTime))
-                return Result<AssignShiftResponse>.Failure(_messageService.GetMessage(MessageKeys.ShiftAssignment.OverlappingShift), ResultErrorType.Conflict);
- 
-            if (existing.Sum(a => (a.Shift.EndTime - a.Shift.StartTime).TotalHours) + (shift.EndTime - shift.StartTime).TotalHours > MaxDailyHours)
-                return Result<AssignShiftResponse>.Failure(_messageService.GetMessage(MessageKeys.ShiftAssignment.OvertimeExceeded));
- 
+
+            if (existing.Any())
+                return Result<AssignShiftResponse>.Failure(_messageService.GetMessage(MessageKeys.ShiftAssignment.MaxOneShiftPerDay), ResultErrorType.Conflict);
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var assignment = ShiftAssignment.Create(request.EmployeeId, request.ShiftId, request.AssignedDate, request.Note, auditorId);
                 await _unitOfWork.Repository<ShiftAssignment>().AddAsync(assignment);
- 
+
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
- 
+
                 // Side effects
                 await _emailSender.EnqueueShiftAssignmentEmailAsync(employee.Email, employee.FullName, shift.Name, assignment.AssignedDate, shift.StartTime, shift.EndTime, false, employee.EmployeeId, auditorId, cancellationToken);
                 await _signalRService.NotifyShiftAssignmentAsync(employee.EmployeeId, shift.Name, assignment.AssignedDate, false);
- 
+
                 await _unitOfWork.CommitTransactionAsync();
                 await _cacheService.RemoveByPatternAsync(CacheKey.ShiftAssignmentList, cancellationToken);
- 
+                
+                assignment.Employee = employee;
+                assignment.Shift = shift;
+
                 return Result<AssignShiftResponse>.Success(_mapper.Map<AssignShiftResponse>(assignment));
             }
             catch (DbUpdateException ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(ex, "AssignShift failed due to DB conflict for Employee {Id}", request.EmployeeId);
-                
+
                 var inner = ex.InnerException?.Message ?? ex.Message;
                 if (inner.Contains("duplicate", StringComparison.OrdinalIgnoreCase) || inner.Contains("unique", StringComparison.OrdinalIgnoreCase))
                     return Result<AssignShiftResponse>.Failure(_messageService.GetMessage(MessageKeys.Common.DatabaseConflict), ResultErrorType.Conflict);
-                
+
                 throw;
             }
             catch (Exception ex)

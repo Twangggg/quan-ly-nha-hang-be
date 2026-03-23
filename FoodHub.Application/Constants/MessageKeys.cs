@@ -430,6 +430,8 @@ namespace FoodHub.Application.Constants
             public const string InvalidTime = "Shift.InvalidTime";
             public const string AlreadyInactive = "Shift.AlreadyInactive";
             public const string NameRequired = "Shift.NameRequired";
+            public const string OutsideOperatingHours = "Shift.OutsideOperatingHours";
+            public const string DuringBreakTime = "Shift.DuringBreakTime";
         }
 
         public static class ShiftAssignment
@@ -439,6 +441,7 @@ namespace FoodHub.Application.Constants
             public const string ShiftNotActive    = "ShiftAssignment.ShiftNotActive";
             public const string EmployeeNotActive = "ShiftAssignment.EmployeeNotActive";
             public const string OvertimeExceeded  = "ShiftAssignment.OvertimeExceeded";
+            public const string MaxOneShiftPerDay = "ShiftAssignment.MaxOneShiftPerDay";
         }
     }
 }

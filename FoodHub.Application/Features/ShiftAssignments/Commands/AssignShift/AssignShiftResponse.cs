@@ -25,5 +25,14 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift
 
         /// <summary>Thời điểm tạo bản ghi.</summary>
         public DateTime CreatedAt { get; set; }
+
+        public void Mapping(Profile profile)
+        {
+            profile.CreateMap<ShiftAssignment, AssignShiftResponse>()
+                .ForMember(d => d.EmployeeName, opt => opt.MapFrom(s => s.Employee != null ? s.Employee.FullName : null))
+                .ForMember(d => d.ShiftName, opt => opt.MapFrom(s => s.Shift != null ? s.Shift.Name : null))
+                .ForMember(d => d.StartTime, opt => opt.MapFrom(s => s.Shift != null ? s.Shift.StartTime : default))
+                .ForMember(d => d.EndTime, opt => opt.MapFrom(s => s.Shift != null ? s.Shift.EndTime : default));
+        }
     }
 }

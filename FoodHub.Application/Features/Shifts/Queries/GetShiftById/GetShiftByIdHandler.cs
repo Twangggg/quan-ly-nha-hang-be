@@ -3,7 +3,7 @@ using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

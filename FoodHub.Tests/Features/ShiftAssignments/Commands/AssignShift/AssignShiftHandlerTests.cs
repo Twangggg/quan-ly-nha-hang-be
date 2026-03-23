@@ -3,6 +3,8 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;

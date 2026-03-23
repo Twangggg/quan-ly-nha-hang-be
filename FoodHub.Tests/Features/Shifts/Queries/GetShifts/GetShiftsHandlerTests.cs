@@ -5,6 +5,7 @@ using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.Shifts.Queries.GetShiftById;
 using FoodHub.Application.Features.Shifts.Queries.GetShifts;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using MockQueryable.Moq;
 using Moq;

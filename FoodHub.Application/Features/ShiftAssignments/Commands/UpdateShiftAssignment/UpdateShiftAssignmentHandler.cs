@@ -3,7 +3,7 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -53,6 +53,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssi
             }
 
             var assignment = await _unitOfWork.Repository<ShiftAssignment>().Query()
+                .Include(a => a.Employee)
                 .FirstOrDefaultAsync(a => a.ShiftAssignmentId == request.ShiftAssignmentId, cancellationToken);
 
             if (assignment is null)
@@ -70,7 +71,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssi
             // Check overlapping and overtime (excluding current assignment if it's the same day)
             var othersOnThatDay = await _unitOfWork.Repository<ShiftAssignment>().Query()
                 .Include(a => a.Shift)
-                .Where(a => a.EmployeeId == assignment.EmployeeId 
+                .Where(a => a.EmployeeId == assignment.EmployeeId
                          && a.AssignedDate == request.AssignedDate
                          && a.ShiftAssignmentId != request.ShiftAssignmentId)
                 .AsNoTracking()
@@ -79,9 +80,9 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssi
             if (othersOnThatDay.Any(a => a.Shift.StartTime < shift.EndTime && a.Shift.EndTime > shift.StartTime))
                 return Result<AssignShiftResponse>.Failure(_messageService.GetMessage(MessageKeys.ShiftAssignment.OverlappingShift), ResultErrorType.Conflict);
 
-            double dailyHours = othersOnThatDay.Sum(a => (a.Shift.EndTime - a.Shift.StartTime).TotalHours) 
+            double dailyHours = othersOnThatDay.Sum(a => (a.Shift.EndTime - a.Shift.StartTime).TotalHours)
                                 + (shift.EndTime - shift.StartTime).TotalHours;
-            
+
             if (dailyHours > _maxDailyHours)
                 return Result<AssignShiftResponse>.Failure(_messageService.GetMessage(MessageKeys.ShiftAssignment.OvertimeExceeded));
 
@@ -89,9 +90,10 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssi
             {
                 assignment.Update(request.ShiftId, request.AssignedDate, request.Note, auditorId);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
-                
+
                 await _cacheService.RemoveByPatternAsync(CacheKey.ShiftAssignmentList, cancellationToken);
 
+                assignment.Shift = shift;
                 return Result<AssignShiftResponse>.Success(_mapper.Map<AssignShiftResponse>(assignment));
             }
             catch (Exception ex)

@@ -2,6 +2,7 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Shifts.Commands.UpdateShiftStatus;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using MockQueryable.Moq;
 using Moq;

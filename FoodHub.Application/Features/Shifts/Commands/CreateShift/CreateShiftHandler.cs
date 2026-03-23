@@ -2,13 +2,13 @@ using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
- 
+
 namespace FoodHub.Application.Features.Shifts.Commands.CreateShift
 {
     public class CreateShiftHandler : IRequestHandler<CreateShiftCommand, Result<CreateShiftResponse>>
@@ -19,7 +19,7 @@ namespace FoodHub.Application.Features.Shifts.Commands.CreateShift
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ILogger<CreateShiftHandler> _logger;
- 
+
         public CreateShiftHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
@@ -36,7 +36,7 @@ namespace FoodHub.Application.Features.Shifts.Commands.CreateShift
             _messageService = messageService;
             _logger = logger;
         }
- 
+
         public async Task<Result<CreateShiftResponse>> Handle(
             CreateShiftCommand request,
             CancellationToken cancellationToken
@@ -49,16 +49,16 @@ namespace FoodHub.Application.Features.Shifts.Commands.CreateShift
                     ResultErrorType.Unauthorized
                 );
             }
- 
+
             var shift = Shift.Create(request.Name, request.StartTime, request.EndTime, auditorId);
- 
+
             try
             {
                 await _unitOfWork.Repository<Shift>().AddAsync(shift);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
- 
+
                 await _cacheService.RemoveByPatternAsync(CacheKey.ShiftList, cancellationToken);
- 
+
                 return Result<CreateShiftResponse>.Success(_mapper.Map<CreateShiftResponse>(shift));
             }
             catch (DbUpdateException ex)
