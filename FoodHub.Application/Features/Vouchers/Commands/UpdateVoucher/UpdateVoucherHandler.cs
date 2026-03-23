@@ -83,12 +83,12 @@ namespace FoodHub.Application.Features.Vouchers.Commands.UpdateVoucher
                 }
             }
 
-            voucher.VoucherCode = request.VoucherCode;
+            voucher.VoucherCode = request.VoucherCode.ToUpper();
             voucher.VoucherType = request.VoucherType;
             voucher.DiscountValue = request.DiscountValue;
             voucher.MaxDiscount = request.MaxDiscount;
             voucher.MinOrderValue = request.MinOrderValue;
-            voucher.ItemtId = request.ItemtId;
+            voucher.ItemId = request.ItemtId;
             voucher.FreeQuantity = request.FreeQuantity;
             voucher.StartDate = request.StartDate;
             voucher.EndDate = request.EndDate;

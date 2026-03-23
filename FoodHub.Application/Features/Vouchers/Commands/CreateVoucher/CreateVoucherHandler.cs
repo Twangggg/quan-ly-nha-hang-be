@@ -74,12 +74,12 @@ namespace FoodHub.Application.Features.Vouchers.Commands.CreateVoucher
             var voucher = new Voucher
             {
                 VoucherId = Guid.NewGuid(),
-                VoucherCode = request.VoucherCode,
+                VoucherCode = request.VoucherCode.ToUpper(),
                 VoucherType = request.VoucherType,
                 DiscountValue = request.DiscountValue,
                 MaxDiscount = request.MaxDiscount,
                 MinOrderValue = request.MinOrderValue,
-                ItemtId = request.ItemtId,
+                ItemId = request.ItemtId,
                 FreeQuantity = request.FreeQuantity,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,

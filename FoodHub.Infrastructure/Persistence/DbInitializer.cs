@@ -673,7 +673,7 @@ namespace FoodHub.Infrastructure.Persistence
                     VoucherId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     VoucherCode = "FREEDRINK",
                     VoucherType = VoucherType.FreeItem,
-                    ItemtId = _context.MenuItems.First(mi => mi.Code == "DRK-007").MenuItemId, // Tặng cocktail đặc biệt
+                    ItemId = _context.MenuItems.First(mi => mi.Code == "DRK-007").MenuItemId, // Tặng cocktail đặc biệt
                     FreeQuantity = 1,
                     MinOrderValue = 200000m,
                     StartDate = DateTime.UtcNow,

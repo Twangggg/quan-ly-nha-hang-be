@@ -146,10 +146,10 @@ namespace FoodHub.Application.Features.Vouchers.Commands.ApplyVoucher
             // Nếu voucher mới có free item thì thêm free item vào order
             if (newVoucher.VoucherType == VoucherType.FreeItem)
             {
-                _logger.LogInformation("Adding new free item to order for OrderId: {OrderId}, VoucherId: {VoucherId}, FreeItemMenuItemId: {FreeItemMenuItemId}, FreeQuantity: {FreeQuantity}", request.OrderId, request.VoucherId, newVoucher.ItemtId, newVoucher.FreeQuantity);
+                _logger.LogInformation("Adding new free item to order for OrderId: {OrderId}, VoucherId: {VoucherId}, FreeItemMenuItemId: {FreeItemMenuItemId}, FreeQuantity: {FreeQuantity}", request.OrderId, request.VoucherId, newVoucher.ItemId, newVoucher.FreeQuantity);
                 
                 // Fix CRICTICAL BUG: So sánh MenuItemId thay vì OrderItemId để trích xuất item ra làm FreeItem
-                var newFreeItem = order.OrderItems.FirstOrDefault(oi => oi.MenuItemId == newVoucher.ItemtId && !oi.IsFreeItem);
+                var newFreeItem = order.OrderItems.FirstOrDefault(oi => oi.MenuItemId == newVoucher.ItemId && !oi.IsFreeItem);
                 
                 if (newFreeItem != null)
                 {

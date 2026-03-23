@@ -10,7 +10,7 @@ namespace FoodHub.Domain.Entities
         public decimal? DiscountValue { get; set; } // Giá trị giảm giá, có thể là phần trăm hoặc số tiền tùy thuộc vào VoucherType, null khi là FreeItem
         public decimal? MaxDiscount { get; set; } // Áp dụng cho các voucher giảm theo phần trăm để giới hạn số tiền giảm tối đa
         public decimal? MinOrderValue { get; set; } // Giá trị đơn hàng tối thiểu để áp dụng voucher
-        public Guid? ItemtId { get; set; } // Áp dụng cho voucher loại FreeItem, tham chiếu đến món ăn được tặng miễn phí, nếu sản phẩm có sẵn trong order thì sẽ miễn phí theo số lượng FreeQuantity, nếu không có sẵn thì sẽ thêm vào order với số lượng FreeQuantity và giá bằng 0
+        public Guid? ItemId { get; set; } // Áp dụng cho voucher loại FreeItem, tham chiếu đến món ăn được tặng miễn phí, nếu sản phẩm có sẵn trong order thì sẽ miễn phí theo số lượng FreeQuantity, nếu không có sẵn thì sẽ thêm vào order với số lượng FreeQuantity và giá bằng 0
         public virtual MenuItem? Item { get; set; } // Quan hệ nhiều-một với Item, mỗi voucher có thể áp dụng cho một món ăn cụ thể (chỉ áp dụng cho voucher loại FreeItem)
         public int? FreeQuantity { get; set; } // Số lượng món ăn được tặng miễn phí, chỉ áp dụng cho voucher loại FreeItem
         public DateTime StartDate { get; set; }
@@ -63,11 +63,11 @@ namespace FoodHub.Domain.Entities
 
         public bool IsFreeItemInOrder(Order order)
         {
-            if (VoucherType != VoucherType.FreeItem || ItemtId == null)
+            if (VoucherType != VoucherType.FreeItem || ItemId == null)
             {
                 return false; // Không phải voucher tặng món hoặc không có ItemId
             }
-            return order.OrderItems.Any(oi => oi.MenuItemId == ItemtId);
+            return order.OrderItems.Any(oi => oi.MenuItemId == ItemId);
         }
     }
 }

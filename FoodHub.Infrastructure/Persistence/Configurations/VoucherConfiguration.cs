@@ -19,7 +19,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(v => v.DiscountValue).HasColumnName("discount_value").HasPrecision(18,2);
             builder.Property(v => v.MaxDiscount).HasColumnName("max_discount").HasPrecision(18,2);
             builder.Property(v => v.MinOrderValue).HasColumnName("min_order_value").HasPrecision(18,2);
-            builder.Property(v => v.ItemtId).HasColumnName("item_id");
+            builder.Property(v => v.ItemId).HasColumnName("item_id");
             builder.Property(v => v.FreeQuantity).HasColumnName("free_quantity");
             builder.Property(v => v.StartDate).HasColumnName("start_date").IsRequired();
             builder.Property(v => v.EndDate).HasColumnName("end_date").IsRequired();
@@ -39,7 +39,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             // Configure relationships
             builder.HasOne(v => v.Item)
                    .WithMany()
-                   .HasForeignKey(v => v.ItemtId)
+                   .HasForeignKey(v => v.ItemId)
                    .OnDelete(DeleteBehavior.SetNull);
 
             // Global query filter to exclude soft-deleted vouchers
