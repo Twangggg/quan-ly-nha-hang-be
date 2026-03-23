@@ -19,7 +19,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(o => o.VatAmount).HasColumnType("decimal(15,2)");
             builder.Property(o => o.TotalAmount).HasColumnType("decimal(15,2)");
             builder.Property(o => o.Note).HasColumnType("text");
-
+            
             // Relationships
             builder.HasOne(o => o.CreatedByEmployee).WithMany().HasForeignKey(o => o.CreatedBy);
 
@@ -36,6 +36,12 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(o => o.ReservationId)
                    .IsUnique()
                    .HasFilter("reservation_id IS NOT NULL");
+
+            builder.Property(o => o.VoucherId).HasColumnName("voucher_id");
+            builder.HasOne(o => o.Voucher)
+                   .WithMany(v => v.Orders)
+                   .HasForeignKey(o => o.VoucherId)
+                   .OnDelete(DeleteBehavior.SetNull);
 
             builder.Property(o => o.CreatedAt).HasDefaultValueSql("now()");
             builder.Property(o => o.CompletedAt).IsRequired(false);

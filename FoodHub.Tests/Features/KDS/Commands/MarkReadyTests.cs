@@ -1,11 +1,11 @@
 using FluentAssertions;
-using FoodHub.Application.Features.KDS.Commands.MarkReady;
+using FoodHub.Application.Features.KDS.Commands.CompleteCooking;
 using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -16,28 +16,28 @@ using Xunit;
 
 namespace FoodHub.Tests.Features.KDS.Commands
 {
-    public class MarkReadyTests
+    public class CompleteCookingTests
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ISignalRService> _mockSignalRService;
         private readonly Mock<IInventoryDeductionService> _mockInventoryDeductionService;
-        private readonly Mock<ILogger<MarkReadyHandler>> _mockLogger;
+        private readonly Mock<ILogger<CompleteCookingHandler>> _mockLogger;
         private readonly KdsPriorityCalculator _priorityCalculator;
-        private readonly MarkReadyHandler _handler;
+        private readonly CompleteCookingHandler _handler;
 
-        public MarkReadyTests()
+        public CompleteCookingTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
             _mockSignalRService = new Mock<ISignalRService>();
             _mockInventoryDeductionService = new Mock<IInventoryDeductionService>();
-            _mockLogger = new Mock<ILogger<MarkReadyHandler>>();
-            _priorityCalculator = new KdsPriorityCalculator(); // Dùng instance thật vì logic tính điểm đơn giản
+            _mockLogger = new Mock<ILogger<CompleteCookingHandler>>();
+            _priorityCalculator = new KdsPriorityCalculator();
 
-            _handler = new MarkReadyHandler(
+            _handler = new CompleteCookingHandler(
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
@@ -51,11 +51,16 @@ namespace FoodHub.Tests.Features.KDS.Commands
         [Fact]
         public async Task Handle_Should_TriggerAutoPull_WithPriorityItem()
         {
-            // Arrange
             var orderItemId = Guid.NewGuid();
             var station = "HotKitchen";
             var userId = Guid.NewGuid().ToString();
-            var menuItem = new MenuItem { ExpectedTime = 10, Code = "TEST001", Name = "Test Item", ImageUrl = "http://test.com/image.jpg" };
+            var menuItem = new MenuItem
+            {
+                ExpectedTime = 10,
+                Code = "TEST001",
+                Name = "Test Item",
+                ImageUrl = "http://test.com/image.jpg",
+            };
 
             var currentItem = new OrderItem
             {
@@ -96,17 +101,13 @@ namespace FoodHub.Tests.Features.KDS.Commands
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId);
 
-            // Act
             var result = await _handler.Handle(
-                new MarkReadyCommand { OrderItemId = orderItemId },
+                new CompleteCookingCommand { OrderItemId = orderItemId },
                 CancellationToken.None
             );
 
-            // Assert
             result.IsSuccess.Should().BeTrue();
-            currentItem.Status.Should().Be(OrderItemStatus.Ready);
-
-            // KIỂM TRA QUAN TRỌNG: Món VIP phải được chọn để nấu (Auto-pull) thay vì món thường chờ lâu hơn
+            currentItem.Status.Should().Be(OrderItemStatus.Completed);
             vipItem.Status.Should().Be(OrderItemStatus.Cooking);
             normalItem.Status.Should().Be(OrderItemStatus.Preparing);
 
@@ -117,6 +118,10 @@ namespace FoodHub.Tests.Features.KDS.Commands
                         OrderItemStatus.Cooking,
                         station
                     ),
+                Times.Once
+            );
+            _mockInventoryDeductionService.Verify(
+                s => s.DeductStockForItemAsync(orderItemId, It.IsAny<CancellationToken>()),
                 Times.Once
             );
         }

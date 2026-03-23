@@ -21,18 +21,21 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ISignalRService _signalRService;
         private readonly ILogger<CheckInReservationHandler> _logger;
 
         public CheckInReservationHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ISignalRService signalRService,
             ILogger<CheckInReservationHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _signalRService = signalRService;
             _logger = logger;
         }
 
@@ -207,6 +210,8 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+
+                await _signalRService.NotifyTableStatusChangedAsync(table.TableId, "Occupied");
 
                 _logger.LogInformation(
                     "Successfully checked-in reservation {ReservationId} → Order {OrderCode} (Id: {OrderId})",

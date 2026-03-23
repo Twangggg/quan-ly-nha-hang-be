@@ -8,10 +8,15 @@ namespace FoodHub.Infrastructure.Services.Messaging
     public class SignalRService : ISignalRService
     {
         private readonly IHubContext<KdsHub> _hubContext;
+        private readonly IHubContext<TableStatusHub> _tableStatusHubContext;
 
-        public SignalRService(IHubContext<KdsHub> hubContext)
+        public SignalRService(
+            IHubContext<KdsHub> hubContext,
+            IHubContext<TableStatusHub> tableStatusHubContext
+        )
         {
             _hubContext = hubContext;
+            _tableStatusHubContext = tableStatusHubContext;
         }
 
         // Thông báo khi có món ăn mới vừa được đặt (Submit Order/Add Item)
@@ -68,6 +73,21 @@ namespace FoodHub.Infrastructure.Services.Messaging
             catch (Exception ex)
             {
                 Console.WriteLine($"SignalR Error in NotifyOrderStatusChangedAsync: {ex.Message}");
+            }
+        }
+
+        public async Task NotifyTableStatusChangedAsync(Guid tableId, string newStatus)
+        {
+            try
+            {
+                await _tableStatusHubContext.Clients.All.SendAsync(
+                    "TableStatusChanged",
+                    new { TableId = tableId, Status = newStatus }
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR Error in NotifyTableStatusChangedAsync: {ex.Message}");
             }
         }
     }

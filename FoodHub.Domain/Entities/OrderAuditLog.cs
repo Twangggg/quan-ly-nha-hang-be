@@ -79,10 +79,7 @@ namespace FoodHub.Domain.Entities
             );
         }
 
-        public static OrderAuditLog CreateKdsStartCooking(
-            Guid orderId,
-            Guid employeeId
-        )
+        public static OrderAuditLog CreateKdsStartCooking(Guid orderId, Guid employeeId)
         {
             return Create(
                 orderId,

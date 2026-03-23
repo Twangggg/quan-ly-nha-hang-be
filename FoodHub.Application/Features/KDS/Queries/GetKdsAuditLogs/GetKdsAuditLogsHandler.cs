@@ -1,11 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
-using FoodHub.Application.Interfaces.Inventory;
-using FoodHub.Application.Interfaces.Messaging;
-using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
-using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +36,7 @@ public class GetKdsAuditLogsHandler
         var kdsActions = new[]
         {
             AuditLogActions.KdsStartCooking,
-            AuditLogActions.KdsMarkReady,
+            AuditLogActions.KdsCompleteCooking,
             AuditLogActions.KdsReject,
             AuditLogActions.KdsReturn,
         };
@@ -54,7 +49,6 @@ public class GetKdsAuditLogsHandler
             .Include(x => x.Employee)
             .Where(x => kdsActions.Contains(x.Action));
 
-        // Filter by station (from Order's station or OrderItem's station)
         if (!string.IsNullOrEmpty(request.Station) && request.Station != "all")
         {
             query = query.Where(x =>
@@ -62,13 +56,11 @@ public class GetKdsAuditLogsHandler
             );
         }
 
-        // Filter by action
         if (!string.IsNullOrEmpty(request.Action) && request.Action != "all")
         {
             query = query.Where(x => x.Action == request.Action);
         }
 
-        // Filter by date
         if (request.FromDate.HasValue)
         {
             query = query.Where(x => x.CreatedAt >= request.FromDate.Value);
@@ -98,7 +90,7 @@ public class GetKdsAuditLogsHandler
                     ? (FoodHub.Domain.Enums.EmployeeRole?)log.Employee.Role
                     : null,
                 Reason = log.ChangeReason,
-                OrderItems = log.NewValue, // Project raw value here
+                OrderItems = log.NewValue,
             })
             .ToListAsync(cancellationToken);
 
@@ -115,7 +107,7 @@ public class GetKdsAuditLogsHandler
                 ActorName = log.ActorName,
                 ActorRole = log.ActorRole?.ToString() ?? "Unknown",
                 Reason = log.Reason,
-                OrderItems = log.OrderItems ?? string.Empty, // Handle null-coalescing here
+                OrderItems = log.OrderItems ?? string.Empty,
             })
             .ToList();
 
@@ -146,10 +138,10 @@ public class GetKdsAuditLogsHandler
     {
         return action switch
         {
-            AuditLogActions.KdsStartCooking => "Bắt đầu nấu",
-            AuditLogActions.KdsMarkReady => "Hoàn thành",
-            AuditLogActions.KdsReject => "Từ chối",
-            AuditLogActions.KdsReturn => "Trả lại",
+            AuditLogActions.KdsStartCooking => "Bat dau nau",
+            AuditLogActions.KdsCompleteCooking => "Hoan thanh",
+            AuditLogActions.KdsReject => "Tu choi",
+            AuditLogActions.KdsReturn => "Tra lai",
             _ => action,
         };
     }

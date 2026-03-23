@@ -66,6 +66,8 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                     )
                 )
                 .Include(oi => oi.Order)
+                .Include(oi => oi.OptionGroups)
+                    .ThenInclude(og => og.OptionValues)
                 .ToListAsync(cancellationToken);
 
             var responseItems = items
@@ -87,7 +89,6 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                     FinishedOrderItems =
                         oi.Order?.OrderItems?.Count(x =>
                             x.Status == OrderItemStatus.Completed
-                            || x.Status == OrderItemStatus.Ready
                         ) ?? 0,
                     ExpectedTimeSeconds = (oi.MenuItem != null ? oi.MenuItem.ExpectedTime : 0) * 60,
                     ItemOptions = string.Join(

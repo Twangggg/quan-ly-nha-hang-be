@@ -521,7 +521,7 @@ namespace FoodHub.Infrastructure.Persistence
                         ItemCodeSnapshot = chickenRice.Code,
                         ItemNameSnapshot = chickenRice.Name,
                         StationSnapshot = chickenRice.Station.ToString(),
-                        Status = OrderItemStatus.Ready,
+                        Status = OrderItemStatus.Completed,
                         Quantity = 1,
                         UnitPriceSnapshot = chickenRice.Price,
                         CreatedAt = order1.CreatedAt,
@@ -592,7 +592,7 @@ namespace FoodHub.Infrastructure.Persistence
                         ItemCodeSnapshot = specialDrink.Code,
                         ItemNameSnapshot = specialDrink.Name,
                         StationSnapshot = specialDrink.Station.ToString(),
-                        Status = OrderItemStatus.Ready,
+                        Status = OrderItemStatus.Completed,
                         Quantity = 1,
                         UnitPriceSnapshot = specialDrink.Price,
                         CreatedAt = order3.CreatedAt,
@@ -600,6 +600,16 @@ namespace FoodHub.Infrastructure.Persistence
                 );
 
                 _context.Orders.AddRange(order1, order2, order3);
+                
+                // Update Table statuses for seeded orders
+                var table1 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id) 
+                             ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
+                var table2 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id) 
+                             ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
+
+                if (table1 != null) table1.Status = TableStatus.Occupied;
+                if (table2 != null) table2.Status = TableStatus.Occupied;
+
                 _context.SaveChanges();
             }
 
@@ -650,6 +660,40 @@ namespace FoodHub.Infrastructure.Persistence
 
                     _context.SaveChanges();
                 }
+            }
+
+            if (isDevOrDemo && !_context.Vouchers.Any())
+            {
+                var voucher1 = new Voucher
+                {
+                    VoucherId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    VoucherCode = "DISCOUNT10",
+                    VoucherType = VoucherType.Percent,
+                    DiscountValue = 10m,
+                    MaxDiscount = 50000m,
+                    MinOrderValue = 100000m,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddMonths(1),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var voucher2 = new Voucher
+                {
+                    VoucherId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                    VoucherCode = "FREEDRINK",
+                    VoucherType = VoucherType.FreeItem,
+                    ItemId = _context.MenuItems.First(mi => mi.Code == "DRK-007").MenuItemId, // Tặng cocktail đặc biệt
+                    FreeQuantity = 1,
+                    MinOrderValue = 200000m,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddMonths(1),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                };
+
+                _context.Vouchers.AddRange(voucher1, voucher2);
+                _context.SaveChanges();
             }
 
             _context.SaveChanges();

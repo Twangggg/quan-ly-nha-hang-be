@@ -1,4 +1,3 @@
-using System.Reflection.Metadata;
 
 namespace FoodHub.Application.Constants
 {
@@ -132,6 +131,8 @@ namespace FoodHub.Application.Constants
             public const string NoValidItems = "Order.NoValidItems";
             public const string EmptyOrder = "Order.EmptyOrder";
             public const string HasBeenPlaced = "Order.HasBeenPlaced";
+            public const string VoucherAlreadyApplied = "Order.VoucherAlreadyApplied";
+            public const string VoucherNotApplied = "Order.VoucherNotApplied";
         }
 
         public static class OrderItem
@@ -142,10 +143,11 @@ namespace FoodHub.Application.Constants
             // KDS state transitions
             public const string MustBePreparingToStartCooking =
                 "OrderItem.MustBePreparingToStartCooking";
-            public const string MustBeCookingToReady = "OrderItem.MustBeCookingToReady";
+            public const string MustBeCookingToComplete = "OrderItem.MustBeCookingToComplete";
             public const string MustBeCookingToReject = "OrderItem.MustBeCookingToReject";
             public const string RejectionReasonRequired = "OrderItem.RejectionReasonRequired";
             public const string MustBeRejectedToReturn = "OrderItem.MustBeRejectedToReturn";
+            public const string FailedClone = "OrderItem.FailedClone";
         }
 
         public static class KDS
@@ -256,6 +258,7 @@ namespace FoodHub.Application.Constants
             public const string VipRequired = "Reservation.VipRequired";
             public const string InvalidNewTable = "Reservation.InvalidNewTable";
             public const string NoTableInArea = "Reservation.NoTableInArea";
+            public const string BreakTime = "Reservation.BreakTime";
         }
 
         public static class SalesAnalytics
@@ -331,6 +334,8 @@ namespace FoodHub.Application.Constants
         public static class Billing
         {
             public const string PdfExportError = "Billing.PdfExportError";
+            public const string SplitBillRequiresItems = "Billing.SplitBillRequiresItems";
+            public const string SplitBillFailed = "Billing.SplitBillFailed";
         }
 
         public static class StockInReceipt
@@ -406,6 +411,16 @@ namespace FoodHub.Application.Constants
             public const string NotFound = "Invoice.NotFound";
             public const string CreateFailed = "Invoice.CreateFailed";
             public const string InsufficientAmount = "Invoice.InsufficientAmount";
+        }
+
+        public static class Voucher
+        {
+            public const string NotFound = "Voucher.NotFound";
+            public const string CodeAlreadyExists = "Voucher.CodeAlreadyExists";
+            public const string Invalid = "Voucher.Invalid";
+            public const string NotSuitableForOrder = "Voucher.NotSuitableForOrder";
+            public const string NotFreeItemInOrder = "Voucher.NotFreeItemInOrder";
+            public const string BelowMinAmount = "Voucher.BelowMinAmount";
         }
     }
 }

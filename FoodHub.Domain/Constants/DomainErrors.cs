@@ -21,7 +21,7 @@ namespace FoodHub.Domain.Constants
             // KDS state transitions
             public const string MustBePreparingToStartCooking =
                 "OrderItem.MustBePreparingToStartCooking";
-            public const string MustBeCookingToReady = "OrderItem.MustBeCookingToReady";
+            public const string MustBeCookingToComplete = "OrderItem.MustBeCookingToComplete";
             public const string MustBeCookingToReject = "OrderItem.MustBeCookingToReject";
             public const string RejectionReasonIsRequired = "OrderItem.RejectionReasonIsRequired";
             public const string MustBeRejectedToReturn = "OrderItem.MustBeRejectedToReturn";

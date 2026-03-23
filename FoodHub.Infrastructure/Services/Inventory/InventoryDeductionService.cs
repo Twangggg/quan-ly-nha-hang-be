@@ -50,8 +50,7 @@ namespace FoodHub.Infrastructure.Services.Inventory
 
             var orderItems = order
                 .OrderItems.Where(oi =>
-                    (oi.Status == OrderItemStatus.Completed || oi.Status == OrderItemStatus.Ready)
-                    && !oi.StockDeducted
+                    oi.Status == OrderItemStatus.Completed && !oi.StockDeducted
                 )
                 .ToList();
 

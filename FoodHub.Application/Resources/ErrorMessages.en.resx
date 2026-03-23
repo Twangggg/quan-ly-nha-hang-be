@@ -345,8 +345,8 @@
   <data name="OrderItem.MustBePreparingToStartCooking" xml:space="preserve">
     <value>Item must be in Preparing status to start cooking.</value>
   </data>
-  <data name="OrderItem.MustBeCookingToReady" xml:space="preserve">
-    <value>Item must be in Cooking status to mark as Ready.</value>
+  <data name="OrderItem.MustBeCookingToComplete" xml:space="preserve">
+    <value>Item must be in Cooking status to be completed.</value>
   </data>
   <data name="OrderItem.MustBeCookingToReject" xml:space="preserve">
     <value>Item must be in Cooking status to reject.</value>
@@ -576,5 +576,8 @@
   </data>
   <data name="Reservation.NoTableInArea" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
+  </data>
+  <data name="Reservation.BreakTime" xml:space="preserve">
+    <value>The restaurant is on break (14:00 - 17:00). Please select a different time.</value>
   </data>
 </root>

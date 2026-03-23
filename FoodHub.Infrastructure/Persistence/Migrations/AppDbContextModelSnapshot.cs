@@ -1525,6 +1525,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("discount_amount");
+
                     b.Property<bool>("IsPriority")
                         .HasColumnType("boolean")
                         .HasColumnName("is_priority");
@@ -1594,6 +1598,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("decimal(5,2)")
                         .HasColumnName("vat_rate");
 
+                    b.Property<Guid?>("VoucherId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("voucher_id");
+
                     b.HasKey("OrderId")
                         .HasName("pk_orders");
 
@@ -1618,6 +1626,9 @@ namespace FoodHub.Migrations
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_orders_status")
                         .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("VoucherId")
+                        .HasDatabaseName("ix_orders_voucher_id");
 
                     b.HasIndex("Status", "CreatedAt")
                         .HasDatabaseName("ix_orders_status_created_at");
@@ -1695,6 +1706,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<bool>("IsFreeItem")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_free_item");
 
                     b.Property<string>("ItemCodeSnapshot")
                         .IsRequired()
@@ -2617,6 +2632,107 @@ namespace FoodHub.Migrations
                     b.ToTable("tables", (string)null);
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.Voucher", b =>
+                {
+                    b.Property<Guid>("VoucherId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("voucher_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<decimal?>("DiscountValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("discount_value");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("end_date");
+
+                    b.Property<TimeSpan?>("EndTime")
+                        .HasColumnType("interval")
+                        .HasColumnName("end_time");
+
+                    b.Property<int?>("FreeQuantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("free_quantity");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<Guid?>("ItemtId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<decimal?>("MaxDiscount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("max_discount");
+
+                    b.Property<decimal?>("MinOrderValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("min_order_value");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_date");
+
+                    b.Property<TimeSpan?>("StartTime")
+                        .HasColumnType("interval")
+                        .HasColumnName("start_time");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<int?>("UsageLimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("usage_limit");
+
+                    b.Property<int>("UsedCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("used_count");
+
+                    b.Property<string>("VoucherCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("voucher_code");
+
+                    b.Property<int>("VoucherType")
+                        .HasColumnType("integer")
+                        .HasColumnName("voucher_type");
+
+                    b.HasKey("VoucherId")
+                        .HasName("pk_vouchers");
+
+                    b.HasIndex("ItemtId")
+                        .HasDatabaseName("ix_vouchers_item_id");
+
+                    b.HasIndex("VoucherCode")
+                        .IsUnique()
+                        .HasDatabaseName("idx_voucher_code");
+
+                    b.ToTable("vouchers", (string)null);
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.AuditLog", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.Employee", null)
@@ -2815,11 +2931,19 @@ namespace FoodHub.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_orders_tables_table_id");
 
+                    b.HasOne("FoodHub.Domain.Entities.Voucher", "Voucher")
+                        .WithMany("Orders")
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_orders_vouchers_voucher_id");
+
                     b.Navigation("CreatedByEmployee");
 
                     b.Navigation("Reservation");
 
                     b.Navigation("Table");
+
+                    b.Navigation("Voucher");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.OrderAuditLog", b =>
@@ -3047,6 +3171,17 @@ namespace FoodHub.Migrations
                     b.Navigation("Area");
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.Voucher", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.MenuItem", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemtId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_vouchers_menu_items_item_id");
+
+                    b.Navigation("Item");
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.Area", b =>
                 {
                     b.Navigation("Tables");
@@ -3153,6 +3288,11 @@ namespace FoodHub.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Reservations");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.Voucher", b =>
+                {
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

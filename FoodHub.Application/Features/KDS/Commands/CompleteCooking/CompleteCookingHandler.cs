@@ -14,9 +14,9 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace FoodHub.Application.Features.KDS.Commands.MarkReady
+namespace FoodHub.Application.Features.KDS.Commands.CompleteCooking
 {
-    public class MarkReadyHandler : IRequestHandler<MarkReadyCommand, Result<Guid>>
+    public class CompleteCookingHandler : IRequestHandler<CompleteCookingCommand, Result<Guid>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
@@ -24,16 +24,16 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
         private readonly ISignalRService _signalRService;
         private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly IInventoryDeductionService _inventoryDeductionService;
-        private readonly ILogger<MarkReadyHandler> _logger;
+        private readonly ILogger<CompleteCookingHandler> _logger;
 
-        public MarkReadyHandler(
+        public CompleteCookingHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
             ISignalRService signalRService,
             KdsPriorityCalculator priorityCalculator,
             IInventoryDeductionService inventoryDeductionService,
-            ILogger<MarkReadyHandler> logger
+            ILogger<CompleteCookingHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
@@ -46,7 +46,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
         }
 
         public async Task<Result<Guid>> Handle(
-            MarkReadyCommand request,
+            CompleteCookingCommand request,
             CancellationToken cancellationToken
         )
         {
@@ -54,7 +54,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
             if (auditorId == null)
             {
                 _logger.LogWarning(
-                    "Unauthorized mark ready attempt for OrderItemId {OrderItemId}",
+                    "Unauthorized complete cooking attempt for OrderItemId {OrderItemId}",
                     request.OrderItemId
                 );
                 return Result<Guid>.Failure(
@@ -64,7 +64,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
             }
 
             _logger.LogInformation(
-                "Attempting to mark ready for OrderItemId: {OrderItemId}",
+                "Attempting to complete cooking for OrderItemId: {OrderItemId}",
                 request.OrderItemId
             );
 
@@ -90,49 +90,45 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
             try
             {
                 var oldStatus = orderItem.Status;
-                // 1. Mark current item as Ready
-                var domainResult = orderItem.MarkReady();
+                var domainResult = orderItem.CompleteCooking();
                 if (!domainResult.IsSuccess)
                 {
                     _logger.LogWarning(
-                        "Domain logic failed for MarkReady: {OrderItemId}. Error: {Error}",
+                        "Domain logic failed for CompleteCooking: {OrderItemId}. Error: {Error}",
                         request.OrderItemId,
                         domainResult.ErrorCode
                     );
                     await _unitOfWork.RollbackTransactionAsync();
                     return Result<Guid>.Failure(
-                        _messageService.GetMessage(MessageKeys.OrderItem.MustBeCookingToReady)
+                        _messageService.GetMessage(MessageKeys.OrderItem.MustBeCookingToComplete)
                     );
                 }
 
-                // Audit Log cho món hiện tại
                 var auditLog = new OrderAuditLog
                 {
                     LogId = Guid.NewGuid(),
                     OrderId = orderItem.OrderId,
                     EmployeeId = auditorId.Value,
-                    Action = AuditLogActions.KdsMarkReady,
+                    Action = AuditLogActions.KdsCompleteCooking,
                     OldValue = $"\"{oldStatus}\"",
-                    NewValue = $"\"{OrderItemStatus.Ready}\"",
+                    NewValue = $"\"{OrderItemStatus.Completed}\"",
                     CreatedAt = DateTime.UtcNow,
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
-                // Xác định nhóm trạm
                 var targetStations = new List<string> { orderItem.StationSnapshot };
                 if (
                     orderItem.StationSnapshot == Station.HotKitchen.ToString()
                     || orderItem.StationSnapshot == Station.ColdKitchen.ToString()
                 )
                 {
-                    targetStations = new List<string>
-                    {
+                    targetStations =
+                    [
                         Station.HotKitchen.ToString(),
                         Station.ColdKitchen.ToString(),
-                    };
+                    ];
                 }
 
-                // Auto-pull: Tìm món tiếp theo trong hàng đợi của station group này
                 var pendingItems = await orderItemRepository
                     .Query()
                     .Include(oi => oi.Order)
@@ -157,7 +153,6 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                                 oi.Order?.OrderItems?.Count ?? 0,
                                 oi.Order?.OrderItems?.Count(x =>
                                     x.Status == OrderItemStatus.Completed
-                                    || x.Status == OrderItemStatus.Ready
                                 ) ?? 0
                             )
                         )
@@ -193,21 +188,19 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
 
-                // Deduct stock when item is marked as Ready
                 await _inventoryDeductionService.DeductStockForItemAsync(
                     orderItem.OrderItemId,
                     cancellationToken
                 );
 
                 _logger.LogInformation(
-                    "Successfully marked ready and handled auto-pull for OrderItemId: {OrderItemId}",
+                    "Successfully completed cooking and handled auto-pull for OrderItemId: {OrderItemId}",
                     request.OrderItemId
                 );
 
-                // SignalR Notify
                 _ = _signalRService.NotifyOrderItemStatusChangedAsync(
                     orderItem.OrderItemId,
-                    OrderItemStatus.Ready,
+                    OrderItemStatus.Completed,
                     orderItem.StationSnapshot
                 );
                 if (nextItem != null)
@@ -225,7 +218,7 @@ namespace FoodHub.Application.Features.KDS.Commands.MarkReady
             {
                 _logger.LogError(
                     ex,
-                    "Error occurred while marking ready for OrderItemId: {OrderItemId}",
+                    "Error occurred while completing cooking for OrderItemId: {OrderItemId}",
                     request.OrderItemId
                 );
                 await _unitOfWork.RollbackTransactionAsync();

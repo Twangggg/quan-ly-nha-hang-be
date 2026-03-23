@@ -31,12 +31,19 @@ namespace FoodHub.Domain.Entities
         public DateTime? RejectedAt { get; set; }
         public Order Order { get; set; } = null!;
         public MenuItem MenuItem { get; set; } = null!;
+
+        public bool IsFreeItem { get; set; } // Dùng để đánh dấu món ăn miễn phí được thêm vào bởi voucher loại FreeItem, không phụ thuộc vào giá trị UnitPriceSnapshot
+
         public ICollection<OrderItemOptionGroup> OptionGroups { get; set; } =
             new List<OrderItemOptionGroup>();
 
         public decimal GetTotalPrice()
         {
-            if (Status == OrderItemStatus.Cancelled || Status == OrderItemStatus.Rejected)
+            if (
+                Status == OrderItemStatus.Cancelled
+                || Status == OrderItemStatus.Rejected
+                || IsFreeItem
+            )
                 return 0;
 
             var optionsTotal =
@@ -200,9 +207,7 @@ namespace FoodHub.Domain.Entities
         }
 
         public bool CanCancel() =>
-            Status == OrderItemStatus.Preparing
-            || Status == OrderItemStatus.Cooking
-            || Status == OrderItemStatus.Ready;
+            Status == OrderItemStatus.Preparing || Status == OrderItemStatus.Cooking;
 
         public DomainResult Cancel()
         {
@@ -228,13 +233,13 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
-        public DomainResult MarkReady()
+        public DomainResult CompleteCooking()
         {
-            if (Status != OrderItemStatus.Cooking && Status != OrderItemStatus.Preparing)
+            if (Status != OrderItemStatus.Cooking)
             {
-                return DomainResult.Failure(DomainErrors.OrderItem.MustBeCookingToReady);
+                return DomainResult.Failure(DomainErrors.OrderItem.MustBeCookingToComplete);
             }
-            Status = OrderItemStatus.Ready;
+            Status = OrderItemStatus.Completed;
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }
