@@ -1,6 +1,7 @@
 using FluentValidation;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Messaging;
 
 namespace FoodHub.Application.Features.Billing.Commands.SplitBill
 {

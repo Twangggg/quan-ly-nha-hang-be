@@ -117,6 +117,7 @@ namespace FoodHub.Infrastructure
             );
             services.AddHostedService<EmailBackgroundWorker>();
             services.AddHostedService<ReservationCancellationService>();
+            services.AddHostedService<TableStatusSyncService>();
 
             return services;
         }

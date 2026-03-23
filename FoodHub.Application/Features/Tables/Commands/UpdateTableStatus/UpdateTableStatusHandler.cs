@@ -33,6 +33,7 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
+        private readonly ISignalRService _signalRService;
 
         /// <summary>
         /// Constructor for UpdateTableStatusHandler.
@@ -42,13 +43,15 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
         /// <param name="currentUserService"></param>
         /// <param name="messageService"></param>
         /// <param name="cacheService"></param>
-        public UpdateTableStatusHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService)
+        /// <param name="signalRService"></param>
+        public UpdateTableStatusHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService, ISignalRService signalRService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _currentUserService = currentUserService;
             _messageService = messageService;
             _cacheService = cacheService;
+            _signalRService = signalRService;
         }
 
         /// <summary>
@@ -91,6 +94,8 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
             await _cacheService.RemoveAsync(string.Format(CacheKey.TableById, request.TableId), cancellationToken);
 
             // Commit the transaction after successful update
+            await _signalRService.NotifyTableStatusChangedAsync(table.TableId, table.Status.ToString());
+            
             var response = _mapper.Map<UpdateTableStatusResponse>(table);
             return Result<UpdateTableStatusResponse>.Success(response);
         }

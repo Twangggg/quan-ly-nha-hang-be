@@ -1,4 +1,3 @@
-using System.Reflection.Metadata;
 
 namespace FoodHub.Application.Constants
 {
@@ -256,6 +255,7 @@ namespace FoodHub.Application.Constants
             public const string VipRequired = "Reservation.VipRequired";
             public const string InvalidNewTable = "Reservation.InvalidNewTable";
             public const string NoTableInArea = "Reservation.NoTableInArea";
+            public const string BreakTime = "Reservation.BreakTime";
         }
 
         public static class SalesAnalytics

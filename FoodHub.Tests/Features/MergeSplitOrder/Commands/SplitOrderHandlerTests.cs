@@ -107,6 +107,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                new Mock<ISignalRService>().Object,
                 _mockMapper.Object,
                 _mockLogger.Object
             );
@@ -181,6 +182,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                new Mock<ISignalRService>().Object,
                 _mockMapper.Object,
                 _mockLogger.Object
             );
@@ -240,6 +242,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                new Mock<ISignalRService>().Object,
                 _mockMapper.Object,
                 _mockLogger.Object
             );
