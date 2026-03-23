@@ -60,7 +60,8 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
             var handler = new CreateInternalReservationHandler(
                 _mockUow.Object,
                 _mockLogger.Object,
-                _mockMessageService.Object
+                _mockMessageService.Object,
+                new Mock<ICacheService>().Object
             );
 
             // Act & Assert
@@ -114,7 +115,8 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
             var handler = new CreateInternalReservationHandler(
                 _mockUow.Object,
                 _mockLogger.Object,
-                _mockMessageService.Object
+                _mockMessageService.Object,
+                new Mock<ICacheService>().Object
             );
 
             // Act

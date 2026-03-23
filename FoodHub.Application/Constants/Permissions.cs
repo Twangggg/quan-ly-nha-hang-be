@@ -57,6 +57,7 @@ namespace FoodHub.Application.Constants
             public const string Checkout = "Permissions.Billing.Checkout";
             public const string ViewHistory = "Permissions.Billing.ViewHistory";
             public const string PreCheckBill = "Permissions.Billing.PreCheckBill";
+            public const string SplitBill = "Permissions.Billing.SplitBill";
         }
 
         public static class Kds
@@ -121,6 +122,15 @@ namespace FoodHub.Application.Constants
             public const string View = "Permissions.Invoices.View";
             public const string Create = "Permissions.Invoices.Create";
             public const string ViewPdf = "Permissions.Invoices.ViewPdf";
+        }
+
+        public static class Vouchers
+        {
+            public const string View = "Permissions.Vouchers.View";
+            public const string Create = "Permissions.Vouchers.Create";
+            public const string Update = "Permissions.Vouchers.Update";
+            public const string Delete = "Permissions.Vouchers.Delete";
+            public const string Apply = "Permissions.Vouchers.Apply";
         }
     }
 }

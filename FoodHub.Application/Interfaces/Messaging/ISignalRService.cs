@@ -40,5 +40,9 @@ namespace FoodHub.Application.Interfaces.Messaging
             string shiftName,
             DateOnly assignedDate,
             bool isCancelled);
+        /// Thông báo khi trạng thái bàn thay đổi (do đặt bàn đến giờ, check-in, huỷ, v.v).
+        /// Frontend lắng nghe để cập nhật sơ đồ bàn theo thời gian thực.
+        /// </summary>
+        Task NotifyTableStatusChangedAsync(Guid tableId, string newStatus);
     }
 }

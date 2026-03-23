@@ -23,6 +23,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
+        private readonly ISignalRService _signalRService;
         private readonly ILogger<ChangeOrderTableHandler> _logger;
 
         public ChangeOrderTableHandler(
@@ -30,6 +31,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
             ICurrentUserService currentUserService,
             IMessageService messageService,
             ICacheService cacheService,
+            ISignalRService signalRService,
             ILogger<ChangeOrderTableHandler> logger
         )
         {
@@ -37,6 +39,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
             _currentUserService = currentUserService;
             _messageService = messageService;
             _cacheService = cacheService;
+            _signalRService = signalRService;
             _logger = logger;
         }
 
@@ -167,6 +170,9 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
                         request.OrderId
                     );
                 }
+
+                await _signalRService.NotifyTableStatusChangedAsync(currentTable.TableId, currentTable.Status.ToString());
+                await _signalRService.NotifyTableStatusChangedAsync(newTable.TableId, newTable.Status.ToString());
 
                 var response = new ChangeOrderTableResponse
                 {

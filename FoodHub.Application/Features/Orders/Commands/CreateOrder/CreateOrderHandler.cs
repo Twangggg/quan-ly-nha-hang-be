@@ -22,6 +22,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
+        private readonly ISignalRService _signalRService;
         private readonly ILogger<CreateOrderHandler> _logger;
 
         public CreateOrderHandler(
@@ -29,6 +30,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             ICurrentUserService currentUserService,
             IMessageService messageService,
             ICacheService cacheService,
+            ISignalRService signalRService,
             ILogger<CreateOrderHandler> logger
         )
         {
@@ -36,6 +38,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             _currentUserService = currentUserService;
             _messageService = messageService;
             _cacheService = cacheService;
+            _signalRService = signalRService;
             _logger = logger;
         }
 
@@ -89,9 +92,9 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                         );
 
                     var bufferTime = TimeSpan.FromHours(2);
-                    var now = DateTime.Now;
-                    var currentTime = now.TimeOfDay;
-                    var today = DateOnly.FromDateTime(now);
+                    var vietnamTime = DateTime.UtcNow.AddHours(7);
+                    var currentTime = vietnamTime.TimeOfDay;
+                    var today = DateOnly.FromDateTime(vietnamTime);
                     var upcomingReservation = await _unitOfWork.Repository<Reservation>().Query()
                         .AnyAsync(r => r.TableId == request.TableId.Value
                                     && r.ReservationDate == today
@@ -254,6 +257,11 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     cancellationToken
                 );
                 await _unitOfWork.CommitTransactionAsync();
+
+                if (table != null)
+                {
+                    await _signalRService.NotifyTableStatusChangedAsync(table.TableId, "Occupied");
+                }
 
                 _logger.LogInformation(
                     "Successfully created order {OrderCode} (Id: {OrderId})",

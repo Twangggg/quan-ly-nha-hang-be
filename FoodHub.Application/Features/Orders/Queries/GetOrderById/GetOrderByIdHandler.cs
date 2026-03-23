@@ -46,6 +46,8 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrderById
             var order = await orderRepository
                 .Query()
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.OptionGroups)
+                    .ThenInclude(og => og.OptionValues)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
 

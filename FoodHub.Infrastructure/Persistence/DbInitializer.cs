@@ -254,59 +254,65 @@ namespace FoodHub.Infrastructure.Persistence
 
             if (!_context.SetMenus.Any())
             {
-                var comboCategory = _context.Categories.First(c => c.Name == "Combo");
+                var comboCategory = _context.Categories.FirstOrDefault(c => c.Name == "Combo");
 
-                var setMenu1 = new SetMenu
+                if (comboCategory != null)
                 {
-                    SetMenuId = Guid.NewGuid(),
-                    Code = "COMBO-01",
-                    ItemNumber = 1,
-                    CategoryId = comboCategory.CategoryId,
-                    Name = "Combo Ăn Trưa",
-                    Price = 99000,
-                    IsOutOfStock = false,
-                    CreatedAt = DateTime.UtcNow,
-                };
+                    var setMenu1 = new SetMenu
+                    {
+                        SetMenuId = Guid.NewGuid(),
+                        Code = "COMBO-01",
+                        ItemNumber = 1,
+                        CategoryId = comboCategory.CategoryId,
+                        Name = "Combo Ăn Trưa",
+                        Price = 99000,
+                        IsOutOfStock = false,
+                        CreatedAt = DateTime.UtcNow,
+                    };
 
-                var setMenu2 = new SetMenu
-                {
-                    SetMenuId = Guid.NewGuid(),
-                    Code = "COMBO-02",
-                    ItemNumber = 2,
-                    CategoryId = comboCategory.CategoryId,
-                    Name = "Combo Gia Đình",
-                    Price = 250000,
-                    IsOutOfStock = false,
-                    CreatedAt = DateTime.UtcNow,
-                };
+                    var setMenu2 = new SetMenu
+                    {
+                        SetMenuId = Guid.NewGuid(),
+                        Code = "COMBO-02",
+                        ItemNumber = 2,
+                        CategoryId = comboCategory.CategoryId,
+                        Name = "Combo Gia Đình",
+                        Price = 250000,
+                        IsOutOfStock = false,
+                        CreatedAt = DateTime.UtcNow,
+                    };
 
-                _context.SetMenus.AddRange(setMenu1, setMenu2);
-                _context.SaveChanges();
+                    _context.SetMenus.AddRange(setMenu1, setMenu2);
+                    _context.SaveChanges();
 
-                // Add some items to the first combo
-                var chickenRice = _context.MenuItems.First(mi => mi.Code == "MAIN-001");
-                var specialDrink = _context.MenuItems.First(mi => mi.Code == "DRK-007");
+                    // Add some items to the first combo
+                    var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
+                    var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
 
-                var setMenuItem1 = new SetMenuItem
-                {
-                    SetMenuItemId = Guid.NewGuid(),
-                    SetMenuId = setMenu1.SetMenuId,
-                    MenuItemId = chickenRice.MenuItemId,
-                    Quantity = 1,
-                    CreatedAt = DateTime.UtcNow,
-                };
+                    if (chickenRice != null && specialDrink != null)
+                    {
+                        var setMenuItem1 = new SetMenuItem
+                        {
+                            SetMenuItemId = Guid.NewGuid(),
+                            SetMenuId = setMenu1.SetMenuId,
+                            MenuItemId = chickenRice.MenuItemId,
+                            Quantity = 1,
+                            CreatedAt = DateTime.UtcNow,
+                        };
 
-                var setMenuItem2 = new SetMenuItem
-                {
-                    SetMenuItemId = Guid.NewGuid(),
-                    SetMenuId = setMenu1.SetMenuId,
-                    MenuItemId = specialDrink.MenuItemId,
-                    Quantity = 1,
-                    CreatedAt = DateTime.UtcNow,
-                };
+                        var setMenuItem2 = new SetMenuItem
+                        {
+                            SetMenuItemId = Guid.NewGuid(),
+                            SetMenuId = setMenu1.SetMenuId,
+                            MenuItemId = specialDrink.MenuItemId,
+                            Quantity = 1,
+                            CreatedAt = DateTime.UtcNow,
+                        };
 
-                _context.SetMenuItems.AddRange(setMenuItem1, setMenuItem2);
-                _context.SaveChanges();
+                        _context.SetMenuItems.AddRange(setMenuItem1, setMenuItem2);
+                        _context.SaveChanges();
+                    }
+                }
             }
 
             // Seed Ingredients for Inventory module
@@ -491,10 +497,16 @@ namespace FoodHub.Infrastructure.Persistence
 
             if (!_context.Orders.Any())
             {
-                var admin = _context.Employees.First(e => e.EmployeeCode == "M001001");
-                var chickenRice = _context.MenuItems.First(mi => mi.Code == "MAIN-001");
-                var beefNoodle = _context.MenuItems.First(mi => mi.Code == "MAIN-002");
-                var specialDrink = _context.MenuItems.First(mi => mi.Code == "DRK-007");
+                var admin = _context.Employees.FirstOrDefault(e => e.EmployeeCode == "M001001");
+                var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
+                var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
+                var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
+
+                if (admin == null || chickenRice == null || beefNoodle == null || specialDrink == null)
+                {
+                    // Basic dependencies are missing, skip seeding orders as it depends on these specific items
+                    return;
+                }
 
                 // Table IDs that match FE expectation (ending with 01, 02)
                 var table01Id = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -600,6 +612,16 @@ namespace FoodHub.Infrastructure.Persistence
                 );
 
                 _context.Orders.AddRange(order1, order2, order3);
+                
+                // Update Table statuses for seeded orders
+                var table1 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id) 
+                             ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
+                var table2 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id) 
+                             ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
+
+                if (table1 != null) table1.Status = TableStatus.Occupied;
+                if (table2 != null) table2.Status = TableStatus.Occupied;
+
                 _context.SaveChanges();
             }
 
@@ -650,6 +672,47 @@ namespace FoodHub.Infrastructure.Persistence
 
                     _context.SaveChanges();
                 }
+            }
+
+            if (isDevOrDemo && !_context.Vouchers.Any())
+            {
+                var voucher1 = new Voucher
+                {
+                    VoucherId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    VoucherCode = "DISCOUNT10",
+                    VoucherType = VoucherType.Percent,
+                    DiscountValue = 10m,
+                    MaxDiscount = 50000m,
+                    MinOrderValue = 100000m,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddMonths(1),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var drinkMenuItem = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
+
+                if (drinkMenuItem != null)
+                {
+                    var voucher2 = new Voucher
+                    {
+                        VoucherId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        VoucherCode = "FREEDRINK",
+                        VoucherType = VoucherType.FreeItem,
+                        ItemId = drinkMenuItem.MenuItemId, // Tặng cocktail đặc biệt
+                        FreeQuantity = 1,
+                        MinOrderValue = 200000m,
+                        StartDate = DateTime.UtcNow,
+                        EndDate = DateTime.UtcNow.AddMonths(1),
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+
+                    _context.Vouchers.Add(voucher2);
+                }
+
+                _context.Vouchers.Add(voucher1);
+                _context.SaveChanges();
             }
 
             _context.SaveChanges();

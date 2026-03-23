@@ -648,4 +648,7 @@
   <data name="Reservation.NoTableInArea" xml:space="preserve">
     <value>Khu vực hiện tại đã hết bàn trống. Bạn có muốn chuyển khách sang khu vực khác không?</value>
   </data>
+  <data name="Reservation.BreakTime" xml:space="preserve">
+    <value>Nhà hàng đang trong giờ nghỉ giữa ca (14:00 - 17:00). Vui lòng chọn giờ khác.</value>
+  </data>
 </root>

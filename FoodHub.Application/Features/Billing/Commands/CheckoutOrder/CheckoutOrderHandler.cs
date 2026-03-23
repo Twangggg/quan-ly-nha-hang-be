@@ -23,13 +23,15 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
         private readonly ICacheService _cacheService;
+        private readonly ISignalRService _signalRService;
 
         public CheckoutOrderHandler(
             IUnitOfWork unitOfWork,
             ILogger<CheckoutOrderHandler> logger,
             IMessageService messageService,
             ICurrentUserService currentUserService,
-            ICacheService cacheService
+            ICacheService cacheService,
+            ISignalRService signalRService
         )
         {
             _unitOfWork = unitOfWork;
@@ -37,6 +39,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             _messageService = messageService;
             _currentUserService = currentUserService;
             _cacheService = cacheService;
+            _signalRService = signalRService;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -122,6 +125,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 // Update Table to Cleaning if DineIn
                 if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
                 {
+                    var tableIdSnapshot = order.TableId.Value; // Capture before nulling
                     var table = await _unitOfWork
                         .Repository<Domain.Entities.Table>()
                         .Query()
@@ -129,7 +133,8 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                         .FirstOrDefaultAsync(t => t.TableId == order.TableId, cancellationToken);
                     if (table != null)
                     {
-                        if (table.SetAvailable())
+                        var statusChanged = table.SetAvailable();
+                        if (statusChanged)
                         {
                             table.UpdatedAt = DateTime.UtcNow;
                         }
@@ -158,10 +163,16 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                         // Ngắt kết nối đơn hàng với bàn sau khi đã giải phóng bàn xong
                         order.TableId = null;
                         _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+                    
+                        if (table != null)
+                        {
+                            await _signalRService.NotifyTableStatusChangedAsync(tableIdSnapshot, table.Status.ToString());
+                        }
                     }
                 }
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+                
                 await _cacheService.RemoveByPatternAsync(
                     CacheKey.TableList + "*",
                     cancellationToken
@@ -170,6 +181,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                     string.Format(CacheKey.TableListByArea, "*"),
                     cancellationToken
                 );
+
                 await _unitOfWork.CommitTransactionAsync();
             }
             catch (Exception ex)

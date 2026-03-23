@@ -8,6 +8,6 @@ namespace FoodHub.Domain.Enums
         Cancelled = 3,
         Paid = 4,
         Closed = 5,
-        Merged = 6
+        Merged = 6,
     }
 }

@@ -213,6 +213,9 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<StockOutReceiptItemLotAllocation> StockOutReceiptItemLotAllocations { get; set; } =
             null!;
 
+        // Voucher Management
+        public DbSet<Voucher> Vouchers { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
