@@ -82,10 +82,15 @@ namespace FoodHub.Infrastructure.BackgroundJobs
                 overdueCount
             );
 
-            await overdueReservations.ExecuteUpdateAsync(
-                setters => setters.SetProperty(r => r.Status, ReservationStatus.Cancelled),
-                cancellationToken
-            );
+            var reservationsToCancel = await overdueReservations.ToListAsync(cancellationToken);
+            foreach (var reservation in reservationsToCancel)
+            {
+                reservation.Status = ReservationStatus.Cancelled;
+                reservation.UpdatedAt = DateTime.UtcNow;
+                unitOfWork.Repository<Reservation>().Update(reservation);
+            }
+
+            await unitOfWork.SaveChangeAsync(cancellationToken);
 
             _logger.LogInformation(
                 "Successfully cancelled {Count} overdue reservations.",
