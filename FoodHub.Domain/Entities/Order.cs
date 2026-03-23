@@ -1,9 +1,6 @@
-using System.Linq;
-using System.Linq.Expressions;
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
-using static FoodHub.Domain.Constants.OrderConstants;
 
 namespace FoodHub.Domain.Entities
 {
