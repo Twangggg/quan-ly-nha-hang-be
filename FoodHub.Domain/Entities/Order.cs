@@ -1,8 +1,6 @@
-using System.Linq;
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
-using static FoodHub.Domain.Constants.OrderConstants;
 
 namespace FoodHub.Domain.Entities
 {
@@ -39,6 +37,11 @@ namespace FoodHub.Domain.Entities
         public DateTime? PaidAt { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
+
+        // Voucher
+        public decimal DiscountAmount { get; set; }
+        public Guid? VoucherId { get; set; }
+        public virtual Voucher? Voucher { get; set; }
 
         public bool IsActive() => Status == OrderStatus.Serving;
 
@@ -107,6 +110,12 @@ namespace FoodHub.Domain.Entities
                 }
             }
 
+            if (VoucherId.HasValue)
+            {
+                if (Voucher != null && Voucher.UsedCount > 0)
+                    Voucher.UsedCount--;
+            }
+
             Status = OrderStatus.Cancelled;
             CancelledAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
@@ -142,20 +151,12 @@ namespace FoodHub.Domain.Entities
 
         public void RecalculateTotalAmount()
         {
-            SubTotal = OrderItems
-                .Where(x =>
-                    x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected
-                )
-                .Sum(item =>
-                {
-                    var itemTotal = item.Quantity * item.UnitPriceSnapshot;
-                    var optionsTotal =
-                        item.OptionGroups?.SelectMany(og => og.OptionValues)
-                            .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity)
-                        ?? 0;
-                    return itemTotal + (optionsTotal * item.Quantity);
-                });
-            TotalAmount = Math.Round(SubTotal * (1 + VatRate), 0);
+            SubTotal = OrderItems.Sum(item => item.GetTotalPrice());
+
+            DiscountAmount = CalculateDiscount();
+            var tempAmount = Math.Max(SubTotal - DiscountAmount, 0);
+            VatAmount = tempAmount * VatRate;
+            TotalAmount = tempAmount + VatAmount;
         }
 
         public void ChangeTable(Guid newTableId, DateTime updatedAt, Guid? updatedBy)
@@ -519,6 +520,37 @@ namespace FoodHub.Domain.Entities
 
             return string.Join("|", allValues);
         }
+
+        // Vùng logic liên quan đến voucher - có thể phức tạp tùy theo yêu cầu kinh doanh, nên tách riêng để dễ quản lý và mở rộng sau này
+        public void ApplyVoucher(Voucher? voucher, Guid auditorId)
+        {
+            Voucher = voucher;
+            VoucherId = voucher?.VoucherId;     
+            RecalculateTotalAmount();
+
+            // Log the voucher application in audit logs
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = auditorId;
+        }
+
+        public decimal CalculateDiscount()
+        {
+            if (Voucher == null || !Voucher.IsValid() || Voucher.IsBelowMinAmount(SubTotal))
+            {
+                return 0;
+            }
+
+            return Voucher.VoucherType switch
+            {
+                VoucherType.Percent => Math.Min(
+                    SubTotal * (Voucher.DiscountValue ?? 0) / 100,
+                    Voucher.MaxDiscount ?? decimal.MaxValue),
+                VoucherType.Fixed => Math.Min(Voucher.DiscountValue ?? 0, SubTotal),
+                VoucherType.FreeItem => 0, // Logic tính discount miễn phí món xử lý ở cấp độ OrderItem
+                _ => 0
+            };
+        }
+        // Kết thúc vùng logic của voucher
     }
 
     public sealed record MergeOrderPlan(IReadOnlyCollection<OrderItem> DeletedSourceItems);

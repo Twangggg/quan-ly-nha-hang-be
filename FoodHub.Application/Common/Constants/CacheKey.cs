@@ -127,6 +127,11 @@ public static class CacheKey
     public const string ReservationById = "reservation:{0}";
     // ==================== INVENTORY ====================
     public const string InventorySettings = "inventory:settings";
+
+    // ==================== VOUCHERS ====================
+    public const string VoucherList = "voucher:list";
+    public const string VoucherById = "voucher:id:{0}";
+    public const string VoucherByCode = "voucher:code:{0}";
 }
 public static class CacheTTL
 {
@@ -141,4 +146,5 @@ public static class CacheTTL
     public static readonly TimeSpan Tables = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan Reservations = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan InventorySettings = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan Vouchers = TimeSpan.FromMinutes(30);
 }

@@ -86,6 +86,13 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Invoices.View,
                 Permissions.Invoices.ViewPdf,
                 Permissions.Invoices.Create,
+
+                // Voucher permissions for cashiers
+                Permissions.Vouchers.View,
+                Permissions.Vouchers.Create,
+                Permissions.Vouchers.Update,
+                Permissions.Vouchers.Delete,
+                Permissions.Vouchers.Apply,
             };
         }
 

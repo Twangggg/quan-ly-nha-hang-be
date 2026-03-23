@@ -131,6 +131,8 @@ namespace FoodHub.Application.Constants
             public const string NoValidItems = "Order.NoValidItems";
             public const string EmptyOrder = "Order.EmptyOrder";
             public const string HasBeenPlaced = "Order.HasBeenPlaced";
+            public const string VoucherAlreadyApplied = "Order.VoucherAlreadyApplied";
+            public const string VoucherNotApplied = "Order.VoucherNotApplied";
         }
 
         public static class OrderItem
@@ -145,6 +147,7 @@ namespace FoodHub.Application.Constants
             public const string MustBeCookingToReject = "OrderItem.MustBeCookingToReject";
             public const string RejectionReasonRequired = "OrderItem.RejectionReasonRequired";
             public const string MustBeRejectedToReturn = "OrderItem.MustBeRejectedToReturn";
+            public const string FailedClone = "OrderItem.FailedClone";
         }
 
         public static class KDS
@@ -408,6 +411,16 @@ namespace FoodHub.Application.Constants
             public const string NotFound = "Invoice.NotFound";
             public const string CreateFailed = "Invoice.CreateFailed";
             public const string InsufficientAmount = "Invoice.InsufficientAmount";
+        }
+
+        public static class Voucher
+        {
+            public const string NotFound = "Voucher.NotFound";
+            public const string CodeAlreadyExists = "Voucher.CodeAlreadyExists";
+            public const string Invalid = "Voucher.Invalid";
+            public const string NotSuitableForOrder = "Voucher.NotSuitableForOrder";
+            public const string NotFreeItemInOrder = "Voucher.NotFreeItemInOrder";
+            public const string BelowMinAmount = "Voucher.BelowMinAmount";
         }
     }
 }
