@@ -20,18 +20,21 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ISignalRService _signalRService;
         private readonly ILogger<CreateOrderHandler> _logger;
 
         public CreateOrderHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ISignalRService signalRService,
             ILogger<CreateOrderHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _signalRService = signalRService;
             _logger = logger;
         }
 
@@ -242,6 +245,11 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+
+                if (table != null)
+                {
+                    await _signalRService.NotifyTableStatusChangedAsync(table.TableId, "Occupied");
+                }
 
                 _logger.LogInformation(
                     "Successfully created order {OrderCode} (Id: {OrderId})",

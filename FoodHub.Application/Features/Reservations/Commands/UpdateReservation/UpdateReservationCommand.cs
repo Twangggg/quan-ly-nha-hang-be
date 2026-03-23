@@ -1,10 +1,11 @@
+using FoodHub.Application.Common.Behaviors;
 using FoodHub.Application.Common.Models;
 using MediatR;
 using System;
 
 namespace FoodHub.Application.Features.Reservations.Commands.UpdateReservation
 {
-    public class UpdateReservationCommand : IRequest<Result<Guid>>
+    public class UpdateReservationCommand : IRequest<Result<Guid>>, IMustBeActive
     {
         public Guid ReservationId { get; set; }
         public required string CustomerName { get; set; }

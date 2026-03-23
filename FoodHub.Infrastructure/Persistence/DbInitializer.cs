@@ -611,6 +611,16 @@ namespace FoodHub.Infrastructure.Persistence
                 );
 
                 _context.Orders.AddRange(order1, order2, order3);
+                
+                // Update Table statuses for seeded orders
+                var table1 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id) 
+                             ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
+                var table2 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id) 
+                             ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
+
+                if (table1 != null) table1.Status = TableStatus.Occupied;
+                if (table2 != null) table2.Status = TableStatus.Occupied;
+
                 _context.SaveChanges();
             }
 

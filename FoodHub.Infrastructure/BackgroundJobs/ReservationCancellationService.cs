@@ -56,6 +56,7 @@ namespace FoodHub.Infrastructure.BackgroundJobs
         {
             using var scope = _serviceProvider.CreateScope();
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            var signalRService = scope.ServiceProvider.GetRequiredService<ISignalRService>();
 
             // Calculate the threshold: 30 minutes past today's reservation time
             var vietnamTime = DateTime.UtcNow.AddHours(7);
@@ -99,6 +100,15 @@ namespace FoodHub.Infrastructure.BackgroundJobs
                 "Successfully cancelled {Count} overdue reservations.",
                 overdueReservations.Count
             );
+
+            // Thông báo realtime cho FE sơ đồ bàn: các bàn trên giờ huỷ trả về Available
+            foreach (var reservation in overdueReservations)
+            {
+                await signalRService.NotifyTableStatusChangedAsync(
+                    reservation.TableId,
+                    "Available"
+                );
+            }
         }
     }
 }

@@ -20,6 +20,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ISignalRService _signalRService;
         private readonly ILogger<SplitOrderHandler> _logger;
         private readonly IMapper _mapper;
 
@@ -27,6 +28,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ISignalRService signalRService,
             IMapper mapper,
             ILogger<SplitOrderHandler> logger
         )
@@ -34,6 +36,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _signalRService = signalRService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -426,6 +429,28 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+
+                if (destinationTable != null)
+                {
+                    await _signalRService.NotifyTableStatusChangedAsync(destinationTable.TableId, destinationTable.Status.ToString());
+                }
+
+                if (sourceOrder.TableId.HasValue && sourceOrder.TableId != destinationOrder.TableId)
+                {
+                    // For the source table, we don't have the sourceTable object here unless it was loaded in line 398.
+                    // But we can just query its current status or pass "Available" if we know it changed.
+                    // Instead of full query again, we can just trigger a refresh so the FE pulls exactly what's in DB,
+                    // or we check if we actually altered it above. Since we did above, let's just trigger a re-check or assuming we have it.
+                    // A safer bet is just querying its status quickly.
+                    var sTableStatus = await tableRepository.Query()
+                        .Where(t => t.TableId == sourceOrder.TableId.Value)
+                        .Select(t => t.Status.ToString())
+                        .FirstOrDefaultAsync(cancellationToken);
+                    if (sTableStatus != null)
+                    {
+                        await _signalRService.NotifyTableStatusChangedAsync(sourceOrder.TableId.Value, sTableStatus);
+                    }
+                }
 
                 _logger.LogInformation(
                     "Successfully split items from Order {SourceOrderCode} to Order {DestinationOrderCode}. SourceAmount={SourceAmount}, DestinationAmount={DestinationAmount}",

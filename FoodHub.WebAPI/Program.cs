@@ -113,6 +113,7 @@ try
 
     app.MapHub<KdsHub>("/hubs/kds");
     app.MapHub<BillingHub>("/hubs/billing");
+    app.MapHub<TableStatusHub>("/hubs/table-status");
     app.MapHealthCheckEndpoints(); // GET /health & /health/detail
 
     await app.RunAsync();

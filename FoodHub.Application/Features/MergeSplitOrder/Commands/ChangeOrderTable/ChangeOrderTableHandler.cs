@@ -21,18 +21,21 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ISignalRService _signalRService;
         private readonly ILogger<ChangeOrderTableHandler> _logger;
 
         public ChangeOrderTableHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ISignalRService signalRService,
             ILogger<ChangeOrderTableHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _signalRService = signalRService;
             _logger = logger;
         }
 
@@ -166,6 +169,9 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+
+                await _signalRService.NotifyTableStatusChangedAsync(currentTable.TableId, currentTable.Status.ToString());
+                await _signalRService.NotifyTableStatusChangedAsync(newTable.TableId, newTable.Status.ToString());
 
                 var response = new ChangeOrderTableResponse
                 {

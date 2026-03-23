@@ -70,7 +70,8 @@ namespace FoodHub.Tests.Features.Billing.Commands
                 _mockUow.Object,
                 _mockLogger.Object,
                 _mockMessageService.Object,
-                _mockCurrentUserService.Object
+                _mockCurrentUserService.Object,
+                new Mock<ISignalRService>().Object
             );
 
             var result = await handler.Handle(command, CancellationToken.None);
@@ -103,7 +104,8 @@ namespace FoodHub.Tests.Features.Billing.Commands
                 _mockUow.Object,
                 _mockLogger.Object,
                 _mockMessageService.Object,
-                _mockCurrentUserService.Object
+                _mockCurrentUserService.Object,
+                new Mock<ISignalRService>().Object
             );
 
             var result = await handler.Handle(command, CancellationToken.None);
