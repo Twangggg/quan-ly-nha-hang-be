@@ -21,10 +21,11 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
         private readonly ICacheService _cacheService;
 
         public CreateInternalReservationHandler(
-            IUnitOfWork unitOfWork, 
-            ILogger<CreateInternalReservationHandler> logger, 
+            IUnitOfWork unitOfWork,
+            ILogger<CreateInternalReservationHandler> logger,
             IMessageService messageService,
-            ICacheService cacheService)
+            ICacheService cacheService
+        )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
@@ -46,9 +47,13 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
             try
             {
                 // Tìm bàn còn trống dựa theo AreaId và GuestCount
-                var query = _unitOfWork.Repository<Table>().Query()
+                var query = _unitOfWork
+                    .Repository<Table>()
+                    .Query()
                     .Include(t => t.Area)
-                    .Where(t => t.Status != TableStatus.OutOfService && t.Capacity >= request.GuestCount);
+                    .Where(t =>
+                        t.Status != TableStatus.OutOfService && t.Capacity >= request.GuestCount
+                    );
 
                 if (request.GuestCount > 8)
                 {
@@ -67,11 +72,18 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                 var maxTime = request.ReservationTime.Add(TimeSpan.FromHours(bufferHours));
 
                 // Quan trọng: Kiểm tra cả Booked và CheckIn status
-                var overlappingTableIds = await _unitOfWork.Repository<Reservation>().Query()
-                    .Where(r => r.ReservationDate == request.ReservationDate
-                                && (r.Status == ReservationStatus.Booked || r.Status == ReservationStatus.CheckIn)
-                                && r.ReservationTime > minTime
-                                && r.ReservationTime < maxTime)
+                var overlappingTableIds = await _unitOfWork
+                    .Repository<Reservation>()
+                    .Query()
+                    .Where(r =>
+                        r.ReservationDate == request.ReservationDate
+                        && (
+                            r.Status == ReservationStatus.Booked
+                            || r.Status == ReservationStatus.CheckIn
+                        )
+                        && r.ReservationTime > minTime
+                        && r.ReservationTime < maxTime
+                    )
                     .Select(r => r.TableId)
                     .Distinct()
                     .ToListAsync(cancellationToken);
@@ -86,9 +98,13 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                     await _unitOfWork.RollbackTransactionAsync();
                     if (request.GuestCount > 8)
                     {
-                        throw new BusinessException(_messageService.GetMessage(MessageKeys.Reservation.VipRequired));
+                        throw new BusinessException(
+                            _messageService.GetMessage(MessageKeys.Reservation.VipRequired)
+                        );
                     }
-                    throw new BusinessException(_messageService.GetMessage(MessageKeys.Reservation.NoTableAvailable));
+                    throw new BusinessException(
+                        _messageService.GetMessage(MessageKeys.Reservation.NoTableAvailable)
+                    );
                 }
 
                 var reservation = new Reservation
@@ -103,7 +119,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                     Status = ReservationStatus.Booked,
                     AreaId = availableTable.AreaId,
                     TableId = availableTable.TableId,
-                    HasChildren = false
+                    HasChildren = false,
                 };
 
                 await _unitOfWork.Repository<Reservation>().AddAsync(reservation);
@@ -111,17 +127,28 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                 await _unitOfWork.CommitTransactionAsync();
 
                 // Dọn dẹp Cache để sơ đồ bàn được cập nhật đúng ngay lập tức
-                await _cacheService.RemoveByPatternAsync(CacheKey.ReservationList + "*", cancellationToken);
-                await _cacheService.RemoveByPatternAsync(CacheKey.TableList + "*", cancellationToken);
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.ReservationList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
 
-                _logger.LogInformation("Successfully created Reservation {ReservationId} at Table {TableId}", reservation.ReservationId, reservation.TableId);
+                _logger.LogInformation(
+                    "Successfully created Reservation {ReservationId} at Table {TableId}",
+                    reservation.ReservationId,
+                    reservation.TableId
+                );
 
                 return Result<Guid>.Success(reservation.ReservationId);
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                if (ex is BusinessException) throw;
+                if (ex is BusinessException)
+                    throw;
                 _logger.LogError(ex, "Error occurred while creating internal reservation.");
                 throw;
             }

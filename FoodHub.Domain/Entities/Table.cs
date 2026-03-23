@@ -15,11 +15,6 @@ namespace FoodHub.Domain.Entities
         public virtual ICollection<Reservation> Reservations { get; set; } =
             new List<Reservation>();
 
-        public void MarkAsCleaning()
-        {
-            Status = TableStatus.Cleaning;
-        }
-
         public void MarkAsAvailable()
         {
             Status = TableStatus.Available;

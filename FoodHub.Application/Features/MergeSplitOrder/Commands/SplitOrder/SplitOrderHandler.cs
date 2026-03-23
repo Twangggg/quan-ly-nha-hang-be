@@ -412,10 +412,7 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                             cancellationToken
                         );
 
-                    if (
-                        sourceTable != null
-                        && sourceTable.ReleaseIfNoActiveOrders(auditorId, now)
-                    )
+                    if (sourceTable != null && sourceTable.ReleaseIfNoActiveOrders(auditorId, now))
                     {
                         tableRepository.Update(sourceTable);
                     }
@@ -440,7 +437,10 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
 
                 if (destinationTable != null)
                 {
-                    await _signalRService.NotifyTableStatusChangedAsync(destinationTable.TableId, destinationTable.Status.ToString());
+                    await _signalRService.NotifyTableStatusChangedAsync(
+                        destinationTable.TableId,
+                        destinationTable.Status.ToString()
+                    );
                 }
 
                 if (sourceOrder.TableId.HasValue && sourceOrder.TableId != destinationOrder.TableId)
@@ -450,13 +450,17 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
                     // Instead of full query again, we can just trigger a refresh so the FE pulls exactly what's in DB,
                     // or we check if we actually altered it above. Since we did above, let's just trigger a re-check or assuming we have it.
                     // A safer bet is just querying its status quickly.
-                    var sTableStatus = await tableRepository.Query()
+                    var sTableStatus = await tableRepository
+                        .Query()
                         .Where(t => t.TableId == sourceOrder.TableId.Value)
-                        .Select(t => t.Status.ToString())
+                        .Select(t => t.Status)
                         .FirstOrDefaultAsync(cancellationToken);
-                    if (sTableStatus != null)
+                    if (Enum.IsDefined(typeof(TableStatus), sTableStatus))
                     {
-                        await _signalRService.NotifyTableStatusChangedAsync(sourceOrder.TableId.Value, sTableStatus);
+                        await _signalRService.NotifyTableStatusChangedAsync(
+                            sourceOrder.TableId.Value,
+                            sTableStatus.ToString()
+                        );
                     }
                 }
 

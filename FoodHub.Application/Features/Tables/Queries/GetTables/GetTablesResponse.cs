@@ -24,25 +24,35 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
 
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<Table, GetTablesResponse>()
-                .ForMember(d => d.TableCode, opt => opt.MapFrom(s =>
-                (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix)) ? s.Area.CodePrefix + "_" + s.TableNumber : s.TableNumber.ToString()))
+            profile
+                .CreateMap<Table, GetTablesResponse>()
+                .ForMember(
+                    d => d.TableCode,
+                    opt =>
+                        opt.MapFrom(s =>
+                            (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix))
+                                ? s.Area.CodePrefix + "_" + s.TableNumber
+                                : s.TableNumber.ToString()
+                        )
+                )
                 .ForMember(d => d.AreaName, opt => opt.MapFrom(s => s.Area.Name))
                 .ForMember(
                     d => d.Status,
-                    opt => opt.MapFrom(s =>
-                        s.Orders.Any(o => o.Status == OrderStatus.Serving)
-                            ? (int)TableStatus.Occupied
-                            : (int)s.Status
-                    )
+                    opt =>
+                        opt.MapFrom(s =>
+                            s.Orders.Any(o => o.Status == OrderStatus.Serving)
+                                ? (int)TableStatus.Occupied
+                                : (int)s.Status
+                        )
                 )
                 .ForMember(
                     d => d.StatusName,
-                    opt => opt.MapFrom(s =>
-                        s.Orders.Any(o => o.Status == OrderStatus.Serving)
-                            ? TableStatus.Occupied.ToString()
-                            : s.Status.ToString()
-                    )
+                    opt =>
+                        opt.MapFrom(s =>
+                            s.Orders.Any(o => o.Status == OrderStatus.Serving)
+                                ? TableStatus.Occupied.ToString()
+                                : s.Status.ToString()
+                        )
                 );
         }
     }

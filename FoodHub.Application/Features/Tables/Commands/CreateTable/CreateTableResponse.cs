@@ -19,10 +19,10 @@ namespace FoodHub.Application.Features.Tables.Commands.CreateTable
 
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<Table, CreateTableResponse>()
+            profile
+                .CreateMap<Table, CreateTableResponse>()
                 .ForMember(d => d.TableCode, opt => opt.MapFrom(s => s.GetTableName()))
                 .ForMember(d => d.StatusName, opt => opt.MapFrom(s => s.Status.ToString()));
         }
-
     }
 }
