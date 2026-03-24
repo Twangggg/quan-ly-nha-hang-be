@@ -29,6 +29,17 @@ namespace FoodHub.Application.Interfaces.Messaging
         Task NotifyOrderStatusChangedAsync(Guid orderId, string status);
 
         /// <summary>
+        /// Thông báo cho nhân viên khi lịch ca làm việc của họ thay đổi (gán hoặc hủy).
+        /// </summary>
+        /// <param name="employeeId">ID nhân viên nhận thông báo.</param>
+        /// <param name="shiftName">Tên ca làm việc.</param>
+        /// <param name="assignedDate">Ngày phân công.</param>
+        /// <param name="isCancelled">true = hủy ca, false = gán mới.</param>
+        Task NotifyShiftAssignmentAsync(
+            Guid employeeId,
+            string shiftName,
+            DateOnly assignedDate,
+            bool isCancelled);
         /// Thông báo khi trạng thái bàn thay đổi (do đặt bàn đến giờ, check-in, huỷ, v.v).
         /// Frontend lắng nghe để cập nhật sơ đồ bàn theo thời gian thực.
         /// </summary>
