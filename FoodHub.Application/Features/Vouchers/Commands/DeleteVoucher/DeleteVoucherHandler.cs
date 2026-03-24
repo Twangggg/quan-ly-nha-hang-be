@@ -61,7 +61,7 @@ namespace FoodHub.Application.Features.Vouchers.Commands.DeleteVoucher
 
             _logger.LogInformation("Voucher with Id: {VoucherId} deleted by User: {UserId}", request.VoucherId, auditorId);
 
-            await _cacheService.RemoveAsync(CacheKey.VoucherList, cancellationToken);
+            await _cacheService.RemoveByPatternAsync(CacheKey.VoucherList, cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.VoucherById, request.VoucherId), cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.VoucherByCode, voucher.VoucherCode), cancellationToken);
 

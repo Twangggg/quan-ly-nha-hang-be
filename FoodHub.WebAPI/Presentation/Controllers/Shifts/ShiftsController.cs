@@ -155,5 +155,20 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(new GetShiftsByEmployeeIdQuery());
             return HandleResult(result);
         }
+
+        /// <summary>
+        /// Lấy danh sách ca làm việc của nhân viên hiện tại.
+        /// </summary>
+        /// <returns>Danh sách ca làm việc của nhân viên hiện tại.</returns>
+        [HttpGet("myShifts")]
+        [HasPermission(Permissions.Shifts.ViewMyShifts)]
+        [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
+        [ProducesResponseType(typeof(Result<List<GetShiftsByEmployeeIdResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetShiftsByEmployeeIdV2()
+        {
+            var result = await _mediator.Send(new GetShiftsByEmployeeIdQuery());
+            return HandleResult(result);
+        }
     }
 }

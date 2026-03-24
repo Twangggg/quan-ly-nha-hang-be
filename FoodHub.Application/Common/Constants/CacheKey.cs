@@ -129,7 +129,9 @@ public static class CacheKey
     public const string InventorySettings = "inventory:settings";
 
     // ==================== VOUCHERS ====================
+
     public const string VoucherList = "voucher:list";
+    public const string VoucherListPagination = "voucher:list:pagination:{0}";
     public const string VoucherById = "voucher:id:{0}";
     public const string VoucherByCode = "voucher:code:{0}";
 

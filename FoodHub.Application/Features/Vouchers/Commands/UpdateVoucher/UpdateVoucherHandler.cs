@@ -105,7 +105,7 @@ namespace FoodHub.Application.Features.Vouchers.Commands.UpdateVoucher
 
             _logger.LogInformation("Voucher with ID {VoucherId} updated successfully", voucher.VoucherId);
 
-            await _cacheService.RemoveAsync(CacheKey.VoucherList, cancellationToken);
+            await _cacheService.RemoveByPatternAsync(CacheKey.VoucherList, cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.VoucherById, voucher.VoucherId), cancellationToken);
             await _cacheService.RemoveAsync(string.Format(CacheKey.VoucherByCode, voucher.VoucherCode), cancellationToken);
 

@@ -96,7 +96,7 @@ namespace FoodHub.Application.Features.Vouchers.Commands.CreateVoucher
             _logger.LogInformation("Voucher created successfully with ID: {VoucherId}", voucher.VoucherId);
 
             // Invalidate relevant cache entries
-            await _cacheService.RemoveAsync(CacheKey.VoucherList, cancellationToken);
+            await _cacheService.RemoveByPatternAsync(CacheKey.VoucherList, cancellationToken);
 
             // Map the created voucher to the response DTO
             var response = _mapper.Map<CreateVoucherResponse>(voucher);

@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
@@ -16,17 +17,20 @@ namespace FoodHub.Application.Features.Vouchers.Commands.UnapplyVoucher
         private readonly ILogger<ApplyVoucherHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
 
         public UnapplyVoucherHandler(
             IUnitOfWork unitOfWork,
             ILogger<ApplyVoucherHandler> logger,
             IMessageService messageService,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<UnapplyVoucherResponse>> Handle(UnapplyVoucherCommand request, CancellationToken cancellationToken)
@@ -106,6 +110,10 @@ namespace FoodHub.Application.Features.Vouchers.Commands.UnapplyVoucher
                 voucherRepository.Update(oldVoucher);
             }
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            await _cacheService.RemoveByPatternAsync(CacheKey.VoucherList, cancellationToken);
+            await _cacheService.RemoveAsync(string.Format(CacheKey.VoucherById, oldVoucher.VoucherId), cancellationToken);
+            await _cacheService.RemoveAsync(string.Format(CacheKey.VoucherByCode, oldVoucher.VoucherCode), cancellationToken);
 
             var response = new UnapplyVoucherResponse
             {

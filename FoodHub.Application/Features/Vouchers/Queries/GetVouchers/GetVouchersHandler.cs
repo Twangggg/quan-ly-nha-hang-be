@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Text.Json;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Constants;
@@ -34,7 +35,8 @@ namespace FoodHub.Application.Features.Vouchers.Queries.GetVouchers
         {
             _logger.LogInformation("Handling GetVouchersQuery with Pagination: {@Pagination}", request.Pagination);
 
-            var cacheKey = string.Format(CacheKey.VoucherList);
+            var paginationKey = JsonSerializer.Serialize(request.Pagination);
+            var cacheKey = string.Format(CacheKey.VoucherListPagination, paginationKey);
             var cachedData = await _cacheService.GetAsync<PagedResult<GetVouchersResponse>>(cacheKey);
             if (cachedData != null)
             {
@@ -48,7 +50,7 @@ namespace FoodHub.Application.Features.Vouchers.Queries.GetVouchers
              };
             query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
 
-            var filterMapping = new Dictionary<string, Expression<Func<Voucher, object>>>()
+            var filterMapping = new Dictionary<string, Expression<Func<Voucher, object>>>(StringComparer.OrdinalIgnoreCase)
             {
                 { "voucherType", v => v.VoucherType },
                 { "isActive", v => v.IsActive }
