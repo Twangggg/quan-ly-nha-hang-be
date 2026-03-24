@@ -70,6 +70,32 @@ namespace FoodHub.Infrastructure.Services
             );
         }
 
+        /// <summary>
+        /// Thông báo cho nhân viên khi lịch ca làm việc thay đổi.
+        /// Frontend lắng nghe event "ShiftAssignmentChanged" trong group "{employeeId}".
+        /// </summary>
+        public async Task NotifyShiftAssignmentAsync(
+            Guid employeeId,
+            string shiftName,
+            DateOnly assignedDate,
+            bool isCancelled)
+        {
+            try
+            {
+                await _hubContext.Clients.Group(employeeId.ToString()).SendAsync(
+                    "ShiftAssignmentChanged",
+                    new
+                    {
+                        ShiftName = shiftName,
+                        AssignedDate = assignedDate.ToString("yyyy-MM-dd"),
+                        IsCancelled = isCancelled
+                    });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR Error in NotifyShiftAssignmentAsync: {ex.Message}");
+            }
+        }
         public async Task NotifyTableStatusChangedAsync(Guid tableId, string newStatus)
         {
             // Bắn event tới tất cả client đang xem sơ đồ bàn

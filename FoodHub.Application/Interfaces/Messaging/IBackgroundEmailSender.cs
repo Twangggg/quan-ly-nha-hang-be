@@ -50,6 +50,31 @@ namespace FoodHub.Application.Interfaces.Messaging
        Guid? auditTargetId = null,
        Guid? performedByEmployeeId = null,
        CancellationToken cancellationToken = default);
+
+        ValueTask EnqueueShiftAssignmentEmailAsync(
+            string email,
+            string employeeName,
+            string shiftName,
+            DateOnly assignedDate,
+            TimeSpan startTime,
+            TimeSpan endTime,
+            bool isCancelled = false,
+            Guid? auditTargetId = null,
+            Guid? performedByEmployeeId = null,
+            CancellationToken cancellationToken = default);
+
+        ValueTask EnqueueShiftAssignmentRangeEmailAsync(
+            string email,
+            string employeeName,
+            string shiftName,
+            DateOnly fromDate,
+            DateOnly toDate,
+            TimeSpan startTime,
+            TimeSpan endTime,
+            List<DateOnly> assignedDates,
+            Guid? auditTargetId = null,
+            Guid? performedByEmployeeId = null,
+            CancellationToken cancellationToken = default);
     }
 
     public class EmailMessage

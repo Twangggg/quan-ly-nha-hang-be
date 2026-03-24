@@ -413,6 +413,28 @@ namespace FoodHub.Application.Constants
             public const string InsufficientAmount = "Invoice.InsufficientAmount";
         }
 
+        public static class Shift
+        {
+            public const string NotFound = "Shift.NotFound";
+            public const string DuplicateTime = "Shift.DuplicateTime";
+            public const string OverlappingTime = "Shift.OverlappingTime";
+            public const string ShiftNotActive = "Shift.ShiftNotActive";
+            public const string InvalidTime = "Shift.InvalidTime";
+            public const string AlreadyInactive = "Shift.AlreadyInactive";
+            public const string NameRequired = "Shift.NameRequired";
+            public const string OutsideOperatingHours = "Shift.OutsideOperatingHours";
+            public const string DuringBreakTime = "Shift.DuringBreakTime";
+        }
+
+        public static class ShiftAssignment
+        {
+            public const string NotFound = "ShiftAssignment.NotFound";
+            public const string OverlappingShift = "ShiftAssignment.OverlappingShift";
+            public const string ShiftNotActive = "ShiftAssignment.ShiftNotActive";
+            public const string EmployeeNotActive = "ShiftAssignment.EmployeeNotActive";
+            public const string OvertimeExceeded = "ShiftAssignment.OvertimeExceeded";
+            public const string MaxOneShiftPerDay = "ShiftAssignment.MaxOneShiftPerDay";
+        }
         public static class Voucher
         {
             public const string NotFound = "Voucher.NotFound";

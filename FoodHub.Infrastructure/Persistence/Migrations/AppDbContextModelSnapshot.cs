@@ -2209,6 +2209,122 @@ namespace FoodHub.Migrations
                     b.ToTable("set_menu_items", (string)null);
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.Shift", b =>
+                {
+                    b.Property<Guid>("ShiftId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("shift_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("interval")
+                        .HasColumnName("end_time");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("interval")
+                        .HasColumnName("start_time");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("ShiftId")
+                        .HasName("pk_shifts");
+
+                    b.HasIndex("StartTime", "EndTime")
+                        .IsUnique()
+                        .HasDatabaseName("idx_shifts_range")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("shifts", (string)null);
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.ShiftAssignment", b =>
+                {
+                    b.Property<Guid>("ShiftAssignmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("shift_assignment_id");
+
+                    b.Property<DateOnly>("AssignedDate")
+                        .HasColumnType("date")
+                        .HasColumnName("assigned_date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("ShiftId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shift_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("ShiftAssignmentId")
+                        .HasName("pk_shift_assignments");
+
+                    b.HasIndex("ShiftId")
+                        .HasDatabaseName("ix_shift_assignments_shift_id");
+
+                    b.HasIndex("EmployeeId", "ShiftId", "AssignedDate")
+                        .IsUnique()
+                        .HasDatabaseName("uq_shift_assignments_employee_shift_date")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("shift_assignments", (string)null);
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.StockInReceipt", b =>
                 {
                     b.Property<Guid>("StockInReceiptId")
@@ -3094,6 +3210,27 @@ namespace FoodHub.Migrations
                     b.Navigation("MenuItem");
 
                     b.Navigation("SetMenu");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.ShiftAssignment", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_shift_assignments_employee_id");
+
+                    b.HasOne("FoodHub.Domain.Entities.Shift", "Shift")
+                        .WithMany()
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_shift_assignments_shift_id");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Shift");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.StockInReceiptItem", b =>
