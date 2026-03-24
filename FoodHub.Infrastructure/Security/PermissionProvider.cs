@@ -57,7 +57,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Billing.PreCheckBill,
 
                 // Shift permissions for waiters
-                Permissions.Shifts.ViewMyShifts,
+                Permissions.ShiftAssignments.ViewMyShifts,
             };
         }
 
@@ -98,7 +98,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Vouchers.Apply,
 
                 // Shift permissions for cashiers
-                Permissions.Shifts.ViewMyShifts,
+                Permissions.ShiftAssignments.ViewMyShifts,
             };
         }
 
@@ -116,7 +116,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Kds.Reject,
 
                 // Shift permissions for chef/bar
-                Permissions.Shifts.ViewMyShifts,
+                Permissions.ShiftAssignments.ViewMyShifts,
             };
         }
     }

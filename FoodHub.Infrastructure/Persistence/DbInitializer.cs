@@ -612,11 +612,11 @@ namespace FoodHub.Infrastructure.Persistence
                 );
 
                 _context.Orders.AddRange(order1, order2, order3);
-                
+
                 // Update Table statuses for seeded orders
-                var table1 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id) 
+                var table1 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id)
                              ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
-                var table2 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id) 
+                var table2 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id)
                              ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
 
                 if (table1 != null) table1.Status = TableStatus.Occupied;
@@ -713,6 +713,52 @@ namespace FoodHub.Infrastructure.Persistence
 
                 _context.Vouchers.Add(voucher1);
                 _context.SaveChanges();
+            }
+
+            if (isDevOrDemo && !_context.Shifts.Any())
+            {
+                var shiftMorning = new Shift
+                {
+                    ShiftId = Guid.NewGuid(),
+                    Name = "Ca sáng",
+                    StartTime = new TimeSpan(10, 30, 0),
+                    EndTime = new TimeSpan(14, 0, 0),
+                    CreatedAt = DateTime.UtcNow,
+                };
+
+                var shiftAfternoon = new Shift
+                {
+                    ShiftId = Guid.NewGuid(),
+                    Name = "Ca chiều",
+                    StartTime = new TimeSpan(17, 0, 0),
+                    EndTime = new TimeSpan(23, 0, 0),
+                    CreatedAt = DateTime.UtcNow,
+                };
+
+                _context.Shifts.AddRange(shiftMorning, shiftAfternoon);
+                _context.SaveChanges();
+
+                if (isDevOrDemo && !_context.ShiftAssignments.Any())
+                {
+                    var cashierShift1 = new ShiftAssignment
+                    {
+                        ShiftAssignmentId = Guid.NewGuid(),
+                        ShiftId = shiftMorning.ShiftId,
+                        EmployeeId = _context.Employees.First(e => e.EmployeeCode == "C004001").EmployeeId,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+
+                    var waiterShift1 = new ShiftAssignment
+                    {
+                        ShiftAssignmentId = Guid.NewGuid(),
+                        ShiftId = shiftAfternoon.ShiftId,
+                        EmployeeId = _context.Employees.First(e => e.EmployeeCode == "W003001").EmployeeId,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+
+                    _context.ShiftAssignments.AddRange(cashierShift1, waiterShift1);
+                    _context.SaveChanges();
+                }
             }
 
             _context.SaveChanges();
