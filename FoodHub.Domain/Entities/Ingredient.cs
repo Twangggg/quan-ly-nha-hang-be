@@ -16,9 +16,12 @@ namespace FoodHub.Domain.Entities
         public string BaseUnit { get; private set; } = string.Empty;
         public decimal CurrentStock { get; private set; }
         public decimal LowStockThreshold { get; private set; }
+        public bool UseDefaultLowStockThreshold { get; private set; }
         public decimal CostPrice { get; private set; }
         public string? Description { get; private set; }
         public bool IsActive { get; private set; } = true;
+        public Guid? InventoryGroupId { get; private set; }
+        public virtual InventoryGroup? InventoryGroup { get; private set; }
         public virtual ICollection<IngredientUoMConversion> Conversions { get; private set; } =
             new List<IngredientUoMConversion>();
         public virtual ICollection<InventoryTransaction> InventoryTransactions
@@ -35,7 +38,9 @@ namespace FoodHub.Domain.Entities
             decimal currentStock,
             decimal costPrice,
             string? description = null,
-            Guid? createdBy = null
+            Guid? createdBy = null,
+            Guid? inventoryGroupId = null,
+            bool useDefaultLowStockThreshold = false
         )
         {
             return new Ingredient
@@ -45,10 +50,12 @@ namespace FoodHub.Domain.Entities
                 Name = name,
                 BaseUnit = baseUnit,
                 LowStockThreshold = lowStockThreshold,
+                UseDefaultLowStockThreshold = useDefaultLowStockThreshold,
                 CurrentStock = currentStock,
                 CostPrice = costPrice,
                 Description = description,
                 IsActive = true,
+                InventoryGroupId = inventoryGroupId,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = createdBy,
                 UpdatedBy = createdBy,
@@ -64,17 +71,21 @@ namespace FoodHub.Domain.Entities
             string code,
             decimal currentStock,
             decimal costPrice,
-            Guid? updatedBy = null
+            Guid? updatedBy = null,
+            Guid? inventoryGroupId = null,
+            bool useDefaultLowStockThreshold = false
         )
         {
             Name = name;
             BaseUnit = baseUnit;
             LowStockThreshold = lowStockThreshold;
+            UseDefaultLowStockThreshold = useDefaultLowStockThreshold;
             Description = description;
             IsActive = isActive;
             Code = code;
             CurrentStock = currentStock;
             CostPrice = costPrice;
+            InventoryGroupId = inventoryGroupId;
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;
 
@@ -271,12 +282,12 @@ namespace FoodHub.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
-        public StockStatus GetStockStatus()
+        public StockStatus GetStockStatus(decimal resolvedLowStockThreshold)
         {
             return CurrentStock switch
             {
                 0 => StockStatus.OutOfStock,
-                var stock when stock <= LowStockThreshold => StockStatus.LowStock,
+                var stock when stock <= resolvedLowStockThreshold => StockStatus.LowStock,
                 _ => StockStatus.Normal,
             };
         }

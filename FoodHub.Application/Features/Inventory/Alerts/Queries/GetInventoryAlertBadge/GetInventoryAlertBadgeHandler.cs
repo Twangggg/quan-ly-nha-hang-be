@@ -50,18 +50,21 @@ namespace FoodHub.Application.Features.Inventory.Alerts.Queries.GetInventoryAler
                 return Result<GetInventoryAlertBadgeResponse>.Success(cached);
             }
 
-            var settings = await _unitOfWork
-                .Repository<InventorySettings>()
-                .Query()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(
-                    x => x.SettingsKey == InventorySettings.DefaultSettingsKey,
-                    cancellationToken
-                ) ?? InventorySettings.CreateDefault();
+            var settings =
+                await _unitOfWork
+                    .Repository<InventorySettings>()
+                    .Query()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(
+                        x => x.SettingsKey == InventorySettings.DefaultSettingsKey,
+                        cancellationToken
+                    )
+                ?? InventorySettings.CreateDefault();
 
             var ingredients = await _unitOfWork
                 .Repository<Ingredient>()
                 .Query()
+                .Include(x => x.InventoryGroup)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
@@ -75,7 +78,9 @@ namespace FoodHub.Application.Features.Inventory.Alerts.Queries.GetInventoryAler
                 ingredients,
                 lots,
                 DateTime.UtcNow.Date,
-                settings.ExpiryWarningDays
+                settings.ExpiryWarningDays,
+                new InventoryRuleResolver(),
+                settings
             );
 
             var response = new GetInventoryAlertBadgeResponse
@@ -87,7 +92,12 @@ namespace FoodHub.Application.Features.Inventory.Alerts.Queries.GetInventoryAler
                 NearExpiryCount = summary.NearExpiryLots.Count,
             };
 
-            await _cacheService.SetAsync(cacheKey, response, TimeSpan.FromMinutes(5), cancellationToken);
+            await _cacheService.SetAsync(
+                cacheKey,
+                response,
+                TimeSpan.FromMinutes(5),
+                cancellationToken
+            );
             _logger.LogInformation(
                 "End handling GetInventoryAlertBadge with BadgeCount={BadgeCount}",
                 response.BadgeCount

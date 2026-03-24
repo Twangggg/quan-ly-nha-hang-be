@@ -93,7 +93,9 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                     0,
                     0,
                     request.Description,
-                    auditorId
+                    auditorId,
+                    request.InventoryGroupId,
+                    request.UseDefaultLowStockThreshold
                 );
 
                 await _unitOfWork.BeginTransactionAsync();
@@ -114,8 +116,11 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                         CurrentStock = ingredient.CurrentStock,
                         CostPrice = ingredient.CostPrice,
                         LowStockThreshold = ingredient.LowStockThreshold,
-                        StockStatus = ingredient.GetStockStatus(),
+                        StockStatus = ingredient.GetStockStatus(lowStockThreshold),
+                        UseDefaultLowStockThreshold = ingredient.UseDefaultLowStockThreshold,
                         Description = ingredient.Description,
+                        InventoryGroupId = ingredient.InventoryGroupId,
+                        InventoryGroupName = ingredient.InventoryGroup?.Name,
                         CreatedAt = ingredient.CreatedAt,
                         CreatedBy = ingredient.CreatedBy,
                         UpdatedBy = ingredient.UpdatedBy,

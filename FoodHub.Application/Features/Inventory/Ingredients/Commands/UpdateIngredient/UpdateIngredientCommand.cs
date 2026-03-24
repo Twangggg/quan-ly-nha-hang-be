@@ -12,6 +12,6 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
         string? Description,
         bool IsActive,
         bool UseDefaultLowStockThreshold = false,
-        Guid? RouteId = null
+        Guid? InventoryGroupId = null
     ) : IRequest<Result<UpdateIngredientResponse>>;
 }

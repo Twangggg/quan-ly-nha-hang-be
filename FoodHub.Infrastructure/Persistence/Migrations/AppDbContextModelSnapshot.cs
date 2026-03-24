@@ -407,6 +407,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("numeric(18,2)")
                         .HasColumnName("low_stock_threshold");
 
+                    b.Property<bool>("UseDefaultLowStockThreshold")
+                        .HasColumnType("boolean")
+                        .HasColumnName("use_default_low_stock_threshold");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)

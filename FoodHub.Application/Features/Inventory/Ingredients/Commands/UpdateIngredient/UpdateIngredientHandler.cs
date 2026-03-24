@@ -124,7 +124,9 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                         request.Code,
                         ingredient.CurrentStock,
                         ingredient.CostPrice,
-                        auditorId
+                        auditorId,
+                        request.InventoryGroupId ?? ingredient.InventoryGroupId,
+                        request.UseDefaultLowStockThreshold
                     );
 
                     await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -140,9 +142,12 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                         LowStockThreshold = ingredient.LowStockThreshold,
                         CurrentStock = ingredient.CurrentStock,
                         CostPrice = ingredient.CostPrice,
-                        StockStatus = ingredient.GetStockStatus(),
+                        StockStatus = ingredient.GetStockStatus(lowStockThreshold),
+                        UseDefaultLowStockThreshold = ingredient.UseDefaultLowStockThreshold,
                         IsActive = ingredient.IsActive,
                         Description = ingredient.Description,
+                        InventoryGroupId = ingredient.InventoryGroupId,
+                        InventoryGroupName = ingredient.InventoryGroup?.Name,
                         UpdatedAt = ingredient.UpdatedAt,
                         UpdatedBy = ingredient.UpdatedBy,
                     };

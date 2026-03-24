@@ -9,33 +9,45 @@ namespace FoodHub.Domain.Services
             IEnumerable<Ingredient> ingredients,
             IEnumerable<InventoryLot> lots,
             DateTime currentDate,
-            int expiryWarningDays
+            int defaultExpiryWarningDays,
+            InventoryRuleResolver ruleResolver,
+            InventorySettings globalSettings
         )
         {
-            var outOfStockItems = ingredients
-                .Where(x => x.CurrentStock == 0)
-                .OrderBy(x => x.Name)
+            var resolvedIngredients = ingredients
+                .Select(ingredient => new
+                {
+                    Ingredient = ingredient,
+                    Rules = ruleResolver.Resolve(ingredient, globalSettings)
+                })
+                .ToList();
+
+            var outOfStockItems = resolvedIngredients
+                .Where(x => x.Ingredient.CurrentStock == 0)
+                .OrderBy(x => x.Ingredient.Name)
                 .Select(x => new InventoryStockAlertSnapshot(
-                    x.IngredientId,
-                    x.Code,
-                    x.Name,
-                    x.BaseUnit,
-                    x.CurrentStock,
-                    x.LowStockThreshold
+                    x.Ingredient.IngredientId,
+                    x.Ingredient.Code,
+                    x.Ingredient.Name,
+                    x.Ingredient.BaseUnit,
+                    x.Ingredient.CurrentStock,
+                    x.Rules.LowStockThreshold,
+                    x.Rules.Source
                 ))
                 .ToList();
 
-            var lowStockItems = ingredients
-                .Where(x => x.CurrentStock > 0 && x.CurrentStock <= x.LowStockThreshold)
-                .OrderBy(x => x.CurrentStock)
-                .ThenBy(x => x.Name)
+            var lowStockItems = resolvedIngredients
+                .Where(x => x.Ingredient.CurrentStock > 0 && x.Ingredient.CurrentStock <= x.Rules.LowStockThreshold)
+                .OrderBy(x => x.Ingredient.CurrentStock)
+                .ThenBy(x => x.Ingredient.Name)
                 .Select(x => new InventoryStockAlertSnapshot(
-                    x.IngredientId,
-                    x.Code,
-                    x.Name,
-                    x.BaseUnit,
-                    x.CurrentStock,
-                    x.LowStockThreshold
+                    x.Ingredient.IngredientId,
+                    x.Ingredient.Code,
+                    x.Ingredient.Name,
+                    x.Ingredient.BaseUnit,
+                    x.Ingredient.CurrentStock,
+                    x.Rules.LowStockThreshold,
+                    x.Rules.Source
                 ))
                 .ToList();
 
@@ -43,6 +55,8 @@ namespace FoodHub.Domain.Services
                 .Where(x => x.DeletedAt == null && x.RemainingQuantity > 0)
                 .Select(x =>
                 {
+                    var ingredientRules = resolvedIngredients.FirstOrDefault(r => r.Ingredient.IngredientId == x.IngredientId)?.Rules;
+                    var expiryWarningDays = ingredientRules?.ExpiryWarningDays ?? defaultExpiryWarningDays;
                     x.RefreshStatus(currentDate, expiryWarningDays);
                     return x;
                 })
@@ -102,7 +116,8 @@ namespace FoodHub.Domain.Services
         string IngredientName,
         string Unit,
         decimal CurrentStock,
-        decimal Threshold
+        decimal Threshold,
+        InventoryRuleSource Source
     );
 
     public sealed record InventoryExpiryAlertSnapshot(

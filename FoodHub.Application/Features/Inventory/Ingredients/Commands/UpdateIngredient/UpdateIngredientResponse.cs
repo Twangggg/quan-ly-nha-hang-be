@@ -11,11 +11,14 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
         public string Name { get; set; } = string.Empty;
         public string BaseUnit { get; set; } = string.Empty;
         public decimal LowStockThreshold { get; set; }
+        public bool UseDefaultLowStockThreshold { get; set; }
         public decimal CurrentStock { get; set; }
         public decimal CostPrice { get; set; }
         public StockStatus StockStatus { get; set; }
         public bool IsActive { get; set; }
         public string? Description { get; set; }
+        public Guid? InventoryGroupId { get; set; }
+        public string? InventoryGroupName { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
     }
