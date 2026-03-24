@@ -6,6 +6,7 @@ using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInventorySettings
 {
@@ -30,6 +31,10 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
 
             RuleFor(x => x.AutoDeductOnCompleted)
                 .NotNull()
+                .WithMessage(messageService.GetMessage(MessageKeys.Common.ValidationFailed));
+
+            RuleFor(x => x.CostMethod)
+                .IsInEnum()
                 .WithMessage(messageService.GetMessage(MessageKeys.Common.ValidationFailed));
 
             RuleFor(x => x.MaxCostRecalcDays)

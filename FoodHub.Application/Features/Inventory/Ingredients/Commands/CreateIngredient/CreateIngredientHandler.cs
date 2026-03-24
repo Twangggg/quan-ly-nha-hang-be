@@ -53,6 +53,12 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
             try
             {
                 var repo = _unitOfWork.Repository<Ingredient>();
+                var settingsRepo = _unitOfWork.Repository<InventorySettings>();
+                var defaultLowStockThreshold =
+                    await settingsRepo
+                        .Query()
+                        .Select(x => x.DefaultLowStockThreshold)
+                        .FirstOrDefaultAsync(cancellationToken);
 
                 // Check if Name exists
                 var nameExists = await repo.AnyAsync(x =>
@@ -75,11 +81,15 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                 {
                     auditorId = parsedUserId;
                 }
+
+                var lowStockThreshold = request.UseDefaultLowStockThreshold
+                    ? defaultLowStockThreshold
+                    : request.LowStockThreshold;
                 var ingredient = Ingredient.Create(
                     generatedCode,
                     request.Name,
                     request.BaseUnit,
-                    request.LowStockThreshold,
+                    lowStockThreshold,
                     0,
                     0,
                     request.Description,

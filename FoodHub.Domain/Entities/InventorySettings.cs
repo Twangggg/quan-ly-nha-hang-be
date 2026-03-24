@@ -48,6 +48,7 @@ namespace FoodHub.Domain.Entities
             int expiryWarningDays,
             decimal defaultLowStockThreshold,
             bool autoDeductOnCompleted,
+            InventoryCostMethod costMethod,
             int maxCostRecalcDays,
             Guid? updatedBy = null
         )
@@ -76,6 +77,7 @@ namespace FoodHub.Domain.Entities
             ExpiryWarningDays = expiryWarningDays;
             DefaultLowStockThreshold = defaultLowStockThreshold;
             AutoDeductOnCompleted = autoDeductOnCompleted;
+            CostMethod = costMethod;
             MaxCostRecalcDays = maxCostRecalcDays;
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;

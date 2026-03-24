@@ -17,6 +17,7 @@ namespace FoodHub.Tests.Features.Inventory
                 InventorySettings.DefaultLowStockThresholdValue
             );
             settings.AutoDeductOnCompleted.Should().BeTrue();
+            settings.CostMethod.Should().Be(InventoryCostMethod.WeightedAverage);
         }
 
         [Fact]
@@ -24,12 +25,13 @@ namespace FoodHub.Tests.Features.Inventory
         {
             var settings = InventorySettings.CreateDefault();
 
-            var result = settings.Update(14, 25, false, 60);
+            var result = settings.Update(14, 25, false, InventoryCostMethod.WeightedAverage, 60);
 
             result.IsSuccess.Should().BeTrue();
             settings.ExpiryWarningDays.Should().Be(14);
             settings.DefaultLowStockThreshold.Should().Be(25);
             settings.AutoDeductOnCompleted.Should().BeFalse();
+            settings.CostMethod.Should().Be(InventoryCostMethod.WeightedAverage);
             settings.MaxCostRecalcDays.Should().Be(60);
         }
 

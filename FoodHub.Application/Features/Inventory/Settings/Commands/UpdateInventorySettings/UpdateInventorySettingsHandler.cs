@@ -46,10 +46,11 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
         )
         {
             _logger.LogInformation(
-                "Start handling UpdateInventorySettings with ExpiryWarningDays={ExpiryWarningDays}, DefaultLowStockThreshold={DefaultLowStockThreshold}, AutoDeductOnCompleted={AutoDeductOnCompleted}, MaxCostRecalcDays={MaxCostRecalcDays}",
+                "Start handling UpdateInventorySettings with ExpiryWarningDays={ExpiryWarningDays}, DefaultLowStockThreshold={DefaultLowStockThreshold}, AutoDeductOnCompleted={AutoDeductOnCompleted}, CostMethod={CostMethod}, MaxCostRecalcDays={MaxCostRecalcDays}",
                 request.ExpiryWarningDays,
                 request.DefaultLowStockThreshold,
                 request.AutoDeductOnCompleted,
+                request.CostMethod,
                 request.MaxCostRecalcDays
             );
 
@@ -76,6 +77,7 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
                     request.ExpiryWarningDays,
                     request.DefaultLowStockThreshold,
                     request.AutoDeductOnCompleted!.Value,
+                    request.CostMethod,
                     request.MaxCostRecalcDays,
                     actorId
                 );

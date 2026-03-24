@@ -11,6 +11,7 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
         decimal LowStockThreshold,
         string? Description,
         bool IsActive,
+        bool UseDefaultLowStockThreshold = false,
         Guid? RouteId = null
     ) : IRequest<Result<UpdateIngredientResponse>>;
 }

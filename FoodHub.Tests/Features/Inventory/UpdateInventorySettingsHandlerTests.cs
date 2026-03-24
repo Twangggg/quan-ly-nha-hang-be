@@ -9,6 +9,7 @@ using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
 using Moq;
 
@@ -50,7 +51,13 @@ namespace FoodHub.Tests.Features.Inventory
             _mockUow.Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockUow.Setup(x => x.CommitTransactionAsync()).Returns(Task.CompletedTask);
 
-            var command = new UpdateInventorySettingsCommand(14, 100, false, 45);
+            var command = new UpdateInventorySettingsCommand(
+                14,
+                100,
+                false,
+                InventoryCostMethod.WeightedAverage,
+                45
+            );
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -58,6 +65,7 @@ namespace FoodHub.Tests.Features.Inventory
             result.Data!.ExpiryWarningDays.Should().Be(14);
             result.Data.DefaultLowStockThreshold.Should().Be(100);
             result.Data.AutoDeductOnCompleted.Should().BeFalse();
+            result.Data.CostMethod.Should().Be(InventoryCostMethod.WeightedAverage);
             _mockUow.Verify(x => x.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(x => x.CommitTransactionAsync(), Times.Once);
             _mockCache.Verify(
@@ -77,7 +85,13 @@ namespace FoodHub.Tests.Features.Inventory
             _mockUow.Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockUow.Setup(x => x.CommitTransactionAsync()).Returns(Task.CompletedTask);
 
-            var command = new UpdateInventorySettingsCommand(10, 5, true, 30);
+            var command = new UpdateInventorySettingsCommand(
+                10,
+                5,
+                true,
+                InventoryCostMethod.WeightedAverage,
+                30
+            );
 
             var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -100,7 +114,13 @@ namespace FoodHub.Tests.Features.Inventory
                 .Setup(x => x.GetMessage("InventorySettings.InvalidExpiryWarningDays"))
                 .Returns("invalid settings");
 
-            var command = new UpdateInventorySettingsCommand(0, 5, true, 30);
+            var command = new UpdateInventorySettingsCommand(
+                0,
+                5,
+                true,
+                InventoryCostMethod.WeightedAverage,
+                30
+            );
 
             var action = async () => await _handler.Handle(command, CancellationToken.None);
 

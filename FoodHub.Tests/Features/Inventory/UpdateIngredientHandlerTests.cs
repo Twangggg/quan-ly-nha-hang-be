@@ -8,6 +8,7 @@ using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
@@ -22,6 +23,7 @@ namespace FoodHub.Tests.Features.Inventory
         private readonly UpdateIngredientHandler _handler;
         private readonly Mock<Microsoft.Extensions.Logging.ILogger<UpdateIngredientHandler>> _mockLogger;
         private readonly Mock<ICurrentUserService> _mockCurrentUser;
+        private readonly Mock<IGenericRepository<InventorySettings>> _mockSettingsRepo;
 
         public UpdateIngredientHandlerTests()
         {
@@ -30,7 +32,18 @@ namespace FoodHub.Tests.Features.Inventory
             _mockCache = new Mock<ICacheService>();
             _mockLogger = new Mock<Microsoft.Extensions.Logging.ILogger<UpdateIngredientHandler>>();
             _mockCurrentUser = new Mock<ICurrentUserService>();
+            _mockSettingsRepo = new Mock<IGenericRepository<InventorySettings>>();
             _mockCurrentUser.SetupGet(x => x.UserId).Returns((string?)null);
+            _mockSettingsRepo
+                .Setup(r => r.Query())
+                .Returns(
+                    new List<InventorySettings>
+                    {
+                        new InventorySettings { DefaultLowStockThreshold = 3 }
+                    }
+                    .AsQueryable()
+                    .BuildMock()
+                );
 
             _handler = new UpdateIngredientHandler(
                 _mockUow.Object,
@@ -58,6 +71,7 @@ namespace FoodHub.Tests.Features.Inventory
             var repo = new Mock<IGenericRepository<Ingredient>>();
             repo.Setup(r => r.Query()).Returns(new List<Ingredient>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
+            _mockUow.Setup(u => u.Repository<InventorySettings>()).Returns(_mockSettingsRepo.Object);
             _mockMessage
                 .Setup(m => m.GetMessage("Ingredient.NotFound"))
                 .Returns("Ingredient not found");
@@ -105,6 +119,7 @@ namespace FoodHub.Tests.Features.Inventory
                 .ReturnsAsync(true); // Second call: Check name (duplicate)
 
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
+            _mockUow.Setup(u => u.Repository<InventorySettings>()).Returns(_mockSettingsRepo.Object);
             _mockMessage
                 .Setup(m => m.GetMessage("Ingredient.NameExists"))
                 .Returns("Tên nguyên liệu đã tồn tại");
@@ -142,6 +157,7 @@ namespace FoodHub.Tests.Features.Inventory
                 .ReturnsAsync(false);
 
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
+            _mockUow.Setup(u => u.Repository<InventorySettings>()).Returns(_mockSettingsRepo.Object);
             _mockUow.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _mockUow.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
@@ -167,6 +183,57 @@ namespace FoodHub.Tests.Features.Inventory
             ingredient.LowStockThreshold.Should().Be(10);
             ingredient.IsActive.Should().BeFalse();
             ingredient.Description.Should().Be("Rau thơm");
+            _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Once);
+            _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _mockUow.Verify(u => u.CommitTransactionAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_Should_UseDefaultThreshold_When_FlagEnabled()
+        {
+            // Arrange
+            var ingredientId = Guid.NewGuid();
+            var ingredient = Ingredient.Create("ING002", "Hành tím", "Kg", 8, 0, 0, "Củ nhỏ");
+            typeof(Ingredient).GetProperty("IngredientId")!.SetValue(ingredient, ingredientId);
+
+            var repo = new Mock<IGenericRepository<Ingredient>>();
+            repo.Setup(r => r.Query())
+                .Returns(
+                    new List<Ingredient> { ingredient }
+                        .AsQueryable()
+                        .BuildMock()
+                );
+            repo.Setup(r =>
+                    r.AnyAsync(
+                        It.IsAny<System.Linq.Expressions.Expression<Func<Ingredient, bool>>>()
+                    )
+                )
+                .ReturnsAsync(false);
+
+            _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
+            _mockUow.Setup(u => u.Repository<InventorySettings>()).Returns(_mockSettingsRepo.Object);
+            _mockUow.Setup(u => u.BeginTransactionAsync()).Returns(Task.CompletedTask);
+            _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+            _mockUow.Setup(u => u.CommitTransactionAsync()).Returns(Task.CompletedTask);
+
+            var command = new UpdateIngredientCommand(
+                ingredientId,
+                "ING003",
+                "Hành lá",
+                "Bó",
+                10,
+                "Rau thơm",
+                false,
+                true
+            );
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().NotBeNull();
+            ingredient.LowStockThreshold.Should().Be(3);
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
             _mockUow.Verify(u => u.CommitTransactionAsync(), Times.Once);

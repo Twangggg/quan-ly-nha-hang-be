@@ -51,6 +51,12 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
             try
             {
                 var repo = _unitOfWork.Repository<Ingredient>();
+                var settingsRepo = _unitOfWork.Repository<InventorySettings>();
+                var defaultLowStockThreshold =
+                    await settingsRepo
+                        .Query()
+                        .Select(x => x.DefaultLowStockThreshold)
+                        .FirstOrDefaultAsync(cancellationToken);
 
                 var ingredient = await repo.Query()
                     .FirstOrDefaultAsync(
@@ -105,10 +111,14 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
 
                 try
                 {
+                    var lowStockThreshold = request.UseDefaultLowStockThreshold
+                        ? defaultLowStockThreshold
+                        : request.LowStockThreshold;
+
                     ingredient.Update(
                         request.Name,
                         request.BaseUnit,
-                        request.LowStockThreshold,
+                        lowStockThreshold,
                         request.Description,
                         request.IsActive,
                         request.Code,
