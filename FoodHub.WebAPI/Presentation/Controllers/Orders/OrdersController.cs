@@ -10,6 +10,7 @@ using FoodHub.Application.Features.Orders.Commands.CancelOrder;
 using FoodHub.Application.Features.Orders.Commands.CompleteOrder;
 using FoodHub.Application.Features.Orders.Commands.CreateOrder;
 using FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen;
+using FoodHub.Application.Features.Orders.Queries.GetOrderAuditLogs;
 using FoodHub.Application.Features.Orders.Queries.GetOrderById;
 using FoodHub.Application.Features.Orders.Queries.GetOrders;
 using FoodHub.Application.Interfaces.Common;
@@ -102,6 +103,26 @@ namespace FoodHub.Presentation.Controllers
         /// Gửi toàn bộ yêu cầu của đơn hàng xuống bếp.
         /// </summary>
         /// <remarks>Khi nhân viên nhấn "Gửi bếp", trạng thái các món ăn sẽ chuyển sang 'Pending'.</remarks>
+        [HttpGet("{orderId:guid}/audit-logs")]
+        [HasPermission(Permissions.Orders.View)]
+        [ProducesResponseType(
+            typeof(Result<PagedResult<GetOrderAuditLogsResponse>>),
+            StatusCodes.Status200OK
+        )]
+        public async Task<IActionResult> GetOrderAuditLogs(
+            Guid orderId,
+            [FromQuery] PaginationParams pagination
+        )
+        {
+            var result = await _mediator.Send(new GetOrderAuditLogsQuery(orderId, pagination));
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
+
+            return HandleResult(result);
+        }
+
         [HttpPost("{orderId:guid}/submit-to-kitchen")]
         [HasPermission(Permissions.Orders.SubmitToKitchen)]
         [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]

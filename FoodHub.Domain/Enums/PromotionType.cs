@@ -1,6 +1,6 @@
 namespace FoodHub.Domain.Enums
 {
-    public enum VoucherType
+    public enum PromotionType
     {
         Percent = 1,
         Fixed = 2,
