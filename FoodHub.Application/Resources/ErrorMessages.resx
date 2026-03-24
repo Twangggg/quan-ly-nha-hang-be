@@ -459,8 +459,8 @@
   <data name="OrderItem.MustBePreparingToStartCooking" xml:space="preserve">
     <value>Món phải đang ở trạng thái Chuẩn bị để bắt đầu nấu.</value>
   </data>
-  <data name="OrderItem.MustBeCookingToReady" xml:space="preserve">
-    <value>Món phải đang nấu để chuyển sang trạng thái Sẵn sàng.</value>
+  <data name="OrderItem.MustBeCookingToComplete" xml:space="preserve">
+    <value>Món phải đang nấu để chuyển sang trạng thái Hoàn tất.</value>
   </data>
   <data name="OrderItem.MustBeCookingToReject" xml:space="preserve">
     <value>Món phải đang nấu để từ chối.</value>
@@ -650,5 +650,29 @@
   </data>
   <data name="Reservation.BreakTime" xml:space="preserve">
     <value>Nhà hàng đang trong giờ nghỉ giữa ca (14:00 - 17:00). Vui lòng chọn giờ khác.</value>
+  </data>
+  <data name="Promotion.NotFound" xml:space="preserve">
+    <value>Mã khuyến mãi không tồn tại.</value>
+  </data>
+  <data name="Promotion.Inactive" xml:space="preserve">
+    <value>Mã khuyến mãi đã ngưng hoạt động.</value>
+  </data>
+  <data name="Promotion.NotStarted" xml:space="preserve">
+    <value>Chương trình khuyến mãi chưa bắt đầu.</value>
+  </data>
+  <data name="Promotion.Expired" xml:space="preserve">
+    <value>Mã khuyến mãi đã hết hạn.</value>
+  </data>
+  <data name="Promotion.UsageLimitExceeded" xml:space="preserve">
+    <value>Mã khuyến mãi đã hết lượt sử dụng.</value>
+  </data>
+  <data name="Promotion.InvalidTime" xml:space="preserve">
+    <value>Mã khuyến mãi không áp dụng trong khung giờ này.</value>
+  </data>
+  <data name="Promotion.BelowMinAmount" xml:space="preserve">
+    <value>Đơn hàng chưa đủ giá trị tối thiểu để áp dụng mã này.</value>
+  </data>
+  <data name="Promotion.InvalidVoucher" xml:space="preserve">
+    <value>Mã khuyến mãi không hợp lệ.</value>
   </data>
 </root>

@@ -7,10 +7,10 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -58,7 +58,10 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
 
             List<GetTablesResponse> tables;
 
-            var cachedResult = await _cacheService.GetAsync<List<GetTablesResponse>>(cacheKey, cancellationToken);
+            var cachedResult = await _cacheService.GetAsync<List<GetTablesResponse>>(
+                cacheKey,
+                cancellationToken
+            );
             if (cachedResult != null)
             {
                 tables = cachedResult;
@@ -81,22 +84,24 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
                 await _cacheService.SetAsync(cacheKey, tables, CacheTTL.Tables, cancellationToken);
             }
 
-            var responseTables = tables.Select(t => new GetTablesResponse
-            {
-                TableId = t.TableId,
-                TableCode = t.TableCode,
-                TableNumber = t.TableNumber,
-                Capacity = t.Capacity,
-                AreaId = t.AreaId,
-                AreaName = t.AreaName,
-                Status = t.Status,
-                StatusName = t.StatusName,
-                CreatedAt = t.CreatedAt,
-                CreatedBy = t.CreatedBy,
-                UpdatedAt = t.UpdatedAt,
-                UpdatedBy = t.UpdatedBy,
-                DeletedAt = t.DeletedAt
-            }).ToList();
+            var responseTables = tables
+                .Select(t => new GetTablesResponse
+                {
+                    TableId = t.TableId,
+                    TableCode = t.TableCode,
+                    TableNumber = t.TableNumber,
+                    Capacity = t.Capacity,
+                    AreaId = t.AreaId,
+                    AreaName = t.AreaName,
+                    Status = t.Status,
+                    StatusName = t.StatusName,
+                    CreatedAt = t.CreatedAt,
+                    CreatedBy = t.CreatedBy,
+                    UpdatedAt = t.UpdatedAt,
+                    UpdatedBy = t.UpdatedBy,
+                    DeletedAt = t.DeletedAt,
+                })
+                .ToList();
 
             var today = DateOnly.FromDateTime(DateTime.Now);
             var currentTime = DateTime.Now.TimeOfDay;
@@ -104,12 +109,16 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
 
             var tableIds = responseTables.Select(t => t.TableId).ToList();
 
-            var reservedTableIds = await _unitOfWork.Repository<Reservation>().Query()
-                .Where(r => tableIds.Contains(r.TableId)
-                         && r.ReservationDate == today
-                         && r.Status == ReservationStatus.Booked
-                         && r.ReservationTime > currentTime
-                         && r.ReservationTime <= currentTime.Add(bufferTime))
+            var reservedTableIds = await _unitOfWork
+                .Repository<Reservation>()
+                .Query()
+                .Where(r =>
+                    tableIds.Contains(r.TableId)
+                    && r.ReservationDate == today
+                    && r.Status == ReservationStatus.Booked
+                    && r.ReservationTime > currentTime
+                    && r.ReservationTime <= currentTime.Add(bufferTime)
+                )
                 .Select(r => r.TableId)
                 .Distinct()
                 .ToListAsync(cancellationToken);
@@ -118,7 +127,10 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
             {
                 foreach (var table in responseTables)
                 {
-                    if (table.Status == (int)TableStatus.Available && reservedTableIds.Contains(table.TableId))
+                    if (
+                        table.Status == (int)TableStatus.Available
+                        && reservedTableIds.Contains(table.TableId)
+                    )
                     {
                         table.Status = (int)TableStatus.Reserved;
                         table.StatusName = TableStatus.Reserved.ToString();
@@ -129,5 +141,4 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
             return Result<List<GetTablesResponse>>.Success(responseTables);
         }
     }
-
 }

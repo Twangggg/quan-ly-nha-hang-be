@@ -125,7 +125,8 @@ namespace FoodHub.Domain.Entities
             {
                 Email =
                     originalEmail.Length + suffix.Length > EmployeeEmailMaxLength
-                        ? originalEmail.Substring(0, EmployeeEmailMaxLength - suffix.Length) + suffix
+                        ? originalEmail.Substring(0, EmployeeEmailMaxLength - suffix.Length)
+                            + suffix
                         : originalEmail + suffix;
             }
 

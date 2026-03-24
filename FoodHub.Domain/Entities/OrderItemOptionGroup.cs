@@ -16,6 +16,7 @@ namespace FoodHub.Domain.Entities
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
-        public virtual ICollection<OrderItemOptionValue> OptionValues { get; set; } = new List<OrderItemOptionValue>();
+        public virtual ICollection<OrderItemOptionValue> OptionValues { get; set; } =
+            new List<OrderItemOptionValue>();
     }
 }

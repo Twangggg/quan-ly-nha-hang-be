@@ -74,7 +74,6 @@ namespace FoodHub.Tests.Features.Order.Commands
                 {
                     new OrderItem { Status = OrderItemStatus.Preparing },
                     new OrderItem { Status = OrderItemStatus.Cooking },
-                    new OrderItem { Status = OrderItemStatus.Ready },
                     new OrderItem { Status = OrderItemStatus.Completed }, // Should not be cancelled
                 },
             };
@@ -208,7 +207,6 @@ namespace FoodHub.Tests.Features.Order.Commands
                 {
                     new OrderItem { Status = OrderItemStatus.Preparing },
                     new OrderItem { Status = OrderItemStatus.Cooking },
-                    new OrderItem { Status = OrderItemStatus.Ready },
                 },
             };
 

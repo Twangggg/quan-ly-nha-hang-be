@@ -12,7 +12,5 @@ namespace FoodHub.Domain.Entities
         public string? NewValues { get; set; } // JSON
         public string? ActorInfo { get; set; } // JSON or string (Employee ID or Guest Name/Phone)
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-
     }
-
 }

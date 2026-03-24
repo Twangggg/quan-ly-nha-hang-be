@@ -66,22 +66,21 @@ namespace FoodHub.Application.Features.Dashboard.Orders.Queries.GetOrderDashboar
                 AvailableTables = tables.Count(x =>
                     !occupiedTableIds.Contains(x.TableId) && x.Status == TableStatus.Available
                 ),
-                CleaningTables = tables.Count(x =>
-                    !occupiedTableIds.Contains(x.TableId) && x.Status == TableStatus.Cleaning
-                ),
                 PendingKitchenItems = activeOrders.Sum(x =>
                     x.OrderItems.Count(item => item.Status == OrderItemStatus.Preparing)
                 ),
                 CookingItems = activeOrders.Sum(x =>
                     x.OrderItems.Count(item => item.Status == OrderItemStatus.Cooking)
                 ),
-                ReadyItems = activeOrders.Sum(x =>
-                    x.OrderItems.Count(item => item.Status == OrderItemStatus.Ready)
+                CompletedItems = activeOrders.Sum(x =>
+                    x.OrderItems.Count(item => item.Status == OrderItemStatus.Completed)
                 ),
                 WaitingCheckoutOrders = activeOrders.Count(x =>
                     x.OrderItems.Any() && x.OrderItems.All(item => item.IsFinished())
                 ),
-                TodayPaidOrders = orders.Count(x => x.PaidAt.HasValue && x.PaidAt.Value.Date == utcToday),
+                TodayPaidOrders = orders.Count(x =>
+                    x.PaidAt.HasValue && x.PaidAt.Value.Date == utcToday
+                ),
                 TodayRevenue = orders
                     .Where(x => x.PaidAt.HasValue && x.PaidAt.Value.Date == utcToday)
                     .Sum(x => x.TotalAmount),
@@ -131,7 +130,10 @@ namespace FoodHub.Application.Features.Dashboard.Orders.Queries.GetOrderDashboar
                 return null;
             }
 
-            if (order.Table.Area is not null && !string.IsNullOrWhiteSpace(order.Table.Area.CodePrefix))
+            if (
+                order.Table.Area is not null
+                && !string.IsNullOrWhiteSpace(order.Table.Area.CodePrefix)
+            )
             {
                 return $"{order.Table.Area.CodePrefix}_{order.Table.TableNumber}";
             }

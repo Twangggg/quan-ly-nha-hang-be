@@ -181,9 +181,9 @@ namespace FoodHub.Tests.Features.KDS.Queries
                     Order = order,
                     EmployeeId = employee.EmployeeId,
                     Employee = employee,
-                    Action = "KDS_MARK_READY",
+                    Action = "KDS_COMPLETE_COOKING",
                     ChangeReason = null,
-                    NewValue = "Ready",
+                    NewValue = "Completed",
                     CreatedAt = DateTime.UtcNow.AddDays(-3),
                 },
             };
@@ -266,7 +266,7 @@ namespace FoodHub.Tests.Features.KDS.Queries
                     Order = order,
                     EmployeeId = employee.EmployeeId,
                     Employee = employee,
-                    Action = "KDS_MARK_READY",
+                    Action = "KDS_COMPLETE_COOKING",
                     CreatedAt = DateTime.UtcNow.AddMinutes(-20),
                 },
                 new OrderAuditLog

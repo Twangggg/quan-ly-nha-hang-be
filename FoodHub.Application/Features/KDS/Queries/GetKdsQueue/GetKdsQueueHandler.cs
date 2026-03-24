@@ -84,7 +84,6 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
                     FinishedOrderItems =
                         oi.Order?.OrderItems?.Count(x =>
                             x.Status == OrderItemStatus.Completed
-                            || x.Status == OrderItemStatus.Ready
                         ) ?? 0,
                     ExpectedTimeSeconds = (oi.MenuItem != null ? oi.MenuItem.ExpectedTime : 0) * 60,
                 })

@@ -1,11 +1,11 @@
-using FoodHub.Application.Common.Models;
 using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
@@ -122,7 +122,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
                 _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
 
-                // Update Table to Cleaning if DineIn
+                // Dine-in tables are released immediately after checkout.
                 if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
                 {
                     var tableIdSnapshot = order.TableId.Value; // Capture before nulling
@@ -137,8 +137,8 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                         if (statusChanged)
                         {
                             table.UpdatedAt = DateTime.UtcNow;
+                            table.UpdatedBy = auditorId;
                         }
-                        //table.MarkAsAvailable();
                         _unitOfWork.Repository<Domain.Entities.Table>().Update(table);
 
                         // Cập nhật Reservation sang Completed
@@ -156,23 +156,22 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                             }
                         }
 
-                        // Chú ý: Tại đây nếu một nhóm khách ngồi nhiều bàn (đã gộp đơn về đơn này), 
-                        // nhân viên sẽ cần giải phóng các bàn kia thủ công hoặc chúng ta cần lưu vết liên kết đa bàn.
-                        // Hiện tại hệ thống ưu tiên tính minh bạch: giải phóng bàn chính gắn với đơn hàng.
-
                         // Ngắt kết nối đơn hàng với bàn sau khi đã giải phóng bàn xong
                         order.TableId = null;
                         _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
-                    
+
                         if (table != null)
                         {
-                            await _signalRService.NotifyTableStatusChangedAsync(tableIdSnapshot, table.Status.ToString());
+                            await _signalRService.NotifyTableStatusChangedAsync(
+                                tableIdSnapshot,
+                                table.Status.ToString()
+                            );
                         }
                     }
                 }
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
-                
+
                 await _cacheService.RemoveByPatternAsync(
                     CacheKey.TableList + "*",
                     cancellationToken

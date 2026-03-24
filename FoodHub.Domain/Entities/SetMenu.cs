@@ -19,7 +19,8 @@ namespace FoodHub.Domain.Entities
         public bool IsOutOfStock { get; set; }
         public Guid? CategoryId { get; set; }
         public virtual Category? Category { get; set; }
-        public virtual ICollection<SetMenuItem> SetMenuItems { get; set; } = new List<SetMenuItem>();
+        public virtual ICollection<SetMenuItem> SetMenuItems { get; set; } =
+            new List<SetMenuItem>();
 
         public bool CanDelete()
         {
@@ -63,7 +64,8 @@ namespace FoodHub.Domain.Entities
 
         public decimal GetProfitMargin()
         {
-            if (Price <= 0) return 0;
+            if (Price <= 0)
+                return 0;
             return ((Price - CostPrice) / Price) * 100;
         }
 

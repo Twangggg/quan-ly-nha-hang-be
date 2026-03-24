@@ -12,12 +12,9 @@ namespace FoodHub.Domain.Entities
         public virtual Area Area { get; set; } = null!;
         public TableStatus Status { get; set; } = TableStatus.Available;
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
-        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+        public virtual ICollection<Reservation> Reservations { get; set; } =
+            new List<Reservation>();
 
-        public void MarkAsCleaning()
-        {
-            Status = TableStatus.Cleaning;
-        }
         public void MarkAsAvailable()
         {
             Status = TableStatus.Available;
@@ -78,7 +75,9 @@ namespace FoodHub.Domain.Entities
         {
             if (Orders == null)
             {
-                throw new InvalidOperationException("Orders navigation property must be loaded before calling CanAvailable.");
+                throw new InvalidOperationException(
+                    "Orders navigation property must be loaded before calling CanAvailable."
+                );
             }
 
             var hasServingOrders = Orders.Any(o => o.Status == OrderStatus.Serving);

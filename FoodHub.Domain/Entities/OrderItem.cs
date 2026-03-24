@@ -39,7 +39,11 @@ namespace FoodHub.Domain.Entities
 
         public decimal GetTotalPrice()
         {
-            if (Status == OrderItemStatus.Cancelled || Status == OrderItemStatus.Rejected || IsFreeItem)
+            if (
+                Status == OrderItemStatus.Cancelled
+                || Status == OrderItemStatus.Rejected
+                || IsFreeItem
+            )
                 return 0;
 
             var optionsTotal =
@@ -203,9 +207,7 @@ namespace FoodHub.Domain.Entities
         }
 
         public bool CanCancel() =>
-            Status == OrderItemStatus.Preparing
-            || Status == OrderItemStatus.Cooking
-            || Status == OrderItemStatus.Ready;
+            Status == OrderItemStatus.Preparing || Status == OrderItemStatus.Cooking;
 
         public DomainResult Cancel()
         {
@@ -231,13 +233,13 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
-        public DomainResult MarkReady()
+        public DomainResult CompleteCooking()
         {
-            if (Status != OrderItemStatus.Cooking && Status != OrderItemStatus.Preparing)
+            if (Status != OrderItemStatus.Cooking)
             {
-                return DomainResult.Failure(DomainErrors.OrderItem.MustBeCookingToReady);
+                return DomainResult.Failure(DomainErrors.OrderItem.MustBeCookingToComplete);
             }
-            Status = OrderItemStatus.Ready;
+            Status = OrderItemStatus.Completed;
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }

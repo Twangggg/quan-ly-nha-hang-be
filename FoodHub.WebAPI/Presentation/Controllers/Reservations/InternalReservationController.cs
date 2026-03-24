@@ -36,6 +36,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         /// <param name="query">Bộ lọc và tham số phân trang cho danh sách đặt bàn.</param>
         /// <response code="200">Trả về danh sách các đơn đặt bàn theo yêu cầu.</response>
         [HttpGet]
+        [HasPermission(Permissions.Reservations.View)]
         [ProducesResponseType(typeof(Result<PagedResult<ReservationDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetReservations([FromQuery] GetReservationsQuery query)
         {
@@ -50,6 +51,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         /// <response code="200">Tạo mới thành công, trả về ID của đơn đặt bàn.</response>
         /// <response code="400">Dữ liệu đầu vào không hợp lệ.</response>
         [HttpPost]
+        [HasPermission(Permissions.Reservations.Create)]
         [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateReservation([FromBody] CreateInternalReservationCommand command)
@@ -67,12 +69,13 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         /// <response code="400">ID không khớp hoặc dữ liệu không hợp lệ.</response>
         /// <response code="404">Không tìm thấy đơn đặt bàn.</response>
         [HttpPut("{id}")]
+        [HasPermission(Permissions.Reservations.Update)]
         [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateReservation(Guid id, [FromBody] UpdateReservationCommand command)
         {
-            command.ReservationId = id; 
+            command.ReservationId = id;
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
@@ -85,6 +88,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         /// <response code="404">Không tìm thấy đơn đặt bàn.</response>
         /// <response code="400">Trạng thái hiện tại của đơn đặt bàn không cho phép hủy.</response>
         [HttpPost("{id}/cancel")]
+        [HasPermission(Permissions.Reservations.Cancel)]
         [ProducesResponseType(typeof(Result<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -111,12 +115,12 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> CheckIn(Guid id, [FromBody] CheckInReservationRequest? request)
         {
-            var command = new CheckInReservationCommand 
-            { 
-                ReservationId = id, 
-                NewAreaId = request?.NewAreaId 
+            var command = new CheckInReservationCommand
+            {
+                ReservationId = id,
+                NewAreaId = request?.NewAreaId
             };
-            
+
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }

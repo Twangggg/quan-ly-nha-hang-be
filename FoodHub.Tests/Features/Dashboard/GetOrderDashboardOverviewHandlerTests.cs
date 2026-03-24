@@ -18,19 +18,17 @@ namespace FoodHub.Tests.Features.Dashboard
             var mockOrderRepo = new Mock<IGenericRepository<OrderEntity>>();
             var mockTableRepo = new Mock<IGenericRepository<Table>>();
 
-            var area = new Area { AreaId = Guid.NewGuid(), Name = "Tang 1", CodePrefix = "T1" };
+            var area = new Area
+            {
+                AreaId = Guid.NewGuid(),
+                Name = "Tang 1",
+                CodePrefix = "T1",
+            };
             var dineInTable = new Table
             {
                 TableId = Guid.NewGuid(),
                 TableNumber = 1,
                 Status = TableStatus.Available,
-                Area = area,
-            };
-            var cleaningTable = new Table
-            {
-                TableId = Guid.NewGuid(),
-                TableNumber = 2,
-                Status = TableStatus.Cleaning,
                 Area = area,
             };
             var availableTable = new Table
@@ -64,7 +62,7 @@ namespace FoodHub.Tests.Features.Dashboard
                     new OrderItem
                     {
                         OrderItemId = Guid.NewGuid(),
-                        Status = OrderItemStatus.Ready,
+                        Status = OrderItemStatus.Completed,
                         Quantity = 1,
                         CreatedAt = DateTime.UtcNow.AddMinutes(-18),
                     },
@@ -116,14 +114,14 @@ namespace FoodHub.Tests.Features.Dashboard
             mockOrderRepo
                 .Setup(x => x.Query())
                 .Returns(
-                     new List<OrderEntity> { servingOrder, waitingCheckoutOrder, paidOrderToday }
+                    new List<OrderEntity> { servingOrder, waitingCheckoutOrder, paidOrderToday }
                         .AsQueryable()
                         .BuildMock()
                 );
             mockTableRepo
                 .Setup(x => x.Query())
                 .Returns(
-                    new List<Table> { dineInTable, cleaningTable, availableTable }
+                    new List<Table> { dineInTable, availableTable }
                         .AsQueryable()
                         .BuildMock()
                 );
@@ -147,17 +145,21 @@ namespace FoodHub.Tests.Features.Dashboard
             result.Data.DeliveryOrders.Should().Be(0);
             result.Data.OccupiedTables.Should().Be(1);
             result.Data.AvailableTables.Should().Be(1);
-            result.Data.CleaningTables.Should().Be(1);
+            result.Data.AvailableTables.Should().Be(1);
             result.Data.PendingKitchenItems.Should().Be(1);
             result.Data.CookingItems.Should().Be(0);
-            result.Data.ReadyItems.Should().Be(1);
+            result.Data.CompletedItems.Should().Be(2);
             result.Data.WaitingCheckoutOrders.Should().Be(1);
             result.Data.TodayPaidOrders.Should().Be(1);
             result.Data.TodayRevenue.Should().Be(150_000);
             result.Data.TopActiveOrders.Should().HaveCount(2);
             result.Data.TopActiveOrders.First().TableLabel.Should().Be("T1_1");
-            result.Data.StatusBreakdown.Should().Contain(x => x.Status == nameof(OrderStatus.Serving) && x.Count == 2);
-            result.Data.StatusBreakdown.Should().Contain(x => x.Status == nameof(OrderStatus.Paid) && x.Count == 1);
+            result
+                .Data.StatusBreakdown.Should()
+                .Contain(x => x.Status == nameof(OrderStatus.Serving) && x.Count == 2);
+            result
+                .Data.StatusBreakdown.Should()
+                .Contain(x => x.Status == nameof(OrderStatus.Paid) && x.Count == 1);
         }
     }
 }

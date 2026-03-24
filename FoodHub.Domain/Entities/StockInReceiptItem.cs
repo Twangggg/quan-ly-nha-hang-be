@@ -16,7 +16,8 @@ namespace FoodHub.Domain.Entities
 
         public StockInReceipt StockInReceipt { get; private set; } = null!;
         public Ingredient Ingredient { get; private set; } = null!;
-        public ICollection<InventoryLot> InventoryLots { get; private set; } = new List<InventoryLot>();
+        public ICollection<InventoryLot> InventoryLots { get; private set; } =
+            new List<InventoryLot>();
 
         public static StockInReceiptItem Create(
             Guid stockInReceiptId,

@@ -3,10 +3,10 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -137,7 +137,6 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                                 oi.Order?.OrderItems?.Count ?? 0,
                                 oi.Order?.OrderItems?.Count(x =>
                                     x.Status == OrderItemStatus.Completed
-                                    || x.Status == OrderItemStatus.Ready
                                 ) ?? 0
                             )
                         )
