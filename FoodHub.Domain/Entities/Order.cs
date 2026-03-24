@@ -159,6 +159,11 @@ namespace FoodHub.Domain.Entities
             TotalAmount = tempAmount + VatAmount;
         }
 
+        public decimal GetPromotionValidationSubTotal()
+        {
+            return OrderItems.Sum(item => item.GetGrossTotalPrice());
+        }
+
         public void ChangeTable(Guid newTableId, DateTime updatedAt, Guid? updatedBy)
         {
             TableId = newTableId;
@@ -541,7 +546,10 @@ namespace FoodHub.Domain.Entities
             }
 
             // Using UTCNow to match Promotion's UTC comparison
-            var validation = Promotion.Validate(SubTotal, DateTimeOffset.UtcNow);
+            var validation = Promotion.Validate(
+                GetPromotionValidationSubTotal(),
+                DateTimeOffset.UtcNow
+            );
             if (!validation.IsSuccess)
             {
                 return 0;

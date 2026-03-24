@@ -97,6 +97,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Vouchers.Update,
                 Permissions.Vouchers.Delete,
                 Permissions.Vouchers.Apply,
+                Permissions.Vouchers.Unapply,
             };
         }
 

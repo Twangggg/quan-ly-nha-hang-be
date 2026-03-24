@@ -22,7 +22,6 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Promotions
     /// Quản lý các hoạt động liên quan đến Khuyến mãi (Promotions).
     /// </summary>
     [Tags("Khuyến mãi (Promotions)")]
-    [Route("api/v1/promotions")]
     public class PromotionsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
@@ -147,7 +146,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Promotions
         /// </summary>
         [HttpPost("apply")]
         [HasPermission(Permissions.Vouchers.Apply)] // Reusing permission for now
-        [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<ApplyPromotionResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ApplyPromotion([FromBody] ApplyPromotionCommand command)
         {
