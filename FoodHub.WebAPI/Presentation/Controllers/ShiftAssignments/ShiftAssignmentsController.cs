@@ -1,7 +1,7 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift;
-using FoodHub.Application.Features.ShiftAssignments.Commands.AssignShiftRange;
+using FoodHub.Application.Features.ShiftAssignments.Commands.AutoAssignShift;
 using FoodHub.Application.Features.ShiftAssignments.Commands.CancelShiftAssignment;
 using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignmentById;
 using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignments;
@@ -95,21 +95,20 @@ namespace FoodHub.Presentation.Controllers
         }
 
         /// <summary>
-        /// Gán một ca làm việc cho nhân viên theo khoảng ngày.
+        /// Tự động gán ca làm việc cho nhân viên trong một khoảng thời gian.
         /// </summary>
         /// <remarks>
         /// Yêu cầu quyền: ShiftAssignments.Create.
+        /// Các ngày đã có lịch sẽ được bỏ qua.
         /// </remarks>
-        /// <param name="command">Thông tin gán ca theo khoảng ngày.</param>
-        /// <response code="200">Đã gán ca thành công.</response>
+        /// <param name="command">Thông tin gán ca tự động.</param>
+        /// <response code="200">Đã xử lý gán ca tự động thành công.</response>
         /// <response code="400">Dữ liệu không hợp lệ.</response>
-        /// <response code="409">Xung đột lịch làm việc.</response>
-        [HttpPost("range")]
+        [HttpPost("auto")]
         [HasPermission(Permissions.ShiftAssignments.Create)]
-        [ProducesResponseType(typeof(Result<IEnumerable<AssignShiftResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<List<AssignShiftResponse>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> AssignShiftRange([FromBody] AssignShiftRangeCommand command)
+        public async Task<IActionResult> AutoAssignShift([FromBody] AutoAssignShiftCommand command)
         {
             var result = await _mediator.Send(command);
             return HandleResult(result);

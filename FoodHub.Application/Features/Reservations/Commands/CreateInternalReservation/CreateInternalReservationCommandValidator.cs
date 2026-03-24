@@ -21,8 +21,12 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                 .GreaterThan(0).WithMessage(messageService.GetMessage(MessageKeys.Reservation.InvalidGuestCount));
 
             RuleFor(x => x.ReservationTime)
-                .InclusiveBetween(new TimeSpan(9, 0, 0), new TimeSpan(20, 0, 0))
+                .InclusiveBetween(new TimeSpan(10, 30, 0), new TimeSpan(23, 0, 0))
                 .WithMessage(messageService.GetMessage(MessageKeys.Reservation.InvalidTime));
+
+            RuleFor(x => x.ReservationTime)
+                .Must(time => !(time >= new TimeSpan(14, 0, 0) && time < new TimeSpan(17, 0, 0)))
+                .WithMessage(messageService.GetMessage(MessageKeys.Reservation.BreakTime));
 
             RuleFor(x => x)
                 .Must(x => IsInFuture(x.ReservationDate, x.ReservationTime))

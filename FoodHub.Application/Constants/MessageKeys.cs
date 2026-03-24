@@ -1,4 +1,3 @@
-using System.Reflection.Metadata;
 
 namespace FoodHub.Application.Constants
 {
@@ -259,6 +258,7 @@ namespace FoodHub.Application.Constants
             public const string VipRequired = "Reservation.VipRequired";
             public const string InvalidNewTable = "Reservation.InvalidNewTable";
             public const string NoTableInArea = "Reservation.NoTableInArea";
+            public const string BreakTime = "Reservation.BreakTime";
         }
 
         public static class SalesAnalytics
@@ -334,6 +334,8 @@ namespace FoodHub.Application.Constants
         public static class Billing
         {
             public const string PdfExportError = "Billing.PdfExportError";
+            public const string SplitBillRequiresItems = "Billing.SplitBillRequiresItems";
+            public const string SplitBillFailed = "Billing.SplitBillFailed";
         }
 
         public static class StockInReceipt
@@ -411,16 +413,6 @@ namespace FoodHub.Application.Constants
             public const string InsufficientAmount = "Invoice.InsufficientAmount";
         }
 
-        public static class Voucher
-        {
-            public const string NotFound = "Voucher.NotFound";
-            public const string CodeAlreadyExists = "Voucher.CodeAlreadyExists";
-            public const string Invalid = "Voucher.Invalid";
-            public const string NotSuitableForOrder = "Voucher.NotSuitableForOrder";
-            public const string NotFreeItemInOrder = "Voucher.NotFreeItemInOrder";
-            public const string BelowMinAmount = "Voucher.BelowMinAmount";
-        }
-
         public static class Shift
         {
             public const string NotFound = "Shift.NotFound";
@@ -436,12 +428,21 @@ namespace FoodHub.Application.Constants
 
         public static class ShiftAssignment
         {
-            public const string NotFound          = "ShiftAssignment.NotFound";
-            public const string OverlappingShift  = "ShiftAssignment.OverlappingShift";
-            public const string ShiftNotActive    = "ShiftAssignment.ShiftNotActive";
+            public const string NotFound = "ShiftAssignment.NotFound";
+            public const string OverlappingShift = "ShiftAssignment.OverlappingShift";
+            public const string ShiftNotActive = "ShiftAssignment.ShiftNotActive";
             public const string EmployeeNotActive = "ShiftAssignment.EmployeeNotActive";
-            public const string OvertimeExceeded  = "ShiftAssignment.OvertimeExceeded";
+            public const string OvertimeExceeded = "ShiftAssignment.OvertimeExceeded";
             public const string MaxOneShiftPerDay = "ShiftAssignment.MaxOneShiftPerDay";
+        }
+        public static class Voucher
+        {
+            public const string NotFound = "Voucher.NotFound";
+            public const string CodeAlreadyExists = "Voucher.CodeAlreadyExists";
+            public const string Invalid = "Voucher.Invalid";
+            public const string NotSuitableForOrder = "Voucher.NotSuitableForOrder";
+            public const string NotFreeItemInOrder = "Voucher.NotFreeItemInOrder";
+            public const string BelowMinAmount = "Voucher.BelowMinAmount";
         }
     }
 }

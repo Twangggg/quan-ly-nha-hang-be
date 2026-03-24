@@ -37,8 +37,10 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             RuleFor(x => x)
                 .Must(x => IsValidReservationTime(x.ReservationDate, x.ReservationTime))
                 .WithMessage(_messageService.GetMessage(MessageKeys.Reservation.InvalidTime))
-                .Must(x => x.ReservationTime >= new TimeSpan(9, 0, 0) && x.ReservationTime <= new TimeSpan(20, 0, 0))
-                .WithMessage(_messageService.GetMessage(MessageKeys.Reservation.InvalidTime));
+                .Must(x => x.ReservationTime >= new TimeSpan(10, 30, 0) && x.ReservationTime <= new TimeSpan(23, 0, 0))
+                .WithMessage(_messageService.GetMessage(MessageKeys.Reservation.InvalidTime))
+                .Must(x => !IsBreakTime(x.ReservationTime))
+                .WithMessage(_messageService.GetMessage(MessageKeys.Reservation.BreakTime));
         }
 
         private bool IsValidReservationTime(DateOnly date, TimeSpan time)
@@ -55,6 +57,11 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             }
 
             return true;
+        }
+
+        private bool IsBreakTime(TimeSpan time)
+        {
+            return time >= new TimeSpan(14, 0, 0) && time < new TimeSpan(17, 0, 0);
         }
     }
 }

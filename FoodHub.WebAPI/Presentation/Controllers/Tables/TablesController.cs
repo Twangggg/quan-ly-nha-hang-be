@@ -6,7 +6,7 @@ using FoodHub.Application.Features.Tables.Commands.UpdateTable;
 using FoodHub.Application.Features.Tables.Commands.UpdateTableStatus;
 using FoodHub.Application.Features.Tables.Queries.GetTableById;
 using FoodHub.Application.Features.Tables.Queries.GetTables;
-using FoodHub.Application.Features.Tables.Queries.GetTablesByArea;
+
 using FoodHub.Domain.Enums;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
@@ -45,23 +45,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
             return HandleResult(result);
         }
 
-        /// <summary>
-        /// Lấy danh sách các bàn ăn theo khu vực (area).
-        /// </summary>
-        /// <param name="areaId">ID của khu vực.</param>
-        /// <returns code="200">Danh sách các bàn ăn thuộc khu vực được chỉ định.</returns>
-        [HttpGet("area/{areaId}")]
-        [HasPermission(Permissions.Tables.View)]
-        [ProducesResponseType(
-            typeof(Result<List<GetTablesByAreaResponse>>),
-            StatusCodes.Status200OK
-        )]
-        public async Task<IActionResult> GetTablesByArea(Guid areaId)
-        {
-            var query = new GetTablesByAreaQuery(areaId);
-            var result = await _mediator.Send(query);
-            return HandleResult(result);
-        }
+
 
         /// <summary>
         /// Lấy thông tin chi tiết của một bàn ăn theo ID.

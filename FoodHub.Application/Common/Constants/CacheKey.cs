@@ -50,7 +50,7 @@ public static class CacheKey
 
     /// <summary>
     /// Key cho danh sách set menus (base key)
-    /// Sẽ kết hợp với filters/pagination
+    /// Sẽ kết hợp with filters/pagination
     /// </summary>
     public const string SetMenuList = "setmenu:list";
 

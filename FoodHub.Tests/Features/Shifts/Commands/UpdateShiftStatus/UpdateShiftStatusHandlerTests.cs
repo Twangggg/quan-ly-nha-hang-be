@@ -22,6 +22,7 @@ namespace FoodHub.Tests.Features.Shifts.Commands.UpdateShiftStatus
             _mockCache = new Mock<ICacheService>();
             _mockMessage = new Mock<IMessageService>();
             _mockCurrentUser = new Mock<ICurrentUserService>();
+            _mockMessage.Setup(m => m.GetMessage(It.IsAny<string>())).Returns((string key) => key);
         }
 
         [Fact]
@@ -33,6 +34,8 @@ namespace FoodHub.Tests.Features.Shifts.Commands.UpdateShiftStatus
             shift.ShiftId = shiftId;
 
             var command = new UpdateShiftStatusCommand(shiftId, false);
+            
+            _mockCurrentUser.Setup(c => c.UserId).Returns(Guid.NewGuid().ToString());
             
             var repo = new Mock<IGenericRepository<Shift>>();
             repo.Setup(r => r.Query()).Returns(new List<Shift> { shift }.AsQueryable().BuildMock());
@@ -48,7 +51,7 @@ namespace FoodHub.Tests.Features.Shifts.Commands.UpdateShiftStatus
             var result = await handler.Handle(command, CancellationToken.None);
 
             // Assert
-            result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue(result.Error);
             shift.Status.Should().Be(FoodHub.Domain.Enums.ShiftStatus.Inactive);
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
         }

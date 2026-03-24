@@ -13,6 +13,7 @@ using Xunit;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using FoodHub.Application.Extensions.Mappings;
  
 namespace FoodHub.Tests.Features.Shifts.Queries.GetShifts
 {
@@ -27,9 +28,9 @@ namespace FoodHub.Tests.Features.Shifts.Queries.GetShifts
         public GetShiftsHandlerTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
-            _mapperMock = new Mock<IMapper>();
             _cacheServiceMock = new Mock<ICacheService>();
             _messageServiceMock = new Mock<IMessageService>();
+            _messageServiceMock.Setup(m => m.GetMessage(It.IsAny<string>())).Returns((string key) => key);
             _loggerMock = new Mock<ILogger<GetShiftsHandler>>();
         }
  
@@ -49,9 +50,17 @@ namespace FoodHub.Tests.Features.Shifts.Queries.GetShifts
  
             var pagination = new PaginationParams { PageNumber = 1, PageSize = 10 };
             var query = new GetShiftsQuery(pagination);
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+            var configurationProvider = new AutoMapper.MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<MappingProfile>();
+            }, mockLoggerFactory.Object);
+            var mapper = configurationProvider.CreateMapper();
+
             var handler = new GetShiftsHandler(
                 _unitOfWorkMock.Object, 
-                _mapperMock.Object, 
+                mapper, 
                 _cacheServiceMock.Object, 
                 _messageServiceMock.Object,
                 _loggerMock.Object);
@@ -60,7 +69,7 @@ namespace FoodHub.Tests.Features.Shifts.Queries.GetShifts
             var result = await handler.Handle(query, CancellationToken.None);
  
             // Assert
-            result.IsSuccess.Should().BeTrue();
+            result.IsSuccess.Should().BeTrue(result.Error);
             result.Data.Should().NotBeNull();
         }
     }

@@ -66,6 +66,8 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                     )
                 )
                 .Include(oi => oi.Order)
+                .Include(oi => oi.OptionGroups)
+                    .ThenInclude(og => og.OptionValues)
                 .ToListAsync(cancellationToken);
 
             var responseItems = items

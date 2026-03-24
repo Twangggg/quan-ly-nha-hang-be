@@ -577,4 +577,7 @@
   <data name="Reservation.NoTableInArea" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="Reservation.BreakTime" xml:space="preserve">
+    <value>The restaurant is on break (14:00 - 17:00). Please select a different time.</value>
+  </data>
 </root>

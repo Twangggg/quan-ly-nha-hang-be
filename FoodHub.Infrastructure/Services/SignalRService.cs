@@ -16,14 +16,17 @@ namespace FoodHub.Infrastructure.Services
     {
         private readonly IHubContext<KdsHub> _hubContext;
         private readonly IHubContext<BillingHub> _billingHubContext;
+        private readonly IHubContext<TableStatusHub> _tableStatusHubContext;
 
         public SignalRService(
             IHubContext<KdsHub> hubContext,
-            IHubContext<BillingHub> billingHubContext
+            IHubContext<BillingHub> billingHubContext,
+            IHubContext<TableStatusHub> tableStatusHubContext
         )
         {
             _hubContext = hubContext;
             _billingHubContext = billingHubContext;
+            _tableStatusHubContext = tableStatusHubContext;
         }
 
         // Thông báo khi có món ăn mới vừa được đặt (Submit Order/Add Item)
@@ -92,6 +95,14 @@ namespace FoodHub.Infrastructure.Services
             {
                 Console.WriteLine($"SignalR Error in NotifyShiftAssignmentAsync: {ex.Message}");
             }
+        }
+        public async Task NotifyTableStatusChangedAsync(Guid tableId, string newStatus)
+        {
+            // Bắn event tới tất cả client đang xem sơ đồ bàn
+            await _tableStatusHubContext.Clients.All.SendAsync(
+                "TableStatusChanged",
+                new { TableId = tableId, Status = newStatus }
+            );
         }
     }
 }

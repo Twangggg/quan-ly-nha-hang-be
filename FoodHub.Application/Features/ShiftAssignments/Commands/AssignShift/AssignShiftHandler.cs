@@ -14,7 +14,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift
 {
     public class AssignShiftHandler : IRequestHandler<AssignShiftCommand, Result<AssignShiftResponse>>
     {
-        private const double MaxDailyHours = 8.0;
+        private const double _MaxDailyHours = 8.0;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
@@ -50,8 +50,12 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift
             CancellationToken cancellationToken
         )
         {
+            _logger.LogInformation("Bắt đầu gán ca {ShiftId} cho nhân viên {EmployeeId} vào ngày {Date}", 
+                request.ShiftId, request.EmployeeId, request.AssignedDate);
+
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
+                _logger.LogWarning("Không xác định được ID người dùng hiện tại khi gán ca");
                 return Result<AssignShiftResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser),
                     ResultErrorType.Unauthorized
@@ -95,8 +99,9 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift
                 await _signalRService.NotifyShiftAssignmentAsync(employee.EmployeeId, shift.Name, assignment.AssignedDate, false);
 
                 await _unitOfWork.CommitTransactionAsync();
+                _logger.LogInformation("Đã gán thành công ca {ShiftId} cho nhân viên {EmployeeId}", request.ShiftId, request.EmployeeId);
                 await _cacheService.RemoveByPatternAsync(CacheKey.ShiftAssignmentList, cancellationToken);
-                
+
                 assignment.Employee = employee;
                 assignment.Shift = shift;
 
