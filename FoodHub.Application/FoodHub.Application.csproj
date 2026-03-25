@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
@@ -41,7 +41,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Attendances\Commands\CheckoutAttendance\" />
     <Folder Include="Features\Attendances\Queries\" />
     <Folder Include="Features\KDS\Commands\" />
     <Folder Include="Features\KDS\Queries\" />

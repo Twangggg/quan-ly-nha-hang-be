@@ -155,6 +155,10 @@ public static class CacheKey
     public const string ShiftAssignmentByEmployee = "shift-assignment:employee:{0}:{1}";
     // Example: string.Format(ShiftAssignmentByEmployeePagination, "employee123", "2024-01-01", "page1") → "shift-assignment:employee:employee123:pagination:page1"
     public const string ShiftAssignmentByEmployeePagination = "shift-assignment:employee:{0}:pagination:{2}";
+
+    // ==================== ATTENDANCES ====================
+    public const string AttendanceReportList = "attendance:report:list";
+
 }
 public static class CacheTTL
 {
@@ -172,4 +176,5 @@ public static class CacheTTL
     public static readonly TimeSpan Vouchers = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Shifts = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan ShiftAssignments = TimeSpan.FromMinutes(10);
+    public static readonly TimeSpan Attendances = TimeSpan.FromMinutes(10);
 }

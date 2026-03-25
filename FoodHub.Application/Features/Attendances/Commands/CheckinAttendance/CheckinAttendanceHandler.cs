@@ -1,4 +1,5 @@
 using AutoMapper;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
@@ -46,15 +47,24 @@ namespace FoodHub.Application.Features.Attendances.Commands.CheckinAttendance
             var now = DateTime.UtcNow;
             var today = DateOnly.FromDateTime(now);
 
+            // Phiên bản: Giữ nguyên NULL để làm cờ nhận diện Quên Check-out (Bỏ block Check-in ngày mới)
             var existingAttendance = await attendanceRepository
                 .Query()
+                .Include(a => a.ShiftAssignment)
                 .Where(a => a.EmployeeId == auditorId && a.CheckOutTime == null)
+                .OrderByDescending(a => a.CheckInTime)
                 .FirstOrDefaultAsync(cancellationToken);
+
             if (existingAttendance != null)
             {
-                _logger.LogWarning("User {AuditorId} has already checked in and has not checked out yet.", auditorId);
-                var errorMessage = _messageService.GetMessage(MessageKeys.Attendance.AlreadyCheckedIn);
-                return Result<CheckinAttendanceResponse>.Failure(errorMessage, ResultErrorType.BadRequest);
+                if (DateOnly.FromDateTime(existingAttendance.CheckInTime.Date) == today)
+                {
+                    _logger.LogWarning("User {AuditorId} has already checked in for today and has not checked out yet.", auditorId);
+                    var errorMessage = _messageService.GetMessage(MessageKeys.Attendance.AlreadyCheckedIn);
+                    return Result<CheckinAttendanceResponse>.Failure(errorMessage, ResultErrorType.BadRequest);
+                }
+
+                _logger.LogInformation("Skipping previous zombie attendance for user {AuditorId}. Proceeding a new checkin.", auditorId);
             }
 
             var shiftAssignments = await shiftAssignmentRepository
@@ -97,6 +107,8 @@ namespace FoodHub.Application.Features.Attendances.Commands.CheckinAttendance
 
             await attendanceRepository.AddAsync(attendance);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+            await _cacheService.RemoveAsync(CacheKey.AttendanceReportList, cancellationToken);
 
             _logger.LogInformation("User {AuditorId} successfully checked in for attendance with ID {AttendanceId}.", auditorId, attendance.AttendanceId);
 
