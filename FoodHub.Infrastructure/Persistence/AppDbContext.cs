@@ -213,6 +213,8 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<StockOutReceiptItemLotAllocation> StockOutReceiptItemLotAllocations { get; set; } =
             null!;
 
+        public DbSet<InventoryGroup> InventoryGroups { get; set; } = null!;
+        
         // Promotion Management
         public DbSet<Promotion> Promotions { get; set; } = null!;
 
