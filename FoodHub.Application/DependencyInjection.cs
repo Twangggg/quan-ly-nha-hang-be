@@ -45,6 +45,7 @@ namespace FoodHub.Application
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<InventoryCostService>();
             services.AddScoped<InventoryAlertService>();
+            services.AddScoped<IInventoryRuleResolver, InventoryRuleResolver>();
             services.AddScoped<InventoryLotAllocationService>();
 
             return services;

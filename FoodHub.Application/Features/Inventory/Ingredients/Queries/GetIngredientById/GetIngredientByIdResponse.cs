@@ -12,11 +12,14 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredie
         public string BaseUnit { get; set; } = string.Empty;
         public decimal CurrentStock { get; set; }
         public decimal LowStockThreshold { get; set; }
+        public bool UseDefaultLowStockThreshold { get; set; }
         public string StockStatus { get; set; } = string.Empty;
         public decimal CostPrice { get; set; }
         public string? Description { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public Guid? InventoryGroupId { get; set; }
+        public string? InventoryGroupName { get; set; }
     }
 }

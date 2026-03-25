@@ -18,7 +18,11 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                 .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.IdRequired));
 
             RuleFor(x => x)
-                .Must(command => command.RouteId == null || command.RouteId == command.IngredientId)
+                .Must(
+                    command =>
+                        command.InventoryGroupId == null
+                        || command.InventoryGroupId == command.IngredientId
+                )
                 .WithMessage(messageService.GetMessage(MessageKeys.Common.IdMismatch));
 
             RuleFor(x => x.Code)

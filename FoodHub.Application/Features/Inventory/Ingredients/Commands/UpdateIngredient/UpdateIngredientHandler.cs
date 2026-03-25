@@ -51,6 +51,12 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
             try
             {
                 var repo = _unitOfWork.Repository<Ingredient>();
+                var settingsRepo = _unitOfWork.Repository<InventorySettings>();
+                var defaultLowStockThreshold =
+                    await settingsRepo
+                        .Query()
+                        .Select(x => x.DefaultLowStockThreshold)
+                        .FirstOrDefaultAsync(cancellationToken);
 
                 var ingredient = await repo.Query()
                     .FirstOrDefaultAsync(
@@ -105,16 +111,22 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
 
                 try
                 {
+                    var lowStockThreshold = request.UseDefaultLowStockThreshold
+                        ? defaultLowStockThreshold
+                        : request.LowStockThreshold;
+
                     ingredient.Update(
                         request.Name,
                         request.BaseUnit,
-                        request.LowStockThreshold,
+                        lowStockThreshold,
                         request.Description,
                         request.IsActive,
                         request.Code,
                         ingredient.CurrentStock,
                         ingredient.CostPrice,
-                        auditorId
+                        auditorId,
+                        request.InventoryGroupId ?? ingredient.InventoryGroupId,
+                        request.UseDefaultLowStockThreshold
                     );
 
                     await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -130,9 +142,12 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                         LowStockThreshold = ingredient.LowStockThreshold,
                         CurrentStock = ingredient.CurrentStock,
                         CostPrice = ingredient.CostPrice,
-                        StockStatus = ingredient.GetStockStatus(),
+                        StockStatus = ingredient.GetStockStatus(lowStockThreshold),
+                        UseDefaultLowStockThreshold = ingredient.UseDefaultLowStockThreshold,
                         IsActive = ingredient.IsActive,
                         Description = ingredient.Description,
+                        InventoryGroupId = ingredient.InventoryGroupId,
+                        InventoryGroupName = ingredient.InventoryGroup?.Name,
                         UpdatedAt = ingredient.UpdatedAt,
                         UpdatedBy = ingredient.UpdatedBy,
                     };

@@ -116,6 +116,8 @@ namespace FoodHub.Domain.Constants
                 "InventorySettings.InvalidLowStockThreshold";
             public const string InvalidMaxCostRecalcDays =
                 "InventorySettings.InvalidMaxCostRecalcDays";
+            public const string InvalidOpeningStockImportCooldownHours =
+                "InventorySettings.InvalidOpeningStockImportCooldownHours";
         }
 
         public static class StockInReceipt

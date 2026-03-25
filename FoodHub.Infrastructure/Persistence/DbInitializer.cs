@@ -319,9 +319,27 @@ namespace FoodHub.Infrastructure.Persistence
                 }
             }
 
+            // Seed Inventory Groups
+            if (!_context.InventoryGroups.Any())
+            {
+                var groups = new[]
+                {
+                    InventoryGroup.Create("Thực phẩm tươi sống", "Các loại thịt, cá, hải sản tươi", 10m, 2, InventoryCostMethod.WeightedAverage),
+                    InventoryGroup.Create("Rau củ quả", "Các loại rau, củ, trái cây bảo quản lạnh", 5m, 3, InventoryCostMethod.WeightedAverage),
+                    InventoryGroup.Create("Gia vị & Đồ khô", "Muối, đường, hạt nêm, đồ đóng hộp", 15m, null, InventoryCostMethod.WeightedAverage),
+                    InventoryGroup.Create("Đồ uống", "Nước ngọt, bia, rượu, sữa", 20m, 30, InventoryCostMethod.WeightedAverage)
+                };
+                _context.InventoryGroups.AddRange(groups);
+                _context.SaveChanges();
+            }
+
             // Seed Ingredients for Inventory module
             if (!_context.Ingredients.Any())
             {
+                var freshFoodGroup = _context.InventoryGroups.FirstOrDefault(g => g.Name == "Thực phẩm tươi sống");
+                var vegetableGroup = _context.InventoryGroups.FirstOrDefault(g => g.Name == "Rau củ quả");
+                var drinkGroup = _context.InventoryGroups.FirstOrDefault(g => g.Name == "Đồ uống");
+
                 var seedIngredients = new[]
                 {
                     new
@@ -333,6 +351,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Thịt bò tươi cho món chính",
                         Stock = 0m,
                         Cost = 0m,
+                        GroupId = freshFoodGroup?.InventoryGroupId
                     },
                     new
                     {
@@ -343,6 +362,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Ức gà fillet không da",
                         Stock = 0m,
                         Cost = 0m,
+                        GroupId = freshFoodGroup?.InventoryGroupId
                     },
                     new
                     {
@@ -353,26 +373,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Rau xà lách Đà Lạt",
                         Stock = 0m,
                         Cost = 0m,
-                    },
-                    new
-                    {
-                        Code = "KHOAITAY",
-                        Name = "Khoai tây",
-                        Unit = "kg",
-                        LowStockThreshold = 15m,
-                        Description = "Khoai tây Hà Lan",
-                        Stock = 0m,
-                        Cost = 0m,
-                    },
-                    new
-                    {
-                        Code = "HANHTAY",
-                        Name = "Hành tây",
-                        Unit = "kg",
-                        LowStockThreshold = 8m,
-                        Description = "Hành tây tím",
-                        Stock = 0m,
-                        Cost = 0m,
+                        GroupId = vegetableGroup?.InventoryGroupId
                     },
                     new
                     {
@@ -383,6 +384,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Sữa tươi tiệt trùng",
                         Stock = 0m,
                         Cost = 0m,
+                        GroupId = drinkGroup?.InventoryGroupId
                     },
                 };
 
@@ -397,7 +399,8 @@ namespace FoodHub.Infrastructure.Persistence
                         seed.LowStockThreshold,
                         seed.Stock,
                         seed.Cost,
-                        seed.Description
+                        seed.Description,
+                        inventoryGroupId: seed.GroupId
                     );
 
                     ingredient.UpdateStock(seed.Stock, seed.Cost);
