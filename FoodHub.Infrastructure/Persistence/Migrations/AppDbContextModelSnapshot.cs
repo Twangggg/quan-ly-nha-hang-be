@@ -467,6 +467,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("description");
 
+                    b.Property<Guid?>("InventoryGroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("inventory_group_id");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
@@ -490,6 +494,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
 
+                    b.Property<bool>("UseDefaultLowStockThreshold")
+                        .HasColumnType("boolean")
+                        .HasColumnName("use_default_low_stock_threshold");
+
                     b.HasKey("IngredientId")
                         .HasName("pk_ingredients");
 
@@ -497,6 +505,9 @@ namespace FoodHub.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_ingredients_code")
                         .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("InventoryGroupId")
+                        .HasDatabaseName("ix_ingredients_inventory_group_id");
 
                     b.HasIndex("IsActive")
                         .HasDatabaseName("ix_ingredients_is_active");
@@ -684,6 +695,68 @@ namespace FoodHub.Migrations
                         .HasDatabaseName("ix_inventory_check_items_inventory_check_id");
 
                     b.ToTable("inventory_check_items", (string)null);
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.InventoryGroup", b =>
+                {
+                    b.Property<Guid>("InventoryGroupId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("inventory_group_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<int?>("DefaultCostMethod")
+                        .HasColumnType("integer")
+                        .HasColumnName("default_cost_method");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<int?>("ExpiryWarningDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("expiry_warning_days");
+
+                    b.Property<decimal?>("LowStockThreshold")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("low_stock_threshold");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("InventoryGroupId")
+                        .HasName("pk_inventory_groups");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_inventory_groups_name")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("inventory_groups", (string)null);
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.InventoryLot", b =>
@@ -913,9 +986,17 @@ namespace FoodHub.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("locked_at");
 
+                    b.Property<DateTime?>("LastOpeningStockImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_opening_stock_imported_at");
+
                     b.Property<int>("MaxCostRecalcDays")
                         .HasColumnType("integer")
                         .HasColumnName("max_cost_recalc_days");
+
+                    b.Property<int>("OpeningStockImportCooldownHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("opening_stock_import_cooldown_hours");
 
                     b.Property<int>("OpeningStockStatus")
                         .HasColumnType("integer")
@@ -2953,6 +3034,17 @@ namespace FoodHub.Migrations
                         .HasConstraintName("fk_audit_logs_employees_employee_id1");
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.Ingredient", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.InventoryGroup", "InventoryGroup")
+                        .WithMany("Ingredients")
+                        .HasForeignKey("InventoryGroupId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_ingredients_inventory_groups_inventory_group_id");
+
+                    b.Navigation("InventoryGroup");
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.IngredientUoMConversion", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.Ingredient", "Ingredient")
@@ -3439,6 +3531,11 @@ namespace FoodHub.Migrations
             modelBuilder.Entity("FoodHub.Domain.Entities.InventoryCheck", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.InventoryGroup", b =>
+                {
+                    b.Navigation("Ingredients");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.InventoryLot", b =>

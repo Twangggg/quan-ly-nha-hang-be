@@ -119,7 +119,9 @@ namespace FoodHub.Application.Constants
             public const string Create = "Permissions.Vouchers.Create";
             public const string Update = "Permissions.Vouchers.Update";
             public const string Delete = "Permissions.Vouchers.Delete";
+            public const string UpdateStatus = "Permissions.Vouchers.UpdateStatus";
             public const string Apply = "Permissions.Vouchers.Apply";
+            public const string Unapply = "Permissions.Vouchers.Unapply";
         }
 
         public static class Shifts

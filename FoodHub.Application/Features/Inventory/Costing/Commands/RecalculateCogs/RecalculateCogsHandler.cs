@@ -70,7 +70,10 @@ namespace FoodHub.Application.Features.Inventory.Costing.Commands.RecalculateCog
             if (selectedDayCount > settings.MaxCostRecalcDays)
             {
                 throw new BusinessException(
-                    _messageService.GetMessage(MessageKeys.InventorySettings.MaxCostRecalcDaysRange)
+                    string.Format(
+                        _messageService.GetMessage(MessageKeys.InventoryCogs.RangeExceeded),
+                        settings.MaxCostRecalcDays
+                    )
                 );
             }
 

@@ -3,13 +3,14 @@ using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
 {
-    public class ApplyPromotionHandler : IRequestHandler<ApplyPromotionCommand, Result<Unit>>
+    public class ApplyPromotionHandler : IRequestHandler<ApplyPromotionCommand, Result<ApplyPromotionResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
@@ -29,7 +30,7 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
             _messageService = messageService;
         }
 
-        public async Task<Result<Unit>> Handle(
+        public async Task<Result<ApplyPromotionResponse>> Handle(
             ApplyPromotionCommand request,
             CancellationToken cancellationToken
         )
@@ -42,11 +43,15 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
 
             if (!Guid.TryParse(_currentUserService.UserId, out var userId))
             {
-                return Result<Unit>.Failure("User not authenticated", ResultErrorType.Unauthorized);
+                return Result<ApplyPromotionResponse>.Failure(
+                    "User not authenticated",
+                    ResultErrorType.Unauthorized
+                );
             }
 
             var orderRepo = _unitOfWork.Repository<Order>();
             var promotionRepo = _unitOfWork.Repository<Promotion>();
+            var orderItemRepo = _unitOfWork.Repository<OrderItem>();
 
             var order = await orderRepo
                 .Query()
@@ -57,7 +62,7 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
             if (order == null)
             {
                 _logger.LogWarning("Order {OrderId} not found", request.OrderId);
-                return Result<Unit>.Failure(
+                return Result<ApplyPromotionResponse>.Failure(
                     _messageService.GetMessage(DomainErrors.Order.NotFound),
                     ResultErrorType.NotFound
                 );
@@ -65,12 +70,13 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
 
             var promotion = await promotionRepo
                 .Query()
+                .Include(p => p.Item)
                 .FirstOrDefaultAsync(p => p.Code == request.Code, cancellationToken);
 
             if (promotion == null)
             {
                 _logger.LogWarning("Promotion {Code} not found", request.Code);
-                return Result<Unit>.Failure(
+                return Result<ApplyPromotionResponse>.Failure(
                     _messageService.GetMessage(DomainErrors.Promotion.NotFound),
                     ResultErrorType.NotFound
                 );
@@ -81,7 +87,10 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
             try
             {
                 // Domain validation
-                var validation = promotion.Validate(order.SubTotal, DateTimeOffset.UtcNow);
+                var validation = promotion.Validate(
+                    order.GetPromotionValidationSubTotal(),
+                    DateTimeOffset.UtcNow
+                );
                 if (!validation.IsSuccess)
                 {
                     _logger.LogWarning(
@@ -90,7 +99,33 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                         validation.ErrorCode
                     );
                     await _unitOfWork.RollbackTransactionAsync();
-                    return Result<Unit>.Failure(_messageService.GetMessage(validation.ErrorCode!));
+                    return Result<ApplyPromotionResponse>.Failure(
+                        _messageService.GetMessage(validation.ErrorCode!)
+                    );
+                }
+
+                // Remove existing free items when switching promotions
+                var existingFreeItems = order.OrderItems
+                    .Where(oi => oi.IsFreeItem)
+                    .ToList();
+
+                // Validation: If any gift item is already cooking or completed, prevent switching voucher
+                if (existingFreeItems.Any(fi => fi.Status != OrderItemStatus.Preparing))
+                {
+                    _logger.LogWarning(
+                        "Cannot switch promotion for order {OrderCode} because gift items are already in process",
+                        order.OrderCode
+                    );
+                    await _unitOfWork.RollbackTransactionAsync();
+                    return Result<ApplyPromotionResponse>.Failure(
+                        "Không thể đổi voucher vì món tặng đã bắt đầu được chế biến"
+                    );
+                }
+
+                foreach (var freeItem in existingFreeItems)
+                {
+                    order.OrderItems.Remove(freeItem);
+                    orderItemRepo.Delete(freeItem);
                 }
 
                 // If existing promotion, decrement its usage (if it's a different one)
@@ -99,9 +134,42 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     order.Promotion?.DecrementUsed(userId);
                 }
 
+                var oldPromotionId = order.PromotionId;
+                var oldPromotionCode = order.Promotion?.Code;
+
                 // Apply promotion to order
                 order.ApplyPromotion(promotion, userId);
                 promotion.IncrementUsed(userId);
+
+                // Handle FreeItem promotion: create a free OrderItem
+                if (promotion.Type == PromotionType.FreeItem && promotion.ItemId.HasValue && promotion.Item != null)
+                {
+                    var freeOrderItem = new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order.OrderId,
+                        MenuItemId = promotion.ItemId.Value,
+                        ItemCodeSnapshot = promotion.Item.Code,
+                        ItemNameSnapshot = promotion.Item.Name,
+                        StationSnapshot = promotion.Item.Station.ToString(),
+                        Quantity = promotion.FreeQuantity ?? 1,
+                        UnitPriceSnapshot = promotion.Item.Price,
+                        IsFreeItem = true,
+                        Status = OrderItemStatus.Preparing,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+
+                    order.OrderItems.Add(freeOrderItem);
+                    await orderItemRepo.AddAsync(freeOrderItem);
+
+                    _logger.LogInformation(
+                        "Added free item {ItemName} x{Qty} to order {OrderCode} via FreeItem promotion {Code}",
+                        promotion.Item.Name,
+                        freeOrderItem.Quantity,
+                        order.OrderCode,
+                        promotion.Code
+                    );
+                }
 
                 orderRepo.Update(order);
                 promotionRepo.Update(promotion);
@@ -129,7 +197,21 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     order.DiscountAmount
                 );
 
-                return Result<Unit>.Success(Unit.Value);
+                return Result<ApplyPromotionResponse>.Success(
+                    new ApplyPromotionResponse
+                    {
+                        OrderId = order.OrderId,
+                        OrderCode = order.OrderCode,
+                        OldPromotionId = oldPromotionId,
+                        OldPromotionCode = oldPromotionCode,
+                        NewPromotionId = order.PromotionId,
+                        NewPromotionCode = order.Promotion?.Code,
+                        SubTotal = order.SubTotal,
+                        DiscountAmount = order.DiscountAmount,
+                        VatAmount = order.VatAmount,
+                        TotalAmount = order.TotalAmount,
+                    }
+                );
             }
             catch (Exception ex)
             {
@@ -140,7 +222,7 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     request.Code,
                     request.OrderId
                 );
-                return Result<Unit>.Failure(
+                return Result<ApplyPromotionResponse>.Failure(
                     _messageService.GetMessage("Common.DatabaseUpdateError"),
                     ResultErrorType.Conflict
                 );

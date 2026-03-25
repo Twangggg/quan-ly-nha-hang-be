@@ -85,6 +85,23 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
                 );
             }
 
+            if (
+                settings is not null
+                && !settings.IsOpeningStockImportAllowedAt(DateTime.UtcNow)
+            )
+            {
+                var nextAllowedAt = settings.GetNextOpeningStockImportAllowedAt();
+                _logger.LogWarning(
+                    "ImportOpeningStock rejected because cooldown has not elapsed. Next allowed at {NextAllowedAt}",
+                    nextAllowedAt
+                );
+                throw new BusinessException(
+                    nextAllowedAt.HasValue
+                        ? $"{_messageService.GetMessage(MessageKeys.OpeningStock.ImportCooldownNotElapsed)} {nextAllowedAt.Value:dd/MM/yyyy HH:mm}."
+                        : _messageService.GetMessage(MessageKeys.OpeningStock.ImportCooldownNotElapsed)
+                );
+            }
+
             if (ingredients.Count != ingredientIds.Count)
             {
                 _logger.LogWarning(
@@ -142,6 +159,7 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
                         "Opening stock import",
                         actorId
                     );
+                    settings.MarkOpeningStockImported(receiptTimestamp, actorId);
                 }
 
                 foreach (var item in request.Items)
@@ -225,6 +243,9 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
                     UpdatedCount = request.Items.Count,
                     TransactionCount = transactionCount,
                     UpdatedAt = DateTime.UtcNow,
+                    LockedAt = settings.LockedAt,
+                    LastOpeningStockImportedAt = settings.LastOpeningStockImportedAt,
+                    NextOpeningStockImportAllowedAt = settings.GetNextOpeningStockImportAllowedAt(),
                 };
 
                 _logger.LogInformation(

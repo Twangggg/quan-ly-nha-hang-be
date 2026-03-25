@@ -7,7 +7,10 @@ namespace FoodHub.Domain.Services
     {
         public DomainResult<decimal> CalculateDiscount(Order order, Promotion promotion)
         {
-            var validation = promotion.Validate(order.SubTotal, DateTimeOffset.UtcNow);
+            var validation = promotion.Validate(
+                order.GetPromotionValidationSubTotal(),
+                DateTimeOffset.UtcNow
+            );
             if (!validation.IsSuccess)
             {
                 return DomainResult<decimal>.Failure(validation.ErrorCode!);

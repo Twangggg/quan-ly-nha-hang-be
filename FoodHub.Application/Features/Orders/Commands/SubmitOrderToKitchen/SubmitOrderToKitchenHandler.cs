@@ -1,14 +1,14 @@
-using FoodHub.Application.Common.Models;
 using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
+using FoodHub.Application.Features.Options.Common;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
-using FoodHub.Application.Features.Options.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -153,6 +153,17 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 order.TableId = tableId;
             }
 
+            if (order.SubTotal <= 0 && order.TotalAmount > 0)
+            {
+                order.SubTotal =
+                    order.DiscountAmount > 0 || order.VatAmount > 0
+                        ? Math.Max(
+                            order.TotalAmount / (1 + order.VatRate) + order.DiscountAmount,
+                            0
+                        )
+                        : order.TotalAmount;
+            }
+
             if (table != null && orderType == OrderType.DineIn)
             {
                 table.MarkAsOccupied(userId.Value, DateTime.UtcNow);
@@ -169,23 +180,16 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 // Prepare options for Domain method
                 var selectionValidation = OptionSelectionValidation.ValidateForMenuItem(
                     menuItem,
-                    itemDto.SelectedOptions
-                        ?.Select(
-                            x =>
-                                new RequestedOptionSelection(
-                                    x.OptionGroupId,
-                                    x.SelectedValues
-                                        .Select(
-                                            v =>
-                                                new RequestedOptionValue(
-                                                    v.OptionItemId,
-                                                    v.Quantity,
-                                                    v.Note
-                                                )
-                                        )
-                                        .ToList()
-                                )
-                        )
+                    itemDto
+                        .SelectedOptions?.Select(x => new RequestedOptionSelection(
+                            x.OptionGroupId,
+                            x.SelectedValues.Select(v => new RequestedOptionValue(
+                                    v.OptionItemId,
+                                    v.Quantity,
+                                    v.Note
+                                ))
+                                .ToList()
+                        ))
                         .ToList(),
                     _messageService
                 );
@@ -247,6 +251,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                     .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity);
 
                 order.TotalAmount += itemTotal + (optionsTotal * newItem.Quantity);
+                order.SubTotal += itemTotal + (optionsTotal * newItem.Quantity);
                 order.UpdatedAt = DateTime.UtcNow;
 
                 // For New Order, we also add to the collection so the initial AddAsync(order) includes them.

@@ -315,6 +315,8 @@ namespace FoodHub.Application.Constants
             public const string DefaultLowStockThresholdMin =
                 "InventorySettings.DefaultLowStockThresholdMin";
             public const string MaxCostRecalcDaysRange = "InventorySettings.MaxCostRecalcDaysRange";
+            public const string OpeningStockImportCooldownHoursMin =
+                "InventorySettings.OpeningStockImportCooldownHoursMin";
             public const string UpdateSuccess = "InventorySettings.UpdateSuccess";
         }
 
@@ -328,6 +330,7 @@ namespace FoodHub.Application.Constants
             public const string ConfirmOverwrite = "OpeningStock.ConfirmOverwrite";
             public const string IngredientNotFound = "OpeningStock.IngredientNotFound";
             public const string AlreadyLocked = "OpeningStock.AlreadyLocked";
+            public const string ImportCooldownNotElapsed = "OpeningStock.ImportCooldownNotElapsed";
             public const string ImportSuccess = "OpeningStock.ImportSuccess";
         }
 
@@ -386,6 +389,7 @@ namespace FoodHub.Application.Constants
         public static class InventoryCogs
         {
             public const string Completed = "InventoryCogs.Completed";
+            public const string RangeExceeded = "InventoryCogs.RangeExceeded";
         }
 
         public static class InventoryCheck

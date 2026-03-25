@@ -14,10 +14,10 @@ using FoodHub.Application.Features.Orders.Queries.GetOrderAuditLogs;
 using FoodHub.Application.Features.Orders.Queries.GetOrderById;
 using FoodHub.Application.Features.Orders.Queries.GetOrders;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
@@ -99,6 +99,23 @@ namespace FoodHub.Presentation.Controllers
             return HandleResult(result);
         }
 
+        [HttpGet("audit-logs")]
+        [HasPermission(Permissions.Orders.View)]
+        [ProducesResponseType(
+            typeof(Result<PagedResult<GetOrderAuditLogsResponse>>),
+            StatusCodes.Status200OK
+        )]
+        public async Task<IActionResult> GetAllOrderAuditLogs([FromQuery] PaginationParams pagination)
+        {
+            var result = await _mediator.Send(new GetAllOrderAuditLogsQuery(pagination));
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
+
+            return HandleResult(result);
+        }
+
         /// <summary>
         /// Gửi toàn bộ yêu cầu của đơn hàng xuống bếp.
         /// </summary>
@@ -167,7 +184,10 @@ namespace FoodHub.Presentation.Controllers
         [HttpPatch("{id:guid}/items/{itemId:guid}/quantity")]
         [HasPermission(Permissions.Orders.Update)]
         [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
-        [ProducesResponseType(typeof(Result<AdjustOrderItemQuantityResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(
+            typeof(Result<AdjustOrderItemQuantityResponse>),
+            StatusCodes.Status200OK
+        )]
         public async Task<IActionResult> AdjustOrderItemQuantity(
             Guid id,
             Guid itemId,
