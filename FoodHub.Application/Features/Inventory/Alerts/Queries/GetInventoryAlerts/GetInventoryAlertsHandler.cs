@@ -77,6 +77,7 @@ namespace FoodHub.Application.Features.Inventory.Alerts.Queries.GetInventoryAler
             var ingredients = await _unitOfWork
                 .Repository<Ingredient>()
                 .Query()
+                .Include(x => x.InventoryGroup)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
@@ -90,7 +91,9 @@ namespace FoodHub.Application.Features.Inventory.Alerts.Queries.GetInventoryAler
                 ingredients,
                 lots,
                 DateTime.UtcNow.Date,
-                settings.ExpiryWarningDays
+                settings.ExpiryWarningDays,
+                new InventoryRuleResolver(),
+                settings
             );
 
             return new GetInventoryAlertsResponse
@@ -107,6 +110,7 @@ namespace FoodHub.Application.Features.Inventory.Alerts.Queries.GetInventoryAler
                                 Unit = x.Unit,
                                 CurrentStock = x.CurrentStock,
                                 Threshold = x.Threshold,
+                                Source = (InventoryRuleSourceDto)x.Source,
                             }
                     )
                     .ToList(),
@@ -121,6 +125,7 @@ namespace FoodHub.Application.Features.Inventory.Alerts.Queries.GetInventoryAler
                                 Unit = x.Unit,
                                 CurrentStock = x.CurrentStock,
                                 Threshold = x.Threshold,
+                                Source = (InventoryRuleSourceDto)x.Source,
                             }
                     )
                     .ToList(),

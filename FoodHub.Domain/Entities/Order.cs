@@ -38,10 +38,10 @@ namespace FoodHub.Domain.Entities
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
 
-        // Voucher
+        // Promotion
         public decimal DiscountAmount { get; set; }
-        public Guid? VoucherId { get; set; }
-        public virtual Voucher? Voucher { get; set; }
+        public Guid? PromotionId { get; set; }
+        public virtual Promotion? Promotion { get; set; }
 
         public bool IsActive() => Status == OrderStatus.Serving;
 
@@ -110,10 +110,10 @@ namespace FoodHub.Domain.Entities
                 }
             }
 
-            if (VoucherId.HasValue)
+            if (PromotionId.HasValue)
             {
-                if (Voucher != null && Voucher.UsedCount > 0)
-                    Voucher.UsedCount--;
+                if (Promotion != null && Promotion.UsedCount > 0)
+                    Promotion.UsedCount--;
             }
 
             Status = OrderStatus.Cancelled;
@@ -157,6 +157,11 @@ namespace FoodHub.Domain.Entities
             var tempAmount = Math.Max(SubTotal - DiscountAmount, 0);
             VatAmount = tempAmount * VatRate;
             TotalAmount = tempAmount + VatAmount;
+        }
+
+        public decimal GetPromotionValidationSubTotal()
+        {
+            return OrderItems.Sum(item => item.GetGrossTotalPrice());
         }
 
         public void ChangeTable(Guid newTableId, DateTime updatedAt, Guid? updatedBy)
@@ -522,32 +527,42 @@ namespace FoodHub.Domain.Entities
         }
 
         // Vùng logic liên quan đến voucher - có thể phức tạp tùy theo yêu cầu kinh doanh, nên tách riêng để dễ quản lý và mở rộng sau này
-        public void ApplyVoucher(Voucher? voucher, Guid auditorId)
+        // Promotion logic
+        public void ApplyPromotion(Promotion? promotion, Guid auditorId)
         {
-            Voucher = voucher;
-            VoucherId = voucher?.VoucherId;
+            Promotion = promotion;
+            PromotionId = promotion?.PromotionId;
             RecalculateTotalAmount();
 
-            // Log the voucher application in audit logs
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = auditorId;
         }
 
         public decimal CalculateDiscount()
         {
-            if (Voucher == null || !Voucher.IsValid() || Voucher.IsBelowMinAmount(SubTotal))
+            if (Promotion == null)
             {
                 return 0;
             }
 
-            return Voucher.VoucherType switch
+            // Using UTCNow to match Promotion's UTC comparison
+            var validation = Promotion.Validate(
+                GetPromotionValidationSubTotal(),
+                DateTimeOffset.UtcNow
+            );
+            if (!validation.IsSuccess)
             {
-                VoucherType.Percent => Math.Min(
-                    SubTotal * (Voucher.DiscountValue ?? 0) / 100,
-                    Voucher.MaxDiscount ?? decimal.MaxValue
+                return 0;
+            }
+
+            return Promotion.Type switch
+            {
+                PromotionType.Percent => Math.Min(
+                    SubTotal * Promotion.Value / 100,
+                    Promotion.MaxDiscount ?? decimal.MaxValue
                 ),
-                VoucherType.Fixed => Math.Min(Voucher.DiscountValue ?? 0, SubTotal),
-                VoucherType.FreeItem => 0, // Logic tính discount miễn phí món xử lý ở cấp độ OrderItem
+                PromotionType.Fixed => Math.Min(Promotion.Value, SubTotal),
+                PromotionType.FreeItem => 0, // Logic handled at item level if needed
                 _ => 0,
             };
         }

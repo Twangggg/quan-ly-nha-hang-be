@@ -48,6 +48,8 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrderById
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.OptionGroups)
                     .ThenInclude(og => og.OptionValues)
+                .Include(o => o.Promotion)
+                    .ThenInclude(p => p!.Item)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
 

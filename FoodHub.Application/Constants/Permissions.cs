@@ -87,6 +87,10 @@ namespace FoodHub.Application.Constants
 
         public static class Reservations
         {
+            public const string View = "Permissions.Reservations.View";
+            public const string Create = "Permissions.Reservations.Create";
+            public const string Update = "Permissions.Reservations.Update";
+            public const string Cancel = "Permissions.Reservations.Cancel";
             public const string CheckIn = "Permissions.Reservations.CheckIn";
         }
         public static class SalesAnalytics
@@ -130,7 +134,14 @@ namespace FoodHub.Application.Constants
             public const string Create = "Permissions.Vouchers.Create";
             public const string Update = "Permissions.Vouchers.Update";
             public const string Delete = "Permissions.Vouchers.Delete";
+            public const string UpdateStatus = "Permissions.Vouchers.UpdateStatus";
             public const string Apply = "Permissions.Vouchers.Apply";
+            public const string Unapply = "Permissions.Vouchers.Unapply";
+        }
+
+        public static class Images
+        {
+            public const string Manage = "Permissions.Images.Manage";
         }
     }
 }

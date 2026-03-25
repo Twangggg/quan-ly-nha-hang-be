@@ -116,6 +116,8 @@ namespace FoodHub.Domain.Constants
                 "InventorySettings.InvalidLowStockThreshold";
             public const string InvalidMaxCostRecalcDays =
                 "InventorySettings.InvalidMaxCostRecalcDays";
+            public const string InvalidOpeningStockImportCooldownHours =
+                "InventorySettings.InvalidOpeningStockImportCooldownHours";
         }
 
         public static class StockInReceipt
@@ -154,6 +156,17 @@ namespace FoodHub.Domain.Constants
             public const string DuplicateIngredient = "InventoryCheck.DuplicateIngredient";
             public const string InvalidQuantity = "InventoryCheck.InvalidQuantity";
             public const string InvalidStatus = "InventoryCheck.InvalidStatus";
+        }
+        public static class Promotion
+        {
+            public const string NotFound = "Promotion.NotFound";
+            public const string Inactive = "Promotion.Inactive";
+            public const string NotStarted = "Promotion.NotStarted";
+            public const string Expired = "Promotion.Expired";
+            public const string UsageLimitExceeded = "Promotion.UsageLimitExceeded";
+            public const string InvalidTime = "Promotion.InvalidTime";
+            public const string BelowMinAmount = "Promotion.BelowMinAmount";
+            public const string InvalidVoucher = "Promotion.InvalidVoucher";
         }
     }
 }

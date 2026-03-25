@@ -18,6 +18,7 @@ namespace FoodHub.Application.Features.OrderItems.Common
         public string Status { get; set; } = null!;
         public int Quantity { get; set; }
         public decimal UnitPriceSnapshot { get; set; }
+        public bool IsFreeItem { get; set; }
         public string? ItemNote { get; set; }
 
         public DateTime CreatedAt { get; set; }
@@ -30,7 +31,8 @@ namespace FoodHub.Application.Features.OrderItems.Common
         {
             profile
                 .CreateMap<OrderItem, OrderItemDto>()
-                .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()));
+                .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()))
+                .ForMember(d => d.IsFreeItem, opt => opt.MapFrom(s => s.IsFreeItem));
         }
     }
 }
