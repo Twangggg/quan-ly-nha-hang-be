@@ -21,7 +21,7 @@ namespace FoodHub.Tests.Features.Inventory
     public class GetIngredientsHandlerTests
     {
         private readonly Mock<IUnitOfWork> _mockUow;
-        private readonly Mock<IMapper> _mockMapper;
+        private readonly IMapper _mapper;
         private readonly Mock<ICacheService> _mockCache;
         private readonly IInventoryRuleResolver _ruleResolver;
         private readonly GetIngredientsHandler _handler;
@@ -29,13 +29,18 @@ namespace FoodHub.Tests.Features.Inventory
         public GetIngredientsHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
-            _mockMapper = new Mock<IMapper>();
             _mockCache = new Mock<ICacheService>();
             _ruleResolver = new InventoryRuleResolver();
 
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Ingredient, GetIngredientsResponse>();
+            });
+            _mapper = config.CreateMapper();
+
             _handler = new GetIngredientsHandler(
                 _mockUow.Object,
-                _mockMapper.Object,
+                _mapper,
                 _mockCache.Object,
                 _ruleResolver,
                 Mock.Of<ILogger<GetIngredientsHandler>>()
@@ -68,12 +73,6 @@ namespace FoodHub.Tests.Features.Inventory
                     }.AsQueryable().BuildMock()
                 );
             _mockUow.Setup(u => u.Repository<InventorySettings>()).Returns(settingsRepo.Object);
-
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
-            var config = new MapperConfiguration(cfg =>
-                cfg.CreateMap<Ingredient, GetIngredientsResponse>(), mockLoggerFactory.Object);
-            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(config);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
