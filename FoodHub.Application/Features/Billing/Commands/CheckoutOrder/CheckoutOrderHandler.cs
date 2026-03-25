@@ -13,6 +13,7 @@ using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
 {
@@ -115,8 +116,14 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                     EmployeeId = auditorId,
                     Action = AuditLogActions.CheckoutOrder,
                     CreatedAt = DateTime.UtcNow,
-                    NewValue =
-                        $"{{\"paymentMethod\": \"{request.PaymentMethod}\", \"totalAmount\": {order.TotalAmount}, \"amountPaid\": {order.AmountPaid}}}",
+                    NewValue = JsonSerializer.Serialize(
+                        new
+                        {
+                            paymentMethod = request.PaymentMethod.ToString(),
+                            totalAmount = order.TotalAmount,
+                            amountPaid = order.AmountPaid,
+                        }
+                    ),
                 };
 
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
