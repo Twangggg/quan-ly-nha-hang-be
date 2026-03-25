@@ -788,6 +788,72 @@ namespace FoodHub.Infrastructure.Persistence
                 }
             }
 
+            // Seed Attendances for Report testing
+            if (isDevOrDemo && !_context.Attendances.Any())
+            {
+                var waiter = _context.Employees.First(e => e.EmployeeCode == "W003001");
+                var cashier = _context.Employees.First(e => e.EmployeeCode == "C004001");
+                var assignments = _context.ShiftAssignments.Include(sa => sa.Shift).ToList();
+
+                var today = DateTime.UtcNow.Date;
+                var attendances = new List<Attendance>();
+
+                foreach (var sa in assignments)
+                {
+                    // Full attendance (On time) - Yesterday
+                    attendances.Add(new Attendance
+                    {
+                        AttendanceId = Guid.NewGuid(),
+                        EmployeeId = sa.EmployeeId,
+                        ShiftAssignmentId = sa.ShiftAssignmentId,
+                        CheckInTime = today.AddDays(-1).Add(sa.Shift.StartTime).AddMinutes(-5),
+                        CheckOutTime = today.AddDays(-1).Add(sa.Shift.EndTime).AddMinutes(5),
+                        isLate = false,
+                        isEarlyLeave = false,
+                        CreatedAt = DateTime.UtcNow.AddDays(-1)
+                    });
+
+                    // Late attendance - 2 days ago
+                    attendances.Add(new Attendance
+                    {
+                        AttendanceId = Guid.NewGuid(),
+                        EmployeeId = sa.EmployeeId,
+                        ShiftAssignmentId = sa.ShiftAssignmentId,
+                        CheckInTime = today.AddDays(-2).Add(sa.Shift.StartTime).AddMinutes(15),
+                        CheckOutTime = today.AddDays(-2).Add(sa.Shift.EndTime).AddMinutes(10),
+                        isLate = true,
+                        isEarlyLeave = false,
+                        CreatedAt = DateTime.UtcNow.AddDays(-2)
+                    });
+                }
+
+                // Add some OT or Missing checkout records
+                attendances.Add(new Attendance
+                {
+                    AttendanceId = Guid.NewGuid(),
+                    EmployeeId = waiter.EmployeeId,
+                    CheckInTime = today.AddDays(-3).AddHours(8), // Morning
+                    CheckOutTime = null, // Missing checkout
+                    isLate = false,
+                    isEarlyLeave = false,
+                    CreatedAt = DateTime.UtcNow.AddDays(-3)
+                });
+
+                attendances.Add(new Attendance
+                {
+                    AttendanceId = Guid.NewGuid(),
+                    EmployeeId = cashier.EmployeeId,
+                    CheckInTime = today.AddDays(-3).AddHours(14),
+                    CheckOutTime = today.AddDays(-3).AddHours(18), // Worked between shifts
+                    isLate = false,
+                    isEarlyLeave = true, // Early leave relative to a hypothetical 8-hour shift if we don't have assignment
+                    CreatedAt = DateTime.UtcNow.AddDays(-3)
+                });
+
+                _context.Attendances.AddRange(attendances);
+                _context.SaveChanges();
+            }
+
             _context.SaveChanges();
         }
 
