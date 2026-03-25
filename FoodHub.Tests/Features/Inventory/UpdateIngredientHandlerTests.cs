@@ -34,13 +34,20 @@ namespace FoodHub.Tests.Features.Inventory
             _mockCurrentUser = new Mock<ICurrentUserService>();
             _mockSettingsRepo = new Mock<IGenericRepository<InventorySettings>>();
             _mockCurrentUser.SetupGet(x => x.UserId).Returns((string?)null);
+            var settings = InventorySettings.CreateDefault();
+            settings.Update(
+                settings.ExpiryWarningDays,
+                3,
+                settings.AutoDeductOnCompleted,
+                settings.CostMethod,
+                settings.MaxCostRecalcDays,
+                settings.OpeningStockImportCooldownHours
+            );
+
             _mockSettingsRepo
                 .Setup(r => r.Query())
                 .Returns(
-                    new List<InventorySettings>
-                    {
-                        new InventorySettings { DefaultLowStockThreshold = 3 }
-                    }
+                    new List<InventorySettings> { settings }
                     .AsQueryable()
                     .BuildMock()
                 );

@@ -36,13 +36,20 @@ namespace FoodHub.Tests.Features.Inventory
             _mockCurrentUser.SetupGet(x => x.UserId).Returns((string?)null);
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(_mockRepo.Object);
             _mockUow.Setup(u => u.Repository<InventorySettings>()).Returns(_mockSettingsRepo.Object);
+            var settings = InventorySettings.CreateDefault();
+            settings.Update(
+                settings.ExpiryWarningDays,
+                3,
+                settings.AutoDeductOnCompleted,
+                settings.CostMethod,
+                settings.MaxCostRecalcDays,
+                settings.OpeningStockImportCooldownHours
+            );
+
             _mockSettingsRepo
                 .Setup(r => r.Query())
                 .Returns(
-                    new List<InventorySettings>
-                    {
-                        new InventorySettings { DefaultLowStockThreshold = 3 }
-                    }
+                    new List<InventorySettings> { settings }
                     .AsQueryable()
                     .BuildMock()
                 );
@@ -65,6 +72,7 @@ namespace FoodHub.Tests.Features.Inventory
                 "Kg",
                 5,
                 false,
+                null,
                 "Hanh tay Da Lat"
             );
 

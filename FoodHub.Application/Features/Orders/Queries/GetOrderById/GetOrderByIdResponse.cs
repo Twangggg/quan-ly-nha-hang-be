@@ -28,6 +28,9 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrderById
         public Guid? PromotionId { get; set; }
         public string? PromotionCode { get; set; }
         public string? VoucherCode { get; set; }
+        public Guid? GiftItemId { get; set; }
+        public string? GiftItemName { get; set; }
+        public int? GiftQuantity { get; set; }
         public bool IsPriority { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
@@ -42,7 +45,10 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrderById
                 .ForMember(d => d.OrderType, opt => opt.MapFrom(s => s.OrderType.ToString()))
                 .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()))
                 .ForMember(d => d.PromotionCode, opt => opt.MapFrom(s => s.Promotion != null ? s.Promotion.Code : null))
-                .ForMember(d => d.VoucherCode, opt => opt.MapFrom(s => s.Promotion != null ? s.Promotion.Code : null));
+                .ForMember(d => d.VoucherCode, opt => opt.MapFrom(s => s.Promotion != null ? s.Promotion.Code : null))
+                .ForMember(d => d.GiftItemId, opt => opt.MapFrom(s => s.Promotion != null ? s.Promotion.ItemId : null))
+                .ForMember(d => d.GiftItemName, opt => opt.MapFrom(s => s.Promotion != null && s.Promotion.Item != null ? s.Promotion.Item.Name : null))
+                .ForMember(d => d.GiftQuantity, opt => opt.MapFrom(s => s.Promotion != null ? s.Promotion.FreeQuantity : null));
         }
     }
 }

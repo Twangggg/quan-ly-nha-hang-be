@@ -3,6 +3,7 @@ using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -50,6 +51,7 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
 
             var orderRepo = _unitOfWork.Repository<Order>();
             var promotionRepo = _unitOfWork.Repository<Promotion>();
+            var orderItemRepo = _unitOfWork.Repository<OrderItem>();
 
             var order = await orderRepo
                 .Query()
@@ -68,6 +70,7 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
 
             var promotion = await promotionRepo
                 .Query()
+                .Include(p => p.Item)
                 .FirstOrDefaultAsync(p => p.Code == request.Code, cancellationToken);
 
             if (promotion == null)
@@ -101,6 +104,17 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     );
                 }
 
+                // Remove existing free items when switching promotions
+                var existingFreeItems = order.OrderItems
+                    .Where(oi => oi.IsFreeItem)
+                    .ToList();
+
+                foreach (var freeItem in existingFreeItems)
+                {
+                    order.OrderItems.Remove(freeItem);
+                    orderItemRepo.Delete(freeItem);
+                }
+
                 // If existing promotion, decrement its usage (if it's a different one)
                 if (order.PromotionId.HasValue && order.PromotionId != promotion.PromotionId)
                 {
@@ -113,6 +127,36 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                 // Apply promotion to order
                 order.ApplyPromotion(promotion, userId);
                 promotion.IncrementUsed(userId);
+
+                // Handle FreeItem promotion: create a free OrderItem
+                if (promotion.Type == PromotionType.FreeItem && promotion.ItemId.HasValue && promotion.Item != null)
+                {
+                    var freeOrderItem = new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order.OrderId,
+                        MenuItemId = promotion.ItemId.Value,
+                        ItemCodeSnapshot = promotion.Item.Code,
+                        ItemNameSnapshot = promotion.Item.Name,
+                        StationSnapshot = promotion.Item.Station.ToString(),
+                        Quantity = promotion.FreeQuantity ?? 1,
+                        UnitPriceSnapshot = promotion.Item.Price,
+                        IsFreeItem = true,
+                        Status = OrderItemStatus.Preparing,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+
+                    order.OrderItems.Add(freeOrderItem);
+                    await orderItemRepo.AddAsync(freeOrderItem);
+
+                    _logger.LogInformation(
+                        "Added free item {ItemName} x{Qty} to order {OrderCode} via FreeItem promotion {Code}",
+                        promotion.Item.Name,
+                        freeOrderItem.Quantity,
+                        order.OrderCode,
+                        promotion.Code
+                    );
+                }
 
                 orderRepo.Update(order);
                 promotionRepo.Update(promotion);

@@ -34,12 +34,13 @@ namespace FoodHub.Application.Features.Orders.Commands.UnapplyPromotion
         {
             var orderRepo = _unitOfWork.Repository<Order>();
             var promotionRepo = _unitOfWork.Repository<Promotion>();
+            var orderItemRepo = _unitOfWork.Repository<OrderItem>();
 
             var order = await orderRepo
                 .Query()
                 .Include(o => o.OrderItems)
                 .Include(o => o.Promotion)
-                .ThenInclude(p => p!.Item)
+                    .ThenInclude(p => p!.Item)
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
 
             if (order is null)
@@ -75,6 +76,7 @@ namespace FoodHub.Application.Features.Orders.Commands.UnapplyPromotion
                 foreach (var freeItem in freeItems)
                 {
                     order.OrderItems.Remove(freeItem);
+                    orderItemRepo.Delete(freeItem);
                 }
             }
 

@@ -25,7 +25,7 @@ namespace FoodHub.Tests.Features.Inventory
         {
             var settings = InventorySettings.CreateDefault();
 
-            var result = settings.Update(14, 25, false, InventoryCostMethod.WeightedAverage, 60);
+            var result = settings.Update(14, 25, false, InventoryCostMethod.WeightedAverage, 60, 0);
 
             result.IsSuccess.Should().BeTrue();
             settings.ExpiryWarningDays.Should().Be(14);
