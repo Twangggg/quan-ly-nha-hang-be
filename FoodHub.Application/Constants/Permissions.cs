@@ -143,5 +143,11 @@ namespace FoodHub.Application.Constants
         {
             public const string Manage = "Permissions.Images.Manage";
         }
+
+        public static class Attendances
+        {
+            public const string View = "Permissions.Attendances.View";
+        }
     }
 }
+
