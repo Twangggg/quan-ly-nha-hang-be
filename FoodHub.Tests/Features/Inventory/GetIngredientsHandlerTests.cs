@@ -32,10 +32,13 @@ namespace FoodHub.Tests.Features.Inventory
             _mockCache = new Mock<ICacheService>();
             _ruleResolver = new InventoryRuleResolver();
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Ingredient, GetIngredientsResponse>();
-            });
+            }, mockLoggerFactory.Object);
             _mapper = config.CreateMapper();
 
             _handler = new GetIngredientsHandler(

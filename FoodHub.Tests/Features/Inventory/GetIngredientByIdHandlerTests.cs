@@ -30,12 +30,15 @@ namespace FoodHub.Tests.Features.Inventory
             _mockMessage = new Mock<IMessageService>();
             _mockCache = new Mock<ICacheService>();
 
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Ingredient, GetIngredientByIdResponse>()
                     .ForMember(d => d.StockStatus, opt => opt.Ignore())
                     .ForMember(d => d.InventoryGroupName, opt => opt.MapFrom(s => s.InventoryGroup != null ? s.InventoryGroup.Name : null));
-            });
+            }, mockLoggerFactory.Object);
             _mapper = config.CreateMapper();
 
             _handler = new GetIngredientByIdHandler(
