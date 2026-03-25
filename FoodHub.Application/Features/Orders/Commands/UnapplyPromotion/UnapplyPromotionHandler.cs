@@ -5,6 +5,7 @@ using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -72,6 +73,12 @@ namespace FoodHub.Application.Features.Orders.Commands.UnapplyPromotion
                 var freeItems = order
                     .OrderItems.Where(oi => oi.IsFreeItem && oi.MenuItemId == promotion.ItemId.Value)
                     .ToList();
+
+                // Chặn nếu món tặng đã bắt đầu nấu
+                if (freeItems.Any(fi => fi.Status != OrderItemStatus.Preparing))
+                {
+                    return Result<Unit>.Failure("Không thể gỡ voucher vì món tặng đang được chế biến");
+                }
 
                 foreach (var freeItem in freeItems)
                 {

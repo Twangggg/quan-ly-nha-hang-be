@@ -109,6 +109,19 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     .Where(oi => oi.IsFreeItem)
                     .ToList();
 
+                // Validation: If any gift item is already cooking or completed, prevent switching voucher
+                if (existingFreeItems.Any(fi => fi.Status != OrderItemStatus.Preparing))
+                {
+                    _logger.LogWarning(
+                        "Cannot switch promotion for order {OrderCode} because gift items are already in process",
+                        order.OrderCode
+                    );
+                    await _unitOfWork.RollbackTransactionAsync();
+                    return Result<ApplyPromotionResponse>.Failure(
+                        "Không thể đổi voucher vì món tặng đã bắt đầu được chế biến"
+                    );
+                }
+
                 foreach (var freeItem in existingFreeItems)
                 {
                     order.OrderItems.Remove(freeItem);
