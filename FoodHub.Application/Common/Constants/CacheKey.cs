@@ -155,10 +155,8 @@ public static class CacheKey
     public const string ShiftAssignmentByEmployee = "shift-assignment:employee:{0}:{1}";
     // Example: string.Format(ShiftAssignmentByEmployeePagination, "employee123", "2024-01-01", "page1") → "shift-assignment:employee:employee123:pagination:page1"
     public const string ShiftAssignmentByEmployeePagination = "shift-assignment:employee:{0}:pagination:{2}";
-
     // ==================== ATTENDANCES ====================
     public const string AttendanceReportList = "attendance:report:list";
-
 }
 public static class CacheTTL
 {
