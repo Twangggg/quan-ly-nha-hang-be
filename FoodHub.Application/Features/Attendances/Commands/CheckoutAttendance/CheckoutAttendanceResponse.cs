@@ -8,7 +8,7 @@ namespace FoodHub.Application.Features.Attendances.Commands.CheckoutAttendance
         public Guid AttendanceId { get; set; }
         public Guid EmployeeId { get; set; }
         public Guid? ShiftAssignmentId { get; set; } // FK tới ca được gán (có thể null nếu là làm ngoài giờ)
-        public DateTime CheckInTime { get; set; }
+        public DateTime CheckOutTime { get; set; }
         public Boolean? isLate { get; set; }
         public Boolean? isEarlyLeave { get; set; }
         public Boolean? isMissCheckOut { get; set; }

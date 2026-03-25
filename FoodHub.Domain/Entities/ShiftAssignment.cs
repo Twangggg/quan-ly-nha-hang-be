@@ -95,13 +95,15 @@ namespace FoodHub.Domain.Entities
         /// </summary>
         public bool ValidateCheckin(DateTime checkinTime, out TimeStatus checkinStatus)
         {
-            // Kết hợp ngày được gán (AssignedDate) và giờ ca làm việc (Shift.StartTime/EndTime)
-            // Lưu ý: Shift.StartTime/EndTime đang lưu dưới dạng TimeSpan trong DB
-            var shiftStartDateTime = AssignedDate.ToDateTime(TimeOnly.FromTimeSpan(Shift.StartTime));
+            var tzInfo = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+
+            // Lấy thời điểm bắt đầu và kết thúc CỦA CA LÀM VIỆC THEO NGÀY PHÂN CÔNG (đã được bọc lại thành giờ UTC để so sánh)
+            var shiftStartDateTimeUtc = Shift.GetStartTime(AssignedDate, tzInfo); 
+            var shiftEndDateTimeUtc = Shift.GetEndTime(AssignedDate, tzInfo);
 
             // Quy tắc: Cho phép check-in trước 30 phút, được coi là đúng giờ nếu check-in muộn không quá 5 phút
-            var allowEarlyTime = shiftStartDateTime.AddMinutes(-30);
-            var maxOnTime = shiftStartDateTime.AddMinutes(5);
+            var allowEarlyTime = shiftStartDateTimeUtc.AddMinutes(-30);
+            var maxOnTime = shiftStartDateTimeUtc.AddMinutes(5);
 
             // Nếu check-in trước 30 phút trước giờ bắt đầu ca, coi là quá sớm
             if (checkinTime < allowEarlyTime)
@@ -111,10 +113,17 @@ namespace FoodHub.Domain.Entities
             }
 
             // Nếu check-in muộn hơn 5 phút sau giờ bắt đầu ca, coi là muộn
-            if (checkinTime > maxOnTime)
+            if (maxOnTime <= checkinTime  && checkinTime <= shiftEndDateTimeUtc)
             {
                 checkinStatus = TimeStatus.Late;
                 return true;
+            }
+
+            // Nếu check-in muộn hơn giờ kết thúc ca, coi là quá muộn
+            if (shiftEndDateTimeUtc < checkinTime)
+            {
+                checkinStatus = TimeStatus.TooLate;
+                return false;
             }
 
             // Nếu check-in trong khoảng từ 30 phút trước đến 5 phút sau giờ bắt đầu ca, coi là đúng giờ
@@ -124,12 +133,14 @@ namespace FoodHub.Domain.Entities
 
         public bool ValidateCheckout(DateTime checkoutTime, out TimeStatus checkinStatus)
         {
-            var shiftEndDateTime = AssignedDate.ToDateTime(TimeOnly.FromTimeSpan(Shift.EndTime));
+            var tzInfo = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+            var shiftEndDateTimeUtc = Shift.GetEndTime(AssignedDate, tzInfo);
+
             // Quy tắc: Cho phép checkout muộn đến 30 phút sau giờ kết thúc ca làm việc
-            var allowLateCheckout = shiftEndDateTime.AddMinutes(30);
+            var allowLateCheckout = shiftEndDateTimeUtc.AddMinutes(30);
 
             // Nếu checkout trước giờ kết thúc ca, coi là quá sớm
-            if (checkoutTime < shiftEndDateTime)
+            if (checkoutTime < shiftEndDateTimeUtc)
             {
                 checkinStatus = TimeStatus.TooEarly;
                 return true;

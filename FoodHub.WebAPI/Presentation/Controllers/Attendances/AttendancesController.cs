@@ -74,9 +74,9 @@ namespace FoodHub.Presentation.Controllers
         [HttpPost("checkin")]
         [HasPermission(Permissions.Attendances.CheckIn)]
         [ProducesResponseType(typeof(Result<CheckinAttendanceResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Checkin()
+        public async Task<IActionResult> Checkin([FromQuery] CheckinAttendanceCommand command)
         {
-            var result = await _mediator.Send(new CheckinAttendanceCommand());
+            var result = await _mediator.Send(command);
             return HandleResult(result);
         }
 
@@ -87,9 +87,9 @@ namespace FoodHub.Presentation.Controllers
         [HttpPut("checkout")]
         [HasPermission(Permissions.Attendances.CheckOut)]
         [ProducesResponseType(typeof(Result<CheckoutAttendanceResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Checkout()
+        public async Task<IActionResult> Checkout([FromQuery] CheckoutAttendanceCommand command)
         {
-            var result = await _mediator.Send(new CheckoutAttendanceCommand());
+            var result = await _mediator.Send(command);
             return HandleResult(result);
         }
     }

@@ -3,5 +3,6 @@ using MediatR;
 
 namespace FoodHub.Application.Features.Attendances.Commands.CheckinAttendance
 {
-    public record CheckinAttendanceCommand : IRequest<Result<CheckinAttendanceResponse>>;
+    public record CheckinAttendanceCommand(
+        ) : IRequest<Result<CheckinAttendanceResponse>>;
 }

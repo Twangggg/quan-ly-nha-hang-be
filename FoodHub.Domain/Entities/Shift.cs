@@ -116,5 +116,28 @@ namespace FoodHub.Domain.Entities
 
             return DomainResult.Success();
         }
+
+        public DateTime GetStartTime(DateOnly assignedDate, TimeZoneInfo timeZone)
+        {
+            // Kết hợp ngày được gán (AssignedDate) với Giờ bắt đầu ca
+            // Note: Cần cẩn thận ở điểm này vì nếu ca là qua đêm, StartTime thuộc ngày AssignedDate, còn EndTime thuộc AssignedDate + 1.
+            var startDateTimeUnspecified = assignedDate.ToDateTime(TimeOnly.FromTimeSpan(StartTime));
+
+            // Trả về thời gian này dưới dạng UTC để so sánh chuẩn xác với DateTime.UtcNow ở mọi Handler
+            return TimeZoneInfo.ConvertTimeToUtc(startDateTimeUnspecified, timeZone);
+        }
+
+        public DateTime GetEndTime(DateOnly assignedDate, TimeZoneInfo timeZone)
+        {
+            var endDateTimeUnspecified = assignedDate.ToDateTime(TimeOnly.FromTimeSpan(EndTime));
+
+            // Xử lý trường hợp ca làm việc qua đêm (EndTime < StartTime)
+            if (EndTime <= StartTime)
+            {
+                endDateTimeUnspecified = endDateTimeUnspecified.AddDays(1);
+            }
+            
+            return TimeZoneInfo.ConvertTimeToUtc(endDateTimeUnspecified, timeZone);
+        }
     }
 }

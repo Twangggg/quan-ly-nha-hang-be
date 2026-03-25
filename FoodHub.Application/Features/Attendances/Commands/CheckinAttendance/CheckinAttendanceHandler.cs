@@ -51,7 +51,7 @@ namespace FoodHub.Application.Features.Attendances.Commands.CheckinAttendance
             var existingAttendance = await attendanceRepository
                 .Query()
                 .Include(a => a.ShiftAssignment)
-                .Where(a => a.EmployeeId == auditorId && a.CheckOutTime == null)
+                .Where(a => a.EmployeeId == auditorId)
                 .OrderByDescending(a => a.CheckInTime)
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -63,8 +63,7 @@ namespace FoodHub.Application.Features.Attendances.Commands.CheckinAttendance
                     var errorMessage = _messageService.GetMessage(MessageKeys.Attendance.AlreadyCheckedIn);
                     return Result<CheckinAttendanceResponse>.Failure(errorMessage, ResultErrorType.BadRequest);
                 }
-
-                _logger.LogInformation("Skipping previous zombie attendance for user {AuditorId}. Proceeding a new checkin.", auditorId);
+                else _logger.LogInformation("Skipping previous zombie attendance for user {AuditorId}. Proceeding a new checkin.", auditorId);
             }
 
             var shiftAssignments = await shiftAssignmentRepository
