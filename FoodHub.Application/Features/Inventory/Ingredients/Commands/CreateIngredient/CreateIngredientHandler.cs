@@ -53,6 +53,12 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
             try
             {
                 var repo = _unitOfWork.Repository<Ingredient>();
+                var settingsRepo = _unitOfWork.Repository<InventorySettings>();
+                var defaultLowStockThreshold =
+                    await settingsRepo
+                        .Query()
+                        .Select(x => x.DefaultLowStockThreshold)
+                        .FirstOrDefaultAsync(cancellationToken);
 
                 // Check if Name exists
                 var nameExists = await repo.AnyAsync(x =>
@@ -75,15 +81,21 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                 {
                     auditorId = parsedUserId;
                 }
+
+                var lowStockThreshold = request.UseDefaultLowStockThreshold
+                    ? defaultLowStockThreshold
+                    : request.LowStockThreshold;
                 var ingredient = Ingredient.Create(
                     generatedCode,
                     request.Name,
                     request.BaseUnit,
-                    request.LowStockThreshold,
+                    lowStockThreshold,
                     0,
                     0,
                     request.Description,
-                    auditorId
+                    auditorId,
+                    request.InventoryGroupId,
+                    request.UseDefaultLowStockThreshold
                 );
 
                 await _unitOfWork.BeginTransactionAsync();
@@ -104,8 +116,11 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngr
                         CurrentStock = ingredient.CurrentStock,
                         CostPrice = ingredient.CostPrice,
                         LowStockThreshold = ingredient.LowStockThreshold,
-                        StockStatus = ingredient.GetStockStatus(),
+                        StockStatus = ingredient.GetStockStatus(lowStockThreshold),
+                        UseDefaultLowStockThreshold = ingredient.UseDefaultLowStockThreshold,
                         Description = ingredient.Description,
+                        InventoryGroupId = ingredient.InventoryGroupId,
+                        InventoryGroupName = ingredient.InventoryGroup?.Name,
                         CreatedAt = ingredient.CreatedAt,
                         CreatedBy = ingredient.CreatedBy,
                         UpdatedBy = ingredient.UpdatedBy,

@@ -19,6 +19,7 @@ namespace FoodHub.Application.Features.Inventory.Alerts.Queries.GetInventoryAler
         public string Unit { get; set; } = string.Empty;
         public decimal CurrentStock { get; set; }
         public decimal Threshold { get; set; }
+        public InventoryRuleSourceDto Source { get; set; }
     }
 
     public class InventoryExpiryAlertItemResponse

@@ -39,18 +39,21 @@ namespace FoodHub.Application.Features.Dashboard.Inventory.Queries.GetInventoryD
 
             var utcToday = DateTime.UtcNow.Date;
 
-            var settings = await _unitOfWork
-                .Repository<InventorySettings>()
-                .Query()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(
-                    x => x.SettingsKey == InventorySettings.DefaultSettingsKey,
-                    cancellationToken
-                ) ?? InventorySettings.CreateDefault();
+            var settings =
+                await _unitOfWork
+                    .Repository<InventorySettings>()
+                    .Query()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(
+                        x => x.SettingsKey == InventorySettings.DefaultSettingsKey,
+                        cancellationToken
+                    )
+                ?? InventorySettings.CreateDefault();
 
             var ingredients = await _unitOfWork
                 .Repository<Ingredient>()
                 .Query()
+                .Include(x => x.InventoryGroup)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
@@ -72,11 +75,13 @@ namespace FoodHub.Application.Features.Dashboard.Inventory.Queries.GetInventoryD
                 ingredients,
                 lots,
                 utcToday,
-                settings.ExpiryWarningDays
+                settings.ExpiryWarningDays,
+                new InventoryRuleResolver(),
+                settings
             );
 
-            var topLowStockItems = summary.OutOfStockItems
-                .Concat(summary.LowStockItems)
+            var topLowStockItems = summary
+                .OutOfStockItems.Concat(summary.LowStockItems)
                 .OrderBy(x => x.CurrentStock)
                 .ThenBy(x => x.Threshold)
                 .Take(10)
@@ -91,8 +96,8 @@ namespace FoodHub.Application.Features.Dashboard.Inventory.Queries.GetInventoryD
                 })
                 .ToList();
 
-            var topExpiringLots = summary.ExpiredLots
-                .Concat(summary.NearExpiryLots)
+            var topExpiringLots = summary
+                .ExpiredLots.Concat(summary.NearExpiryLots)
                 .OrderBy(x => x.ExpiryDate ?? DateTime.MaxValue)
                 .Take(10)
                 .Select(x => new InventoryDashboardExpiryItem

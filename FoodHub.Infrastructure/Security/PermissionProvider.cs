@@ -79,6 +79,10 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Billing.ViewHistory,
                 Permissions.Billing.PreCheckBill,
                 Permissions.Billing.SplitBill,
+                Permissions.Reservations.View,
+                Permissions.Reservations.Create,
+                Permissions.Reservations.Update,
+                Permissions.Reservations.Cancel,
                 Permissions.Reservations.CheckIn,
                 Permissions.SalesAnalytics.View,
 
@@ -93,6 +97,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Vouchers.Update,
                 Permissions.Vouchers.Delete,
                 Permissions.Vouchers.Apply,
+                Permissions.Vouchers.Unapply,
             };
         }
 

@@ -55,6 +55,20 @@ namespace FoodHub.Domain.Entities
             return Quantity * (UnitPriceSnapshot + optionsTotal);
         }
 
+        public decimal GetGrossTotalPrice()
+        {
+            if (Status == OrderItemStatus.Cancelled || Status == OrderItemStatus.Rejected)
+                return 0;
+
+            var optionsTotal =
+                OptionGroups
+                    ?.SelectMany(og => og.OptionValues)
+                    .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity)
+                ?? 0;
+
+            return Quantity * (UnitPriceSnapshot + optionsTotal);
+        }
+
         public bool IsFinished() =>
             Status == OrderItemStatus.Completed
             || Status == OrderItemStatus.Cancelled

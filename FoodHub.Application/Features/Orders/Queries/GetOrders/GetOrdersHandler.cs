@@ -12,6 +12,7 @@ using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Orders.Queries.GetOrders
@@ -32,6 +33,7 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
         public async Task<Result<PagedResult<GetOrdersResponse>>> Handle(GetOrdersQuery request, CancellationToken cancellationToken)
         {
             var query = _unitOfWork.Repository<Order>().Query();
+            query = query.Include(o => o.Promotion);
 
             var searchableFields = new List<Expression<Func<Order, string?>>>
             {

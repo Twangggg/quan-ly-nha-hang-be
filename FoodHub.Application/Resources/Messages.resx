@@ -131,6 +131,9 @@
   <data name="InventorySettings.MaxCostRecalcDaysRange" xml:space="preserve">
     <value>So ngay tinh lai gia von phai nam trong khoang 1 den 365.</value>
   </data>
+  <data name="InventorySettings.OpeningStockImportCooldownHoursMin" xml:space="preserve">
+    <value>Thoi gian cho giua 2 lan nhap so du khong duoc am.</value>
+  </data>
   <data name="InventorySettings.InvalidExpiryWarningDays" xml:space="preserve">
     <value>So ngay canh bao phai lon hon hoac bang 1.</value>
   </data>
@@ -139,6 +142,9 @@
   </data>
   <data name="InventorySettings.InvalidMaxCostRecalcDays" xml:space="preserve">
     <value>So ngay tinh lai gia von phai nam trong khoang 1 den 365.</value>
+  </data>
+  <data name="InventorySettings.InvalidOpeningStockImportCooldownHours" xml:space="preserve">
+    <value>Thoi gian cho giua 2 lan nhap so du khong duoc am.</value>
   </data>
   <data name="OpeningStock.ItemsRequired" xml:space="preserve">
     <value>Danh sach ton dau ky khong duoc de trong.</value>
@@ -166,6 +172,9 @@
   </data>
   <data name="OpeningStock.AlreadyLocked" xml:space="preserve">
     <value>So du dau ky da duoc khoa. Khong the chinh sua them.</value>
+  </data>
+  <data name="OpeningStock.ImportCooldownNotElapsed" xml:space="preserve">
+    <value>Chua den thoi gian cho phep nhap so du dau ky lan tiep theo.</value>
   </data>
   <data name="Ingredient.InvalidOpeningStockQuantity" xml:space="preserve">
     <value>So luong ton dau ky phai lon hon hoac bang 0.</value>
@@ -250,6 +259,9 @@
   </data>
   <data name="InventoryCogs.Completed" xml:space="preserve">
     <value>Tinh gia von hoan tat.</value>
+  </data>
+  <data name="InventoryCogs.RangeExceeded" xml:space="preserve">
+    <value>Khoang ngay ban chon vuot qua so ngay toi da duoc cau hinh cho tinh lai gia von. Gioi han hien tai la {0} ngay.</value>
   </data>
   <data name="Ingredient.PhysicalStockMin" xml:space="preserve">
     <value>So luong ton thuc te phai lon hon hoac bang 0.</value>

@@ -33,6 +33,11 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
         public int MaxCostRecalcDays { get; set; }
 
         /// <summary>
+        /// Minimum number of hours required between two opening-stock imports.
+        /// </summary>
+        public int OpeningStockImportCooldownHours { get; set; }
+
+        /// <summary>
         /// Current opening-stock workflow status.
         /// </summary>
         public OpeningStockStatus OpeningStockStatus { get; set; }
@@ -41,5 +46,15 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
         /// Timestamp when the settings were locked, if applicable.
         /// </summary>
         public DateTime? LockedAt { get; set; }
+
+        /// <summary>
+        /// Timestamp of the latest opening-stock import.
+        /// </summary>
+        public DateTime? LastOpeningStockImportedAt { get; set; }
+
+        /// <summary>
+        /// Earliest timestamp when the next opening-stock import is allowed.
+        /// </summary>
+        public DateTime? NextOpeningStockImportAllowedAt { get; set; }
     }
 }

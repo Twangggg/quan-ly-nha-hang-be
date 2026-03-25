@@ -1,5 +1,5 @@
-using FoodHub.Application.Common.Models;
 using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
@@ -95,13 +95,18 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     var vietnamTime = DateTime.UtcNow.AddHours(7);
                     var currentTime = vietnamTime.TimeOfDay;
                     var today = DateOnly.FromDateTime(vietnamTime);
-                    var upcomingReservation = await _unitOfWork.Repository<Reservation>().Query()
-                        .AnyAsync(r => r.TableId == request.TableId.Value
-                                    && r.ReservationDate == today
-                                    && r.Status == ReservationStatus.Booked
-                                    && r.ReservationTime > currentTime
-                                    && r.ReservationTime <= currentTime.Add(bufferTime),
-                                    cancellationToken);
+                    var upcomingReservation = await _unitOfWork
+                        .Repository<Reservation>()
+                        .Query()
+                        .AnyAsync(
+                            r =>
+                                r.TableId == request.TableId.Value
+                                && r.ReservationDate == today
+                                && r.Status == ReservationStatus.Booked
+                                && r.ReservationTime > currentTime
+                                && r.ReservationTime <= currentTime.Add(bufferTime),
+                            cancellationToken
+                        );
 
                     if (table is null)
                     {
@@ -145,7 +150,9 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                     //Bàn bị đặt trước
                     if (upcomingReservation)
                     {
-                        return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Order.HasBeenPlaced));
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.Order.HasBeenPlaced)
+                        );
                     }
                 }
 

@@ -76,6 +76,32 @@ namespace FoodHub.Infrastructure.Services.Messaging
             }
         }
 
+        public async Task NotifyShiftAssignmentAsync(
+            Guid employeeId,
+            string shiftName,
+            DateOnly assignedDate,
+            bool isCancelled
+        )
+        {
+            try
+            {
+                // Thông báo cho nhân viên khi lịch ca làm việc thay đổi
+                await _hubContext.Clients.All.SendAsync(
+                    "ShiftAssignmentUpdated",
+                    new
+                    {
+                        EmployeeId = employeeId,
+                        ShiftName = shiftName,
+                        AssignedDate = assignedDate,
+                        IsCancelled = isCancelled
+                    });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR Error in NotifyShiftAssignmentAsync: {ex.Message}");
+
+            }
+        }
         public async Task NotifyTableStatusChangedAsync(Guid tableId, string newStatus)
         {
             try
@@ -87,6 +113,7 @@ namespace FoodHub.Infrastructure.Services.Messaging
             }
             catch (Exception ex)
             {
+
                 Console.WriteLine($"SignalR Error in NotifyTableStatusChangedAsync: {ex.Message}");
             }
         }

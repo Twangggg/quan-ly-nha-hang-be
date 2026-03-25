@@ -40,6 +40,23 @@ namespace FoodHub.Domain.Constants
             public const string AlreadyInactive = "Area.AlreadyInactive";
         }
 
+        public static class Shift
+        {
+            public const string OverlappingTime = "Shift.OverlappingTime";
+            public const string AlreadyInactive = "Shift.AlreadyInactive";
+            public const string NotFound = "Shift.NotFound";
+            public const string AlreadyActive = "Shift.AlreadyActive";
+        }
+
+        public static class ShiftAssignment
+        {
+            public const string NotFound = "ShiftAssignment.NotFound";
+            public const string OverlappingShift = "ShiftAssignment.OverlappingShift";
+            public const string ShiftNotActive = "ShiftAssignment.ShiftNotActive";
+            public const string EmployeeNotActive = "ShiftAssignment.EmployeeNotActive";
+            public const string OvertimeExceeded = "ShiftAssignment.OvertimeExceeded";
+        }
+
         public static class SetMenu
         {
             public const string NotFound = "SetMenu.NotFound";
@@ -99,6 +116,8 @@ namespace FoodHub.Domain.Constants
                 "InventorySettings.InvalidLowStockThreshold";
             public const string InvalidMaxCostRecalcDays =
                 "InventorySettings.InvalidMaxCostRecalcDays";
+            public const string InvalidOpeningStockImportCooldownHours =
+                "InventorySettings.InvalidOpeningStockImportCooldownHours";
         }
 
         public static class StockInReceipt
@@ -137,6 +156,17 @@ namespace FoodHub.Domain.Constants
             public const string DuplicateIngredient = "InventoryCheck.DuplicateIngredient";
             public const string InvalidQuantity = "InventoryCheck.InvalidQuantity";
             public const string InvalidStatus = "InventoryCheck.InvalidStatus";
+        }
+        public static class Promotion
+        {
+            public const string NotFound = "Promotion.NotFound";
+            public const string Inactive = "Promotion.Inactive";
+            public const string NotStarted = "Promotion.NotStarted";
+            public const string Expired = "Promotion.Expired";
+            public const string UsageLimitExceeded = "Promotion.UsageLimitExceeded";
+            public const string InvalidTime = "Promotion.InvalidTime";
+            public const string BelowMinAmount = "Promotion.BelowMinAmount";
+            public const string InvalidVoucher = "Promotion.InvalidVoucher";
         }
     }
 }

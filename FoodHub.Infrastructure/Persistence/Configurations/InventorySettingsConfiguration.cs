@@ -43,11 +43,19 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .IsRequired();
 
             builder
+                .Property(x => x.OpeningStockImportCooldownHours)
+                .HasColumnName("opening_stock_import_cooldown_hours")
+                .IsRequired();
+
+            builder
                 .Property(x => x.OpeningStockStatus)
                 .HasColumnName("opening_stock_status")
                 .IsRequired();
 
             builder.Property(x => x.LockedAt).HasColumnName("locked_at");
+            builder
+                .Property(x => x.LastOpeningStockImportedAt)
+                .HasColumnName("last_opening_stock_imported_at");
 
             builder.Property(x => x.CreatedAt).HasColumnName("created_at");
             builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");

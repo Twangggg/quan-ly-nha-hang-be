@@ -16,7 +16,6 @@ namespace FoodHub.Presentation.Controllers
     /// <summary>
     /// Quản lý hình ảnh và upload lên Cloudinary.
     /// </summary>
-    [Authorize(Roles = "Manager")]
     [Tags("Hình ảnh (Images)")]
     [RateLimit(maxRequests: 10, windowMinutes: 5, blockMinutes: 15)]
     public class ImageController : ApiControllerBase
@@ -48,6 +47,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Upload thành công, trả về URL hình ảnh.</response>
         /// <response code="400">File không hợp lệ hoặc quá lớn.</response>
         [HttpPost("upload")]
+        [HasPermission(Permissions.Images.Manage)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UploadImage(
@@ -103,6 +103,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Xóa thành công.</response>
         /// <response code="404">Không tìm thấy ảnh.</response>
         [HttpDelete("delete")]
+        [HasPermission(Permissions.Images.Manage)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteImage([FromQuery] string publicId)

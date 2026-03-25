@@ -25,11 +25,25 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTable
 
         public void Mapping(MappingProfile profile)
         {
-            profile.CreateMap<Table, UpdateTableResponse>()
-                .ForMember(d => d.TableCode, opt => opt.MapFrom(s =>
-                (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix)) ? s.Area.CodePrefix + "_" + s.TableNumber : s.TableNumber.ToString()))
-                .ForMember(dest => dest.AreaName, opt => opt.MapFrom(src => src.Area != null ? src.Area.Name : string.Empty))
-                .ForMember(dest => dest.AreaCodePrefix, opt => opt.MapFrom(src => src.Area != null ? src.Area.CodePrefix : string.Empty))
+            profile
+                .CreateMap<Table, UpdateTableResponse>()
+                .ForMember(
+                    d => d.TableCode,
+                    opt =>
+                        opt.MapFrom(s =>
+                            (s.Area != null && !string.IsNullOrWhiteSpace(s.Area.CodePrefix))
+                                ? s.Area.CodePrefix + "_" + s.TableNumber
+                                : s.TableNumber.ToString()
+                        )
+                )
+                .ForMember(
+                    dest => dest.AreaName,
+                    opt => opt.MapFrom(src => src.Area != null ? src.Area.Name : string.Empty)
+                )
+                .ForMember(
+                    dest => dest.AreaCodePrefix,
+                    opt => opt.MapFrom(src => src.Area != null ? src.Area.CodePrefix : string.Empty)
+                )
                 .ForMember(d => d.StatusName, opt => opt.MapFrom(src => src.Status.ToString()));
         }
     }

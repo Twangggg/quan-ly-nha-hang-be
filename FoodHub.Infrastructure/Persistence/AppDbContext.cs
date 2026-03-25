@@ -153,6 +153,13 @@ namespace FoodHub.Infrastructure.Persistence
                         .CoreEventId
                         .PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning
                 );
+                warnings.Ignore(
+                    Microsoft
+                        .EntityFrameworkCore
+                        .Diagnostics
+                        .RelationalEventId
+                        .PendingModelChangesWarning
+                );
             });
             base.OnConfiguring(optionsBuilder);
         }
@@ -160,6 +167,10 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<Employee> Employees { get; set; } = null!;
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+
+        // HR / Master Data
+        public DbSet<Shift> Shifts { get; set; } = null!;
+        public DbSet<ShiftAssignment> ShiftAssignments { get; set; } = null!;
         public DbSet<Category> Categories { get; set; } = null!;
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderItem> OrderItems { get; set; } = null!;
@@ -202,8 +213,10 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<StockOutReceiptItemLotAllocation> StockOutReceiptItemLotAllocations { get; set; } =
             null!;
 
-        // Voucher Management
-        public DbSet<Voucher> Vouchers { get; set; } = null!;
+        public DbSet<InventoryGroup> InventoryGroups { get; set; } = null!;
+        
+        // Promotion Management
+        public DbSet<Promotion> Promotions { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

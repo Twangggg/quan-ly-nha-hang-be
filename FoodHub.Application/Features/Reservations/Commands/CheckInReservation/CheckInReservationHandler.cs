@@ -1,17 +1,17 @@
+using System;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
 {
@@ -96,7 +96,10 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
             Guid targetAreaId = request.NewAreaId ?? table.AreaId;
 
             // If the current table is busy OR the staff actively selects a new area
-            if (table.Status != TableStatus.Available && table.Status != TableStatus.Reserved || request.NewAreaId.HasValue)
+            if (
+                (table.Status != TableStatus.Available && table.Status != TableStatus.Reserved)
+                || request.NewAreaId.HasValue
+            )
             {
                 _logger.LogInformation(
                     "Table {TableId} is busy or NewAreaId {NewAreaId} provided. Finding replacement in Area {TargetAreaId}",
@@ -108,11 +111,10 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
                 var replacementTable = await _unitOfWork
                     .Repository<Table>()
                     .Query()
-                    .Where(
-                        t =>
-                            t.AreaId == targetAreaId
-                            && t.Status == TableStatus.Available
-                            && t.Capacity >= reservation.GuestCount
+                    .Where(t =>
+                        t.AreaId == targetAreaId
+                        && t.Status == TableStatus.Available
+                        && t.Capacity >= reservation.GuestCount
                     )
                     .OrderBy(t => t.Capacity)
                     .FirstOrDefaultAsync(cancellationToken);
@@ -136,15 +138,11 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
                 reservation.TableId = table.TableId;
             }
 
-
             // 5. Prevent duplicate: check no existing Order linked to this Reservation
             var alreadyHasOrder = await _unitOfWork
                 .Repository<Order>()
                 .Query()
-                .AnyAsync(
-                    o => o.ReservationId == request.ReservationId,
-                    cancellationToken
-                );
+                .AnyAsync(o => o.ReservationId == request.ReservationId, cancellationToken);
 
             if (alreadyHasOrder)
             {

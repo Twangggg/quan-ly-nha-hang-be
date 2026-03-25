@@ -9,10 +9,10 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -26,7 +26,8 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
     /// If the update is successful, it returns the updated table information in a response object.
     /// If the table is not found, it returns a failure result with an appropriate error message.
     /// </summary>
-    public class UpdateTableStatusHandler : IRequestHandler<UpdateTableStatusCommand, Result<UpdateTableStatusResponse>>
+    public class UpdateTableStatusHandler
+        : IRequestHandler<UpdateTableStatusCommand, Result<UpdateTableStatusResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -44,7 +45,14 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
         /// <param name="messageService"></param>
         /// <param name="cacheService"></param>
         /// <param name="signalRService"></param>
-        public UpdateTableStatusHandler(IUnitOfWork unitOfWork, IMapper mapper, ICurrentUserService currentUserService, IMessageService messageService, ICacheService cacheService, ISignalRService signalRService)
+        public UpdateTableStatusHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ICurrentUserService currentUserService,
+            IMessageService messageService,
+            ICacheService cacheService,
+            ISignalRService signalRService
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -64,7 +72,10 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Result<UpdateTableStatusResponse>> Handle(UpdateTableStatusCommand request, CancellationToken cancellationToken)
+        public async Task<Result<UpdateTableStatusResponse>> Handle(
+            UpdateTableStatusCommand request,
+            CancellationToken cancellationToken
+        )
         {
             // Retrieve the table from the database
             var tableRepository = _unitOfWork.Repository<Table>();
@@ -74,7 +85,10 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
                 .FirstOrDefault(t => t.TableId == request.TableId);
             if (table is null)
             {
-                var errorMessage = _messageService.GetMessage(MessageKeys.Table.NotFound, request.TableId);
+                var errorMessage = _messageService.GetMessage(
+                    MessageKeys.Table.NotFound,
+                    request.TableId
+                );
                 return Result<UpdateTableStatusResponse>.NotFound(errorMessage);
             }
 
@@ -89,13 +103,25 @@ namespace FoodHub.Application.Features.Tables.Commands.UpdateTableStatus
             tableRepository.Update(table);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
             await _cacheService.RemoveAsync(CacheKey.AreaList, cancellationToken);
-            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableList), cancellationToken);
-            await _cacheService.RemoveByPatternAsync(string.Format(CacheKey.TableListByArea, table.AreaId), cancellationToken);
-            await _cacheService.RemoveAsync(string.Format(CacheKey.TableById, request.TableId), cancellationToken);
+            await _cacheService.RemoveByPatternAsync(
+                string.Format(CacheKey.TableList),
+                cancellationToken
+            );
+            await _cacheService.RemoveByPatternAsync(
+                string.Format(CacheKey.TableListByArea, table.AreaId),
+                cancellationToken
+            );
+            await _cacheService.RemoveAsync(
+                string.Format(CacheKey.TableById, request.TableId),
+                cancellationToken
+            );
 
             // Commit the transaction after successful update
-            await _signalRService.NotifyTableStatusChangedAsync(table.TableId, table.Status.ToString());
-            
+            await _signalRService.NotifyTableStatusChangedAsync(
+                table.TableId,
+                table.Status.ToString()
+            );
+
             var response = _mapper.Map<UpdateTableStatusResponse>(table);
             return Result<UpdateTableStatusResponse>.Success(response);
         }

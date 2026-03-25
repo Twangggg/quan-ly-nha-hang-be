@@ -1,12 +1,12 @@
-using FoodHub.Application.Common.Models;
 using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -171,8 +171,14 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
                     );
                 }
 
-                await _signalRService.NotifyTableStatusChangedAsync(currentTable.TableId, currentTable.Status.ToString());
-                await _signalRService.NotifyTableStatusChangedAsync(newTable.TableId, newTable.Status.ToString());
+                await _signalRService.NotifyTableStatusChangedAsync(
+                    currentTable.TableId,
+                    currentTable.Status.ToString()
+                );
+                await _signalRService.NotifyTableStatusChangedAsync(
+                    newTable.TableId,
+                    newTable.Status.ToString()
+                );
 
                 var response = new ChangeOrderTableResponse
                 {

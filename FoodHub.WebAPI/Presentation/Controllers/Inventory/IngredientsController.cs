@@ -112,7 +112,7 @@ namespace FoodHub.Presentation.Controllers
             [FromBody] UpdateIngredientCommand command
         )
         {
-            command = command with { RouteId = id, IngredientId = id };
+            command = command with { IngredientId = id };
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }
