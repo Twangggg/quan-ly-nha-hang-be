@@ -41,9 +41,6 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(a => a.isEarlyLeave)
                 .HasColumnName("is_early_leave");
 
-            builder.Property(a => a.isMissCheckOut)
-                .HasColumnName("is_miss_check_out");
-
             // BaseEntity audit columns
             builder.Property(a => a.CreatedAt).HasColumnName("created_at");
             builder.Property(a => a.CreatedBy).HasColumnName("created_by");

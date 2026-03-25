@@ -41,6 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Features\Attendances\Commands\CheckoutAttendance\" />
+    <Folder Include="Features\Attendances\Queries\" />
     <Folder Include="Features\KDS\Commands\" />
     <Folder Include="Features\KDS\Queries\" />
   </ItemGroup>

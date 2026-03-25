@@ -3,6 +3,14 @@ using FoodHub.Domain.Constants;
 
 namespace FoodHub.Domain.Entities
 {
+    public enum TimeStatus
+    {
+        OnTime,     // Điểm danh đúng giờ (trong khoảng cho phép)
+        Late,       // Điểm danh muộn
+        TooEarly,   // Điểm danh quá sớm (chưa đến giờ mở check-in)
+        TooLate     // Điểm danh quá muộn (đã hết ca)
+    }
+
     /// <summary>
     /// Thực thể Phân công ca làm việc - gán một ca cụ thể cho nhân viên vào một ngày xác định.
     /// </summary>
@@ -80,6 +88,63 @@ namespace FoodHub.Domain.Entities
             UpdatedBy = cancelledBy;
 
             return DomainResult.Success();
+        }
+
+        /// <summary>
+        /// Xác thực thời gian check-in của nhân viên so với lịch phân công.
+        /// </summary>
+        public bool ValidateCheckin(DateTime checkinTime, out TimeStatus checkinStatus)
+        {
+            // Kết hợp ngày được gán (AssignedDate) và giờ ca làm việc (Shift.StartTime/EndTime)
+            // Lưu ý: Shift.StartTime/EndTime đang lưu dưới dạng TimeSpan trong DB
+            var shiftStartDateTime = AssignedDate.ToDateTime(TimeOnly.FromTimeSpan(Shift.StartTime));
+
+            // Quy tắc: Cho phép check-in trước 30 phút, được coi là đúng giờ nếu check-in muộn không quá 5 phút
+            var allowEarlyTime = shiftStartDateTime.AddMinutes(-30);
+            var maxOnTime = shiftStartDateTime.AddMinutes(5);
+
+            // Nếu check-in trước 30 phút trước giờ bắt đầu ca, coi là quá sớm
+            if (checkinTime < allowEarlyTime)
+            {
+                checkinStatus = TimeStatus.TooEarly;
+                return false;
+            }
+
+            // Nếu check-in muộn hơn 5 phút sau giờ bắt đầu ca, coi là muộn
+            if (checkinTime > maxOnTime)
+            {
+                checkinStatus = TimeStatus.Late;
+                return true;
+            }
+
+            // Nếu check-in trong khoảng từ 30 phút trước đến 5 phút sau giờ bắt đầu ca, coi là đúng giờ
+            checkinStatus = TimeStatus.OnTime;
+            return true;
+        }
+
+        public bool ValidateCheckout(DateTime checkoutTime, out TimeStatus checkinStatus)
+        {
+            var shiftEndDateTime = AssignedDate.ToDateTime(TimeOnly.FromTimeSpan(Shift.EndTime));
+            // Quy tắc: Cho phép checkout muộn đến 30 phút sau giờ kết thúc ca làm việc
+            var allowLateCheckout = shiftEndDateTime.AddMinutes(30);
+
+            // Nếu checkout trước giờ kết thúc ca, coi là quá sớm
+            if (checkoutTime < shiftEndDateTime)
+            {
+                checkinStatus = TimeStatus.TooEarly;
+                return true;
+            }
+
+            // Nếu checkout muộn hơn 30 phút sau giờ kết thúc ca, coi là quá muộn
+            if (checkoutTime > allowLateCheckout)
+            {
+                checkinStatus = TimeStatus.TooLate;
+                return false;
+            }
+
+            // Nếu checkout trong khoảng từ giờ kết thúc ca đến 30 phút sau, coi là đúng giờ
+            checkinStatus = TimeStatus.OnTime;
+            return true;
         }
     }
 }

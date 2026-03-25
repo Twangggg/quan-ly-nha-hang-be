@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -23,7 +23,6 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                     note = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     is_late = table.Column<bool>(type: "boolean", nullable: true),
                     is_early_leave = table.Column<bool>(type: "boolean", nullable: true),
-                    is_miss_check_out = table.Column<bool>(type: "boolean", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
