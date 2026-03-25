@@ -46,12 +46,13 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
         )
         {
             _logger.LogInformation(
-                "Start handling UpdateInventorySettings with ExpiryWarningDays={ExpiryWarningDays}, DefaultLowStockThreshold={DefaultLowStockThreshold}, AutoDeductOnCompleted={AutoDeductOnCompleted}, CostMethod={CostMethod}, MaxCostRecalcDays={MaxCostRecalcDays}",
+                "Start handling UpdateInventorySettings with ExpiryWarningDays={ExpiryWarningDays}, DefaultLowStockThreshold={DefaultLowStockThreshold}, AutoDeductOnCompleted={AutoDeductOnCompleted}, CostMethod={CostMethod}, MaxCostRecalcDays={MaxCostRecalcDays}, OpeningStockImportCooldownHours={OpeningStockImportCooldownHours}",
                 request.ExpiryWarningDays,
                 request.DefaultLowStockThreshold,
                 request.AutoDeductOnCompleted,
                 request.CostMethod,
-                request.MaxCostRecalcDays
+                request.MaxCostRecalcDays,
+                request.OpeningStockImportCooldownHours
             );
 
             var repo = _unitOfWork.Repository<InventorySettings>();
@@ -79,6 +80,7 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
                     request.AutoDeductOnCompleted!.Value,
                     request.CostMethod,
                     request.MaxCostRecalcDays,
+                    request.OpeningStockImportCooldownHours,
                     actorId
                 );
 
@@ -106,8 +108,11 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
                     AutoDeductOnCompleted = settings.AutoDeductOnCompleted,
                     CostMethod = settings.CostMethod,
                     MaxCostRecalcDays = settings.MaxCostRecalcDays,
+                    OpeningStockImportCooldownHours = settings.OpeningStockImportCooldownHours,
                     OpeningStockStatus = settings.OpeningStockStatus,
                     LockedAt = settings.LockedAt,
+                    LastOpeningStockImportedAt = settings.LastOpeningStockImportedAt,
+                    NextOpeningStockImportAllowedAt = settings.GetNextOpeningStockImportAllowedAt(),
                 };
 
                 _logger.LogInformation("End handling UpdateInventorySettings");

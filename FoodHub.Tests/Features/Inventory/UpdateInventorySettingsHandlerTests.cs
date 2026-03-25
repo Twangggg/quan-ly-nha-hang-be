@@ -56,7 +56,8 @@ namespace FoodHub.Tests.Features.Inventory
                 100,
                 false,
                 InventoryCostMethod.WeightedAverage,
-                45
+                45,
+                12
             );
 
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -66,6 +67,7 @@ namespace FoodHub.Tests.Features.Inventory
             result.Data.DefaultLowStockThreshold.Should().Be(100);
             result.Data.AutoDeductOnCompleted.Should().BeFalse();
             result.Data.CostMethod.Should().Be(InventoryCostMethod.WeightedAverage);
+            result.Data.OpeningStockImportCooldownHours.Should().Be(12);
             _mockUow.Verify(x => x.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(x => x.CommitTransactionAsync(), Times.Once);
             _mockCache.Verify(
@@ -90,7 +92,8 @@ namespace FoodHub.Tests.Features.Inventory
                 5,
                 true,
                 InventoryCostMethod.WeightedAverage,
-                30
+                30,
+                0
             );
 
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -119,7 +122,8 @@ namespace FoodHub.Tests.Features.Inventory
                 5,
                 true,
                 InventoryCostMethod.WeightedAverage,
-                30
+                30,
+                0
             );
 
             var action = async () => await _handler.Handle(command, CancellationToken.None);

@@ -99,6 +99,23 @@ namespace FoodHub.Presentation.Controllers
             return HandleResult(result);
         }
 
+        [HttpGet("audit-logs")]
+        [HasPermission(Permissions.Orders.View)]
+        [ProducesResponseType(
+            typeof(Result<PagedResult<GetOrderAuditLogsResponse>>),
+            StatusCodes.Status200OK
+        )]
+        public async Task<IActionResult> GetAllOrderAuditLogs([FromQuery] PaginationParams pagination)
+        {
+            var result = await _mediator.Send(new GetAllOrderAuditLogsQuery(pagination));
+            if (result.IsSuccess && result.Data != null)
+            {
+                Response.AddPaginationHeaders(result.Data);
+            }
+
+            return HandleResult(result);
+        }
+
         /// <summary>
         /// Gửi toàn bộ yêu cầu của đơn hàng xuống bếp.
         /// </summary>

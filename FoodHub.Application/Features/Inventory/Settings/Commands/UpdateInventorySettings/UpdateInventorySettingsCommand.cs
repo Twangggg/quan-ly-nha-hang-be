@@ -12,11 +12,13 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
     /// <param name="AutoDeductOnCompleted">Indicates whether stock is deducted automatically when an order is completed.</param>
     /// <param name="CostMethod">Inventory costing method selected by the restaurant.</param>
     /// <param name="MaxCostRecalcDays">Maximum lookback window, in days, for cost recalculation.</param>
+    /// <param name="OpeningStockImportCooldownHours">Minimum cooldown, in hours, between two opening-stock imports.</param>
     public record UpdateInventorySettingsCommand(
         int ExpiryWarningDays,
         decimal DefaultLowStockThreshold,
         bool? AutoDeductOnCompleted,
         InventoryCostMethod CostMethod,
-        int MaxCostRecalcDays
+        int MaxCostRecalcDays,
+        int OpeningStockImportCooldownHours
     ) : IRequest<Result<UpdateInventorySettingsResponse>>;
 }

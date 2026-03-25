@@ -917,9 +917,17 @@ namespace FoodHub.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("locked_at");
 
+                    b.Property<DateTime?>("LastOpeningStockImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_opening_stock_imported_at");
+
                     b.Property<int>("MaxCostRecalcDays")
                         .HasColumnType("integer")
                         .HasColumnName("max_cost_recalc_days");
+
+                    b.Property<int>("OpeningStockImportCooldownHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("opening_stock_import_cooldown_hours");
 
                     b.Property<int>("OpeningStockStatus")
                         .HasColumnType("integer")

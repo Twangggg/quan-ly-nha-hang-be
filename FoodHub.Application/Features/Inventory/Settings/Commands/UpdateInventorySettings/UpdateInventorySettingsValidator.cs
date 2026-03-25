@@ -42,6 +42,14 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
                 .WithMessage(
                     messageService.GetMessage(MessageKeys.InventorySettings.MaxCostRecalcDaysRange)
                 );
+
+            RuleFor(x => x.OpeningStockImportCooldownHours)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage(
+                    messageService.GetMessage(
+                        MessageKeys.InventorySettings.OpeningStockImportCooldownHoursMin
+                    )
+                );
         }
     }
 }

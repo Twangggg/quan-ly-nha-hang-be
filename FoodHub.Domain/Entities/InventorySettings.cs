@@ -12,6 +12,7 @@ namespace FoodHub.Domain.Entities
         public const decimal DefaultLowStockThresholdValue = 0;
         public const bool DefaultAutoDeductOnCompleted = true;
         public const int DefaultMaxCostRecalcDays = 31;
+        public const int DefaultOpeningStockImportCooldownHours = 0;
 
         protected InventorySettings() { }
 
@@ -22,8 +23,10 @@ namespace FoodHub.Domain.Entities
         public bool AutoDeductOnCompleted { get; private set; }
         public InventoryCostMethod CostMethod { get; private set; }
         public int MaxCostRecalcDays { get; private set; }
+        public int OpeningStockImportCooldownHours { get; private set; }
         public OpeningStockStatus OpeningStockStatus { get; private set; }
         public DateTime? LockedAt { get; private set; }
+        public DateTime? LastOpeningStockImportedAt { get; private set; }
 
         public static InventorySettings CreateDefault(Guid? createdBy = null)
         {
@@ -36,8 +39,10 @@ namespace FoodHub.Domain.Entities
                 AutoDeductOnCompleted = DefaultAutoDeductOnCompleted,
                 CostMethod = InventoryCostMethod.WeightedAverage,
                 MaxCostRecalcDays = DefaultMaxCostRecalcDays,
+                OpeningStockImportCooldownHours = DefaultOpeningStockImportCooldownHours,
                 OpeningStockStatus = OpeningStockStatus.Pending,
                 LockedAt = null,
+                LastOpeningStockImportedAt = null,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = createdBy,
                 UpdatedBy = createdBy,
@@ -50,6 +55,7 @@ namespace FoodHub.Domain.Entities
             bool autoDeductOnCompleted,
             InventoryCostMethod costMethod,
             int maxCostRecalcDays,
+            int openingStockImportCooldownHours,
             Guid? updatedBy = null
         )
         {
@@ -74,11 +80,19 @@ namespace FoodHub.Domain.Entities
                 );
             }
 
+            if (openingStockImportCooldownHours < 0)
+            {
+                return DomainResult.Failure(
+                    DomainErrors.InventorySettings.InvalidOpeningStockImportCooldownHours
+                );
+            }
+
             ExpiryWarningDays = expiryWarningDays;
             DefaultLowStockThreshold = defaultLowStockThreshold;
             AutoDeductOnCompleted = autoDeductOnCompleted;
             CostMethod = costMethod;
             MaxCostRecalcDays = maxCostRecalcDays;
+            OpeningStockImportCooldownHours = openingStockImportCooldownHours;
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;
 
@@ -98,6 +112,29 @@ namespace FoodHub.Domain.Entities
             UpdatedBy = updatedBy;
 
             return DomainResult.Success();
+        }
+
+        public void MarkOpeningStockImported(DateTime importedAt, Guid? updatedBy = null)
+        {
+            LastOpeningStockImportedAt = importedAt;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+        }
+
+        public DateTime? GetNextOpeningStockImportAllowedAt()
+        {
+            if (!LastOpeningStockImportedAt.HasValue || OpeningStockImportCooldownHours <= 0)
+            {
+                return null;
+            }
+
+            return LastOpeningStockImportedAt.Value.AddHours(OpeningStockImportCooldownHours);
+        }
+
+        public bool IsOpeningStockImportAllowedAt(DateTime currentTime)
+        {
+            var nextAllowedAt = GetNextOpeningStockImportAllowedAt();
+            return !nextAllowedAt.HasValue || currentTime >= nextAllowedAt.Value;
         }
     }
 }
