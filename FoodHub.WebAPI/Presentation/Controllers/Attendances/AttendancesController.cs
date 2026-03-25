@@ -1,5 +1,7 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Features.Attendances.Commands.CheckinAttendance;
+using FoodHub.Application.Features.Attendances.Commands.CheckoutAttendance;
 using FoodHub.Application.Features.Attendances.Queries.ExportAttendanceReport;
 using FoodHub.Application.Features.Attendances.Queries.GetAttendanceReport;
 using FoodHub.WebAPI.Presentation.Attributes;
@@ -63,6 +65,32 @@ namespace FoodHub.Presentation.Controllers
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 $"Attendance_Report_{DateTime.Now:yyyyMMdd}.xlsx"
             );
+        }
+
+        /// <summary>
+        /// Chấm công vào (Check-in) cho nhân viên hiện tại.
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("checkin")]
+        [HasPermission(Permissions.Attendances.CheckIn)]
+        [ProducesResponseType(typeof(Result<CheckinAttendanceResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Checkin()
+        {
+            var result = await _mediator.Send(new CheckinAttendanceCommand());
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Chấm công ra (Check-out) cho nhân viên hiện tại.
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("checkout")]
+        [HasPermission(Permissions.Attendances.CheckOut)]
+        [ProducesResponseType(typeof(Result<CheckoutAttendanceResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Checkout()
+        {
+            var result = await _mediator.Send(new CheckoutAttendanceCommand());
+            return HandleResult(result);
         }
     }
 }

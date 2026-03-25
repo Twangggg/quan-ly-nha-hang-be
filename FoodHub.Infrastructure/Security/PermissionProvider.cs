@@ -58,6 +58,10 @@ namespace FoodHub.Infrastructure.Security
 
                 // Shift permissions for waiters
                 Permissions.ShiftAssignments.ViewMyShifts,
+
+                // Check In/Out permissions for waiters
+                Permissions.Attendances.CheckIn,
+                Permissions.Attendances.CheckOut,
             };
         }
 
@@ -103,6 +107,10 @@ namespace FoodHub.Infrastructure.Security
 
                 // Shift permissions for cashiers
                 Permissions.ShiftAssignments.ViewMyShifts,
+
+                // Check In/Out permissions for cashiers
+                Permissions.Attendances.CheckIn,
+                Permissions.Attendances.CheckOut,
             };
         }
 
@@ -121,6 +129,10 @@ namespace FoodHub.Infrastructure.Security
 
                 // Shift permissions for chef/bar
                 Permissions.ShiftAssignments.ViewMyShifts,
+
+                // Check In/Out permissions for chef/bar
+                Permissions.Attendances.CheckIn,
+                Permissions.Attendances.CheckOut,
             };
         }
     }

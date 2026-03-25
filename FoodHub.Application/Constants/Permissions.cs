@@ -147,6 +147,8 @@ namespace FoodHub.Application.Constants
         public static class Attendances
         {
             public const string View = "Permissions.Attendances.View";
+            public const string CheckIn = "Permissions.Attendances.CheckIn";
+            public const string CheckOut = "Permissions.Attendances.CheckOut";
         }
     }
 }
