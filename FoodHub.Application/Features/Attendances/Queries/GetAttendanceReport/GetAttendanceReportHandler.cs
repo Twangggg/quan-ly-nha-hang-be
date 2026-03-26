@@ -17,6 +17,7 @@ namespace FoodHub.Application.Features.Attendances.Queries.GetAttendanceReport
 {
     public class GetAttendanceReportHandler : IRequestHandler<GetAttendanceReportQuery, Result<PagedResult<GetAttendanceReportResponse>>>
     {
+        private static readonly TimeZoneInfo _vietnamTz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICacheService _cacheService;
@@ -38,7 +39,7 @@ namespace FoodHub.Application.Features.Attendances.Queries.GetAttendanceReport
         {
             _logger.LogInformation("Start handling GetAttendanceReportQuery with Pagination: {@Pagination}", request.Pagination);
 
-            var queryJson = JsonSerializer.Serialize(request.Pagination);
+            var queryJson = JsonSerializer.Serialize(request);
             var cacheKey = $"{CacheKey.AttendanceReportList}:{queryJson.GetHashCode()}";
 
             var cached = await _cacheService.GetAsync<PagedResult<GetAttendanceReportResponse>>(cacheKey, cancellationToken);
@@ -54,6 +55,18 @@ namespace FoodHub.Application.Features.Attendances.Queries.GetAttendanceReport
                     .ThenInclude(sa => sa.Shift)
                 .AsNoTracking();
 
+            // Apply Date Range filters
+            if (request.Date.HasValue)
+            {
+                var (startUtc, endUtc) = ToUtcRange(request.Date.Value, request.Date.Value);
+                query = query.Where(a => a.CheckInTime >= startUtc && a.CheckInTime < endUtc);
+            }
+            else if (request.StartDate.HasValue && request.EndDate.HasValue)
+            {
+                var (startUtc, endUtc) = ToUtcRange(request.StartDate.Value, request.EndDate.Value);
+                query = query.Where(a => a.CheckInTime >= startUtc && a.CheckInTime < endUtc);
+            }
+
             var searchableFields = new List<Expression<Func<Attendance, string?>>>
             {
                 a => a.Employee.FullName,
@@ -65,8 +78,7 @@ namespace FoodHub.Application.Features.Attendances.Queries.GetAttendanceReport
             {
                 { "employeeid", a => a.EmployeeId },
                 { "islate", a => a.isLate },
-                { "isearlyleave", a => a.isEarlyLeave },
-                { "date", a => a.CheckInTime.Date }
+                { "isearlyleave", a => a.isEarlyLeave }
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
@@ -84,11 +96,32 @@ namespace FoodHub.Application.Features.Attendances.Queries.GetAttendanceReport
                 .ProjectTo<GetAttendanceReportResponse>(_mapper.ConfigurationProvider)
                 .ToPagedResultAsync(request.Pagination, cancellationToken);
 
+            // Fix dates and status after loading from DB
+            foreach (var item in pagedResult.Items)
+            {
+                item.Date = item.AssignedDate ?? DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(item.CheckInTime, _vietnamTz));
+                item.Status = item.CheckOutTime == null ? "Thiếu giờ ra" 
+                            : (item.isLate == true && item.isEarlyLeave == true) ? "Đi trễ & Về sớm"
+                            : item.isLate == true ? "Đi trễ"
+                            : item.isEarlyLeave == true ? "Về sớm" : "Đúng giờ";
+            }
+
             await _cacheService.SetAsync(cacheKey, pagedResult, CacheTTL.Attendances, cancellationToken);
             
             _logger.LogInformation("Successfully processed GetAttendanceReportQuery, found {Count} items", pagedResult.Items.Count);
             
             return Result<PagedResult<GetAttendanceReportResponse>>.Success(pagedResult);
+        }
+
+        private static (DateTime StartUtc, DateTime EndUtc) ToUtcRange(DateOnly start, DateOnly end)
+        {
+            var startLocal = start.ToDateTime(TimeOnly.MinValue);
+            var endLocal = end.AddDays(1).ToDateTime(TimeOnly.MinValue);
+
+            return (
+                TimeZoneInfo.ConvertTimeToUtc(startLocal, _vietnamTz),
+                TimeZoneInfo.ConvertTimeToUtc(endLocal, _vietnamTz)
+            );
         }
     }
 }

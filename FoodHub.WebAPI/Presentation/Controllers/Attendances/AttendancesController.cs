@@ -29,13 +29,20 @@ namespace FoodHub.Presentation.Controllers
         /// Lấy báo cáo chấm công nhân viên (Phân trang và lọc).
         /// </summary>
         /// <param name="pagination">Tham số phân trang và lọc (Search, Filters, OrderBy).</param>
+        /// <param name="date">Ngày cần xem (yyyy-MM-dd).</param>
+        /// <param name="startDate">Ngày bắt đầu khoảng ngày (yyyy-MM-dd).</param>
+        /// <param name="endDate">Ngày kết thúc khoảng ngày (yyyy-MM-dd).</param>
         /// <returns>Danh sách báo cáo chấm công đã được phân trang.</returns>
         [HttpGet("report")]
         [HasPermission(Permissions.Attendances.View)]
         [ProducesResponseType(typeof(Result<PagedResult<GetAttendanceReportResponse>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAttendanceReport([FromQuery] PaginationParams pagination)
+        public async Task<IActionResult> GetAttendanceReport(
+            [FromQuery] PaginationParams pagination,
+            [FromQuery] DateOnly? date,
+            [FromQuery] DateOnly? startDate,
+            [FromQuery] DateOnly? endDate)
         {
-            var query = new GetAttendanceReportQuery(pagination);
+            var query = new GetAttendanceReportQuery(pagination, date, startDate, endDate);
             var result = await _mediator.Send(query);
             if (result.IsSuccess && result.Data != null)
             {
@@ -48,13 +55,20 @@ namespace FoodHub.Presentation.Controllers
         /// Xuất báo cáo chấm công ra file Excel.
         /// </summary>
         /// <param name="pagination">Tham số lọc (giống với endpoint list).</param>
+        /// <param name="date">Ngày cần xuất (yyyy-MM-dd).</param>
+        /// <param name="startDate">Ngày bắt đầu khoảng ngày cần xuất (yyyy-MM-dd).</param>
+        /// <param name="endDate">Ngày kết thúc khoảng ngày cần xuất (yyyy-MM-dd).</param>
         /// <returns>File Excel (.xlsx).</returns>
         [HttpGet("report/export")]
         [HasPermission(Permissions.Attendances.View)]
         [Produces(System.Net.Mime.MediaTypeNames.Application.Octet)]
-        public async Task<IActionResult> ExportAttendanceReport([FromQuery] PaginationParams pagination)
+        public async Task<IActionResult> ExportAttendanceReport(
+            [FromQuery] PaginationParams pagination,
+            [FromQuery] DateOnly? date,
+            [FromQuery] DateOnly? startDate,
+            [FromQuery] DateOnly? endDate)
         {
-            var query = new ExportAttendanceReportQuery(pagination);
+            var query = new ExportAttendanceReportQuery(pagination, date, startDate, endDate);
             var result = await _mediator.Send(query);
 
             if (!result.IsSuccess)
