@@ -103,6 +103,7 @@ namespace FoodHub.Infrastructure
             // Excel Export Service
             services.AddScoped<ISalesExcelService, SalesExcelService>();
             services.AddScoped<IAttendanceExcelService, AttendanceExcelService>();
+            services.AddScoped<IInventoryCheckExcelService, InventoryCheckExcelService>();
 
             // PDF Export Service
             services.AddScoped<IPdfService, PdfService>();

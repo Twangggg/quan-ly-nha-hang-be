@@ -22,13 +22,12 @@ public class InventoryExcelService : IInventoryExcelService
             return Task.FromResult(result);
         }
 
-        var rows = usedRange.RowsUsed();
-        var rowCount = rows.Count();
-
+        var rowCount = usedRange.LastRow().RowNumber();
         if (rowCount < 2)
         {
             return Task.FromResult(result);
         }
+
 
         var headerRow = sheet.Row(1);
         var headers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
