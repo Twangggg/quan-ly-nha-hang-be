@@ -120,6 +120,20 @@ namespace FoodHub.Domain.Constants
                 "InventorySettings.InvalidOpeningStockImportCooldownHours";
         }
 
+        public static class ReservationSettings
+        {
+            public const string InvalidOverlapBufferMinutes =
+                "ReservationSettings.InvalidOverlapBufferMinutes";
+            public const string InvalidMinLeadTimeMinutes =
+                "ReservationSettings.InvalidMinLeadTimeMinutes";
+            public const string InvalidGracePeriodMinutes =
+                "ReservationSettings.InvalidGracePeriodMinutes";
+            public const string InvalidOperatingHours = "ReservationSettings.InvalidOperatingHours";
+            public const string InvalidBreakHours = "ReservationSettings.InvalidBreakHours";
+            public const string InvalidBreakOutsideOperatingHours =
+                "ReservationSettings.InvalidBreakOutsideOperatingHours";
+        }
+
         public static class StockInReceipt
         {
             public const string DuplicateIngredient = "StockInReceipt.DuplicateIngredient";

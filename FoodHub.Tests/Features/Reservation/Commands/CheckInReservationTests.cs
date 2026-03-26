@@ -7,6 +7,7 @@ using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -21,6 +22,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
+        private readonly Mock<IReservationLifecyclePolicy> _mockReservationLifecyclePolicy;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ISignalRService> _mockSignalRService;
         private readonly Mock<ILogger<CheckInReservationHandler>> _mockLogger;
@@ -30,6 +32,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
+            _mockReservationLifecyclePolicy = new Mock<IReservationLifecyclePolicy>();
             _mockMessageService = new Mock<IMessageService>();
             _mockSignalRService = new Mock<ISignalRService>();
             _mockLogger = new Mock<ILogger<CheckInReservationHandler>>();
@@ -37,6 +40,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _handler = new CheckInReservationHandler(
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
+                _mockReservationLifecyclePolicy.Object,
                 _mockMessageService.Object,
                 _mockSignalRService.Object,
                 _mockLogger.Object
@@ -124,6 +128,9 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(auditRepo.Object);
 
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+            _mockReservationLifecyclePolicy
+                .Setup(p => p.GetBusinessNow())
+                .Returns(new DateTime(2026, 3, 26, 10, 0, 0));
         }
 
         // ──────── AC-RC-01: Check-in tạo Order thành công ────────
@@ -148,6 +155,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             result.Data.Should().NotBeNull();
             result.Data!.OrderId.Should().NotBeEmpty();
             result.Data.OrderCode.Should().StartWith("ORD-");
+            reservation.CheckedInAt.Should().NotBeNull();
 
             _mockUow.Verify(
                 u =>

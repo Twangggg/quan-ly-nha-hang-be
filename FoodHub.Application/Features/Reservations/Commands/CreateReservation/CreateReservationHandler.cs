@@ -6,6 +6,7 @@ using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -19,18 +20,24 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
         : IRequestHandler<CreateReservationCommand, Result<CreateReservationResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IReservationSettingsProvider _reservationSettingsProvider;
+        private readonly IReservationLifecyclePolicy _reservationLifecyclePolicy;
         private readonly ILogger<CreateReservationHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
 
         public CreateReservationHandler(
             IUnitOfWork unitOfWork,
+            IReservationSettingsProvider reservationSettingsProvider,
+            IReservationLifecyclePolicy reservationLifecyclePolicy,
             ILogger<CreateReservationHandler> logger,
             IMessageService messageService,
             ICacheService cacheService
         )
         {
             _unitOfWork = unitOfWork;
+            _reservationSettingsProvider = reservationSettingsProvider;
+            _reservationLifecyclePolicy = reservationLifecyclePolicy;
             _logger = logger;
             _messageService = messageService;
             _cacheService = cacheService;
@@ -52,6 +59,8 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                var settings = await _reservationSettingsProvider.GetOrCreateAsync(cancellationToken);
+
                 var tables = await _unitOfWork
                     .Repository<Table>()
                     .Query()
@@ -91,20 +100,20 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
                 var existingReservations = await _unitOfWork
                     .Repository<Reservation>()
                     .Query()
-                    .Where(r =>
-                        tableIds.Contains(r.TableId)
-                        && r.ReservationDate == request.ReservationDate
-                        && (
-                            r.Status == ReservationStatus.Booked
-                            || r.Status == ReservationStatus.CheckIn
-                        )
-                    )
+                    .Where(r => tableIds.Contains(r.TableId) && r.ReservationDate == request.ReservationDate)
                     .ToListAsync(cancellationToken);
+                var now = _reservationLifecyclePolicy.GetBusinessNow();
+                var blockingReservations = existingReservations
+                    .Where(r => _reservationLifecyclePolicy.IsBlockingReservation(r, settings, now))
+                    .ToList();
 
                 var selectedTable = tables.FirstOrDefault(table =>
-                    existingReservations.All(existingReservation =>
+                    blockingReservations.All(existingReservation =>
                         existingReservation.TableId != table.TableId
-                        || !candidateReservations[table.TableId].OverlapsWith(existingReservation)
+                        || !candidateReservations[table.TableId].OverlapsWith(
+                            existingReservation,
+                            settings.OverlapBufferMinutes
+                        )
                     )
                 );
 

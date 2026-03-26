@@ -29,7 +29,7 @@ namespace FoodHub.Presentation.Controllers
         private readonly IMediator _mediator;
         private readonly IMessageService _messageService;
 
-        public CategoriesController(IMediator mediator, IMessageService messageService)
+        public CategoriesController(IMediator mediator, IMessageService messageService) : base(messageService)
         {
             _mediator = mediator;
             _messageService = messageService;

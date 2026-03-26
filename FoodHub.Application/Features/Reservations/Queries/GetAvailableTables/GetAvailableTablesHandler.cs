@@ -4,6 +4,7 @@ using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -16,10 +17,18 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
         : IRequestHandler<GetAvailableTablesQuery, Result<List<GetAvailableTablesResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IReservationSettingsProvider _reservationSettingsProvider;
+        private readonly IReservationLifecyclePolicy _reservationLifecyclePolicy;
 
-        public GetAvailableTablesHandler(IUnitOfWork unitOfWork)
+        public GetAvailableTablesHandler(
+            IUnitOfWork unitOfWork,
+            IReservationSettingsProvider reservationSettingsProvider,
+            IReservationLifecyclePolicy reservationLifecyclePolicy
+        )
         {
             _unitOfWork = unitOfWork;
+            _reservationSettingsProvider = reservationSettingsProvider;
+            _reservationLifecyclePolicy = reservationLifecyclePolicy;
         }
 
         public async Task<Result<List<GetAvailableTablesResponse>>> Handle(
@@ -41,28 +50,29 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
 
             var allTables = await query.ToListAsync(cancellationToken);
 
-            var bufferHours = Reservation.DefaultOverlapBufferHours;
-            var minTime = request.ReservationTime.Subtract(TimeSpan.FromHours(bufferHours));
-            var maxTime = request.ReservationTime.Add(TimeSpan.FromHours(bufferHours));
+            var settings = await _reservationSettingsProvider.GetOrCreateAsync(cancellationToken);
+            var now = _reservationLifecyclePolicy.GetBusinessNow();
+            var buffer = TimeSpan.FromMinutes(settings.OverlapBufferMinutes);
+            var minTime = request.ReservationTime.Subtract(buffer);
+            var maxTime = request.ReservationTime.Add(buffer);
 
             var overlappingReservations = await _unitOfWork
                 .Repository<Reservation>()
                 .Query()
                 .Where(r =>
                     r.ReservationDate == request.ReservationDate
-                    && (
-                        r.Status == ReservationStatus.Booked
-                        || r.Status == ReservationStatus.CheckIn
-                    )
                     && r.ReservationTime > minTime
                     && r.ReservationTime < maxTime
                 )
+                .ToListAsync(cancellationToken);
+            var overlappingTableIds = overlappingReservations
+                .Where(r => _reservationLifecyclePolicy.IsBlockingReservation(r, settings, now))
                 .Select(r => r.TableId)
                 .Distinct()
-                .ToListAsync(cancellationToken);
+                .ToList();
 
             var availableTables = allTables
-                .Where(t => !overlappingReservations.Contains(t.TableId))
+                .Where(t => !overlappingTableIds.Contains(t.TableId))
                 .Select(t => new GetAvailableTablesResponse
                 {
                     TableId = t.TableId,

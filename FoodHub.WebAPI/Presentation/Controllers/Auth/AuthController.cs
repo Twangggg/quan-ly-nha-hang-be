@@ -37,7 +37,7 @@ namespace FoodHub.Presentation.Controllers
             IWebHostEnvironment env,
             IMessageService messageService,
             IConfiguration configuration
-        )
+        ) : base(messageService)
         {
             _mediator = mediator;
             _env = env;

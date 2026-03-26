@@ -27,7 +27,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Promotions
         private readonly IMediator _mediator;
         private readonly IMessageService _messageService;
 
-        public PromotionsController(IMediator mediator, IMessageService messageService)
+        public PromotionsController(IMediator mediator, IMessageService messageService) : base(messageService)
         {
             _mediator = mediator;
             _messageService = messageService;

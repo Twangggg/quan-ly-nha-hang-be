@@ -1,6 +1,9 @@
 using Asp.Versioning;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
+using FoodHub.Application.Interfaces.Common;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -9,21 +12,37 @@ namespace FoodHub.Presentation.Controllers
     [Route("api/v{version:apiVersion}/[controller]")]
     public abstract class ApiControllerBase : ControllerBase
     {
+        private IMessageService? _messageService;
+
+        protected IMessageService MessageService =>
+            _messageService ??= HttpContext.RequestServices.GetRequiredService<IMessageService>();
+
+        protected ApiControllerBase() { }
+
+        protected ApiControllerBase(IMessageService messageService)
+        {
+            _messageService = messageService;
+        }
+
         protected IActionResult HandleResult<T>(Result<T> result)
         {
-            if (result == null) return BadRequest();
+            if (result == null)
+            {
+                var errorResponse = new ErrorResponse(
+                    StatusCodes.Status400BadRequest,
+                    MessageService.GetMessage(MessageKeys.Common.ValidationFailed)
+                );
+                return BadRequest(errorResponse);
+            }
 
             if (result.IsSuccess)
             {
-                if (result.Data == null) return NoContent();
+                if (result.Data == null)
+                    return NoContent();
 
                 if (result.HasWarning)
                 {
-                    return Ok(new
-                    {
-                        data = result.Data,
-                        warning = result.Warning
-                    });
+                    return Ok(new { data = result.Data, warning = result.Warning });
                 }
 
                 return Ok(new { data = result.Data });
@@ -35,16 +54,26 @@ namespace FoodHub.Presentation.Controllers
                 ResultErrorType.Unauthorized => 401,
                 ResultErrorType.Forbidden => 403,
                 ResultErrorType.Conflict => 409,
-                _ => 400
+                _ => 400,
             };
 
-            var response = new ErrorResponse(statusCode, result.Error ?? "An error occurred");
+            var response = new ErrorResponse(
+                statusCode,
+                result.Error ?? MessageService.GetMessage(MessageKeys.Common.InternalServerError)
+            );
             return StatusCode(statusCode, response);
         }
 
         protected IActionResult HandleCreated<T>(Result<T> result, Func<T, string?> locationFunc)
         {
-            if (result == null) return BadRequest();
+            if (result == null)
+            {
+                var errorResponse = new ErrorResponse(
+                    StatusCodes.Status400BadRequest,
+                    MessageService.GetMessage(MessageKeys.Common.ValidationFailed)
+                );
+                return BadRequest(errorResponse);
+            }
 
             if (!result.IsSuccess)
             {
@@ -72,7 +101,14 @@ namespace FoodHub.Presentation.Controllers
             Func<T, string?>? fileNameFunc = null
         )
         {
-            if (result == null) return BadRequest();
+            if (result == null)
+            {
+                var errorResponse = new ErrorResponse(
+                    StatusCodes.Status400BadRequest,
+                    MessageService.GetMessage(MessageKeys.Common.ValidationFailed)
+                );
+                return BadRequest(errorResponse);
+            }
 
             if (!result.IsSuccess)
             {
@@ -81,7 +117,11 @@ namespace FoodHub.Presentation.Controllers
 
             if (result.Data == null)
             {
-                return NoContent();
+                var errorResponse = new ErrorResponse(
+                    StatusCodes.Status404NotFound,
+                    MessageService.GetMessage(MessageKeys.Common.NotFound)
+                );
+                return NotFound(errorResponse);
             }
 
             var fileName = fileNameFunc?.Invoke(result.Data);

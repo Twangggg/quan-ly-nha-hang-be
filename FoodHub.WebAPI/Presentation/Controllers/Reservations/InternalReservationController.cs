@@ -25,7 +25,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
     {
         private readonly IMediator _mediator;
 
-        public InternalReservationController(IMediator mediator)
+        public InternalReservationController(IMediator mediator, IMessageService messageService) : base(messageService)
         {
             _mediator = mediator;
         }

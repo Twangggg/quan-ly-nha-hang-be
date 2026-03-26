@@ -958,6 +958,83 @@ namespace FoodHub.Migrations
                     b.ToTable("inventory_settings", (string)null);
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.ReservationSettings", b =>
+                {
+                    b.Property<Guid>("ReservationSettingsId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("reservation_settings_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<bool>("BreakEnabled")
+                        .HasDefaultValue(true)
+                        .HasColumnType("boolean")
+                        .HasColumnName("break_enabled");
+
+                    b.Property<TimeOnly>("BreakEnd")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("break_end");
+
+                    b.Property<TimeOnly>("BreakStart")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("break_start");
+
+                    b.Property<TimeOnly>("CloseTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("close_time");
+
+                    b.Property<int>("MinLeadTimeMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("min_lead_time_minutes");
+
+                    b.Property<int>("GracePeriodMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("grace_period_minutes");
+
+                    b.Property<int>("OverlapBufferMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("overlap_buffer_minutes");
+
+                    b.Property<TimeOnly>("OpenTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("open_time");
+
+                    b.Property<string>("SettingsKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("settings_key");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("ReservationSettingsId")
+                        .HasName("pk_reservation_settings");
+
+                    b.HasIndex("SettingsKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_reservation_settings_settings_key")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("reservation_settings", (string)null);
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.InventoryTransaction", b =>
                 {
                     b.Property<Guid>("InventoryTransactionId")
@@ -2237,6 +2314,10 @@ namespace FoodHub.Migrations
                     b.Property<Guid>("TableId")
                         .HasColumnType("uuid")
                         .HasColumnName("table_id");
+
+                    b.Property<DateTime?>("CheckedInAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("checked_in_at");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

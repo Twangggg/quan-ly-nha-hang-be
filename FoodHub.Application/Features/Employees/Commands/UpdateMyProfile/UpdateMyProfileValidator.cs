@@ -1,46 +1,36 @@
-using AutoMapper;
 using FluentValidation;
-using FoodHub.Application.Common.Exceptions;
-using FoodHub.Application.Extensions.Mappings;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
-using FoodHub.Application.Interfaces.Inventory;
-using FoodHub.Application.Interfaces.Messaging;
-using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
-using FoodHub.Application.Interfaces.Security;
-using FoodHub.Domain.Entities;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
 {
     public class UpdateProfileValidator : AbstractValidator<UpdateProfileCommand>
     {
-        public UpdateProfileValidator()
+        public UpdateProfileValidator(Interfaces.Common.IMessageService messageService)
         {
             RuleFor(x => x.EmployeeId)
-                .NotEmpty().WithMessage("EmployeeId not empty");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Common.IdRequired));
 
             RuleFor(x => x.FullName)
-                .NotEmpty().WithMessage("Full name not empty")
-                .MaximumLength(100).WithMessage("Full name not exceed 100 characters");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.FullNameRequired))
+                .MaximumLength(100).WithMessage(messageService.GetMessage(MessageKeys.Profile.FullNameMaxLength));
 
             RuleFor(x => x.Email)
-                .NotEmpty().WithMessage("Email not empty")
-                .EmailAddress().WithMessage("Email invalid");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.EmailRequired))
+                .EmailAddress().WithMessage(messageService.GetMessage(MessageKeys.Profile.EmailInvalid));
 
             RuleFor(x => x.Phone)
-                .NotEmpty().WithMessage("Phone number not empty")
-                .Matches(@"^(0|\+84)[3|5|7|8|9][0-9]{8}$")
-                .WithMessage("Phone number invalid");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneRequired))
+                .Matches(@"^(0|84|\+84)(3|5|7|8|9)([0-9]{8})$")
+                .WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneInvalid));
 
             RuleFor(x => x.Address)
-                .NotEmpty().WithMessage("Address not empty")
-                .MaximumLength(200).WithMessage("Address not exceed 200 characters");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.AddressRequired))
+                .MaximumLength(200).WithMessage(messageService.GetMessage(MessageKeys.Profile.AddressMaxLength));
 
             RuleFor(x => x.DateOfBirth)
-                .NotEmpty().WithMessage("Date of birth not empty")
-                .LessThan(DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage("Date of birth must be in the past");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.DateOfBirthRequired))
+                .LessThan(DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage(messageService.GetMessage(MessageKeys.Profile.DateOfBirthMustBePast));
         }
     }
 

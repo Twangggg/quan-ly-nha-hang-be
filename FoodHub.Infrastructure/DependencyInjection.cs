@@ -4,12 +4,14 @@ using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Infrastructure.BackgroundJobs;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
 using FoodHub.Infrastructure.Services.Inventory;
+using FoodHub.Infrastructure.Services.Reservations;
 using FoodHub.Infrastructure.Services.Reporting;
 using FoodHub.Infrastructure.Services.External;
 using FoodHub.Infrastructure.Settings;
@@ -22,6 +24,7 @@ using FoodHub.Infrastructure.Services.Common.RateLimiting;
 using FoodHub.Infrastructure.Services.Common;
 using FoodHub.Infrastructure.Services.Messaging;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Features.Reservations.Services;
 
 namespace FoodHub.Infrastructure
 {
@@ -105,6 +108,10 @@ namespace FoodHub.Infrastructure
             services.AddScoped<IInventoryDeductionService, InventoryDeductionService>();
             services.AddScoped<IReceiptCodeGenerator, ReceiptCodeGenerator>();
 
+            // Reservation Services
+            services.AddScoped<IReservationSettingsProvider, ReservationSettingsProvider>();
+            services.AddScoped<IReservationLifecyclePolicy, ReservationLifecyclePolicy>();
+
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
@@ -116,8 +123,7 @@ namespace FoodHub.Infrastructure
                 sp.GetRequiredService<BackgroundEmailChannel>()
             );
             services.AddHostedService<EmailBackgroundWorker>();
-            services.AddHostedService<ReservationCancellationService>();
-            services.AddHostedService<TableStatusSyncService>();
+            services.AddHostedService<ReservationLifecycleWorker>();
 
             return services;
         }

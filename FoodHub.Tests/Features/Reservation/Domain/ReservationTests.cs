@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FoodHub.Domain.Entities;
+using ReservationEntity = FoodHub.Domain.Entities.Reservation;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Tests.Features.Reservations.Domain
@@ -23,7 +24,7 @@ namespace FoodHub.Tests.Features.Reservations.Domain
             var candidate = CreateReservation(guestCount: 4, reservationTime: TimeSpan.FromHours(18));
             var existing = CreateReservation(guestCount: 2, reservationTime: TimeSpan.FromHours(19));
 
-            var result = candidate.OverlapsWith(existing);
+            var result = candidate.OverlapsWith(existing, ReservationSettings.DefaultOverlapBufferMinutes);
 
             result.Should().BeTrue();
         }
@@ -38,7 +39,7 @@ namespace FoodHub.Tests.Features.Reservations.Domain
                 status: ReservationStatus.Cancelled
             );
 
-            var result = candidate.OverlapsWith(existing);
+            var result = candidate.OverlapsWith(existing, ReservationSettings.DefaultOverlapBufferMinutes);
 
             result.Should().BeFalse();
         }
@@ -46,7 +47,7 @@ namespace FoodHub.Tests.Features.Reservations.Domain
         [Fact]
         public void CreateBooked_Should_InitializeBookedReservation()
         {
-            var reservation = Reservation.CreateBooked(
+            var reservation = ReservationEntity.CreateBooked(
                 "Nguyen Van A",
                 "0901234567",
                 new DateOnly(2026, 3, 20),
@@ -62,7 +63,40 @@ namespace FoodHub.Tests.Features.Reservations.Domain
             reservation.CustomerName.Should().Be("Nguyen Van A");
         }
 
-        private static Reservation CreateReservation(
+        [Fact]
+        public void MarkCheckedIn_Should_SetStatusAndCheckedInTime()
+        {
+            var reservation = CreateReservation(guestCount: 4, reservationTime: TimeSpan.FromHours(18));
+            var checkedInAt = new DateTime(2026, 3, 20, 18, 5, 0);
+
+            reservation.MarkCheckedIn(checkedInAt, Guid.NewGuid());
+
+            reservation.Status.Should().Be(ReservationStatus.CheckIn);
+            reservation.CheckedInAt.Should().Be(checkedInAt);
+        }
+
+        [Fact]
+        public void CanMarkNoShow_Should_RespectSettings()
+        {
+            var settings = ReservationSettings.CreateDefault();
+            settings.Update(
+                settings.OpenTime,
+                settings.CloseTime,
+                settings.BreakEnabled,
+                settings.BreakStart,
+                settings.BreakEnd,
+                settings.OverlapBufferMinutes,
+                settings.MinLeadTimeMinutes,
+                15
+            );
+
+            var booked = CreateReservation(guestCount: 4, reservationTime: TimeSpan.FromHours(18));
+            var now = new DateTime(2026, 3, 20, 18, 20, 0);
+
+            booked.CanMarkNoShow(now, settings).Should().BeTrue();
+        }
+
+        private static ReservationEntity CreateReservation(
             int guestCount,
             TimeSpan reservationTime,
             ReservationStatus status = ReservationStatus.Booked
@@ -71,7 +105,7 @@ namespace FoodHub.Tests.Features.Reservations.Domain
             var tableId = Guid.Parse("11111111-1111-1111-1111-111111111111");
             var areaId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
-            return new Reservation
+            return new ReservationEntity
             {
                 ReservationId = Guid.NewGuid(),
                 CustomerName = "Test Customer",

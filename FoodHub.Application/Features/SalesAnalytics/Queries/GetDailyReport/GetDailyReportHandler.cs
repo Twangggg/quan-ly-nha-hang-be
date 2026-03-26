@@ -97,23 +97,46 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
             var cancelledOrders = aggResult?.CancelledOrders ?? 0;
 
             // Tính moving average target ─────────────────────────────────
-            decimal? dailyTarget = await CalculateMovingAverageAsync(
+            var (avgRevenue, avgOrders) = await CalculateMovingAveragesAsync(
                 reportDate,
                 movingAvgDays,
                 cancellationToken
             );
 
-            double? achievementRate =
-                dailyTarget.HasValue && dailyTarget.Value > 0
-                    ? Math.Round((double)(totalRevenue / dailyTarget.Value * 100), 2)
-                    : null;
+            double revenueGrowth = 0;
+            double orderGrowth = 0;
+            decimal avgOrderValue = 0;
+            double revenueAchievement = 0;
+
+            if (avgRevenue.HasValue && avgRevenue.Value > 0)
+            {
+                revenueGrowth = Math.Round((double)((totalRevenue - avgRevenue.Value) / avgRevenue.Value * 100), 2);
+            }
+
+            if (avgOrders.HasValue && avgOrders.Value > 0)
+            {
+                orderGrowth = Math.Round((double)((totalOrders - avgOrders.Value) / avgOrders.Value * 100), 2);
+            }
+
+            if (totalOrders > 0)
+            {
+                avgOrderValue = Math.Round(totalRevenue / totalOrders, 2);
+            }
+
+            if (avgRevenue.HasValue && avgRevenue.Value > 0)
+            {
+                revenueAchievement = Math.Round((double)(totalRevenue / avgRevenue.Value * 100), 2);
+            }
 
             _logger.LogInformation(
-                "Daily report for {Date}: Revenue={Revenue}, Orders={Orders}, Target={Target}",
+                "Daily report for {Date}: Revenue={Revenue}, Orders={Orders}, AvgRevenue={AvgRevenue}, AvgOrders={AvgOrders}, Growth={RevenueGrowth}%/{OrderGrowth}%",
                 reportDate,
                 totalRevenue,
                 totalOrders,
-                dailyTarget
+                avgRevenue,
+                avgOrders,
+                revenueGrowth,
+                orderGrowth
             );
 
             return Result<GetDailyReportResponse>.Success(
@@ -121,18 +144,20 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
                 {
                     Date = reportDate,
                     TotalRevenue = totalRevenue,
+                    RevenueGrowth = revenueGrowth,
                     TotalOrders = totalOrders,
+                    OrderGrowth = orderGrowth,
+                    AvgOrderValue = avgOrderValue,
                     CancelledOrders = cancelledOrders,
-                    DailyTarget = dailyTarget,
-                    AchievementRate = achievementRate,
+                    RevenueAchievement = revenueAchievement,
                 }
             );
         }
 
         /// <summary>
-        /// Tính moving average doanh thu của N ngày trước reportDate (theo giờ VN).
+        /// Tính moving average doanh thu và số đơn của N ngày trước reportDate (theo giờ VN).
         /// </summary>
-        private async Task<decimal?> CalculateMovingAverageAsync(
+        private async Task<(decimal? AvgRevenue, int? AvgOrders)> CalculateMovingAveragesAsync(
             DateOnly reportDate,
             int movingAvgDays,
             CancellationToken cancellationToken
@@ -148,8 +173,8 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
             // Hằng số múi giờ VN (UTC+7)
             const int vnOffsetHours = 7;
 
-            // Lấy doanh thu theo từng ngày VN dùng logic AddHours để được EF Core translate
-            var dailyRevenues = await _unitOfWork
+            // Lấy doanh thu và số đơn theo từng ngày VN
+            var dailyData = await _unitOfWork
                 .Repository<Order>()
                 .Query()
                 .AsNoTracking()
@@ -159,10 +184,22 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport
                     && (o.Status == OrderStatus.Paid || o.Status == OrderStatus.Completed)
                 )
                 .GroupBy(o => o.PaidAt!.Value.AddHours(vnOffsetHours).Date)
-                .Select(g => g.Sum(o => o.TotalAmount))
+                .Select(g => new
+                {
+                    DailyRevenue = g.Sum(o => o.TotalAmount),
+                    DailyOrderCount = g.Count()
+                })
                 .ToListAsync(cancellationToken);
 
-            return dailyRevenues.Any() ? Math.Round(dailyRevenues.Average(), 0) : null;
+            if (!dailyData.Any())
+            {
+                return (null, null);
+            }
+
+            var avgRevenue = Math.Round(dailyData.Average(d => d.DailyRevenue), 2);
+            var avgOrders = (int)Math.Round(dailyData.Average(d => d.DailyOrderCount), 2);
+
+            return (avgRevenue, avgOrders);
         }
 
         /// <summary>

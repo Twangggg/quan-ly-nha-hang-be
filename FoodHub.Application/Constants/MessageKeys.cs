@@ -41,6 +41,10 @@ namespace FoodHub.Application.Constants
             public const string ConfirmationMismatch = "Password.ConfirmationMismatch";
             public const string MustBeDifferent = "Password.MustBeDifferent";
             public const string IncorrectCurrent = "Password.IncorrectCurrent";
+            public const string EmployeeIdRequired = "ResetPassword.EmployeeIdRequired";
+            public const string ReasonRequired = "ResetPassword.ReasonRequired";
+            public const string ReasonMinLength = "ResetPassword.ReasonMinLength";
+            public const string ReasonMaxLength = "ResetPassword.ReasonMaxLength";
         }
 
         public static class ResetPassword
@@ -106,6 +110,10 @@ namespace FoodHub.Application.Constants
             public const string EmailInvalid = "Profile.EmailInvalid";
             public const string PhoneRequired = "Profile.PhoneRequired";
             public const string PhoneInvalid = "Profile.PhoneInvalid";
+            public const string AddressRequired = "Profile.AddressRequired";
+            public const string AddressMaxLength = "Profile.AddressMaxLength";
+            public const string DateOfBirthRequired = "Profile.DateOfBirthRequired";
+            public const string DateOfBirthMustBePast = "Profile.DateOfBirthMustBePast";
         }
 
         public static class Order
@@ -254,11 +262,26 @@ namespace FoodHub.Application.Constants
             public const string NoTableAvailable = "Reservation.NoTableAvailable";
             public const string CancelReservationSuccess = "Reservation.CancelReservationSuccess";
             public const string InvalidTime = "Reservation.InvalidTime";
+            public const string OutsideOperatingHours = "Reservation.OutsideOperatingHours";
             public const string TimeTooSoon = "Reservation.TimeTooSoon";
             public const string VipRequired = "Reservation.VipRequired";
             public const string InvalidNewTable = "Reservation.InvalidNewTable";
             public const string NoTableInArea = "Reservation.NoTableInArea";
             public const string BreakTime = "Reservation.BreakTime";
+        }
+
+        public static class ReservationSettings
+        {
+            public const string InvalidOverlapBufferMinutes =
+                "ReservationSettings.InvalidOverlapBufferMinutes";
+            public const string InvalidMinLeadTimeMinutes =
+                "ReservationSettings.InvalidMinLeadTimeMinutes";
+            public const string InvalidGracePeriodMinutes =
+                "ReservationSettings.InvalidGracePeriodMinutes";
+            public const string InvalidOperatingHours = "ReservationSettings.InvalidOperatingHours";
+            public const string InvalidBreakHours = "ReservationSettings.InvalidBreakHours";
+            public const string InvalidBreakOutsideOperatingHours =
+                "ReservationSettings.InvalidBreakOutsideOperatingHours";
         }
 
         public static class SalesAnalytics
@@ -447,6 +470,15 @@ namespace FoodHub.Application.Constants
             public const string NotSuitableForOrder = "Voucher.NotSuitableForOrder";
             public const string NotFreeItemInOrder = "Voucher.NotFreeItemInOrder";
             public const string BelowMinAmount = "Voucher.BelowMinAmount";
+            public const string CodeRequired = "Voucher.CodeRequired";
+            public const string ValueMustBePositive = "Voucher.ValueMustBePositive";
+            public const string MaxDiscountInvalid = "Voucher.MaxDiscountInvalid";
+            public const string MinOrderValueInvalid = "Voucher.MinOrderValueInvalid";
+            public const string UsageLimitInvalid = "Voucher.UsageLimitInvalid";
+            public const string StartTimeAfterEndTime = "Voucher.StartTimeAfterEndTime";
+            public const string StartTimeEndTimeRequired = "Voucher.StartTimeEndTimeRequired";
+            public const string FreeItemRequired = "Voucher.FreeItemRequired";
+            public const string FreeQuantityInvalid = "Voucher.FreeQuantityInvalid";
         }
     }
 }

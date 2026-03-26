@@ -504,8 +504,29 @@
   <data name="Reservation.InvalidTime" xml:space="preserve">
     <value>Invalid reservation time.</value>
   </data>
+  <data name="Reservation.OutsideOperatingHours" xml:space="preserve">
+    <value>Reservation time must be within operating hours.</value>
+  </data>
   <data name="Reservation.TimeTooSoon" xml:space="preserve">
-    <value>Reservations must be made at least 45 minutes in advance.</value>
+    <value>Reservations must be made at least {0} minutes in advance.</value>
+  </data>
+  <data name="ReservationSettings.InvalidOverlapBufferMinutes" xml:space="preserve">
+    <value>Reservation overlap buffer minutes must be 0 or greater.</value>
+  </data>
+  <data name="ReservationSettings.InvalidMinLeadTimeMinutes" xml:space="preserve">
+    <value>Reservation minimum lead time minutes must be 0 or greater.</value>
+  </data>
+  <data name="ReservationSettings.InvalidGracePeriodMinutes" xml:space="preserve">
+    <value>Reservation grace period minutes must be 0 or greater.</value>
+  </data>
+  <data name="ReservationSettings.InvalidOperatingHours" xml:space="preserve">
+    <value>Reservation operating hours are invalid.</value>
+  </data>
+  <data name="ReservationSettings.InvalidBreakHours" xml:space="preserve">
+    <value>The break start time must be earlier than the break end time.</value>
+  </data>
+  <data name="ReservationSettings.InvalidBreakOutsideOperatingHours" xml:space="preserve">
+    <value>The break time must be within the restaurant's operating hours.</value>
   </data>
   <data name="Reservation.VipRequired" xml:space="preserve">
     <value>This area requires VIP status.</value>
@@ -544,6 +565,18 @@
   <data name="Profile.PhoneInvalid" xml:space="preserve">
     <value>Invalid phone number format.</value>
   </data>
+  <data name="Profile.AddressRequired" xml:space="preserve">
+    <value>Address cannot be empty.</value>
+  </data>
+  <data name="Profile.AddressMaxLength" xml:space="preserve">
+    <value>Address cannot exceed 200 characters.</value>
+  </data>
+  <data name="Profile.DateOfBirthRequired" xml:space="preserve">
+    <value>Date of birth is required.</value>
+  </data>
+  <data name="Profile.DateOfBirthMustBePast" xml:space="preserve">
+    <value>Date of birth must be in the past.</value>
+  </data>
   <data name="NewRoleMustBeDifferent" xml:space="preserve">
     <value>New role must be different from current role.</value>
   </data>
@@ -578,6 +611,6 @@
     <value />
   </data>
   <data name="Reservation.BreakTime" xml:space="preserve">
-    <value>The restaurant is on break (14:00 - 17:00). Please select a different time.</value>
+    <value>The restaurant is on break ({0} - {1}). Please select a different time.</value>
   </data>
 </root>

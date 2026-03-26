@@ -28,7 +28,7 @@ namespace FoodHub.Presentation.Controllers
             ICloudinaryService cloudinaryService,
             ILogger<ImageController> logger,
             IMessageService messageService
-        )
+        ) : base(messageService)
         {
             _cloudinaryService = cloudinaryService;
             _logger = logger;
@@ -57,23 +57,13 @@ namespace FoodHub.Presentation.Controllers
         {
             try
             {
-                // if (file == null || file.Length == 0)
-                // {
-                //     return BadRequest(
-                //         new ErrorResponse(
-                //             StatusCodes.Status400BadRequest,
-                //             _messageService.GetMessage(MessageKeys.Common.NoFileProvided)
-                //         )
-                //     );
-                // }
-
                 var imageUrl = await _cloudinaryService.UploadImageAsync(file, folder);
 
                 return Ok(
                     new
                     {
                         success = true,
-                        imageUrl = imageUrl,
+                        imageUrl,
                         message = _messageService.GetMessage(MessageKeys.Common.UploadSuccess),
                     }
                 );
@@ -81,15 +71,20 @@ namespace FoodHub.Presentation.Controllers
             catch (ArgumentException ex)
             {
                 _logger.LogWarning(ex, "Invalid file upload attempt");
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(
+                    new ErrorResponse(
+                        StatusCodes.Status400BadRequest,
+                        _messageService.GetMessage(MessageKeys.Common.InvalidFile)
+                    )
+                );
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error uploading image to Cloudinary");
                 return StatusCode(
-                    500,
+                    StatusCodes.Status500InternalServerError,
                     new ErrorResponse(
-                        500,
+                        StatusCodes.Status500InternalServerError,
                         _messageService.GetMessage(MessageKeys.Common.UploadFailed)
                     )
                 );

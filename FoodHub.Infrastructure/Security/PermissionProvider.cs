@@ -66,6 +66,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Orders.Complete,
                 Permissions.Orders.Create,
                 Permissions.Orders.Update,
+                Permissions.Orders.Cancel,
                 Permissions.Orders.SubmitToKitchen,
                 Permissions.Orders.Split,
                 Permissions.Orders.Merge,

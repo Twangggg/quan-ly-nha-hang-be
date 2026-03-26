@@ -158,7 +158,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
         }
 
         [Fact]
-        public async Task Handle_Should_Return_Null_Target_When_NoHistoricalData()
+        public async Task Handle_Should_Return_Zero_Achievement_When_NoHistoricalData()
         {
             // Arrange
             var reportDate = new DateOnly(2026, 3, 10);
@@ -171,8 +171,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Data!.DailyTarget.Should().BeNull();
-            result.Data.AchievementRate.Should().BeNull();
+            result.Data!.RevenueAchievement.Should().Be(0);
         }
 
         [Fact]
@@ -213,8 +212,8 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
 
-            // Assert
-            result.Data!.DailyTarget.Should().Be(200_000);
+            // Assert: avg = 200k, but no revenue on report date, so RevenueAchievement = 0
+            result.Data!.RevenueAchievement.Should().Be(0);
         }
 
         [Fact]
@@ -249,12 +248,12 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
 
-            // Assert: target chỉ dựa vào ngày -1 (100k), KHÔNG bị ảnh hưởng bởi ngày báo cáo
-            result.Data!.DailyTarget.Should().Be(100_000);
+            // Assert: target = 100k (from day -1), RevenueAchievement = 999999/100k*100 = 999.999%
+            result.Data!.RevenueAchievement.Should().BeApproximately(999.999, 0.01);
         }
 
         [Fact]
-        public async Task Handle_Should_Calculate_AchievementRate()
+        public async Task Handle_Should_Calculate_RevenueAchievement()
         {
             // Arrange
             var reportDate = new DateOnly(2026, 3, 10);
@@ -269,7 +268,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
                     TotalAmount = 800_000,
                     PaidAt = VnToUtc(reportDate, 10),
                 },
-                // Yesterday: 1_000_000 → target = 1_000_000 → rate = 80%
+                // Yesterday: 1_000_000 → target = 1_000_000 → achievement = 80%
                 new()
                 {
                     OrderId = Guid.NewGuid(),
@@ -286,7 +285,7 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             var result = await _handler.Handle(query, CancellationToken.None);
 
             // Assert
-            result.Data!.AchievementRate.Should().BeApproximately(80.0, 0.01);
+            result.Data!.RevenueAchievement.Should().BeApproximately(80.0, 0.01);
         }
 
         [Fact]

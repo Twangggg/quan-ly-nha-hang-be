@@ -1,5 +1,4 @@
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Interfaces;
@@ -43,12 +42,51 @@ namespace FoodHub.Application.Features.AuditLogs.Queries.GetAuditLogs
             if (!string.IsNullOrEmpty(request.EntityIdFilter))
                 query = query.Where(x => x.EntityId.Contains(request.EntityIdFilter));
 
-            var pagedResult = await query
+            var totalCount = await query.CountAsync(cancellationToken);
+            var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
+
+            var items = await query
                 .OrderByDescending(x => x.CreatedAt)
-                .ProjectTo<GetAuditLogsResponse>(_mapper.ConfigurationProvider)
-                .ToPagedResultAsync(request.PageNumber, request.PageSize, cancellationToken);
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync(cancellationToken);
+
+            var response = items.Select(log => new GetAuditLogsResponse
+            {
+                LogId = log.LogId,
+                CreatedAt = log.CreatedAt,
+                Action = log.Action.ToString(),
+                EntityName = log.EntityName,
+                EntityId = log.EntityId,
+                Summary = GenerateSummary(log),
+                ActorInfo = log.ActorInfo,
+                OldValues = log.OldValues,
+                NewValues = log.NewValues,
+            }).ToList();
+
+            var pagedResult = new PagedResult<GetAuditLogsResponse>(
+                response,
+                request,
+                totalCount
+            );
 
             return Result<PagedResult<GetAuditLogsResponse>>.Success(pagedResult);
+        }
+
+        private static string GenerateSummary(AuditLog log)
+        {
+            var actionText = log.Action switch
+            {
+                AuditAction.Create => "Created",
+                AuditAction.Update => "Updated",
+                AuditAction.Delete => "Deleted",
+                AuditAction.StatusChange => "Changed status",
+                AuditAction.Login => "Logged in",
+                AuditAction.Logout => "Logged out",
+                _ => log.Action.ToString()
+            };
+
+            return $"{actionText} {log.EntityName}";
         }
     }
 }

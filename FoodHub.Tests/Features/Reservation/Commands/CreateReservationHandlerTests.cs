@@ -2,11 +2,13 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Reservations.Commands.CreateReservation;
+using FoodHub.Application.Features.Reservations.Services;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -22,6 +24,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
         private readonly Mock<ILogger<CreateReservationHandler>> _mockLogger;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ICacheService> _mockCacheService;
+        private readonly Mock<IReservationSettingsProvider> _mockReservationSettingsProvider;
         private readonly CreateReservationHandler _handler;
 
         public CreateReservationHandlerTests()
@@ -30,11 +33,15 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _mockLogger = new Mock<ILogger<CreateReservationHandler>>();
             _mockMessageService = new Mock<IMessageService>();
             _mockCacheService = new Mock<ICacheService>();
+            _mockReservationSettingsProvider = new Mock<IReservationSettingsProvider>();
 
             _mockMessageService.Setup(x => x.GetMessage(It.IsAny<string>()))
                 .Returns<string>(key => key);
             _mockMessageService.Setup(x => x.GetMessage(It.IsAny<string>(), It.IsAny<object[]>()))
                 .Returns<string, object[]>((key, _) => key);
+            _mockReservationSettingsProvider
+                .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ReservationSettings.CreateDefault());
             _mockUow.Setup(x => x.BeginTransactionAsync()).Returns(Task.CompletedTask);
             _mockUow.Setup(x => x.CommitTransactionAsync()).Returns(Task.CompletedTask);
             _mockUow.Setup(x => x.RollbackTransactionAsync()).Returns(Task.CompletedTask);
@@ -44,6 +51,8 @@ namespace FoodHub.Tests.Features.Reservations.Commands
 
             _handler = new CreateReservationHandler(
                 _mockUow.Object,
+                _mockReservationSettingsProvider.Object,
+                new ReservationLifecyclePolicy(),
                 _mockLogger.Object,
                 _mockMessageService.Object,
                 _mockCacheService.Object
