@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -224,6 +224,18 @@
   </data>
   <data name="Profile.EmailExists" xml:space="preserve">
     <value>Email đã được sử dụng.</value>
+  </data>
+  <data name="Profile.AddressRequired" xml:space="preserve">
+    <value>Địa chỉ không được để trống.</value>
+  </data>
+  <data name="Profile.AddressMaxLength" xml:space="preserve">
+    <value>Địa chỉ không được vượt quá 200 ký tự.</value>
+  </data>
+  <data name="Profile.DateOfBirthRequired" xml:space="preserve">
+    <value>Ngày sinh là bắt buộc.</value>
+  </data>
+  <data name="Profile.DateOfBirthMustBePast" xml:space="preserve">
+    <value>Ngày sinh phải là ngày trong quá khứ.</value>
   </data>
   <data name="Employee.CannotUpdateInactive" xml:space="preserve">
     <value>Không thể cập nhật thông tin cho nhân viên đang ngừng hoạt động.</value>
@@ -633,8 +645,29 @@
   <data name="Reservation.InvalidTime" xml:space="preserve">
     <value>Thời gian đặt chỗ không hợp lệ.</value>
   </data>
-  <data name="Reservation.TimeTooSoon" xml:space="preserve">
-    <value>Vui lòng đặt chỗ trước ít nhất 45 phút.</value>
+  <data name="Reservation.OutsideOperatingHours" xml:space="preserve">
+    <value>Thời gian đặt bàn phải nằm trong giờ hoạt động của nhà hàng.</value>
+  </data>
+    <data name="Reservation.TimeTooSoon" xml:space="preserve">
+    <value>Vui lòng đặt chỗ trước ít nhất {0} phút.</value>
+  </data>
+  <data name="ReservationSettings.InvalidOverlapBufferMinutes" xml:space="preserve">
+    <value>Khoảng đệm chồng lịch phải từ 0 phút trở lên.</value>
+  </data>
+  <data name="ReservationSettings.InvalidMinLeadTimeMinutes" xml:space="preserve">
+    <value>Thời gian đặt trước tối thiểu phải từ 0 phút trở lên.</value>
+  </data>
+  <data name="ReservationSettings.InvalidGracePeriodMinutes" xml:space="preserve">
+    <value>Thời gian giữ bàn phải từ 0 phút trở lên.</value>
+  </data>
+  <data name="ReservationSettings.InvalidOperatingHours" xml:space="preserve">
+    <value>Giờ hoạt động đặt bàn không hợp lệ.</value>
+  </data>
+  <data name="ReservationSettings.InvalidBreakHours" xml:space="preserve">
+    <value>Giờ bắt đầu nghỉ phải nhỏ hơn giờ kết thúc nghỉ.</value>
+  </data>
+  <data name="ReservationSettings.InvalidBreakOutsideOperatingHours" xml:space="preserve">
+    <value>Giờ nghỉ giữa ca phải nằm trong giờ hoạt động của nhà hàng.</value>
   </data>
   <data name="Reservation.VipRequired" xml:space="preserve">
     <value>Khu vực này yêu cầu khách hàng VIP.</value>
@@ -649,7 +682,7 @@
     <value>Khu vực hiện tại đã hết bàn trống. Bạn có muốn chuyển khách sang khu vực khác không?</value>
   </data>
   <data name="Reservation.BreakTime" xml:space="preserve">
-    <value>Nhà hàng đang trong giờ nghỉ giữa ca (14:00 - 17:00). Vui lòng chọn giờ khác.</value>
+    <value>Nhà hàng đang trong giờ nghỉ giữa ca ({0} - {1}). Vui lòng chọn giờ khác.</value>
   </data>
   <data name="Promotion.NotFound" xml:space="preserve">
     <value>Mã khuyến mãi không tồn tại.</value>
@@ -675,4 +708,32 @@
   <data name="Promotion.InvalidVoucher" xml:space="preserve">
     <value>Mã khuyến mãi không hợp lệ.</value>
   </data>
+  <data name="Voucher.CodeRequired" xml:space="preserve">
+    <value>Mã voucher không được để trống.</value>
+  </data>
+  <data name="Voucher.ValueMustBePositive" xml:space="preserve">
+    <value>Giá trị giảm giá phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="Voucher.MaxDiscountInvalid" xml:space="preserve">
+    <value>Số tiền giảm tối đa không hợp lệ (phải lớn hơn hoặc bằng 0).</value>
+  </data>
+  <data name="Voucher.MinOrderValueInvalid" xml:space="preserve">
+    <value>Giá trị đơn hàng tối thiểu không hợp lệ (phải lớn hơn hoặc bằng 0).</value>
+  </data>
+  <data name="Voucher.UsageLimitInvalid" xml:space="preserve">
+    <value>Giới hạn lượt sử dụng phải lớn hơn 0.</value>
+  </data>
+  <data name="Voucher.StartTimeAfterEndTime" xml:space="preserve">
+    <value>Thời gian kết thúc phải sau thời gian bắt đầu.</value>
+  </data>
+  <data name="Voucher.StartTimeEndTimeRequired" xml:space="preserve">
+    <value>Nếu cài đặt khung giờ, bạn phải nhập cả giờ bắt đầu và giờ kết thúc.</value>
+  </data>
+  <data name="Voucher.FreeItemRequired" xml:space="preserve">
+    <value>Vui lòng chọn món tặng kèm cho loại khuyến mãi này.</value>
+  </data>
+  <data name="Voucher.FreeQuantityInvalid" xml:space="preserve">
+    <value>Số lượng món tặng phải lớn hơn 0.</value>
+  </data>
 </root>
+

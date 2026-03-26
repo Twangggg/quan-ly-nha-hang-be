@@ -19,10 +19,11 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
                 }).WithMessage(messageService.GetMessage(MessageKeys.Profile.UsernameExists));
 
             RuleFor(x => x.Phone)
-                .MaximumLength(15)
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneRequired))
+                .Matches("^(0|84|\\+84)(3|5|7|8|9)([0-9]{8})$")
+                .WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneInvalid))
                 .MustAsync(async (command, phone, cancellation) =>
                 {
-                    if (string.IsNullOrEmpty(phone)) return true;
                     return !await unitOfWork.Repository<Domain.Entities.Employee>()
                         .AnyAsync(e => e.Phone == phone && e.EmployeeId != command.EmployeeId);
                 }).WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneExists));

@@ -1,6 +1,7 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Dashboard.Inventory.Queries.GetInventoryDashboardOverview;
+using FoodHub.Application.Features.Dashboard.Operational.Queries.GetOperationalStats;
 using FoodHub.Application.Features.Dashboard.Orders.Queries.GetOrderDashboardOverview;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
@@ -16,6 +17,18 @@ namespace FoodHub.Presentation.Controllers
         public DashboardController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        [HttpGet("operational-stats")]
+        [HasPermission(Permissions.SalesAnalytics.View)]
+        [ProducesResponseType(
+            typeof(Result<GetOperationalStatsResponse>),
+            StatusCodes.Status200OK
+        )]
+        public async Task<IActionResult> GetOperationalStats()
+        {
+            var result = await _mediator.Send(new GetOperationalStatsQuery());
+            return HandleResult(result);
         }
 
         [HttpGet("orders/overview")]

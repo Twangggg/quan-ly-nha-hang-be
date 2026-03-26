@@ -6,6 +6,7 @@ using FoodHub.Application.Features.KDS.Commands.RejectOrderItem;
 using FoodHub.Application.Features.KDS.Commands.ReturnOrderItem;
 using FoodHub.Application.Features.KDS.Commands.StartCooking;
 using FoodHub.Application.Features.KDS.Queries.GetKdsAuditLogs;
+using FoodHub.Application.Features.KDS.Queries.GetKdsBacklogSummary;
 using FoodHub.Application.Features.KDS.Queries.GetKdsItems;
 using FoodHub.Application.Features.KDS.Queries.GetKdsQueue;
 using FoodHub.Presentation.Controllers;
@@ -45,6 +46,19 @@ namespace FoodHub.WebAPI.Presentation.Controllers.KDS
         public async Task<IActionResult> GetKdsItems(string station)
         {
             var result = await _mediator.Send(new GetKdsItemsQuery { Station = station });
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Lấy tổng quan backlog của KDS (tổng số món đang xử lý, đang chờ, đang nấu, bị chậm).
+        /// </summary>
+        [HttpGet("backlog-summary")]
+        [HasPermission(Permissions.Kds.View)]
+        [Produces(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(typeof(Result<GetKdsBacklogSummaryResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetBacklogSummary()
+        {
+            var result = await _mediator.Send(new GetKdsBacklogSummaryQuery());
             return HandleResult(result);
         }
 

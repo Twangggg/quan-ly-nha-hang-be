@@ -1,12 +1,14 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift;
 using FoodHub.Application.Features.ShiftAssignments.Commands.AutoAssignShift;
 using FoodHub.Application.Features.ShiftAssignments.Commands.CancelShiftAssignment;
+using FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssignment;
 using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignmentById;
 using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignments;
-using FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssignment;
-using FoodHub.Application.Extensions.Pagination;
+using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftsByEmployeeId;
+using FoodHub.Application.Features.ShiftAssignments.Queries.GetSummary;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
@@ -20,7 +22,6 @@ namespace FoodHub.Presentation.Controllers
     /// Quản lý phân công ca làm việc cho nhân viên.
     /// </summary>
     [Tags("Phân công ca (Shift Assignments)")]
-    [HasPermission(Permissions.ShiftAssignments.View)]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class ShiftAssignmentsController : ApiControllerBase
     {
@@ -159,6 +160,35 @@ namespace FoodHub.Presentation.Controllers
             }
 
             var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Lấy danh sách ca làm việc của nhân viên hiện tại.
+        /// </summary>
+        /// <returns>Danh sách ca làm việc của nhân viên hiện tại.</returns>
+        [HttpGet("myShifts")]
+        [HasPermission(Permissions.ShiftAssignments.ViewMyShifts)]
+        [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
+        [ProducesResponseType(typeof(Result<List<GetSAsByEmployeeIdResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetShiftAssignmentsByEmployeeId([FromQuery] PaginationParams pagination)
+        {
+            var result = await _mediator.Send(new GetSAsByEmployeeIdQuery(pagination));
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Lấy thông tin tổng quan về phân công ca trong một khoảng thời gian.
+        /// </summary>
+        /// <param name="query">Thông tin truy vấn tổng quan.</param>
+        /// <returns>Thông tin tổng quan về phân công ca.</returns>
+        [HttpGet("summary")]
+        [HasPermission(Permissions.ShiftAssignments.View)]
+        [ProducesResponseType(typeof(Result<GetSummaryResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSummary([FromQuery] GetSummaryQuery query)
+        {
+            var result = await _mediator.Send(query);
             return HandleResult(result);
         }
     }

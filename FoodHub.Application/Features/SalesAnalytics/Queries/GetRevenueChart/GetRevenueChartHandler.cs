@@ -1,9 +1,9 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -72,14 +72,17 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
                 for (int i = 0; i < 24; i++)
                 {
                     var hourLabel = $"{i:D2}:00";
-                    var hourlyRevenue = orders
-                        .Where(o =>
-                            TimeZoneInfo.ConvertTimeFromUtc(o.PaidAt!.Value, _vietnamTz).Hour == i
-                        )
-                        .Sum(o => o.TotalAmount);
+                    var hourlyOrders = orders.Where(o =>
+                        TimeZoneInfo.ConvertTimeFromUtc(o.PaidAt!.Value, _vietnamTz).Hour == i
+                    );
 
                     response.Points.Add(
-                        new RevenuePointDto { Label = hourLabel, Revenue = hourlyRevenue }
+                        new RevenuePointDto
+                        {
+                            Label = hourLabel,
+                            Revenue = hourlyOrders.Sum(o => o.TotalAmount),
+                            OrderCount = hourlyOrders.Count(),
+                        }
                     );
                 }
             }
@@ -108,14 +111,17 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetRevenueChart
                 for (int i = 1; i <= daysInMonth; i++)
                 {
                     var dayLabel = $"{i:D2}/{request.Month.Value:D2}";
-                    var dailyRevenue = orders
-                        .Where(o =>
-                            TimeZoneInfo.ConvertTimeFromUtc(o.PaidAt!.Value, _vietnamTz).Day == i
-                        )
-                        .Sum(o => o.TotalAmount);
+                    var dailyOrders = orders.Where(o =>
+                        TimeZoneInfo.ConvertTimeFromUtc(o.PaidAt!.Value, _vietnamTz).Day == i
+                    );
 
                     response.Points.Add(
-                        new RevenuePointDto { Label = dayLabel, Revenue = dailyRevenue }
+                        new RevenuePointDto
+                        {
+                            Label = dayLabel,
+                            Revenue = dailyOrders.Sum(o => o.TotalAmount),
+                            OrderCount = dailyOrders.Count(),
+                        }
                     );
                 }
             }

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
+using ReservationEntity = FoodHub.Domain.Entities.Reservation;
 
 namespace FoodHub.Tests.Features.Order.Commands
 {
@@ -131,7 +132,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 AreaId = area.AreaId,
             };
 
-            var reservation = new Reservation
+            var reservation = new ReservationEntity
             {
                 ReservationId = reservationId,
                 TableId = tableId,
@@ -139,15 +140,15 @@ namespace FoodHub.Tests.Features.Order.Commands
                 Status = ReservationStatus.Booked
             };
 
-            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
+            var reservationRepo = new Mock<IGenericRepository<ReservationEntity>>();
             reservationRepo
                 .Setup(r => r.Query())
                 .Returns(
-                    new List<Reservation> { reservation }
+                    new List<ReservationEntity> { reservation }
                         .AsQueryable()
                         .BuildMock()
                 );
-            _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
+            _mockUow.Setup(u => u.Repository<ReservationEntity>()).Returns(reservationRepo.Object);
             
             var tableRepo = new Mock<IGenericRepository<Table>>();
             tableRepo.Setup(r => r.Query()).Returns(new List<Table> { table }.AsQueryable().BuildMock());

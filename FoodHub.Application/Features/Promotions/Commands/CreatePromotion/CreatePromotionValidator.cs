@@ -22,22 +22,22 @@ namespace FoodHub.Application.Features.Promotions.Commands.CreatePromotion
 
             RuleFor(x => x.Value)
                 .GreaterThanOrEqualTo(0)
-                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.Invalid));
+                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.ValueMustBePositive));
 
             RuleFor(x => x.Value)
                 .GreaterThan(0)
                 .When(x => x.Type != PromotionType.FreeItem)
-                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.Invalid));
+                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.ValueMustBePositive));
 
             RuleFor(x => x.MaxDiscount)
                 .GreaterThanOrEqualTo(0)
                 .When(x => x.MaxDiscount.HasValue)
-                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.Invalid));
+                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.MaxDiscountInvalid));
 
             RuleFor(x => x.MinOrderValue)
                 .GreaterThanOrEqualTo(0)
                 .When(x => x.MinOrderValue.HasValue)
-                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.Invalid));
+                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.MinOrderValueInvalid));
 
             RuleFor(x => x.StartDate)
                 .NotEmpty()
@@ -53,26 +53,26 @@ namespace FoodHub.Application.Features.Promotions.Commands.CreatePromotion
 
             RuleFor(x => x)
                 .Must(x => x.StartTime.HasValue == x.EndTime.HasValue)
-                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.Invalid));
+                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.StartTimeEndTimeRequired));
 
             RuleFor(x => x)
                 .Must(x => !x.StartTime.HasValue || !x.EndTime.HasValue || x.EndTime >= x.StartTime)
-                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.Invalid));
+                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.StartTimeAfterEndTime));
 
             RuleFor(x => x.ItemId)
                 .NotEmpty()
                 .When(x => x.Type == PromotionType.FreeItem)
-                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.Invalid));
+                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.FreeItemRequired));
 
             RuleFor(x => x.FreeQuantity)
                 .GreaterThan(0)
                 .When(x => x.Type == PromotionType.FreeItem)
-                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.Invalid));
+                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.FreeQuantityInvalid));
 
             RuleFor(x => x.UsageLimit)
                 .GreaterThan(0)
                 .When(x => x.UsageLimit.HasValue)
-                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.Invalid));
+                .WithMessage(messageService.GetMessage(MessageKeys.Voucher.UsageLimitInvalid));
         }
     }
 }

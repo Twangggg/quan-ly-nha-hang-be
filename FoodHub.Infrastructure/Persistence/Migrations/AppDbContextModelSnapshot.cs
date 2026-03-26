@@ -90,6 +90,75 @@ namespace FoodHub.Migrations
                     b.ToTable("areas", (string)null);
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.Attendance", b =>
+                {
+                    b.Property<Guid>("AttendanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("attendance_id");
+
+                    b.Property<DateTime>("CheckInTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("check_in_time");
+
+                    b.Property<DateTime?>("CheckOutTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("check_out_time");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid?>("ShiftAssignmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shift_assignment_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<bool?>("isEarlyLeave")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_early_leave");
+
+                    b.Property<bool?>("isLate")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_late");
+
+                    b.HasKey("AttendanceId")
+                        .HasName("pk_attendances");
+
+                    b.HasIndex("EmployeeId")
+                        .HasDatabaseName("ix_attendances_employee_id");
+
+                    b.HasIndex("ShiftAssignmentId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_attendances_shift_assignment_id");
+
+                    b.ToTable("attendances", (string)null);
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.AuditLog", b =>
                 {
                     b.Property<Guid>("LogId")
@@ -913,13 +982,13 @@ namespace FoodHub.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("expiry_warning_days");
 
-                    b.Property<DateTime?>("LockedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("locked_at");
-
                     b.Property<DateTime?>("LastOpeningStockImportedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_opening_stock_imported_at");
+
+                    b.Property<DateTime?>("LockedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("locked_at");
 
                     b.Property<int>("MaxCostRecalcDays")
                         .HasColumnType("integer")
@@ -2185,6 +2254,10 @@ namespace FoodHub.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("area_id");
 
+                    b.Property<DateTime?>("CheckedInAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("checked_in_at");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -2259,6 +2332,86 @@ namespace FoodHub.Migrations
                         .HasDatabaseName("ix_reservations_status_date_time");
 
                     b.ToTable("reservations", (string)null);
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.ReservationSettings", b =>
+                {
+                    b.Property<Guid>("ReservationSettingsId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("reservation_settings_id");
+
+                    b.Property<bool>("BreakEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("break_enabled");
+
+                    b.Property<TimeOnly>("BreakEnd")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("break_end");
+
+                    b.Property<TimeOnly>("BreakStart")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("break_start");
+
+                    b.Property<TimeOnly>("CloseTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("close_time");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("GracePeriodMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(15)
+                        .HasColumnName("grace_period_minutes");
+
+                    b.Property<int>("MinLeadTimeMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("min_lead_time_minutes");
+
+                    b.Property<TimeOnly>("OpenTime")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("open_time");
+
+                    b.Property<int>("OverlapBufferMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("overlap_buffer_minutes");
+
+                    b.Property<string>("SettingsKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("settings_key");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("ReservationSettingsId")
+                        .HasName("pk_reservation_settings");
+
+                    b.HasIndex("SettingsKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_reservation_settings_settings_key")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("reservation_settings", (string)null);
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
@@ -2932,6 +3085,26 @@ namespace FoodHub.Migrations
                     b.ToTable("tables", (string)null);
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.Attendance", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_attendances_employee_id");
+
+                    b.HasOne("FoodHub.Domain.Entities.ShiftAssignment", "ShiftAssignment")
+                        .WithOne()
+                        .HasForeignKey("FoodHub.Domain.Entities.Attendance", "ShiftAssignmentId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_attendances_shift_assignment_id");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("ShiftAssignment");
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.AuditLog", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.Employee", null)
@@ -3327,7 +3500,7 @@ namespace FoodHub.Migrations
                         .HasConstraintName("fk_shift_assignments_employee_id");
 
                     b.HasOne("FoodHub.Domain.Entities.Shift", "Shift")
-                        .WithMany()
+                        .WithMany("ShiftAssignments")
                         .HasForeignKey("ShiftId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
@@ -3502,6 +3675,11 @@ namespace FoodHub.Migrations
             modelBuilder.Entity("FoodHub.Domain.Entities.SetMenu", b =>
                 {
                     b.Navigation("SetMenuItems");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.Shift", b =>
+                {
+                    b.Navigation("ShiftAssignments");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.StockInReceipt", b =>

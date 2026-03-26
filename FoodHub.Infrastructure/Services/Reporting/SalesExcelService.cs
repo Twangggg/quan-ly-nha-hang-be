@@ -68,11 +68,11 @@ namespace FoodHub.Infrastructure.Services.Reporting
             sheet.Cell(6, 1).Value = "Đơn bị hủy";
             sheet.Cell(6, 2).Value = summary.CancelledOrders;
 
-            if (summary.DailyTarget.HasValue)
+            if (summary.RevenueAchievement > 0)
             {
-                sheet.Cell(7, 1).Value = "Mục tiêu";
-                sheet.Cell(7, 2).Value = summary.DailyTarget.Value;
-                sheet.Cell(7, 2).Style.NumberFormat.Format = "#,##0";
+                sheet.Cell(7, 1).Value = "Tỷ lệ đạt mục tiêu (%)";
+                sheet.Cell(7, 2).Value = summary.RevenueAchievement;
+                sheet.Cell(7, 2).Style.NumberFormat.Format = "#,##0.0";
             }
 
             sheet.Columns().AdjustToContents();

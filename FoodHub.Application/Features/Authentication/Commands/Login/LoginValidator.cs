@@ -11,7 +11,11 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
 
             RuleFor(x => x.Password)
                 .NotEmpty()
-                .MinimumLength(3);
+                .MinimumLength(8)
+                .Matches("[A-Z]")
+                .Matches("[a-z]")
+                .Matches("[0-9]")
+                .Matches("[\\W_]");
         }
     }
 }

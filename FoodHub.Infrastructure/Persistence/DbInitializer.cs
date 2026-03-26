@@ -23,6 +23,9 @@ namespace FoodHub.Infrastructure.Persistence
 
         public void Initialize()
         {
+            // IMPORTANT: Ensure schema fixes run BEFORE EF Migrations
+            EnsureReservationSettingsSchema();
+
             // Auto Migrate
             if (_context.Database.GetPendingMigrations().Any())
             {
@@ -39,7 +42,7 @@ namespace FoodHub.Infrastructure.Persistence
                         EmployeeId = Guid.NewGuid(),
                         EmployeeCode = "M001001",
                         Username = "admin",
-                        PasswordHash = _passwordService.HashPassword("New123!"),
+                        PasswordHash = _passwordService.HashPassword("New123!!"),
                         FullName = "Admin Manager",
                         Email = "liem20052012@gmail.com",
                         Phone = "0909000001",
@@ -52,7 +55,7 @@ namespace FoodHub.Infrastructure.Persistence
                         EmployeeId = Guid.NewGuid(),
                         EmployeeCode = "B002001",
                         Username = "chef",
-                        PasswordHash = _passwordService.HashPassword("New123!"),
+                        PasswordHash = _passwordService.HashPassword("New123!!"),
                         FullName = "Chief Chef",
                         Email = "chef@foodhub.com",
                         Phone = "0909000002",
@@ -65,7 +68,7 @@ namespace FoodHub.Infrastructure.Persistence
                         EmployeeId = Guid.NewGuid(),
                         EmployeeCode = "W003001",
                         Username = "waiter",
-                        PasswordHash = _passwordService.HashPassword("New123!"),
+                        PasswordHash = _passwordService.HashPassword("New123!!"),
                         FullName = "Waiter One",
                         Email = "waiter@foodhub.com",
                         Phone = "0909000003",
@@ -78,7 +81,7 @@ namespace FoodHub.Infrastructure.Persistence
                         EmployeeId = Guid.NewGuid(),
                         EmployeeCode = "C004001",
                         Username = "cashier",
-                        PasswordHash = _passwordService.HashPassword("New123!"),
+                        PasswordHash = _passwordService.HashPassword("New123!!"),
                         FullName = "Cashier One",
                         Email = "cashier@foodhub.com",
                         Phone = "0909000004",
@@ -99,9 +102,6 @@ namespace FoodHub.Infrastructure.Persistence
                         )
                     )
                     {
-                        _context.Employees.Add(e);
-
-                        // Add Audit Log for Seed Data
                         _context.Employees.Add(e);
                     }
                 }
@@ -324,10 +324,34 @@ namespace FoodHub.Infrastructure.Persistence
             {
                 var groups = new[]
                 {
-                    InventoryGroup.Create("Thực phẩm tươi sống", "Các loại thịt, cá, hải sản tươi", 10m, 2, InventoryCostMethod.WeightedAverage),
-                    InventoryGroup.Create("Rau củ quả", "Các loại rau, củ, trái cây bảo quản lạnh", 5m, 3, InventoryCostMethod.WeightedAverage),
-                    InventoryGroup.Create("Gia vị & Đồ khô", "Muối, đường, hạt nêm, đồ đóng hộp", 15m, null, InventoryCostMethod.WeightedAverage),
-                    InventoryGroup.Create("Đồ uống", "Nước ngọt, bia, rượu, sữa", 20m, 30, InventoryCostMethod.WeightedAverage)
+                    InventoryGroup.Create(
+                        "Thực phẩm tươi sống",
+                        "Các loại thịt, cá, hải sản tươi",
+                        10m,
+                        2,
+                        InventoryCostMethod.WeightedAverage
+                    ),
+                    InventoryGroup.Create(
+                        "Rau củ quả",
+                        "Các loại rau, củ, trái cây bảo quản lạnh",
+                        5m,
+                        3,
+                        InventoryCostMethod.WeightedAverage
+                    ),
+                    InventoryGroup.Create(
+                        "Gia vị & Đồ khô",
+                        "Muối, đường, hạt nêm, đồ đóng hộp",
+                        15m,
+                        null,
+                        InventoryCostMethod.WeightedAverage
+                    ),
+                    InventoryGroup.Create(
+                        "Đồ uống",
+                        "Nước ngọt, bia, rượu, sữa",
+                        20m,
+                        30,
+                        InventoryCostMethod.WeightedAverage
+                    ),
                 };
                 _context.InventoryGroups.AddRange(groups);
                 _context.SaveChanges();
@@ -336,8 +360,12 @@ namespace FoodHub.Infrastructure.Persistence
             // Seed Ingredients for Inventory module
             if (!_context.Ingredients.Any())
             {
-                var freshFoodGroup = _context.InventoryGroups.FirstOrDefault(g => g.Name == "Thực phẩm tươi sống");
-                var vegetableGroup = _context.InventoryGroups.FirstOrDefault(g => g.Name == "Rau củ quả");
+                var freshFoodGroup = _context.InventoryGroups.FirstOrDefault(g =>
+                    g.Name == "Thực phẩm tươi sống"
+                );
+                var vegetableGroup = _context.InventoryGroups.FirstOrDefault(g =>
+                    g.Name == "Rau củ quả"
+                );
                 var drinkGroup = _context.InventoryGroups.FirstOrDefault(g => g.Name == "Đồ uống");
 
                 var seedIngredients = new[]
@@ -351,7 +379,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Thịt bò tươi cho món chính",
                         Stock = 0m,
                         Cost = 0m,
-                        GroupId = freshFoodGroup?.InventoryGroupId
+                        GroupId = freshFoodGroup?.InventoryGroupId,
                     },
                     new
                     {
@@ -362,7 +390,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Ức gà fillet không da",
                         Stock = 0m,
                         Cost = 0m,
-                        GroupId = freshFoodGroup?.InventoryGroupId
+                        GroupId = freshFoodGroup?.InventoryGroupId,
                     },
                     new
                     {
@@ -373,7 +401,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Rau xà lách Đà Lạt",
                         Stock = 0m,
                         Cost = 0m,
-                        GroupId = vegetableGroup?.InventoryGroupId
+                        GroupId = vegetableGroup?.InventoryGroupId,
                     },
                     new
                     {
@@ -384,7 +412,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Sữa tươi tiệt trùng",
                         Stock = 0m,
                         Cost = 0m,
-                        GroupId = drinkGroup?.InventoryGroupId
+                        GroupId = drinkGroup?.InventoryGroupId,
                     },
                 };
 
@@ -626,12 +654,10 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.Orders.AddRange(order1, order2, order3);
 
                 // Update Table statuses for seeded orders
-                var table1 =
-                    _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id)
-                    ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
-                var table2 =
-                    _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id)
-                    ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
+                var table1 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id)
+                             ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
+                var table2 = _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id)
+                             ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
 
                 if (table1 != null)
                     table1.Status = TableStatus.Occupied;
@@ -747,7 +773,334 @@ namespace FoodHub.Infrastructure.Persistence
                 _context.SaveChanges();
             }
 
+            // Seed Shifts table
+            if (isDevOrDemo && !_context.Shifts.Any())
+            {
+                var shifts = new[]
+                {
+                    new Shift
+                    {
+                        ShiftId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        Name = "Ca Sáng",
+                        StartTime = new TimeSpan(6, 0, 0),
+                        EndTime = new TimeSpan(14, 0, 0),
+                        Status = ShiftStatus.Active,
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new Shift
+                    {
+                        ShiftId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        Name = "Ca Chiều",
+                        StartTime = new TimeSpan(14, 0, 0),
+                        EndTime = new TimeSpan(22, 0, 0),
+                        Status = ShiftStatus.Active,
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new Shift
+                    {
+                        ShiftId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                        Name = "Ca Đêm",
+                        StartTime = new TimeSpan(22, 0, 0),
+                        EndTime = new TimeSpan(6, 0, 0),
+                        Status = ShiftStatus.Active,
+                        CreatedAt = DateTime.UtcNow
+                    }
+                };
+                _context.Shifts.AddRange(shifts);
+                _context.SaveChanges();
+            }
+
+            // Seed ShiftAssignments for operational stats
+            if (isDevOrDemo && !_context.ShiftAssignments.Any())
+            {
+                var today = DateOnly.FromDateTime(DateTime.Now);
+                var allEmployees = _context.Employees.Where(e => e.Status == EmployeeStatus.Active).ToList();
+
+                foreach (var emp in allEmployees)
+                {
+                    _context.ShiftAssignments.Add(new ShiftAssignment
+                    {
+                        ShiftAssignmentId = Guid.NewGuid(),
+                        EmployeeId = emp.EmployeeId,
+                        ShiftId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                        AssignedDate = today,
+                        CreatedAt = DateTime.UtcNow.AddHours(-2),
+                    });
+                }
+                _context.SaveChanges();
+            }
+
+            // Seed AuditLogs for audit logs API
+            if (isDevOrDemo && !_context.AuditLogs.Any())
+            {
+                var admin = _context.Employees.FirstOrDefault(e => e.Role == EmployeeRole.Manager);
+                var table01 = _context.Tables.FirstOrDefault(t => t.TableNumber == 1);
+
+                if (admin != null)
+                {
+                    var auditLogs = new List<AuditLog>
+                    {
+                        new AuditLog
+                        {
+                            LogId = Guid.NewGuid(),
+                            EntityName = "Table",
+                            EntityId = table01?.TableId.ToString() ?? "T-01",
+                            Action = AuditAction.StatusChange,
+                            OldValues = "{\"status\": \"Available\"}",
+                            NewValues = "{\"status\": \"Occupied\"}",
+                            ActorInfo = admin.FullName,
+                            CreatedAt = DateTimeOffset.UtcNow.AddHours(-1),
+                        },
+                        new AuditLog
+                        {
+                            LogId = Guid.NewGuid(),
+                            EntityName = "Order",
+                            EntityId = "ORD-001",
+                            Action = AuditAction.Create,
+                            NewValues = "{\"totalAmount\": 150000}",
+                            ActorInfo = admin.FullName,
+                            CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-45),
+                        },
+                        new AuditLog
+                        {
+                            LogId = Guid.NewGuid(),
+                            EntityName = "MenuItem",
+                            EntityId = "MAIN-001",
+                            Action = AuditAction.Update,
+                            OldValues = "{\"price\": 50000}",
+                            NewValues = "{\"price\": 55000}",
+                            ActorInfo = admin.FullName,
+                            CreatedAt = DateTimeOffset.UtcNow.AddHours(-3),
+                        },
+                        new AuditLog
+                        {
+                            LogId = Guid.NewGuid(),
+                            EntityName = "Promotion",
+                            EntityId = "DISCOUNT10",
+                            Action = AuditAction.Activate,
+                            NewValues = "{\"isActive\": true}",
+                            ActorInfo = admin.FullName,
+                            CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+                        },
+                        new AuditLog
+                        {
+                            LogId = Guid.NewGuid(),
+                            EntityName = "Employee",
+                            EntityId = "W003001",
+                            Action = AuditAction.Create,
+                            NewValues = "{\"role\": \"Waiter\"}",
+                            ActorInfo = admin.FullName,
+                            CreatedAt = DateTimeOffset.UtcNow.AddDays(-2),
+                        },
+                    };
+
+                    _context.AuditLogs.AddRange(auditLogs);
+                    _context.SaveChanges();
+                }
+            }
+
+            // Seed more Orders with Paid status for salesanalytics
+            if (isDevOrDemo)
+            {
+                var paidOrdersCount = _context.Orders.Count(o => o.Status == OrderStatus.Paid || o.Status == OrderStatus.Completed);
+                var admin = _context.Employees.FirstOrDefault(e => e.EmployeeCode == "M001001");
+                var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
+                var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
+                var springRoll = _context.MenuItems.FirstOrDefault(mi => mi.Code == "APP-001");
+                var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
+
+                if (admin != null && chickenRice != null && paidOrdersCount == 0)
+                {
+                    var today = DateTime.UtcNow.Date;
+                    
+                    // Orders from past 7 days for moving average calculation
+                    var historicalOrders = new List<Order>();
+                    
+                    // Yesterday
+                    historicalOrders.Add(CreatePaidOrder(admin, chickenRice, specialDrink, today.AddDays(-1), 2));
+                    historicalOrders.Add(CreatePaidOrder(admin, beefNoodle, null, today.AddDays(-1), 1));
+                    
+                    // 2 days ago
+                    historicalOrders.Add(CreatePaidOrder(admin, chickenRice, null, today.AddDays(-2), 1));
+                    historicalOrders.Add(CreatePaidOrder(admin, springRoll, specialDrink, today.AddDays(-2), 3));
+                    
+                    // 3 days ago
+                    historicalOrders.Add(CreatePaidOrder(admin, beefNoodle, springRoll, today.AddDays(-3), 2));
+                    
+                    // 4 days ago
+                    historicalOrders.Add(CreatePaidOrder(admin, chickenRice, beefNoodle, today.AddDays(-4), 1));
+                    
+                    // 5 days ago
+                    historicalOrders.Add(CreatePaidOrder(admin, specialDrink, null, today.AddDays(-5), 4));
+
+                    _context.Orders.AddRange(historicalOrders);
+                    _context.SaveChanges();
+                }
+            }
+
+            // Seed OrderItems in Preparing/Cooking status for KDS backlog
+            if (isDevOrDemo)
+            {
+                var preparingItemsCount = _context.OrderItems.Count(oi => 
+                    oi.Status == OrderItemStatus.Preparing || oi.Status == OrderItemStatus.Cooking);
+                
+                var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
+                var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
+                var springRoll = _context.MenuItems.FirstOrDefault(mi => mi.Code == "APP-001");
+                var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
+                var dessert = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DES-003");
+
+                var servingOrders = _context.Orders.Where(o => o.Status == OrderStatus.Serving).ToList();
+
+                if (chickenRice != null && preparingItemsCount == 0 && servingOrders.Any())
+                {
+                    var kdsItems = new List<OrderItem>();
+                    var now = DateTime.UtcNow;
+
+                    foreach (var order in servingOrders)
+                    {
+                        // Add preparing items
+                        kdsItems.Add(new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order.OrderId,
+                            MenuItemId = chickenRice.MenuItemId,
+                            ItemCodeSnapshot = chickenRice.Code,
+                            ItemNameSnapshot = chickenRice.Name,
+                            StationSnapshot = Station.HotKitchen.ToString(),
+                            Status = OrderItemStatus.Preparing,
+                            Quantity = 1,
+                            UnitPriceSnapshot = chickenRice.Price,
+                            CreatedAt = now.AddMinutes(-5),
+                        });
+
+                        if (beefNoodle != null)
+                        {
+                            kdsItems.Add(new OrderItem
+                            {
+                                OrderItemId = Guid.NewGuid(),
+                                OrderId = order.OrderId,
+                                MenuItemId = beefNoodle.MenuItemId,
+                                ItemCodeSnapshot = beefNoodle.Code,
+                                ItemNameSnapshot = beefNoodle.Name,
+                                StationSnapshot = Station.HotKitchen.ToString(),
+                                Status = OrderItemStatus.Cooking,
+                                Quantity = 1,
+                                UnitPriceSnapshot = beefNoodle.Price,
+                                CreatedAt = now.AddMinutes(-15), // Delayed item
+                            });
+                        }
+                    }
+
+                    // Add some more preparing items from other orders
+                    if (springRoll != null)
+                    {
+                        kdsItems.Add(new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = servingOrders.First().OrderId,
+                            MenuItemId = springRoll.MenuItemId,
+                            ItemCodeSnapshot = springRoll.Code,
+                            ItemNameSnapshot = springRoll.Name,
+                            StationSnapshot = Station.HotKitchen.ToString(),
+                            Status = OrderItemStatus.Preparing,
+                            Quantity = 2,
+                            UnitPriceSnapshot = springRoll.Price,
+                            CreatedAt = now.AddMinutes(-2),
+                        });
+                    }
+
+                    if (specialDrink != null)
+                    {
+                        kdsItems.Add(new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = servingOrders.First().OrderId,
+                            MenuItemId = specialDrink.MenuItemId,
+                            ItemCodeSnapshot = specialDrink.Code,
+                            ItemNameSnapshot = specialDrink.Name,
+                            StationSnapshot = Station.Bar.ToString(),
+                            Status = OrderItemStatus.Preparing,
+                            Quantity = 1,
+                            UnitPriceSnapshot = specialDrink.Price,
+                            CreatedAt = now.AddMinutes(-1),
+                        });
+                    }
+
+                    if (dessert != null)
+                    {
+                        kdsItems.Add(new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = servingOrders.First().OrderId,
+                            MenuItemId = dessert.MenuItemId,
+                            ItemCodeSnapshot = dessert.Code,
+                            ItemNameSnapshot = dessert.Name,
+                            StationSnapshot = Station.Bar.ToString(),
+                            Status = OrderItemStatus.Cooking,
+                            Quantity = 1,
+                            UnitPriceSnapshot = dessert.Price,
+                            CreatedAt = now.AddMinutes(-25), // Delayed item
+                        });
+                    }
+
+                    _context.OrderItems.AddRange(kdsItems);
+                    _context.SaveChanges();
+                }
+            }
+
             _context.SaveChanges();
+        }
+
+        private Order CreatePaidOrder(Employee admin, MenuItem item1, MenuItem? item2, DateTime date, int quantity)
+        {
+            var order = new Order
+            {
+                OrderId = Guid.NewGuid(),
+                OrderCode = $"ORD-{date:yyyyMMdd}-{Guid.NewGuid().ToString()[..4].ToUpper()}",
+                OrderType = OrderType.DineIn,
+                Status = OrderStatus.Paid,
+                TotalAmount = (item1.Price * quantity) + (item2?.Price ?? 0),
+                SubTotal = (item1.Price * quantity) + (item2?.Price ?? 0),
+                VatAmount = ((item1.Price * quantity) + (item2?.Price ?? 0)) * 0.1m,
+                VatRate = 0.1m,
+                CreatedByEmployee = admin,
+                CreatedAt = DateTime.SpecifyKind(date.AddHours(12), DateTimeKind.Utc),
+                PaidAt = DateTime.SpecifyKind(date.AddHours(13), DateTimeKind.Utc),
+            };
+
+            order.OrderItems.Add(new OrderItem
+            {
+                OrderItemId = Guid.NewGuid(),
+                OrderId = order.OrderId,
+                MenuItemId = item1.MenuItemId,
+                ItemCodeSnapshot = item1.Code,
+                ItemNameSnapshot = item1.Name,
+                StationSnapshot = item1.Station.ToString(),
+                Status = OrderItemStatus.Completed,
+                Quantity = quantity,
+                UnitPriceSnapshot = item1.Price,
+                CreatedAt = order.CreatedAt,
+            });
+
+            if (item2 != null)
+            {
+                order.OrderItems.Add(new OrderItem
+                {
+                    OrderItemId = Guid.NewGuid(),
+                    OrderId = order.OrderId,
+                    MenuItemId = item2.MenuItemId,
+                    ItemCodeSnapshot = item2.Code,
+                    ItemNameSnapshot = item2.Name,
+                    StationSnapshot = item2.Station.ToString(),
+                    Status = OrderItemStatus.Completed,
+                    Quantity = 1,
+                    UnitPriceSnapshot = item2.Price,
+                    CreatedAt = order.CreatedAt,
+                });
+            }
+
+            return order;
         }
 
         private void SyncOccupiedTablesFromActiveOrders()
@@ -782,6 +1135,33 @@ namespace FoodHub.Infrastructure.Persistence
             }
 
             _context.SaveChanges();
+        }
+        private void EnsureReservationSettingsSchema()
+        {
+            try
+            {
+                // Check if grace_period_minutes exists in reservation_settings
+                var rsColumnsSQL = "SELECT column_name FROM information_schema.columns WHERE table_name = 'reservation_settings' AND column_name = 'grace_period_minutes'";
+                var colExists = _context.Database.SqlQueryRaw<string>(rsColumnsSQL).ToList().Any();
+
+                if (!colExists)
+                {
+                    _context.Database.ExecuteSqlRaw("ALTER TABLE reservation_settings ADD COLUMN IF NOT EXISTS grace_period_minutes integer NOT NULL DEFAULT 15");
+                }
+
+                // Also check checked_in_at in reservations
+                var resColumnsSQL = "SELECT column_name FROM information_schema.columns WHERE table_name = 'reservations' AND column_name = 'checked_in_at'";
+                var checkedInExists = _context.Database.SqlQueryRaw<string>(resColumnsSQL).ToList().Any();
+
+                if (!checkedInExists)
+                {
+                    _context.Database.ExecuteSqlRaw("ALTER TABLE reservations ADD COLUMN IF NOT EXISTS checked_in_at timestamp with time zone NULL");
+                }
+            }
+            catch (Exception)
+            {
+                // Silently ignore if table doesn't exist yet (migrations will handle it)
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -20,6 +21,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IReservationLifecyclePolicy _reservationLifecyclePolicy;
         private readonly IMessageService _messageService;
         private readonly ISignalRService _signalRService;
         private readonly ILogger<CheckInReservationHandler> _logger;
@@ -27,6 +29,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
         public CheckInReservationHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
+            IReservationLifecyclePolicy reservationLifecyclePolicy,
             IMessageService messageService,
             ISignalRService signalRService,
             ILogger<CheckInReservationHandler> logger
@@ -34,6 +37,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
+            _reservationLifecyclePolicy = reservationLifecyclePolicy;
             _messageService = messageService;
             _signalRService = signalRService;
             _logger = logger;
@@ -197,10 +201,9 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
-                // Update reservation status → CheckIn
-                reservation.Status = ReservationStatus.CheckIn;
-                reservation.UpdatedAt = DateTime.UtcNow;
-                _unitOfWork.Repository<Reservation>().Update(reservation);
+             // Update reservation status → CheckIn
+             reservation.MarkCheckedIn(_reservationLifecyclePolicy.GetBusinessNow(), userId);
+             _unitOfWork.Repository<Reservation>().Update(reservation);
 
                 // Update table status → Occupied
                 table.Status = TableStatus.Occupied;

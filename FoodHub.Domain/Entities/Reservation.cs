@@ -5,8 +5,6 @@ namespace FoodHub.Domain.Entities
 {
     public class Reservation : BaseEntity
     {
-        public const int DefaultOverlapBufferHours = 2;
-
         public Reservation() { }
 
         public Guid ReservationId { get; set; }
@@ -25,6 +23,7 @@ namespace FoodHub.Domain.Entities
         public virtual Area? Area { get; set; }
         public Guid TableId { get; set; }
         public virtual Table Table { get; set; } = null!;
+        public DateTime? CheckedInAt { get; set; }
 
         private Reservation(
             string customerName,
@@ -84,13 +83,35 @@ namespace FoodHub.Domain.Entities
             UpdatedBy = updatedBy;
         }
 
+        public void MarkCheckedIn(DateTime checkedInAt, Guid? updatedBy = null)
+        {
+            Status = ReservationStatus.CheckIn;
+            CheckedInAt = checkedInAt;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+        }
+
+        public void MarkNoShow(Guid? updatedBy = null)
+        {
+            Status = ReservationStatus.NoShow;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+        }
+
+        public void MarkCompleted(Guid? updatedBy = null)
+        {
+            Status = ReservationStatus.Completed;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+        }
+
         public bool CanFitTable(Table table)
         {
             ArgumentNullException.ThrowIfNull(table);
             return GuestCount <= table.Capacity;
         }
 
-        public bool OverlapsWith(Reservation other, int bufferHours = DefaultOverlapBufferHours)
+        public bool OverlapsWith(Reservation other, int bufferMinutes)
         {
             ArgumentNullException.ThrowIfNull(other);
 
@@ -104,11 +125,38 @@ namespace FoodHub.Domain.Entities
                 return false;
             }
 
-            var buffer = TimeSpan.FromHours(bufferHours);
+            var buffer = TimeSpan.FromMinutes(bufferMinutes);
             var minTime = ReservationTime.Subtract(buffer);
             var maxTime = ReservationTime.Add(buffer);
 
             return other.ReservationTime > minTime && other.ReservationTime < maxTime;
+        }
+
+        public bool CanMarkNoShow(DateTime now, ReservationSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+
+            if (Status != ReservationStatus.Booked)
+            {
+                return false;
+            }
+
+            var reservationDateTime = ReservationDate.ToDateTime(
+                TimeOnly.FromTimeSpan(ReservationTime)
+            );
+            return now >= reservationDateTime.AddMinutes(settings.GracePeriodMinutes);
+        }
+
+        public bool IsBlockingTable(DateTime now, ReservationSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+
+            return Status switch
+            {
+                ReservationStatus.Booked => !CanMarkNoShow(now, settings),
+                ReservationStatus.CheckIn => true,
+                _ => false,
+            };
         }
 
         private bool IsActiveForScheduling() =>

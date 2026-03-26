@@ -4,6 +4,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -16,18 +17,24 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
         : IRequestHandler<CreateInternalReservationCommand, Result<Guid>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IReservationSettingsProvider _reservationSettingsProvider;
+        private readonly IReservationLifecyclePolicy _reservationLifecyclePolicy;
         private readonly ILogger<CreateInternalReservationHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
 
         public CreateInternalReservationHandler(
             IUnitOfWork unitOfWork,
+            IReservationSettingsProvider reservationSettingsProvider,
+            IReservationLifecyclePolicy reservationLifecyclePolicy,
             ILogger<CreateInternalReservationHandler> logger,
             IMessageService messageService,
             ICacheService cacheService
         )
         {
             _unitOfWork = unitOfWork;
+            _reservationSettingsProvider = reservationSettingsProvider;
+            _reservationLifecyclePolicy = reservationLifecyclePolicy;
             _logger = logger;
             _messageService = messageService;
             _cacheService = cacheService;
@@ -46,6 +53,8 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                var settings = await _reservationSettingsProvider.GetOrCreateAsync(cancellationToken);
+
                 // Tìm bàn còn trống dựa theo AreaId và GuestCount
                 var query = _unitOfWork
                     .Repository<Table>()
@@ -67,26 +76,26 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
 
                 var allEligibleTables = await query.ToListAsync(cancellationToken);
 
-                var bufferHours = 2;
-                var minTime = request.ReservationTime.Subtract(TimeSpan.FromHours(bufferHours));
-                var maxTime = request.ReservationTime.Add(TimeSpan.FromHours(bufferHours));
+                var buffer = TimeSpan.FromMinutes(settings.OverlapBufferMinutes);
+                var minTime = request.ReservationTime.Subtract(buffer);
+                var maxTime = request.ReservationTime.Add(buffer);
+                var now = _reservationLifecyclePolicy.GetBusinessNow();
 
-                // Quan trọng: Kiểm tra cả Booked và CheckIn status
-                var overlappingTableIds = await _unitOfWork
+                var overlappingReservations = await _unitOfWork
                     .Repository<Reservation>()
                     .Query()
                     .Where(r =>
                         r.ReservationDate == request.ReservationDate
-                        && (
-                            r.Status == ReservationStatus.Booked
-                            || r.Status == ReservationStatus.CheckIn
-                        )
                         && r.ReservationTime > minTime
                         && r.ReservationTime < maxTime
                     )
+                    .ToListAsync(cancellationToken);
+
+                var overlappingTableIds = overlappingReservations
+                    .Where(r => _reservationLifecyclePolicy.IsBlockingReservation(r, settings, now))
                     .Select(r => r.TableId)
                     .Distinct()
-                    .ToListAsync(cancellationToken);
+                    .ToList();
 
                 var availableTable = allEligibleTables
                     .Where(t => !overlappingTableIds.Contains(t.TableId))

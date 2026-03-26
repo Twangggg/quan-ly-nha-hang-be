@@ -25,7 +25,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
     {
         private readonly IMediator _mediator;
 
-        public TablesController(IMediator mediator)
+        public TablesController(IMediator mediator, IMessageService messageService) : base(messageService)
         {
             _mediator = mediator;
         }

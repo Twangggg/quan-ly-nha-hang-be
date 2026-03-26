@@ -23,7 +23,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Invoices
     {
         private readonly IMediator _mediator;
 
-        public InvoicesController(IMediator mediator)
+        public InvoicesController(IMediator mediator, IMessageService messageService) : base(messageService)
         {
             _mediator = mediator;
         }
@@ -154,11 +154,6 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Invoices
         {
             var query = new GetInvoiceByIdQuery(id);
             var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess || result.Data == null)
-            {
-                return HandleResult(result);
-            }
 
             return HandleResult(result);
         }

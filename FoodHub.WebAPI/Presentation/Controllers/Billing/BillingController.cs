@@ -27,7 +27,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Billing
     {
         private readonly IMediator _mediator;
 
-        public BillingController(IMediator mediator)
+        public BillingController(IMediator mediator, IMessageService messageService) : base(messageService)
         {
             _mediator = mediator;
         }

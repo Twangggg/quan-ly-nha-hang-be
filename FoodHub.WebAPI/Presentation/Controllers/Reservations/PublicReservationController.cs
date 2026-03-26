@@ -2,6 +2,7 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Areas.Queries.GetPublicAreas;
 using FoodHub.Application.Features.Reservations.Commands.CreateReservation;
 using FoodHub.Application.Features.Reservations.Queries.GetAvailableTables;
+using FoodHub.Application.Features.Reservations.Settings.Queries.GetReservationSettings;
 using FoodHub.Presentation.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +21,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
     {
         private readonly IMediator _mediator;
 
-        public PublicReservationController(IMediator mediator)
+        public PublicReservationController(IMediator mediator, IMessageService messageService) : base(messageService)
         {
             _mediator = mediator;
         }
@@ -37,6 +38,18 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         public async Task<IActionResult> GetAvailableTables([FromQuery] GetAvailableTablesQuery query)
         {
             var result = await _mediator.Send(query);
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Lấy quy tắc đặt bàn công khai để client validate trước khi submit.
+        /// </summary>
+        /// <response code="200">Trả về các quy tắc đặt bàn hiện hành.</response>
+        [HttpGet("settings")]
+        [ProducesResponseType(typeof(Result<GetReservationSettingsResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetReservationSettings()
+        {
+            var result = await _mediator.Send(new GetReservationSettingsQuery());
             return HandleResult(result);
         }
 

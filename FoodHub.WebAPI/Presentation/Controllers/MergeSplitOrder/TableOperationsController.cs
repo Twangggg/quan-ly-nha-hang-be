@@ -17,7 +17,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.MergeSplitOrder
     {
         private readonly IMediator _mediator;
 
-        public TableOperationsController(IMediator mediator)
+        public TableOperationsController(IMediator mediator, IMessageService messageService) : base(messageService)
         {
             _mediator = mediator;
         }

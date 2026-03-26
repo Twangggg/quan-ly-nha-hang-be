@@ -1,10 +1,10 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -54,11 +54,12 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                     Status = o.Status,
                     TableNumber = o.Table != null ? o.Table.TableNumber : (int?)null,
                     ReservationId = o.ReservationId,
-                    EmployeeName = o.CreatedByEmployee != null ? o.CreatedByEmployee.FullName : string.Empty,
+                    EmployeeName =
+                        o.CreatedByEmployee != null ? o.CreatedByEmployee.FullName : string.Empty,
                     CustomerName = o.Reservation != null ? o.Reservation.CustomerName : null,
                     CustomerPhone = o.Reservation != null ? o.Reservation.CustomerPhone : null,
-                    Items = o.OrderItems
-                        .Where(oi =>
+                    Items = o
+                        .OrderItems.Where(oi =>
                             oi.Status != OrderItemStatus.Cancelled
                             && oi.Status != OrderItemStatus.Rejected
                         )
@@ -67,8 +68,8 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                             ItemName = oi.ItemNameSnapshot,
                             Quantity = oi.Quantity,
                             UnitPrice = oi.UnitPriceSnapshot,
-                            OptionValues = oi.OptionGroups
-                                .SelectMany(og => og.OptionValues)
+                            OptionValues = oi
+                                .OptionGroups.SelectMany(og => og.OptionValues)
                                 .Select(ov => new PreCheckBillOptionValueSnapshot
                                 {
                                     Label = ov.LabelSnapshot,
@@ -96,7 +97,7 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
             if (order.Status != OrderStatus.Serving)
             {
                 _logger.LogWarning(
-                    "Order not in Serving status for pre-check bill. OrderId: {OrderId}, Status: {Status}",
+                    "Order not in Serving or Paid status for pre-check bill. OrderId: {OrderId}, Status: {Status}",
                     request.OrderId,
                     order.Status
                 );
@@ -106,13 +107,12 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                 );
             }
 
-
-
-            var items = order.Items
-                .Select(oi =>
+            var items = order
+                .Items.Select(oi =>
                 {
                     var optionsSummary = BuildOptionsSummary(oi.OptionValues);
-                    var lineTotal = oi.Quantity
+                    var lineTotal =
+                        oi.Quantity
                         * (oi.UnitPrice + oi.OptionValues.Sum(ov => ov.ExtraPrice * ov.Quantity));
 
                     return new PreCheckBillItemDto
@@ -167,10 +167,9 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
             if (optionValues.Count == 0)
                 return null;
 
-            var parts = optionValues
-                .Select(ov =>
-                    ov.Quantity > 1 ? $"{ov.Label} x{ov.Quantity}" : ov.Label
-                );
+            var parts = optionValues.Select(ov =>
+                ov.Quantity > 1 ? $"{ov.Label} x{ov.Quantity}" : ov.Label
+            );
 
             var summary = string.Join(", ", parts);
             return string.IsNullOrEmpty(summary) ? null : summary;

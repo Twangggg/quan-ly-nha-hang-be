@@ -37,6 +37,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(r => r.AreaId).HasColumnName("area_id");
             builder.Property(r => r.TableId).IsRequired().HasColumnName("table_id");
+            builder.Property(r => r.CheckedInAt).HasColumnName("checked_in_at");
 
             builder.Property(r => r.CreatedAt).HasColumnName("created_at");
             builder.Property(r => r.CreatedBy).HasColumnName("created_by");

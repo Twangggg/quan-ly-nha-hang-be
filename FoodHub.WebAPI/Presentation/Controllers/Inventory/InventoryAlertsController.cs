@@ -17,7 +17,7 @@ namespace FoodHub.Presentation.Controllers
     {
         private readonly IMediator _mediator;
 
-        public InventoryAlertsController(IMediator mediator)
+        public InventoryAlertsController(IMediator mediator, IMessageService messageService) : base(messageService)
         {
             _mediator = mediator;
         }
