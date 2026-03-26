@@ -26,6 +26,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ICacheService> _mockCacheService;
         private readonly Mock<IReservationSettingsProvider> _mockReservationSettingsProvider;
+        private readonly Mock<IReservationLifecyclePolicy> _mockLifecyclePolicy;
         private readonly CreateReservationHandler _handler;
 
         public CreateReservationHandlerTests()
@@ -35,6 +36,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _mockMessageService = new Mock<IMessageService>();
             _mockCacheService = new Mock<ICacheService>();
             _mockReservationSettingsProvider = new Mock<IReservationSettingsProvider>();
+            _mockLifecyclePolicy = new Mock<IReservationLifecyclePolicy>();
 
             _mockMessageService.Setup(x => x.GetMessage(It.IsAny<string>()))
                 .Returns<string>(key => key);
@@ -49,11 +51,14 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _mockCacheService
                 .Setup(x => x.RemoveByPatternAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
+            _mockLifecyclePolicy
+                .Setup(x => x.GetBusinessNow())
+                .Returns(new DateTime(2026, 3, 19, 12, 0, 0));
 
             _handler = new CreateReservationHandler(
                 _mockUow.Object,
                 _mockReservationSettingsProvider.Object,
-                new ReservationLifecyclePolicy(),
+                _mockLifecyclePolicy.Object,
                 _mockLogger.Object,
                 _mockMessageService.Object,
                 _mockCacheService.Object
@@ -182,6 +187,13 @@ namespace FoodHub.Tests.Features.Reservations.Commands
 
             _mockUow.Setup(x => x.Repository<Table>()).Returns(tableRepo.Object);
             _mockUow.Setup(x => x.Repository<ReservationEntity>()).Returns(reservationRepo.Object);
+
+            _mockLifecyclePolicy
+                .Setup(x => x.IsBlockingReservation(
+                    It.IsAny<ReservationEntity>(),
+                    It.IsAny<ReservationSettings>(),
+                    It.IsAny<DateTime>()))
+                .Returns(true);
 
             var command = CreateCommand(table.AreaId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
 
