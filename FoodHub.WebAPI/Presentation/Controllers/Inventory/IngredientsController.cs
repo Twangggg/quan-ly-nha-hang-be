@@ -1,6 +1,9 @@
+using System.IO;
+using ClosedXML.Excel;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Inventory.ImportBalance.Commands.Import;
+using FoodHub.Application.Features.Inventory.ImportBalance.Queries.ParseInventoryBalanceExcel;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.ActivateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.DeactivateIngredient;
@@ -9,17 +12,15 @@ using FoodHub.Application.Features.Inventory.Ingredients.Queries.GenerateIngredi
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredientById;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredients;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
-using ClosedXML.Excel;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -32,7 +33,8 @@ namespace FoodHub.Presentation.Controllers
         private readonly IMediator _mediator;
         private readonly IMessageService _messageService;
 
-        public IngredientsController(IMediator mediator, IMessageService messageService) : base(messageService)
+        public IngredientsController(IMediator mediator, IMessageService messageService)
+            : base(messageService)
         {
             _mediator = mediator;
             _messageService = messageService;
@@ -149,14 +151,37 @@ namespace FoodHub.Presentation.Controllers
         /// </summary>
         [HttpPost("import-balance")]
         [HasPermission(Permissions.Inventory.Import)]
-        [ProducesResponseType(typeof(Result<ImportInventoryBalanceResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Result<ImportInventoryBalanceResponse>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(
+            typeof(Result<ImportInventoryBalanceResponse>),
+            StatusCodes.Status200OK
+        )]
+        [ProducesResponseType(
+            typeof(Result<ImportInventoryBalanceResponse>),
+            StatusCodes.Status400BadRequest
+        )]
         public async Task<IActionResult> ImportInventoryBalance(
             IFormFile file,
             [FromQuery] bool confirmOverwrite = false
         )
         {
-            var result = await _mediator.Send(new ImportInventoryBalanceCommand(file, confirmOverwrite));
+            var result = await _mediator.Send(
+                new ImportInventoryBalanceCommand(file, confirmOverwrite)
+            );
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Phân tích file Excel để xem trước (Preview) dữ liệu trước khi lưu.
+        /// </summary>
+        [HttpPost("parse-balance")]
+        [HasPermission(Permissions.Inventory.Import)]
+        [ProducesResponseType(
+            typeof(Result<List<ParsedInventoryBalanceResponse>>),
+            StatusCodes.Status200OK
+        )]
+        public async Task<IActionResult> ParseInventoryBalance(IFormFile file)
+        {
+            var result = await _mediator.Send(new ParseInventoryBalanceExcelQuery(file));
             return HandleResult(result);
         }
 
@@ -190,7 +215,11 @@ namespace FoodHub.Presentation.Controllers
             workbook.SaveAs(stream);
             var bytes = stream.ToArray();
 
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Mau_Nhap_Ton_Kho.xlsx");
+            return File(
+                bytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "Mau_Nhap_Ton_Kho.xlsx"
+            );
         }
     }
 }

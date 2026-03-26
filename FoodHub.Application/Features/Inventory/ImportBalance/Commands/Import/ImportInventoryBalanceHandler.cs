@@ -147,7 +147,19 @@ public class ImportInventoryBalanceHandler
                 }
 
                 response.SuccessCount++;
+
+                // Create transaction
+                var transaction = InventoryTransaction.CreateOpeningStock(
+                    ingredient.IngredientId,
+                    item.Quantity,
+                    item.CostPrice,
+                    item.Quantity, // balance after is simply the quantity for opening stock
+                    $"Nhập tồn kho file Excel: {request.File.FileName}",
+                    actorId
+                );
+                await _unitOfWork.Repository<InventoryTransaction>().AddAsync(transaction);
             }
+
 
             response.FailedCount = errors.Count;
             response.Errors = errors;

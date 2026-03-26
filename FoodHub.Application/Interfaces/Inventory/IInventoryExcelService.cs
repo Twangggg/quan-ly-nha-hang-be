@@ -2,7 +2,10 @@ namespace FoodHub.Application.Interfaces.Inventory;
 
 public interface IInventoryExcelService
 {
-    Task<List<InventoryBalanceImportDto>> ParseExcelFileAsync(Stream fileStream, CancellationToken cancellationToken = default);
+    Task<List<InventoryBalanceImportDto>> ParseExcelFileAsync(
+        Stream fileStream,
+        CancellationToken cancellationToken = default
+    );
 }
 
 public class InventoryBalanceImportDto
