@@ -66,7 +66,7 @@ try
                 var context = services.GetRequiredService<AppDbContext>();
                 var initializer = services.GetRequiredService<DbInitializer>();
 
-                await context.Database.MigrateAsync();
+                // DbInitializer handles both schema surgical fixes and migrations
                 initializer.Initialize();
                 break;
             }

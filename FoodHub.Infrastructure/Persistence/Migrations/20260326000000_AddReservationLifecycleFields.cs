@@ -1,10 +1,13 @@
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace FoodHub.Infrastructure.Persistence.Migrations
 {
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260326000000_AddReservationLifecycleFields")]
     public partial class AddReservationLifecycleFields : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

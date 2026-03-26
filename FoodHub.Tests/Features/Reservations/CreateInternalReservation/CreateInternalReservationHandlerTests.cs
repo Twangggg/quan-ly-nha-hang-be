@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
 using Xunit;
+using ReservationEntity = FoodHub.Domain.Entities.Reservation;
 
 namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
 {
@@ -54,11 +55,11 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
             tableRepo.Setup(r => r.Query()).Returns(new List<Table>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
 
-            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
+            var reservationRepo = new Mock<IGenericRepository<ReservationEntity>>();
             reservationRepo
                 .Setup(r => r.Query())
-                .Returns(new List<Reservation>().AsQueryable().BuildMock());
-            _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
+                .Returns(new List<ReservationEntity>().AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<ReservationEntity>()).Returns(reservationRepo.Object);
 
             _mockMessageService
                 .Setup(m => m.GetMessage(MessageKeys.Reservation.NoTableAvailable))
@@ -112,13 +113,13 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
                         .BuildMock()
                 );
 
-            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
+            var reservationRepo = new Mock<IGenericRepository<ReservationEntity>>();
             reservationRepo
                 .Setup(r => r.Query())
-                .Returns(new List<Reservation>().AsQueryable().BuildMock());
+                .Returns(new List<ReservationEntity>().AsQueryable().BuildMock());
 
             _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
-            _mockUow.Setup(u => u.Repository<Reservation>()).Returns(reservationRepo.Object);
+            _mockUow.Setup(u => u.Repository<ReservationEntity>()).Returns(reservationRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             var handler = new CreateInternalReservationHandler(
@@ -139,7 +140,7 @@ namespace FoodHub.Tests.Features.Reservations.CreateInternalReservation
             reservationRepo.Verify(
                 r =>
                     r.AddAsync(
-                        It.Is<Reservation>(res =>
+                        It.Is<ReservationEntity>(res =>
                             res.TableId == tableId && res.CustomerName == "Jane Doe"
                         )
                     ),

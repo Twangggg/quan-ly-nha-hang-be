@@ -15,6 +15,7 @@ using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
 using Moq;
+using ReservationEntity = FoodHub.Domain.Entities.Reservation;
 
 namespace FoodHub.Tests.Features.Reservations.Commands
 {
@@ -66,13 +67,13 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             var tableRepo = new Mock<IGenericRepository<Table>>();
             tableRepo.Setup(x => x.Query()).Returns(new List<Table> { table }.AsQueryable().BuildMock());
 
-            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
+            var reservationRepo = new Mock<IGenericRepository<ReservationEntity>>();
             reservationRepo
                 .Setup(x => x.Query())
-                .Returns(new List<Reservation>().AsQueryable().BuildMock());
+                .Returns(new List<ReservationEntity>().AsQueryable().BuildMock());
 
             _mockUow.Setup(x => x.Repository<Table>()).Returns(tableRepo.Object);
-            _mockUow.Setup(x => x.Repository<Reservation>()).Returns(reservationRepo.Object);
+            _mockUow.Setup(x => x.Repository<ReservationEntity>()).Returns(reservationRepo.Object);
             _mockUow.Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             var command = CreateCommand(table.AreaId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
@@ -84,7 +85,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             result.Data!.TableId.Should().Be(table.TableId);
             reservationRepo.Verify(
                 x => x.AddAsync(
-                    It.Is<Reservation>(r =>
+                    It.Is<ReservationEntity>(r =>
                         r.TableId == table.TableId
                         && r.AreaId == table.AreaId
                         && r.Status == ReservationStatus.Booked
@@ -103,13 +104,13 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             var tableRepo = new Mock<IGenericRepository<Table>>();
             tableRepo.Setup(x => x.Query()).Returns(new List<Table> { table }.AsQueryable().BuildMock());
 
-            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
+            var reservationRepo = new Mock<IGenericRepository<ReservationEntity>>();
             reservationRepo
                 .Setup(x => x.Query())
-                .Returns(new List<Reservation>().AsQueryable().BuildMock());
+                .Returns(new List<ReservationEntity>().AsQueryable().BuildMock());
 
             _mockUow.Setup(x => x.Repository<Table>()).Returns(tableRepo.Object);
-            _mockUow.Setup(x => x.Repository<Reservation>()).Returns(reservationRepo.Object);
+            _mockUow.Setup(x => x.Repository<ReservationEntity>()).Returns(reservationRepo.Object);
             _mockUow.Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
             var command = CreateCommand(table.AreaId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
@@ -137,13 +138,13 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             var tableRepo = new Mock<IGenericRepository<Table>>();
             tableRepo.Setup(x => x.Query()).Returns(new List<Table> { table }.AsQueryable().BuildMock());
 
-            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
+            var reservationRepo = new Mock<IGenericRepository<ReservationEntity>>();
             reservationRepo
                 .Setup(x => x.Query())
-                .Returns(new List<Reservation>().AsQueryable().BuildMock());
+                .Returns(new List<ReservationEntity>().AsQueryable().BuildMock());
 
             _mockUow.Setup(x => x.Repository<Table>()).Returns(tableRepo.Object);
-            _mockUow.Setup(x => x.Repository<Reservation>()).Returns(reservationRepo.Object);
+            _mockUow.Setup(x => x.Repository<ReservationEntity>()).Returns(reservationRepo.Object);
 
             var command = CreateCommand(Guid.NewGuid(), guestCount: 4, reservationTime: TimeSpan.FromHours(18));
 
@@ -152,7 +153,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             result.IsSuccess.Should().BeFalse();
             result.ErrorType.Should().Be(ResultErrorType.NotFound);
             result.Error.Should().Be(MessageKeys.Table.NotFound);
-            reservationRepo.Verify(x => x.AddAsync(It.IsAny<Reservation>()), Times.Never);
+            reservationRepo.Verify(x => x.AddAsync(It.IsAny<ReservationEntity>()), Times.Never);
             _mockUow.Verify(x => x.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -160,7 +161,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
         public async Task Handle_Should_ReturnConflict_When_BookingOverlaps()
         {
             var table = CreateTable(capacity: 4);
-            var existingReservation = Reservation.CreateBooked(
+            var existingReservation = ReservationEntity.CreateBooked(
                 "Existing Customer",
                 "0900000000",
                 new DateOnly(2026, 3, 20),
@@ -174,13 +175,13 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             var tableRepo = new Mock<IGenericRepository<Table>>();
             tableRepo.Setup(x => x.Query()).Returns(new List<Table> { table }.AsQueryable().BuildMock());
 
-            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
+            var reservationRepo = new Mock<IGenericRepository<ReservationEntity>>();
             reservationRepo
                 .Setup(x => x.Query())
-                .Returns(new List<Reservation> { existingReservation }.AsQueryable().BuildMock());
+                .Returns(new List<ReservationEntity> { existingReservation }.AsQueryable().BuildMock());
 
             _mockUow.Setup(x => x.Repository<Table>()).Returns(tableRepo.Object);
-            _mockUow.Setup(x => x.Repository<Reservation>()).Returns(reservationRepo.Object);
+            _mockUow.Setup(x => x.Repository<ReservationEntity>()).Returns(reservationRepo.Object);
 
             var command = CreateCommand(table.AreaId, guestCount: 4, reservationTime: TimeSpan.FromHours(18));
 
@@ -189,7 +190,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             result.IsSuccess.Should().BeFalse();
             result.ErrorType.Should().Be(ResultErrorType.Conflict);
             result.Error.Should().Be(MessageKeys.Reservation.Overlapped);
-            reservationRepo.Verify(x => x.AddAsync(It.IsAny<Reservation>()), Times.Never);
+            reservationRepo.Verify(x => x.AddAsync(It.IsAny<ReservationEntity>()), Times.Never);
             _mockUow.Verify(x => x.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 

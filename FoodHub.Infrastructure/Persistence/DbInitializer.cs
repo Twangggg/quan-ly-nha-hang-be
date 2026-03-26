@@ -23,14 +23,14 @@ namespace FoodHub.Infrastructure.Persistence
 
         public void Initialize()
         {
+            // IMPORTANT: Ensure schema fixes run BEFORE EF Migrations
+            EnsureReservationSettingsSchema();
+
             // Auto Migrate
             if (_context.Database.GetPendingMigrations().Any())
             {
                 _context.Database.Migrate();
             }
-
-            // Ensure schema is up to date (surgical fix for missing column)
-            EnsureReservationSettingsSchema();
 
             // Seed Data
             if (!_context.Employees.Any())

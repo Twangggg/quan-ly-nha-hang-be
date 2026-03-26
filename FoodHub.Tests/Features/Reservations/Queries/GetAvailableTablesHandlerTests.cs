@@ -7,6 +7,7 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MockQueryable.Moq;
 using Moq;
+using ReservationEntity = FoodHub.Domain.Entities.Reservation;
 
 namespace FoodHub.Tests.Features.Reservations.Queries
 {
@@ -26,7 +27,7 @@ namespace FoodHub.Tests.Features.Reservations.Queries
         public async Task Handle_Should_FilterOutTable_When_ReservationFallsInsideBuffer()
         {
             var table = CreateTable();
-            var existing = Reservation.CreateBooked(
+            var existing = ReservationEntity.CreateBooked(
                 "Existing",
                 "0900000000",
                 DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
@@ -40,11 +41,11 @@ namespace FoodHub.Tests.Features.Reservations.Queries
             var tableRepo = new Mock<IGenericRepository<Table>>();
             tableRepo.Setup(x => x.Query()).Returns(new List<Table> { table }.AsQueryable().BuildMock());
 
-            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
-            reservationRepo.Setup(x => x.Query()).Returns(new List<Reservation> { existing }.AsQueryable().BuildMock());
+            var reservationRepo = new Mock<IGenericRepository<ReservationEntity>>();
+            reservationRepo.Setup(x => x.Query()).Returns(new List<ReservationEntity> { existing }.AsQueryable().BuildMock());
 
             _unitOfWork.Setup(x => x.Repository<Table>()).Returns(tableRepo.Object);
-            _unitOfWork.Setup(x => x.Repository<Reservation>()).Returns(reservationRepo.Object);
+            _unitOfWork.Setup(x => x.Repository<ReservationEntity>()).Returns(reservationRepo.Object);
 
             var handler = new GetAvailableTablesHandler(
                 _unitOfWork.Object,
@@ -71,7 +72,7 @@ namespace FoodHub.Tests.Features.Reservations.Queries
         public async Task Handle_Should_ReturnTable_When_BufferIsShortEnough()
         {
             var table = CreateTable();
-            var existing = Reservation.CreateBooked(
+            var existing = ReservationEntity.CreateBooked(
                 "Existing",
                 "0900000000",
                 DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
@@ -85,8 +86,8 @@ namespace FoodHub.Tests.Features.Reservations.Queries
             var tableRepo = new Mock<IGenericRepository<Table>>();
             tableRepo.Setup(x => x.Query()).Returns(new List<Table> { table }.AsQueryable().BuildMock());
 
-            var reservationRepo = new Mock<IGenericRepository<Reservation>>();
-            reservationRepo.Setup(x => x.Query()).Returns(new List<Reservation> { existing }.AsQueryable().BuildMock());
+            var reservationRepo = new Mock<IGenericRepository<ReservationEntity>>();
+            reservationRepo.Setup(x => x.Query()).Returns(new List<ReservationEntity> { existing }.AsQueryable().BuildMock());
 
             var settings = ReservationSettings.CreateDefault();
             settings.Update(
@@ -103,7 +104,7 @@ namespace FoodHub.Tests.Features.Reservations.Queries
                 .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(settings);
             _unitOfWork.Setup(x => x.Repository<Table>()).Returns(tableRepo.Object);
-            _unitOfWork.Setup(x => x.Repository<Reservation>()).Returns(reservationRepo.Object);
+            _unitOfWork.Setup(x => x.Repository<ReservationEntity>()).Returns(reservationRepo.Object);
 
             var handler = new GetAvailableTablesHandler(
                 _unitOfWork.Object,
