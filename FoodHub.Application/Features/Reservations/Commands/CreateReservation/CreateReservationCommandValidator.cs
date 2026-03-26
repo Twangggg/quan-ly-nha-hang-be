@@ -45,15 +45,14 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
                 .WithMessage(_messageService.GetMessage(MessageKeys.Common.IdRequired));
 
             RuleFor(x => x)
-                .Must(x => IsValidReservationDate(x.ReservationDate))
-                .WithMessage(_messageService.GetMessage(MessageKeys.Reservation.InvalidTime));
-
-            RuleFor(x => x)
                 .CustomAsync(
                     async (request, context, cancellationToken) =>
                     {
                         if (request.ReservationDate < DateOnly.FromDateTime(DateTime.Now))
                         {
+                            context.AddFailure(
+                                _messageService.GetMessage(MessageKeys.Reservation.InvalidTime)
+                            );
                             return;
                         }
 
@@ -80,11 +79,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
 
                         if (
                             settings.BreakEnabled
-                            && IsBreakTime(
-                                reservationTime,
-                                settings.BreakStart,
-                                settings.BreakEnd
-                            )
+                            && IsBreakTime(reservationTime, settings.BreakStart, settings.BreakEnd)
                         )
                         {
                             context.AddFailure(

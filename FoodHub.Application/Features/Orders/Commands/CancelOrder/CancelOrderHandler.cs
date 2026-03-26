@@ -4,10 +4,10 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -109,12 +109,13 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
             if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
             {
                 var table = await _unitOfWork
-                    .Repository<Domain.Entities.Table>().Query()
+                    .Repository<Domain.Entities.Table>()
+                    .Query()
                     .Include(t => t.Orders)
                     .FirstOrDefaultAsync(t => t.TableId == order.TableId, cancellationToken);
                 if (table != null)
                 {
-                    // Chuyển bàn về Available. Lúc này order đã được đổi status sang Cancelled trong bộ nhớ 
+                    // Chuyển bàn về Available. Lúc này order đã được đổi status sang Cancelled trong bộ nhớ
                     // (hoặc nếu cần chắc chắn hơn, ta có thể dùng MarkAsAvailable trực tiếp)
                     if (table.SetAvailable())
                     {
@@ -125,7 +126,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CancelOrder
                         // Ngắt kết nối đơn hàng với bàn sau khi đã giải phóng bàn xong
                         freedTableId = order.TableId.Value;
                         isTableFreed = true;
-                        
+
                         order.TableId = null;
                         _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
                     }
