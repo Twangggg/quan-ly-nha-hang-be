@@ -47,6 +47,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Orders.View,
                 Permissions.Orders.Create,
                 Permissions.Orders.Update,
+                Permissions.Orders.Cancel,
                 Permissions.Orders.SubmitToKitchen,
                 Permissions.MenuItems.View,
                 Permissions.Categories.View,
@@ -54,7 +55,14 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Tables.View,
                 Permissions.Areas.View,
                 Permissions.Reservations.CheckIn,
-                Permissions.Billing.PreCheckBill
+                Permissions.Billing.PreCheckBill,
+
+                // Shift permissions for waiters
+                Permissions.ShiftAssignments.ViewMyShifts,
+
+                // Check In/Out permissions for waiters
+                Permissions.Attendances.CheckIn,
+                Permissions.Attendances.CheckOut,
             };
         }
 
@@ -65,6 +73,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Orders.View,
                 Permissions.Orders.Complete,
                 Permissions.Orders.Create,
+                Permissions.Orders.Cancel,
                 Permissions.Orders.Update,
                 Permissions.Orders.Cancel,
                 Permissions.Orders.SubmitToKitchen,
@@ -99,6 +108,13 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Vouchers.Delete,
                 Permissions.Vouchers.Apply,
                 Permissions.Vouchers.Unapply,
+
+                // Shift permissions for cashiers
+                Permissions.ShiftAssignments.ViewMyShifts,
+
+                // Check In/Out permissions for cashiers
+                Permissions.Attendances.CheckIn,
+                Permissions.Attendances.CheckOut,
             };
         }
 
@@ -114,6 +130,13 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Kds.View,
                 Permissions.Kds.Manage,
                 Permissions.Kds.Reject,
+
+                // Shift permissions for chef/bar
+                Permissions.ShiftAssignments.ViewMyShifts,
+
+                // Check In/Out permissions for chef/bar
+                Permissions.Attendances.CheckIn,
+                Permissions.Attendances.CheckOut,
             };
         }
     }

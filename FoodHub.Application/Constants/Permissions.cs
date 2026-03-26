@@ -106,21 +106,6 @@ namespace FoodHub.Application.Constants
             public const string Deactivate = "Permissions.Inventory.Deactivate";
         }
 
-        public static class Shifts
-        {
-            public const string View = "Permissions.Shifts.View";
-            public const string Create = "Permissions.Shifts.Create";
-            public const string Update = "Permissions.Shifts.Update";
-            public const string Deactivate = "Permissions.Shifts.Deactivate";
-        }
-
-        public static class ShiftAssignments
-        {
-            public const string View = "Permissions.ShiftAssignments.View";
-            public const string Create = "Permissions.ShiftAssignments.Create";
-            public const string Update = "Permissions.ShiftAssignments.Update";
-            public const string Delete = "Permissions.ShiftAssignments.Delete";
-        }
         public static class Invoices
         {
             public const string View = "Permissions.Invoices.View";
@@ -139,9 +124,34 @@ namespace FoodHub.Application.Constants
             public const string Unapply = "Permissions.Vouchers.Unapply";
         }
 
+        public static class Shifts
+        {
+            public const string View = "Permissions.Shifts.View";
+            public const string Create = "Permissions.Shifts.Create";
+            public const string Update = "Permissions.Shifts.Update";
+            public const string Deactivate = "Permissions.Shifts.Deactivate";
+        }
+
+        public static class ShiftAssignments
+        {
+            public const string View = "Permissions.ShiftAssignments.View";
+            public const string Create = "Permissions.ShiftAssignments.Create";
+            public const string Update = "Permissions.ShiftAssignments.Update";
+            public const string Delete = "Permissions.ShiftAssignments.Delete";
+            public const string ViewMyShifts = "Permissions.Shifts.ViewMyShifts";
+        }
+
         public static class Images
         {
             public const string Manage = "Permissions.Images.Manage";
         }
+
+        public static class Attendances
+        {
+            public const string View = "Permissions.Attendances.View";
+            public const string CheckIn = "Permissions.Attendances.CheckIn";
+            public const string CheckOut = "Permissions.Attendances.CheckOut";
+        }
     }
 }
+

@@ -480,5 +480,13 @@ namespace FoodHub.Application.Constants
             public const string FreeItemRequired = "Voucher.FreeItemRequired";
             public const string FreeQuantityInvalid = "Voucher.FreeQuantityInvalid";
         }
+
+        public static class Attendance
+        {
+            public const string NotFound = "Attendance.NotFound";
+            public const string AlreadyCheckedIn = "Attendance.AlreadyCheckedIn";
+            public const string NotCheckedIn = "Attendance.NotCheckedIn";
+            public const string InvalidCheckOutTime = "Attendance.InvalidCheckOutTime";
+        }
     }
 }

@@ -53,7 +53,7 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             // FK: Shift
             builder.HasOne(a => a.Shift)
-                .WithMany()
+                .WithMany(s => s.ShiftAssignments)
                 .HasForeignKey(a => a.ShiftId)
                 .HasConstraintName("fk_shift_assignments_shift_id")
                 .OnDelete(DeleteBehavior.Restrict);

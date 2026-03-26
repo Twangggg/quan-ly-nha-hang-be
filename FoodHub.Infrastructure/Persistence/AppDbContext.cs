@@ -171,6 +171,7 @@ namespace FoodHub.Infrastructure.Persistence
         // HR / Master Data
         public DbSet<Shift> Shifts { get; set; } = null!;
         public DbSet<ShiftAssignment> ShiftAssignments { get; set; } = null!;
+        public DbSet<Attendance> Attendances { get; set; } = null!;
         public DbSet<Category> Categories { get; set; } = null!;
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderItem> OrderItems { get; set; } = null!;
