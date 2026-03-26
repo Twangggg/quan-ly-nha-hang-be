@@ -1,7 +1,12 @@
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.KDS.Queries.GetKdsAuditLogs;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -176,9 +181,9 @@ namespace FoodHub.Tests.Features.KDS.Queries
                     Order = order,
                     EmployeeId = employee.EmployeeId,
                     Employee = employee,
-                    Action = "KDS_MARK_READY",
+                    Action = "KDS_COMPLETE_COOKING",
                     ChangeReason = null,
-                    NewValue = "Ready",
+                    NewValue = "Completed",
                     CreatedAt = DateTime.UtcNow.AddDays(-3),
                 },
             };
@@ -261,7 +266,7 @@ namespace FoodHub.Tests.Features.KDS.Queries
                     Order = order,
                     EmployeeId = employee.EmployeeId,
                     Employee = employee,
-                    Action = "KDS_MARK_READY",
+                    Action = "KDS_COMPLETE_COOKING",
                     CreatedAt = DateTime.UtcNow.AddMinutes(-20),
                 },
                 new OrderAuditLog

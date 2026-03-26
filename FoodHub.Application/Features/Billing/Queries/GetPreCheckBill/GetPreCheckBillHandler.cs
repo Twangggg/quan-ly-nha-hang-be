@@ -1,6 +1,11 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -48,7 +53,10 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                     OrderCode = o.OrderCode,
                     Status = o.Status,
                     TableNumber = o.Table != null ? o.Table.TableNumber : (int?)null,
+                    ReservationId = o.ReservationId,
                     EmployeeName = o.CreatedByEmployee != null ? o.CreatedByEmployee.FullName : string.Empty,
+                    CustomerName = o.Reservation != null ? o.Reservation.CustomerName : null,
+                    CustomerPhone = o.Reservation != null ? o.Reservation.CustomerPhone : null,
                     Items = o.OrderItems
                         .Where(oi =>
                             oi.Status != OrderItemStatus.Cancelled
@@ -93,25 +101,12 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                     order.Status
                 );
                 return Result<GetPreCheckBillResponse>.Failure(
-                    _messageService.GetMessage(
-                        MessageKeys.Order.InvalidActionWithStatus,
-                        new { Status = order.Status.ToString() }
-                    ),
+                    $"{_messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus)} {order.Status}",
                     ResultErrorType.BadRequest
                 );
             }
 
-            if (!order.Items.Any())
-            {
-                _logger.LogWarning(
-                    "No valid items in order for pre-check bill. OrderId: {OrderId}",
-                    request.OrderId
-                );
-                return Result<GetPreCheckBillResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Order.NoValidItems),
-                    ResultErrorType.BadRequest
-                );
-            }
+
 
             var items = order.Items
                 .Select(oi =>
@@ -132,20 +127,29 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                 .ToList();
 
             var subTotal = items.Sum(i => i.LineTotal);
-            var vat = Math.Round(subTotal * Domain.Constants.OrderConstants.VatRate, 0);
+            var discount = 0m;
+            var vatRate = Domain.Constants.OrderConstants.VatRate;
+            var vat = Math.Round(subTotal * vatRate, 0);
+            var preTaxAmount = subTotal - discount;
+            var totalAmount = preTaxAmount + vat;
 
             var response = new GetPreCheckBillResponse
             {
                 OrderId = order.OrderId,
                 OrderCode = order.OrderCode,
                 TableNumber = order.TableNumber,
+                ReservationId = order.ReservationId,
                 EmployeeName = order.EmployeeName,
+                CustomerName = order.CustomerName,
+                CustomerPhone = order.CustomerPhone,
                 PrintedAt = DateTime.UtcNow,
                 Items = items,
                 SubTotal = subTotal,
-                Discount = 0,
+                PreTaxAmount = preTaxAmount,
+                Discount = discount,
+                VatRate = vatRate * 100,
                 Vat = vat,
-                TotalAmount = subTotal + vat,
+                TotalAmount = totalAmount,
             };
 
             _logger.LogInformation(
@@ -178,7 +182,10 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
             public string OrderCode { get; init; } = string.Empty;
             public OrderStatus Status { get; init; }
             public int? TableNumber { get; init; }
+            public Guid? ReservationId { get; init; }
             public string EmployeeName { get; init; } = string.Empty;
+            public string? CustomerName { get; init; }
+            public string? CustomerPhone { get; init; }
             public List<PreCheckBillItemSnapshot> Items { get; init; } = new();
         }
 

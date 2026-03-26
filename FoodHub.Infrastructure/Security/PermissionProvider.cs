@@ -1,5 +1,10 @@
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Infrastructure.Security
@@ -49,6 +54,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Tables.View,
                 Permissions.Areas.View,
                 Permissions.Reservations.CheckIn,
+                Permissions.Billing.PreCheckBill
             };
         }
 
@@ -72,9 +78,30 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Billing.Checkout,
                 Permissions.Billing.ViewHistory,
                 Permissions.Billing.PreCheckBill,
+<<<<<<< HEAD
                 Permissions.PaymentMethods.View,
+=======
+                Permissions.Billing.SplitBill,
+                Permissions.Reservations.View,
+                Permissions.Reservations.Create,
+                Permissions.Reservations.Update,
+                Permissions.Reservations.Cancel,
+>>>>>>> origin/main
                 Permissions.Reservations.CheckIn,
                 Permissions.SalesAnalytics.View,
+
+                // Invoice permissions for cashiers
+                Permissions.Invoices.View,
+                Permissions.Invoices.ViewPdf,
+                Permissions.Invoices.Create,
+
+                // Voucher permissions for cashiers
+                Permissions.Vouchers.View,
+                Permissions.Vouchers.Create,
+                Permissions.Vouchers.Update,
+                Permissions.Vouchers.Delete,
+                Permissions.Vouchers.Apply,
+                Permissions.Vouchers.Unapply,
             };
         }
 

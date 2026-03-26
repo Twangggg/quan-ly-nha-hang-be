@@ -3,7 +3,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -102,6 +107,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                new Mock<ISignalRService>().Object,
                 _mockMapper.Object,
                 _mockLogger.Object
             );
@@ -111,6 +117,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                     SourceOrderId: sourceOrderId,
                     DestinationOrderId: null,
                     DestinationTableId: destinationTableId,
+                    DestinationReservationId: null,
                     ItemsToSplit:
                     new List<SplitOrderItemCommand>
                     {
@@ -129,7 +136,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
             sourceOrder.TotalAmount.Should().Be(0);
             destinationTable.Status.Should().Be(TableStatus.Occupied);
             sourceTable.Status.Should().Be(TableStatus.Available);
-            result.Data.DestinationOrderTotalAmount.Should().Be(24m);
+            result.Data.DestinationOrderTotalAmount.Should().Be(26.40m); // 24 * 1.1 = 26.40 -> rounded to 26
             result.Data.DestinationOrderItems.Single().Quantity.Should().Be(2);
             auditRepo.Verify(r => r.AddAsync(It.IsAny<OrderAuditLog>()), Times.Once);
         }
@@ -175,6 +182,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                new Mock<ISignalRService>().Object,
                 _mockMapper.Object,
                 _mockLogger.Object
             );
@@ -184,10 +192,70 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                     SourceOrderId: sourceOrderId,
                     DestinationOrderId: null,
                     DestinationTableId: destinationTableId,
+                    DestinationReservationId: null,
                     ItemsToSplit:
                     new List<SplitOrderItemCommand>
                     {
                         new(sourceItem.OrderItemId, 1),
+                    }
+                ),
+                CancellationToken.None
+            );
+
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorType.Should().Be(ResultErrorType.BadRequest);
+            _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_Should_Return_Failure_When_Destination_Order_Is_The_Same_As_Source()
+        {
+            var userId = Guid.NewGuid();
+            var sourceOrderId = Guid.NewGuid();
+
+            var sourceOrder = new EntityOrder
+            {
+                OrderId = sourceOrderId,
+                OrderCode = "ORD-SRC",
+                OrderType = OrderType.DineIn,
+                Status = OrderStatus.Serving,
+                TableId = Guid.NewGuid(),
+                OrderItems = new List<OrderItem>(),
+            };
+
+            sourceOrder.OrderItems.Add(
+                CreateOrderItem(sourceOrderId, Guid.NewGuid(), 1, 8m, OrderItemStatus.Cooking)
+            );
+
+            var orderRepo = new Mock<IGenericRepository<EntityOrder>>();
+            orderRepo
+                .Setup(r => r.Query())
+                .Returns(new List<EntityOrder> { sourceOrder }.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<EntityOrder>()).Returns(orderRepo.Object);
+
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Order.InvalidAction))
+                .Returns("Invalid action");
+
+            var handler = new SplitOrderHandler(
+                _mockUow.Object,
+                _mockCurrentUserService.Object,
+                _mockMessageService.Object,
+                new Mock<ISignalRService>().Object,
+                _mockMapper.Object,
+                _mockLogger.Object
+            );
+
+            var result = await handler.Handle(
+                new SplitOrderCommand(
+                    SourceOrderId: sourceOrderId,
+                    DestinationOrderId: sourceOrderId,
+                    DestinationTableId: null,
+                    DestinationReservationId: null,
+                    ItemsToSplit: new List<SplitOrderItemCommand>
+                    {
+                        new(sourceOrder.OrderItems.Single().OrderItemId, 1),
                     }
                 ),
                 CancellationToken.None

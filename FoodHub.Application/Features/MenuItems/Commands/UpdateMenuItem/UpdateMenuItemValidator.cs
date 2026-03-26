@@ -16,7 +16,6 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
                 .MaximumLength(200).WithMessage("Name cannot exceed 200 characters.");
 
             RuleFor(x => x.ImageUrl)
-                .NotEmpty().WithMessage("Image is required.")
                 .MaximumLength(500);
 
             RuleFor(x => x.CategoryId)

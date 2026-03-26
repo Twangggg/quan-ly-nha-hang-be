@@ -5,19 +5,12 @@ namespace FoodHub.Domain.Entities
     public class AuditLog
     {
         public Guid LogId { get; set; }
-
-        public AuditAction Action { get; set; }
-
-        public Guid TargetId { get; set; }
-        public virtual Employee Target { get; set; } = null!;
-
-        public Guid PerformedByEmployeeId { get; set; }
-        public virtual Employee PerformedBy { get; set; } = null!;
-
-        public string? Reason { get; set; }
-
-        public string? Metadata { get; set; }
-
+        public string EntityName { get; set; } = null!;
+        public string EntityId { get; set; } = null!;
+        public AuditAction Action { get; set; } // Create, Update, Delete, StatusChange, ...
+        public string? OldValues { get; set; } // JSON
+        public string? NewValues { get; set; } // JSON
+        public string? ActorInfo { get; set; } // JSON or string (Employee ID or Guest Name/Phone)
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

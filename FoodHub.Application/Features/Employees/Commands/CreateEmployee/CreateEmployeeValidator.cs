@@ -5,7 +5,7 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
 {
     public class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCommand>
     {
-        public CreateEmployeeValidator(Interfaces.IUnitOfWork unitOfWork, Interfaces.IMessageService messageService)
+        public CreateEmployeeValidator(Interfaces.Common.IUnitOfWork unitOfWork, Interfaces.Common.IMessageService messageService)
         {
             RuleFor(x => x.FullName).NotEmpty().MaximumLength(100);
 

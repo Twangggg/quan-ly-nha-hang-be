@@ -6,7 +6,7 @@ using FoodHub.Application.Features.Tables.Commands.UpdateTable;
 using FoodHub.Application.Features.Tables.Commands.UpdateTableStatus;
 using FoodHub.Application.Features.Tables.Queries.GetTableById;
 using FoodHub.Application.Features.Tables.Queries.GetTables;
-using FoodHub.Application.Features.Tables.Queries.GetTablesByArea;
+
 using FoodHub.Domain.Enums;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
@@ -20,7 +20,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
     /// Quản lý các bàn ăn trong nhà hàng (Tables).
     /// </summary>
     [Tags("Bàn ăn (Tables)")]
-    [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
+    [RateLimit(maxRequests: 500, windowMinutes: 1, blockMinutes: 5)]
     public class TablesController : ApiControllerBase
     {
         private readonly IMediator _mediator;
@@ -46,22 +46,19 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
         }
 
         /// <summary>
-        /// Lấy danh sách các bàn ăn theo khu vực (area).
+        /// Alias tuong thich nguoc de lay danh sach ban theo khu vuc.
         /// </summary>
-        /// <param name="areaId">ID của khu vực.</param>
-        /// <returns code="200">Danh sách các bàn ăn thuộc khu vực được chỉ định.</returns>
-        [HttpGet("area/{areaId}")]
+        /// <param name="areaId">ID cua khu vuc can loc.</param>
+        /// <returns code="200">Danh sach cac ban an trong khu vuc.</returns>
+        [HttpGet("area/{areaId:guid}")]
         [HasPermission(Permissions.Tables.View)]
-        [ProducesResponseType(
-            typeof(Result<List<GetTablesByAreaResponse>>),
-            StatusCodes.Status200OK
-        )]
+        [ProducesResponseType(typeof(Result<List<GetTablesResponse>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetTablesByArea(Guid areaId)
         {
-            var query = new GetTablesByAreaQuery(areaId);
-            var result = await _mediator.Send(query);
-            return HandleResult(result);
+            return await GetTables(areaId);
         }
+
+
 
         /// <summary>
         /// Lấy thông tin chi tiết của một bàn ăn theo ID.
@@ -151,7 +148,11 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Tables
             return HandleResult(result);
         }
 
-        public record UpdateTableStatusRequest(bool IsActive);
+        public class UpdateTableStatusRequest
+        {
+            [System.Text.Json.Serialization.JsonPropertyName("isActive")]
+            public bool IsActive { get; set; }
+        }
 
         /// <summary>
         /// Xóa một bàn ăn khỏi hệ thống. Hành động này sẽ đánh dấu bàn ăn là đã xóa (soft delete) thay vì xóa hoàn toàn khỏi cơ sở dữ liệu.

@@ -3,7 +3,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Orders.Commands.CancelOrder;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +25,7 @@ namespace FoodHub.Tests.Features.Order.Commands
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<ICacheService> _mockCacheService;
         private readonly Mock<ILogger<CancelOrderHandler>> _mockLogger;
         private readonly CancelOrderHandler _handler;
 
@@ -29,6 +35,7 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
             _mockMapper = new Mock<IMapper>();
+            _mockCacheService = new Mock<ICacheService>();
             _mockLogger = new Mock<ILogger<CancelOrderHandler>>();
 
             _handler = new CancelOrderHandler(
@@ -36,6 +43,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
                 _mockMapper.Object,
+                _mockCacheService.Object,
                 _mockLogger.Object
             );
         }
@@ -66,7 +74,6 @@ namespace FoodHub.Tests.Features.Order.Commands
                 {
                     new OrderItem { Status = OrderItemStatus.Preparing },
                     new OrderItem { Status = OrderItemStatus.Cooking },
-                    new OrderItem { Status = OrderItemStatus.Ready },
                     new OrderItem { Status = OrderItemStatus.Completed }, // Should not be cancelled
                 },
             };
@@ -200,7 +207,6 @@ namespace FoodHub.Tests.Features.Order.Commands
                 {
                     new OrderItem { Status = OrderItemStatus.Preparing },
                     new OrderItem { Status = OrderItemStatus.Cooking },
-                    new OrderItem { Status = OrderItemStatus.Ready },
                 },
             };
 

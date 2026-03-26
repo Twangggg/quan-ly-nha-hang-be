@@ -2,7 +2,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Reservations.Commands.CreateReservation;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -75,8 +80,6 @@ namespace FoodHub.Tests.Features.Reservations.Commands
                         && r.AreaId == table.AreaId
                         && r.Status == ReservationStatus.Booked
                         && r.GuestCount == command.GuestCount
-                        && r.PartyType == command.PartyType
-                        && r.HasChildren == command.HasChildren
                     )
                 ),
                 Times.Once
@@ -153,9 +156,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
                 "0900000000",
                 new DateOnly(2026, 3, 20),
                 TimeSpan.FromHours(19),
-                PartyType.Party,
                 2,
-                false,
                 null,
                 table.TableId,
                 table.AreaId
@@ -195,9 +196,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
                 CustomerPhone = "0901234567",
                 ReservationDate = new DateOnly(2026, 3, 20),
                 ReservationTime = reservationTime,
-                PartyType = PartyType.Party,
                 GuestCount = guestCount,
-                HasChildren = false,
                 Note = "Test note",
                 AreaId = areaId,
             };

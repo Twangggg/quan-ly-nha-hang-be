@@ -31,7 +31,7 @@ public class GetKdsAuditLogsResponse
     public string OrderCode { get; set; } = string.Empty;
 
     /// <summary>
-    /// Action type (e.g., KDS_StartCooking, KDS_MarkReady)
+    /// Action type (e.g., KDS_StartCooking, KDS_CompleteCooking)
     /// </summary>
     public string Action { get; set; } = string.Empty;
 

@@ -10,7 +10,7 @@ namespace FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem
         public Guid MenuItemId { get; set; }
         public required string Code { get; set; }
         public required string Name { get; set; }
-        public required string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
         public string? Description { get; set; }
 
         public Guid CategoryId { get; set; }

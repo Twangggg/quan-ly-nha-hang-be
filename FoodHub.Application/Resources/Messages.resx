@@ -131,6 +131,9 @@
   <data name="InventorySettings.MaxCostRecalcDaysRange" xml:space="preserve">
     <value>So ngay tinh lai gia von phai nam trong khoang 1 den 365.</value>
   </data>
+  <data name="InventorySettings.OpeningStockImportCooldownHoursMin" xml:space="preserve">
+    <value>Thoi gian cho giua 2 lan nhap so du khong duoc am.</value>
+  </data>
   <data name="InventorySettings.InvalidExpiryWarningDays" xml:space="preserve">
     <value>So ngay canh bao phai lon hon hoac bang 1.</value>
   </data>
@@ -139,6 +142,9 @@
   </data>
   <data name="InventorySettings.InvalidMaxCostRecalcDays" xml:space="preserve">
     <value>So ngay tinh lai gia von phai nam trong khoang 1 den 365.</value>
+  </data>
+  <data name="InventorySettings.InvalidOpeningStockImportCooldownHours" xml:space="preserve">
+    <value>Thoi gian cho giua 2 lan nhap so du khong duoc am.</value>
   </data>
   <data name="OpeningStock.ItemsRequired" xml:space="preserve">
     <value>Danh sach ton dau ky khong duoc de trong.</value>
@@ -166,6 +172,9 @@
   </data>
   <data name="OpeningStock.AlreadyLocked" xml:space="preserve">
     <value>So du dau ky da duoc khoa. Khong the chinh sua them.</value>
+  </data>
+  <data name="OpeningStock.ImportCooldownNotElapsed" xml:space="preserve">
+    <value>Chua den thoi gian cho phep nhap so du dau ky lan tiep theo.</value>
   </data>
   <data name="Ingredient.InvalidOpeningStockQuantity" xml:space="preserve">
     <value>So luong ton dau ky phai lon hon hoac bang 0.</value>
@@ -217,5 +226,71 @@
   </data>
   <data name="StockInReceipt.AlreadyReversed" xml:space="preserve">
     <value>Phieu nhap kho nay da duoc dao truoc do.</value>
+  </data>
+  <data name="StockOutReceipt.ExpiredLot" xml:space="preserve">
+    <value>Khong the xuat kho vi co lo da het han.</value>
+  </data>
+  <data name="StockOutReceipt.LotInsufficient" xml:space="preserve">
+    <value>Khong du ton kha dung theo lo de xuat kho.</value>
+  </data>
+  <data name="InventoryLot.NotFound" xml:space="preserve">
+    <value>Khong tim thay lo ton kho.</value>
+  </data>
+  <data name="InventoryLot.QuantityMin" xml:space="preserve">
+    <value>So luong phai lon hon 0.</value>
+  </data>
+  <data name="InventoryLot.ReasonRequired" xml:space="preserve">
+    <value>Ly do la bat buoc.</value>
+  </data>
+  <data name="InventoryLot.ReasonMaxLength" xml:space="preserve">
+    <value>Ly do khong duoc vuot qua 500 ky tu.</value>
+  </data>
+  <data name="InventoryLot.Expired" xml:space="preserve">
+    <value>Lo da het han va khong the xuat.</value>
+  </data>
+  <data name="InventoryLot.InsufficientQuantity" xml:space="preserve">
+    <value>So luong ton cua lo khong du.</value>
+  </data>
+  <data name="InventoryLot.AlreadyDisposed" xml:space="preserve">
+    <value>Lo nay da duoc huy truoc do.</value>
+  </data>
+  <data name="InventoryLot.InvalidAdjustment" xml:space="preserve">
+    <value>Dieu chinh lo khong hop le.</value>
+  </data>
+  <data name="InventoryCogs.Completed" xml:space="preserve">
+    <value>Tinh gia von hoan tat.</value>
+  </data>
+  <data name="InventoryCogs.RangeExceeded" xml:space="preserve">
+    <value>Khoang ngay ban chon vuot qua so ngay toi da duoc cau hinh cho tinh lai gia von. Gioi han hien tai la {0} ngay.</value>
+  </data>
+  <data name="Ingredient.PhysicalStockMin" xml:space="preserve">
+    <value>So luong ton thuc te phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="Ingredient.InvalidPhysicalStockQuantity" xml:space="preserve">
+    <value>So luong ton thuc te phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="InventoryCheck.CheckNotFound" xml:space="preserve">
+    <value>Khong tim thay phieu kiem ke.</value>
+  </data>
+  <data name="InventoryCheck.ItemsRequired" xml:space="preserve">
+    <value>Phieu kiem ke phai co it nhat 1 nguyen lieu.</value>
+  </data>
+  <data name="InventoryCheck.IngredientIdRequired" xml:space="preserve">
+    <value>Nguyen lieu la bat buoc.</value>
+  </data>
+  <data name="InventoryCheck.QuantityMin" xml:space="preserve">
+    <value>So luong kiem ke phai lon hon hoac bang 0.</value>
+  </data>
+  <data name="InventoryCheck.DuplicateIngredient" xml:space="preserve">
+    <value>Nguyen lieu khong duoc trung trong phieu kiem ke.</value>
+  </data>
+  <data name="InventoryCheck.ReasonMaxLength" xml:space="preserve">
+    <value>Nguyen nhan khong duoc vuot qua 500 ky tu.</value>
+  </data>
+  <data name="InventoryCheck.InvalidStatus" xml:space="preserve">
+    <value>Phieu kiem ke khong o trang thai hop le de xu ly.</value>
+  </data>
+  <data name="Reservation.CancelReservationSuccess" xml:space="preserve">
+    <value>Hủy đặt chỗ thành công.</value>
   </data>
 </root>

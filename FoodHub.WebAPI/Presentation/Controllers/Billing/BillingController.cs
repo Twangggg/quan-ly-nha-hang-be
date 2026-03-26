@@ -3,11 +3,18 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Billing.Commands.CheckoutOrder;
 using FoodHub.Application.Features.Billing.Commands.CreateQrPayment;
 using FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook;
-using FoodHub.Application.Features.Billing.Queries.GetBillingHistory;
+using FoodHub.Application.Features.Billing.Commands.SplitBill;
 using FoodHub.Application.Features.Billing.Queries.ExportPreCheckBillPdf;
+using FoodHub.Application.Features.Billing.Queries.GetBillingHistory;
 using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
 using FoodHub.Application.Features.Billing.Queries.GetRevenueByPaymentMethod;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
@@ -18,25 +25,25 @@ using Microsoft.AspNetCore.Mvc;
 namespace FoodHub.WebAPI.Presentation.Controllers.Billing
 {
     [Route("api/v{version:apiVersion}/billing")]
-        public class BillingController : ApiControllerBase
-        {
-            private readonly IMediator _mediator;
+    public class BillingController : ApiControllerBase
+    {
+        private readonly IMediator _mediator;
 
-            public BillingController(IMediator mediator)
-            {
-                _mediator = mediator;
-            }
+        public BillingController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
         /// <summary>
         /// Xem trước phiếu tạm tính (Pre-check Bill) cho đơn hàng.
         /// </summary>
         /// <remarks>
         /// Không tạo Invoice. Chỉ trả về dữ liệu để hiển thị phiếu tạm tính trên giao diện.
-        /// Đơn hàng phải ở trạng thái "Serving" và có ít nhất 1 món hợp lệ.
+        /// Đơn hàng phải ở trạng thái "Serving".
         /// </remarks>
         /// <param name="orderId">ID đơn hàng.</param>
         /// <response code="200">Trả về thông tin phiếu tạm tính.</response>
-        /// <response code="400">Đơn hàng không hợp lệ (sai trạng thái hoặc không có món).</response>
+        /// <response code="400">Đơn hàng không hợp lệ (sai trạng thái).</response>
         /// <response code="404">Không tìm thấy đơn hàng.</response>
         [HttpGet("orders/{orderId:guid}/pre-check-bill")]
         [HasPermission(Permissions.Billing.PreCheckBill)]
@@ -103,7 +110,10 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Billing
         /// <response code="200">Danh sách giao dịch.</response>
         [HttpGet("history")]
         [HasPermission(Permissions.Billing.ViewHistory)]
-        [ProducesResponseType(typeof(Result<PagedResult<GetBillingHistoryResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(
+            typeof(Result<PagedResult<GetBillingHistoryResponse>>),
+            StatusCodes.Status200OK
+        )]
         public async Task<IActionResult> GetBillingHistory([FromQuery] PaginationParams pagination)
         {
             var query = new GetBillingHistoryQuery { Pagination = pagination };
@@ -154,6 +164,23 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Billing
         }
 
         /// <summary>
+        /// Tách một bill thành bill mới cùng bàn.
+        /// </summary>
+        [HttpPost("orders/{orderId:guid}/split-bill")]
+        [HasPermission(Permissions.Billing.SplitBill)]
+        [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
+        [ProducesResponseType(typeof(Result<SplitBillResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SplitBill(
+            [FromRoute] Guid orderId,
+            [FromBody] SplitBillCommand command
+        )
+        {
+            command.OrderId = orderId;
+            var result = await _mediator.Send(command);
+            return HandleResult(result);
+        }
+
+        /// <summary>
         /// Endpoint nhận Webhook từ PayOS.
         /// </summary>
         /// <response code="200">Xử lý Webhook thành công.</response>
@@ -171,5 +198,3 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Billing
         }
     }
 }
-
-

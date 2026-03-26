@@ -21,7 +21,7 @@ namespace FoodHub.Domain.Constants
             // KDS state transitions
             public const string MustBePreparingToStartCooking =
                 "OrderItem.MustBePreparingToStartCooking";
-            public const string MustBeCookingToReady = "OrderItem.MustBeCookingToReady";
+            public const string MustBeCookingToComplete = "OrderItem.MustBeCookingToComplete";
             public const string MustBeCookingToReject = "OrderItem.MustBeCookingToReject";
             public const string RejectionReasonIsRequired = "OrderItem.RejectionReasonIsRequired";
             public const string MustBeRejectedToReturn = "OrderItem.MustBeRejectedToReturn";
@@ -38,6 +38,23 @@ namespace FoodHub.Domain.Constants
         public static class Area
         {
             public const string AlreadyInactive = "Area.AlreadyInactive";
+        }
+
+        public static class Shift
+        {
+            public const string OverlappingTime = "Shift.OverlappingTime";
+            public const string AlreadyInactive = "Shift.AlreadyInactive";
+            public const string NotFound = "Shift.NotFound";
+            public const string AlreadyActive = "Shift.AlreadyActive";
+        }
+
+        public static class ShiftAssignment
+        {
+            public const string NotFound = "ShiftAssignment.NotFound";
+            public const string OverlappingShift = "ShiftAssignment.OverlappingShift";
+            public const string ShiftNotActive = "ShiftAssignment.ShiftNotActive";
+            public const string EmployeeNotActive = "ShiftAssignment.EmployeeNotActive";
+            public const string OvertimeExceeded = "ShiftAssignment.OvertimeExceeded";
         }
 
         public static class SetMenu
@@ -98,6 +115,8 @@ namespace FoodHub.Domain.Constants
             public const string InvalidOpeningStockQuantity =
                 "Ingredient.InvalidOpeningStockQuantity";
             public const string InvalidOpeningStockCost = "Ingredient.InvalidOpeningStockCost";
+            public const string InvalidPhysicalStockQuantity =
+                "Ingredient.InvalidPhysicalStockQuantity";
         }
 
         public static class InventorySettings
@@ -108,6 +127,8 @@ namespace FoodHub.Domain.Constants
                 "InventorySettings.InvalidLowStockThreshold";
             public const string InvalidMaxCostRecalcDays =
                 "InventorySettings.InvalidMaxCostRecalcDays";
+            public const string InvalidOpeningStockImportCooldownHours =
+                "InventorySettings.InvalidOpeningStockImportCooldownHours";
         }
 
         public static class StockInReceipt
@@ -124,6 +145,39 @@ namespace FoodHub.Domain.Constants
             public const string InvalidQuantity = "StockOutReceipt.InvalidQuantity";
             public const string InvalidUnitCost = "StockOutReceipt.InvalidUnitCost";
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
+        }
+
+        public static class InventoryLot
+        {
+            public const string InvalidQuantity = "InventoryLot.InvalidQuantity";
+            public const string InvalidUnitCost = "InventoryLot.InvalidUnitCost";
+            public const string LotCodeRequired = "InventoryLot.LotCodeRequired";
+            public const string LotCodeTooLong = "InventoryLot.LotCodeTooLong";
+            public const string NotesTooLong = "InventoryLot.NotesTooLong";
+            public const string InsufficientQuantity = "InventoryLot.InsufficientQuantity";
+            public const string Expired = "InventoryLot.Expired";
+            public const string AlreadyDisposed = "InventoryLot.AlreadyDisposed";
+            public const string InvalidAdjustment = "InventoryLot.InvalidAdjustment";
+            public const string ReasonRequired = "InventoryLot.ReasonRequired";
+        }
+
+        public static class InventoryCheck
+        {
+            public const string ItemsRequired = "InventoryCheck.ItemsRequired";
+            public const string DuplicateIngredient = "InventoryCheck.DuplicateIngredient";
+            public const string InvalidQuantity = "InventoryCheck.InvalidQuantity";
+            public const string InvalidStatus = "InventoryCheck.InvalidStatus";
+        }
+        public static class Promotion
+        {
+            public const string NotFound = "Promotion.NotFound";
+            public const string Inactive = "Promotion.Inactive";
+            public const string NotStarted = "Promotion.NotStarted";
+            public const string Expired = "Promotion.Expired";
+            public const string UsageLimitExceeded = "Promotion.UsageLimitExceeded";
+            public const string InvalidTime = "Promotion.InvalidTime";
+            public const string BelowMinAmount = "Promotion.BelowMinAmount";
+            public const string InvalidVoucher = "Promotion.InvalidVoucher";
         }
     }
 }

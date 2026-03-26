@@ -1,5 +1,10 @@
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -7,7 +12,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
 {
-    public class GetAvailableTablesHandler : IRequestHandler<GetAvailableTablesQuery, Result<List<GetAvailableTablesResponse>>>
+    public class GetAvailableTablesHandler
+        : IRequestHandler<GetAvailableTablesQuery, Result<List<GetAvailableTablesResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -16,9 +22,14 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<List<GetAvailableTablesResponse>>> Handle(GetAvailableTablesQuery request, CancellationToken cancellationToken)
+        public async Task<Result<List<GetAvailableTablesResponse>>> Handle(
+            GetAvailableTablesQuery request,
+            CancellationToken cancellationToken
+        )
         {
-            var query = _unitOfWork.Repository<Table>().Query()
+            var query = _unitOfWork
+                .Repository<Table>()
+                .Query()
                 .Where(t => t.Status != TableStatus.OutOfService);
 
             query = query.Where(t => t.Capacity >= request.GuestCount);
@@ -34,11 +45,18 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
             var minTime = request.ReservationTime.Subtract(TimeSpan.FromHours(bufferHours));
             var maxTime = request.ReservationTime.Add(TimeSpan.FromHours(bufferHours));
 
-            var overlappingReservations = await _unitOfWork.Repository<Reservation>().Query()
-                .Where(r => r.ReservationDate == request.ReservationDate
-                    && (r.Status == ReservationStatus.Booked || r.Status == ReservationStatus.CheckIn)
+            var overlappingReservations = await _unitOfWork
+                .Repository<Reservation>()
+                .Query()
+                .Where(r =>
+                    r.ReservationDate == request.ReservationDate
+                    && (
+                        r.Status == ReservationStatus.Booked
+                        || r.Status == ReservationStatus.CheckIn
+                    )
                     && r.ReservationTime > minTime
-                    && r.ReservationTime < maxTime)
+                    && r.ReservationTime < maxTime
+                )
                 .Select(r => r.TableId)
                 .Distinct()
                 .ToListAsync(cancellationToken);
@@ -50,7 +68,7 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetAvailableTables
                     TableId = t.TableId,
                     TableNumber = t.TableNumber,
                     Capacity = t.Capacity,
-                    AreaId = t.AreaId
+                    AreaId = t.AreaId,
                 })
                 .ToList();
 

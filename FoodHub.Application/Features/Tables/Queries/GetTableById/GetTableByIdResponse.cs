@@ -25,11 +25,28 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTableById
 
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<Table, GetTableByIdResponse>()
+            profile
+                .CreateMap<Table, GetTableByIdResponse>()
                 .ForMember(d => d.TableCode, opt => opt.MapFrom(s => s.GetTableName()))
                 .ForMember(d => d.AreaName, opt => opt.MapFrom(s => s.Area.Name))
-                .ForMember(d => d.StatusName, opt => opt.MapFrom(s => s.Status.ToString()));
+                .ForMember(
+                    d => d.Status,
+                    opt =>
+                        opt.MapFrom(s =>
+                            s.Orders.Any(o => o.Status == OrderStatus.Serving)
+                                ? (int)TableStatus.Occupied
+                                : (int)s.Status
+                        )
+                )
+                .ForMember(
+                    d => d.StatusName,
+                    opt =>
+                        opt.MapFrom(s =>
+                            s.Orders.Any(o => o.Status == OrderStatus.Serving)
+                                ? TableStatus.Occupied.ToString()
+                                : s.Status.ToString()
+                        )
+                );
         }
-
     }
 }

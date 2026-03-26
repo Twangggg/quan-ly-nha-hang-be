@@ -1,6 +1,6 @@
+using FoodHub.Application.Common.Behaviors;
 using FoodHub.Application.Common.Models;
 using MediatR;
-using FoodHub.Application.Common.Behaviors;
 
 namespace FoodHub.Application.Features.MergeSplitOrder.Commands.ChangeOrderTable
 {

@@ -1,4 +1,3 @@
-using System.Reflection.Metadata;
 
 namespace FoodHub.Application.Constants
 {
@@ -130,6 +129,10 @@ namespace FoodHub.Application.Constants
             public const string InvalidStatus = "Order.InvalidStatus";
             public const string StatusNotCompleted = "Order.StatusNotCompleted";
             public const string NoValidItems = "Order.NoValidItems";
+            public const string EmptyOrder = "Order.EmptyOrder";
+            public const string HasBeenPlaced = "Order.HasBeenPlaced";
+            public const string VoucherAlreadyApplied = "Order.VoucherAlreadyApplied";
+            public const string VoucherNotApplied = "Order.VoucherNotApplied";
         }
 
         public static class OrderItem
@@ -140,10 +143,11 @@ namespace FoodHub.Application.Constants
             // KDS state transitions
             public const string MustBePreparingToStartCooking =
                 "OrderItem.MustBePreparingToStartCooking";
-            public const string MustBeCookingToReady = "OrderItem.MustBeCookingToReady";
+            public const string MustBeCookingToComplete = "OrderItem.MustBeCookingToComplete";
             public const string MustBeCookingToReject = "OrderItem.MustBeCookingToReject";
             public const string RejectionReasonRequired = "OrderItem.RejectionReasonRequired";
             public const string MustBeRejectedToReturn = "OrderItem.MustBeRejectedToReturn";
+            public const string FailedClone = "OrderItem.FailedClone";
         }
 
         public static class KDS
@@ -176,11 +180,21 @@ namespace FoodHub.Application.Constants
         public static class OptionGroup
         {
             public const string NotFound = "OptionGroup.NotFound";
+            public const string AlreadyAssigned = "OptionGroup.AlreadyAssigned";
+            public const string NotAssignedToMenuItem = "OptionGroup.NotAssignedToMenuItem";
+            public const string RequiredWithName = "OptionGroup.RequiredWithName";
+            public const string MinSelectRequired = "OptionGroup.MinSelectRequired";
+            public const string MaxSelectAllowed = "OptionGroup.MaxSelectAllowed";
+            public const string Required = "OptionGroup.Required";
+            public const string NameRequired = "OptionGroup.NameRequired";
         }
 
         public static class OptionItem
         {
             public const string NotFound = "OptionItem.NotFound";
+            public const string NotBelongToGroup = "OptionItem.NotBelongToGroup";
+            public const string LabelRequired = "OptionItem.LabelRequired";
+            public const string ExtraPriceInvalid = "OptionItem.ExtraPriceInvalid";
         }
 
         public static class SetMenu
@@ -223,13 +237,30 @@ namespace FoodHub.Application.Constants
         public static class Reservation
         {
             public const string NotFound = "Reservation.NotFound";
+
+            // Keys from feature/reservation (HEAD)
             public const string Overlapped = "Reservation.Overlapped";
             public const string TableCapacityExceeded = "Reservation.TableCapacityExceeded";
-            public const string InvalidTime = "Reservation.InvalidTime";
             public const string InvalidStatusForCheckIn = "Reservation.InvalidStatusForCheckIn";
             public const string TableOccupied = "Reservation.TableOccupied";
             public const string AlreadyCheckedIn = "Reservation.AlreadyCheckedIn";
+
+            // Keys from feature/reservation-liemdt
+            public const string NameRequired = "Reservation.NameRequired";
+            public const string NameMaxLength = "Reservation.NameMaxLength";
+            public const string PhoneRequired = "Reservation.PhoneRequired";
+            public const string PhoneInvalid = "Reservation.PhoneInvalid";
+            public const string InvalidGuestCount = "Reservation.InvalidGuestCount";
+            public const string NoTableAvailable = "Reservation.NoTableAvailable";
+            public const string CancelReservationSuccess = "Reservation.CancelReservationSuccess";
+            public const string InvalidTime = "Reservation.InvalidTime";
+            public const string TimeTooSoon = "Reservation.TimeTooSoon";
+            public const string VipRequired = "Reservation.VipRequired";
+            public const string InvalidNewTable = "Reservation.InvalidNewTable";
+            public const string NoTableInArea = "Reservation.NoTableInArea";
+            public const string BreakTime = "Reservation.BreakTime";
         }
+
         public static class SalesAnalytics
         {
             public const string MonthMustBeBetween1And12 =
@@ -275,16 +306,17 @@ namespace FoodHub.Application.Constants
             public const string ThresholdMin = "Ingredient.ThresholdMin";
             public const string CostMin = "Ingredient.CostMin";
             public const string StockMin = "Ingredient.StockMin";
+            public const string PhysicalStockMin = "Ingredient.PhysicalStockMin";
         }
 
         public static class InventorySettings
         {
-            public const string ExpiryWarningDaysMin =
-                "InventorySettings.ExpiryWarningDaysMin";
+            public const string ExpiryWarningDaysMin = "InventorySettings.ExpiryWarningDaysMin";
             public const string DefaultLowStockThresholdMin =
                 "InventorySettings.DefaultLowStockThresholdMin";
-            public const string MaxCostRecalcDaysRange =
-                "InventorySettings.MaxCostRecalcDaysRange";
+            public const string MaxCostRecalcDaysRange = "InventorySettings.MaxCostRecalcDaysRange";
+            public const string OpeningStockImportCooldownHoursMin =
+                "InventorySettings.OpeningStockImportCooldownHoursMin";
             public const string UpdateSuccess = "InventorySettings.UpdateSuccess";
         }
 
@@ -298,12 +330,14 @@ namespace FoodHub.Application.Constants
             public const string ConfirmOverwrite = "OpeningStock.ConfirmOverwrite";
             public const string IngredientNotFound = "OpeningStock.IngredientNotFound";
             public const string AlreadyLocked = "OpeningStock.AlreadyLocked";
+            public const string ImportCooldownNotElapsed = "OpeningStock.ImportCooldownNotElapsed";
             public const string ImportSuccess = "OpeningStock.ImportSuccess";
         }
 
         public static class Billing
         {
             public const string PdfExportError = "Billing.PdfExportError";
+<<<<<<< HEAD
             public const string SplitTotalMismatch = "Billing.SplitTotalMismatch";
         }
 
@@ -319,6 +353,10 @@ namespace FoodHub.Application.Constants
             public const string CreateSuccess = "PaymentMethodConfig.CreateSuccess";
             public const string UpdateSuccess = "PaymentMethodConfig.UpdateSuccess";
             public const string Inactive = "PaymentMethodConfig.Inactive";
+=======
+            public const string SplitBillRequiresItems = "Billing.SplitBillRequiresItems";
+            public const string SplitBillFailed = "Billing.SplitBillFailed";
+>>>>>>> origin/main
         }
 
         public static class StockInReceipt
@@ -350,6 +388,83 @@ namespace FoodHub.Application.Constants
             public const string ReasonRequired = "StockOutReceipt.ReasonRequired";
             public const string ReasonMaxLength = "StockOutReceipt.ReasonMaxLength";
             public const string AlreadyReversed = "StockOutReceipt.AlreadyReversed";
+            public const string ExpiredLot = "StockOutReceipt.ExpiredLot";
+            public const string LotInsufficient = "StockOutReceipt.LotInsufficient";
+        }
+
+        public static class InventoryLot
+        {
+            public const string NotFound = "InventoryLot.NotFound";
+            public const string QuantityMin = "InventoryLot.QuantityMin";
+            public const string ReasonRequired = "InventoryLot.ReasonRequired";
+            public const string ReasonMaxLength = "InventoryLot.ReasonMaxLength";
+            public const string Expired = "InventoryLot.Expired";
+            public const string InsufficientQuantity = "InventoryLot.InsufficientQuantity";
+            public const string AlreadyDisposed = "InventoryLot.AlreadyDisposed";
+            public const string InvalidAdjustment = "InventoryLot.InvalidAdjustment";
+        }
+
+        public static class InventoryCogs
+        {
+            public const string Completed = "InventoryCogs.Completed";
+            public const string RangeExceeded = "InventoryCogs.RangeExceeded";
+        }
+
+        public static class InventoryCheck
+        {
+            public const string CheckNotFound = "InventoryCheck.CheckNotFound";
+            public const string ItemsRequired = "InventoryCheck.ItemsRequired";
+            public const string IngredientIdRequired = "InventoryCheck.IngredientIdRequired";
+            public const string QuantityMin = "InventoryCheck.QuantityMin";
+            public const string DuplicateIngredient = "InventoryCheck.DuplicateIngredient";
+            public const string ReasonMaxLength = "InventoryCheck.ReasonMaxLength";
+            public const string InvalidStatus = "InventoryCheck.InvalidStatus";
+        }
+
+        public static class AuditLog
+        {
+            public const string NotFound = "AuditLog.NotFound";
+            public const string QueryError = "AuditLog.QueryError";
+            public const string Unauthorized = "AuditLog.Unauthorized";
+        }
+        public static class Invoice
+        {
+            public const string AlreadyExists = "Invoice.AlreadyExists";
+            public const string NotFound = "Invoice.NotFound";
+            public const string CreateFailed = "Invoice.CreateFailed";
+            public const string InsufficientAmount = "Invoice.InsufficientAmount";
+        }
+
+        public static class Shift
+        {
+            public const string NotFound = "Shift.NotFound";
+            public const string DuplicateTime = "Shift.DuplicateTime";
+            public const string OverlappingTime = "Shift.OverlappingTime";
+            public const string ShiftNotActive = "Shift.ShiftNotActive";
+            public const string InvalidTime = "Shift.InvalidTime";
+            public const string AlreadyInactive = "Shift.AlreadyInactive";
+            public const string NameRequired = "Shift.NameRequired";
+            public const string OutsideOperatingHours = "Shift.OutsideOperatingHours";
+            public const string DuringBreakTime = "Shift.DuringBreakTime";
+        }
+
+        public static class ShiftAssignment
+        {
+            public const string NotFound = "ShiftAssignment.NotFound";
+            public const string OverlappingShift = "ShiftAssignment.OverlappingShift";
+            public const string ShiftNotActive = "ShiftAssignment.ShiftNotActive";
+            public const string EmployeeNotActive = "ShiftAssignment.EmployeeNotActive";
+            public const string OvertimeExceeded = "ShiftAssignment.OvertimeExceeded";
+            public const string MaxOneShiftPerDay = "ShiftAssignment.MaxOneShiftPerDay";
+        }
+        public static class Voucher
+        {
+            public const string NotFound = "Voucher.NotFound";
+            public const string CodeAlreadyExists = "Voucher.CodeAlreadyExists";
+            public const string Invalid = "Voucher.Invalid";
+            public const string NotSuitableForOrder = "Voucher.NotSuitableForOrder";
+            public const string NotFreeItemInOrder = "Voucher.NotFreeItemInOrder";
+            public const string BelowMinAmount = "Voucher.BelowMinAmount";
         }
     }
 }

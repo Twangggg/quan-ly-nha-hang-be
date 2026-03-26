@@ -1,8 +1,6 @@
-using System.Linq;
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Enums;
-using static FoodHub.Domain.Constants.OrderConstants;
 
 namespace FoodHub.Domain.Entities
 {
@@ -19,6 +17,9 @@ namespace FoodHub.Domain.Entities
         public Guid? ReservationId { get; set; }
 
         public string? Note { get; set; }
+        public decimal SubTotal { get; set; }
+        public decimal VatRate { get; set; } = 0.10m; // Default 10% VAT
+        public decimal VatAmount { get; set; }
         public decimal TotalAmount { get; set; }
         public bool IsPriority { get; set; }
 
@@ -35,6 +36,11 @@ namespace FoodHub.Domain.Entities
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
         public ICollection<OrderPayment> OrderPayments { get; set; } = new List<OrderPayment>();
+
+        // Promotion
+        public decimal DiscountAmount { get; set; }
+        public Guid? PromotionId { get; set; }
+        public virtual Promotion? Promotion { get; set; }
 
         public bool IsActive() => Status == OrderStatus.Serving;
 
@@ -96,14 +102,25 @@ namespace FoodHub.Domain.Entities
                 }
             }
 
+            if (PromotionId.HasValue)
+            {
+                if (Promotion != null && Promotion.UsedCount > 0)
+                    Promotion.UsedCount--;
+            }
+
             Status = OrderStatus.Cancelled;
             CancelledAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
             return DomainResult.Success();
         }
 
+<<<<<<< HEAD
         public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal totalAmountReceived)
             => ProcessCheckout(paymentMethod, totalAmountReceived);
+=======
+        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived) =>
+            ProcessCheckout(paymentMethod, amountReceived);
+>>>>>>> origin/main
 
         public bool CanComplete() =>
             Status == OrderStatus.Serving && OrderItems.All(oi => oi.IsFinished());
@@ -121,12 +138,7 @@ namespace FoodHub.Domain.Entities
             }
 
             Status = OrderStatus.Completed;
-            var subTotal = OrderItems
-                .Where(oi =>
-                    oi.Status != OrderItemStatus.Cancelled && oi.Status != OrderItemStatus.Rejected
-                )
-                .Sum(oi => oi.GetTotalPrice());
-            TotalAmount = Math.Round(subTotal * (1 + VatRate), 0);
+            RecalculateTotalAmount();
 
             CompletedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
@@ -136,20 +148,17 @@ namespace FoodHub.Domain.Entities
 
         public void RecalculateTotalAmount()
         {
-            var subTotal = OrderItems
-                .Where(x =>
-                    x.Status != OrderItemStatus.Cancelled && x.Status != OrderItemStatus.Rejected
-                )
-                .Sum(item =>
-                {
-                    var itemTotal = item.Quantity * item.UnitPriceSnapshot;
-                    var optionsTotal =
-                        item.OptionGroups?.SelectMany(og => og.OptionValues)
-                            .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity)
-                        ?? 0;
-                    return itemTotal + (optionsTotal * item.Quantity);
-                });
-            TotalAmount = Math.Round(subTotal * (1 + VatRate), 0);
+            SubTotal = OrderItems.Sum(item => item.GetTotalPrice());
+
+            DiscountAmount = CalculateDiscount();
+            var tempAmount = Math.Max(SubTotal - DiscountAmount, 0);
+            VatAmount = tempAmount * VatRate;
+            TotalAmount = tempAmount + VatAmount;
+        }
+
+        public decimal GetPromotionValidationSubTotal()
+        {
+            return OrderItems.Sum(item => item.GetGrossTotalPrice());
         }
 
         public void ChangeTable(Guid newTableId, DateTime updatedAt, Guid? updatedBy)
@@ -190,6 +199,7 @@ namespace FoodHub.Domain.Entities
             string orderCode,
             Order sourceOrder,
             Guid destinationTableId,
+            Guid? destinationReservationId,
             DateTime createdAt,
             Guid? createdBy
         )
@@ -201,6 +211,7 @@ namespace FoodHub.Domain.Entities
                 OrderType = sourceOrder.OrderType,
                 Status = OrderStatus.Serving,
                 TableId = destinationTableId,
+                ReservationId = destinationReservationId ?? sourceOrder.ReservationId,
                 Note = $"Split from Order {sourceOrder.OrderCode}",
                 TotalAmount = 0,
                 IsPriority = sourceOrder.IsPriority,
@@ -223,7 +234,9 @@ namespace FoodHub.Domain.Entities
                 || sourceOrder.OrderType != OrderType.DineIn
             )
             {
-                return DomainResult<MergeOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+                return DomainResult<MergeOrderPlan>.Failure(
+                    DomainErrors.Order.InvalidActionWithStatus
+                );
             }
 
             var deletedSourceItems = new List<OrderItem>();
@@ -242,14 +255,7 @@ namespace FoodHub.Domain.Entities
                     continue;
                 }
 
-                var moveResult = sourceItem.MoveToOrder(OrderId, updatedAt);
-                if (!moveResult.IsSuccess)
-                {
-                    return DomainResult<MergeOrderPlan>.Failure(
-                        moveResult.ErrorCode ?? DomainErrors.Order.InvalidActionWithStatus
-                    );
-                }
-
+                sourceItem.ReassignToOrder(OrderId, updatedAt);
                 sourceOrder.OrderItems.Remove(sourceItem);
                 OrderItems.Add(sourceItem);
             }
@@ -280,7 +286,9 @@ namespace FoodHub.Domain.Entities
                 || destinationOrder.OrderType != OrderType.DineIn
             )
             {
-                return DomainResult<SplitOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+                return DomainResult<SplitOrderPlan>.Failure(
+                    DomainErrors.Order.InvalidActionWithStatus
+                );
             }
 
             var newDestinationItems = new List<OrderItem>();
@@ -288,16 +296,25 @@ namespace FoodHub.Domain.Entities
 
             foreach (var splitRequest in splitRequests)
             {
-                var sourceItem = OrderItems.First(item => item.OrderItemId == splitRequest.OrderItemId);
+                var sourceItem = OrderItems.First(item =>
+                    item.OrderItemId == splitRequest.OrderItemId
+                );
 
                 if (!sourceItem.CanBeMoved())
                 {
-                    return DomainResult<SplitOrderPlan>.Failure(DomainErrors.Order.InvalidActionWithStatus);
+                    return DomainResult<SplitOrderPlan>.Failure(
+                        DomainErrors.Order.InvalidActionWithStatus
+                    );
                 }
 
-                if (splitRequest.QuantityToSplit <= 0 || splitRequest.QuantityToSplit > sourceItem.Quantity)
+                if (
+                    splitRequest.QuantityToSplit <= 0
+                    || splitRequest.QuantityToSplit > sourceItem.Quantity
+                )
                 {
-                    return DomainResult<SplitOrderPlan>.Failure(DomainErrors.OrderItem.InvalidQuantity);
+                    return DomainResult<SplitOrderPlan>.Failure(
+                        DomainErrors.OrderItem.InvalidQuantity
+                    );
                 }
 
                 if (splitRequest.QuantityToSplit == sourceItem.Quantity)
@@ -327,7 +344,10 @@ namespace FoodHub.Domain.Entities
                     continue;
                 }
 
-                var reduceResult = sourceItem.ReduceQuantity(splitRequest.QuantityToSplit, updatedAt);
+                var reduceResult = sourceItem.ReduceQuantity(
+                    splitRequest.QuantityToSplit,
+                    updatedAt
+                );
                 if (!reduceResult.IsSuccess)
                 {
                     return DomainResult<SplitOrderPlan>.Failure(
@@ -378,6 +398,7 @@ namespace FoodHub.Domain.Entities
             int quantity,
             string? note,
             List<(
+                MenuItemOptionGroup Assignment,
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
             )> options
@@ -406,7 +427,7 @@ namespace FoodHub.Domain.Entities
                     OrderItemId = newItem.OrderItemId,
                     GroupNameSnapshot = optGroup.Group.Name,
                     GroupTypeSnapshot = optGroup.Group.OptionType.ToString(),
-                    IsRequiredSnapshot = optGroup.Group.IsRequired,
+                    IsRequiredSnapshot = optGroup.Assignment.IsRequired,
                     CreatedAt = DateTime.UtcNow,
                 };
 
@@ -436,6 +457,7 @@ namespace FoodHub.Domain.Entities
             int quantity,
             string? note,
             List<(
+                MenuItemOptionGroup Assignment,
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
             )> options
@@ -470,6 +492,7 @@ namespace FoodHub.Domain.Entities
 
         public string GenerateSignature(
             List<(
+                MenuItemOptionGroup Assignment,
                 OptionGroup Group,
                 List<(OptionItem Item, int Quantity, string? Note)> Selections
             )> options
@@ -499,6 +522,48 @@ namespace FoodHub.Domain.Entities
 
             return string.Join("|", allValues);
         }
+
+        // Vùng logic liên quan đến voucher - có thể phức tạp tùy theo yêu cầu kinh doanh, nên tách riêng để dễ quản lý và mở rộng sau này
+        // Promotion logic
+        public void ApplyPromotion(Promotion? promotion, Guid auditorId)
+        {
+            Promotion = promotion;
+            PromotionId = promotion?.PromotionId;
+            RecalculateTotalAmount();
+
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = auditorId;
+        }
+
+        public decimal CalculateDiscount()
+        {
+            if (Promotion == null)
+            {
+                return 0;
+            }
+
+            // Using UTCNow to match Promotion's UTC comparison
+            var validation = Promotion.Validate(
+                GetPromotionValidationSubTotal(),
+                DateTimeOffset.UtcNow
+            );
+            if (!validation.IsSuccess)
+            {
+                return 0;
+            }
+
+            return Promotion.Type switch
+            {
+                PromotionType.Percent => Math.Min(
+                    SubTotal * Promotion.Value / 100,
+                    Promotion.MaxDiscount ?? decimal.MaxValue
+                ),
+                PromotionType.Fixed => Math.Min(Promotion.Value, SubTotal),
+                PromotionType.FreeItem => 0, // Logic handled at item level if needed
+                _ => 0,
+            };
+        }
+        // Kết thúc vùng logic của voucher
     }
 
     public sealed record MergeOrderPlan(IReadOnlyCollection<OrderItem> DeletedSourceItems);

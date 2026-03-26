@@ -6,7 +6,12 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -51,28 +56,89 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
                 ? string.Format(CacheKey.TableListByArea, request.AreaId)
                 : string.Format(CacheKey.TableList);
 
-            var cachedResult = await _cacheService.GetAsync<List<GetTablesResponse>>(cacheKey, cancellationToken);
+            List<GetTablesResponse> tables;
+
+            var cachedResult = await _cacheService.GetAsync<List<GetTablesResponse>>(
+                cacheKey,
+                cancellationToken
+            );
             if (cachedResult != null)
             {
-                return Result<List<GetTablesResponse>>.Success(cachedResult);
+                tables = cachedResult;
             }
-
-            var query = _unitOfWork.Repository<Table>().Query();
-
-            if (request.AreaId.HasValue && request.AreaId.Value != Guid.Empty)
+            else
             {
-                query = query.Where(t => t.AreaId == request.AreaId.Value);
+                var query = _unitOfWork.Repository<Table>().Query();
+
+                if (request.AreaId.HasValue && request.AreaId.Value != Guid.Empty)
+                {
+                    query = query.Where(t => t.AreaId == request.AreaId.Value);
+                }
+
+                tables = await query
+                    .Include(a => a.Area)
+                    .OrderBy(t => t.TableNumber)
+                    .ProjectTo<GetTablesResponse>(_mapper.ConfigurationProvider)
+                    .ToListAsync(cancellationToken);
+
+                await _cacheService.SetAsync(cacheKey, tables, CacheTTL.Tables, cancellationToken);
             }
 
-            var tables = await query
-                .Include(a => a.Area)
-                .OrderBy(t => t.TableNumber)
-                .ProjectTo<GetTablesResponse>(_mapper.ConfigurationProvider)
+            var responseTables = tables
+                .Select(t => new GetTablesResponse
+                {
+                    TableId = t.TableId,
+                    TableCode = t.TableCode,
+                    TableNumber = t.TableNumber,
+                    Capacity = t.Capacity,
+                    AreaId = t.AreaId,
+                    AreaName = t.AreaName,
+                    Status = t.Status,
+                    StatusName = t.StatusName,
+                    CreatedAt = t.CreatedAt,
+                    CreatedBy = t.CreatedBy,
+                    UpdatedAt = t.UpdatedAt,
+                    UpdatedBy = t.UpdatedBy,
+                    DeletedAt = t.DeletedAt,
+                })
+                .ToList();
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var currentTime = DateTime.Now.TimeOfDay;
+            var bufferTime = TimeSpan.FromHours(2);
+
+            var tableIds = responseTables.Select(t => t.TableId).ToList();
+
+            var reservedTableIds = await _unitOfWork
+                .Repository<Reservation>()
+                .Query()
+                .Where(r =>
+                    tableIds.Contains(r.TableId)
+                    && r.ReservationDate == today
+                    && r.Status == ReservationStatus.Booked
+                    && r.ReservationTime > currentTime
+                    && r.ReservationTime <= currentTime.Add(bufferTime)
+                )
+                .Select(r => r.TableId)
+                .Distinct()
                 .ToListAsync(cancellationToken);
 
-            await _cacheService.SetAsync(cacheKey, tables, CacheTTL.Tables, cancellationToken);
-            return Result<List<GetTablesResponse>>.Success(tables);
+            if (reservedTableIds.Any())
+            {
+                foreach (var table in responseTables)
+                {
+                    if (
+                        table.Status == (int)TableStatus.Available
+                        && reservedTableIds.Contains(table.TableId)
+                    )
+                    {
+                        table.Status = (int)TableStatus.Reserved;
+                        table.StatusName = TableStatus.Reserved.ToString();
+                    }
+                }
+            }
+
+            return Result<List<GetTablesResponse>>.Success(responseTables);
         }
     }
-
 }

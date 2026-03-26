@@ -15,7 +15,11 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(e => e.Code).HasColumnName("code").HasMaxLength(20).IsRequired();
             builder.Property(e => e.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
-            builder.Property(e => e.Unit).HasColumnName("unit").HasMaxLength(20).IsRequired();
+            builder
+                .Property(e => e.BaseUnit)
+                .HasColumnName("base_unit")
+                .HasMaxLength(20)
+                .IsRequired();
             builder
                 .Property(e => e.CurrentStock)
                 .HasColumnName("current_stock")
@@ -24,10 +28,20 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .Property(e => e.LowStockThreshold)
                 .HasColumnName("low_stock_threshold")
                 .HasPrecision(18, 2);
+            builder.Property(e => e.UseDefaultLowStockThreshold).HasColumnName("use_default_low_stock_threshold");
             builder.Property(e => e.CostPrice).HasColumnName("cost_price").HasPrecision(18, 2);
             builder.Property(e => e.Description).HasColumnName("description").HasMaxLength(500);
             builder.Property(e => e.IsActive).HasColumnName("is_active");
 
+            builder
+                .Property(e => e.InventoryGroupId)
+                .HasColumnName("inventory_group_id");
+
+            builder
+                .HasOne(e => e.InventoryGroup)
+                .WithMany(g => g.Ingredients)
+                .HasForeignKey(e => e.InventoryGroupId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Audit Properties
             builder.Property(e => e.CreatedAt).HasColumnName("created_at");

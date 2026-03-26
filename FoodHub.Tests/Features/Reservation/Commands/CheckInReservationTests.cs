@@ -2,7 +2,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Reservations.Commands.CheckInReservation;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -17,6 +22,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<ISignalRService> _mockSignalRService;
         private readonly Mock<ILogger<CheckInReservationHandler>> _mockLogger;
         private readonly CheckInReservationHandler _handler;
 
@@ -25,12 +31,14 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _mockUow = new Mock<IUnitOfWork>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
+            _mockSignalRService = new Mock<ISignalRService>();
             _mockLogger = new Mock<ILogger<CheckInReservationHandler>>();
 
             _handler = new CheckInReservationHandler(
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
+                _mockSignalRService.Object,
                 _mockLogger.Object
             );
         }
@@ -65,9 +73,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
                 CustomerPhone = "0901234567",
                 ReservationDate = DateOnly.FromDateTime(DateTime.UtcNow),
                 ReservationTime = TimeSpan.FromHours(19),
-                PartyType = PartyType.Party,
                 GuestCount = 4,
-                HasChildren = false,
                 Note = "Test note",
                 Status = status,
                 TableId = table.TableId,
@@ -110,6 +116,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
 
             // Table repository
             var tableRepo = new Mock<IGenericRepository<Table>>();
+            tableRepo.Setup(r => r.Query()).Returns(new List<Table>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Table>()).Returns(tableRepo.Object);
 
             // Audit log repository

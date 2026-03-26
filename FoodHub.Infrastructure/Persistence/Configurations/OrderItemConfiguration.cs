@@ -15,6 +15,10 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
 
             builder.Property(oi => oi.UnitPriceSnapshot).HasColumnType("decimal(15,2)");
             builder.Property(oi => oi.ItemNote).HasMaxLength(255);
+            builder.Property(oi => oi.StockDeducted).HasColumnName("stock_deducted");
+
+            builder.Property(oi => oi.IsFreeItem).HasColumnName("is_free_item");
+
             builder
                 .HasOne(oi => oi.Order)
                 .WithMany(o => o.OrderItems)

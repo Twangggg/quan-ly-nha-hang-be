@@ -16,7 +16,7 @@ namespace FoodHub.Application.Constants
         public const string ChangeOrderTable = OrderAuditActions.ChangeOrderTable;
         public const string CheckoutOrder = OrderAuditActions.CheckoutOrder;
         public const string KdsStartCooking = OrderAuditActions.KdsStartCooking;
-        public const string KdsMarkReady = OrderAuditActions.KdsMarkReady;
+        public const string KdsCompleteCooking = OrderAuditActions.KdsCompleteCooking;
         public const string KdsReject = OrderAuditActions.KdsReject;
         public const string KdsReturn = OrderAuditActions.KdsReturn;
         public const string CheckInReservation = OrderAuditActions.CheckInReservation;

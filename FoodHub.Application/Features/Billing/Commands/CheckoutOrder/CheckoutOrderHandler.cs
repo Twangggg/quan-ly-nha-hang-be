@@ -1,12 +1,19 @@
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Constants;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
 {
@@ -16,17 +23,24 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
         private readonly ILogger<CheckoutOrderHandler> _logger;
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ICacheService _cacheService;
+        private readonly ISignalRService _signalRService;
 
         public CheckoutOrderHandler(
             IUnitOfWork unitOfWork,
             ILogger<CheckoutOrderHandler> logger,
             IMessageService messageService,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            ICacheService cacheService,
+            ISignalRService signalRService
+        )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _cacheService = cacheService;
+            _signalRService = signalRService;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -53,7 +67,10 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
 
             if (order == null)
             {
-                _logger.LogWarning("Order not found for checkout. OrderId: {OrderId}", request.OrderId);
+                _logger.LogWarning(
+                    "Order not found for checkout. OrderId: {OrderId}",
+                    request.OrderId
+                );
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.Order.NotFound),
                     ResultErrorType.NotFound
@@ -132,8 +149,16 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             var domainResult = order.ProcessCheckout(legacyPaymentMethod, totalReceived);
             if (!domainResult.IsSuccess)
             {
+<<<<<<< HEAD
                 _logger.LogWarning("Checkout failed for OrderId: {OrderId}. Reason: {ErrorCode}",
                     request.OrderId, domainResult.ErrorCode);
+=======
+                _logger.LogWarning(
+                    "Checkout failed for OrderId: {OrderId}. Reason: {ErrorCode}",
+                    request.OrderId,
+                    domainResult.ErrorCode
+                );
+>>>>>>> origin/main
 
                 if (domainResult.ErrorCode == DomainErrors.Order.InvalidActionWithStatus)
                 {
@@ -187,15 +212,31 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                     EmployeeId = auditorId,
                     Action = AuditLogActions.CheckoutOrder,
                     CreatedAt = DateTime.UtcNow,
+<<<<<<< HEAD
                     NewValue = $"{{\"payments\": \"{paymentSummary}\", \"totalAmount\": {order.TotalAmount}}}",
+=======
+                    NewValue = JsonSerializer.Serialize(
+                        new
+                        {
+                            paymentMethod = request.PaymentMethod.ToString(),
+                            totalAmount = order.TotalAmount,
+                            amountPaid = order.AmountPaid,
+                        }
+                    ),
+>>>>>>> origin/main
                 };
 
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
                 _unitOfWork.Repository<Order>().Update(order);
 
+<<<<<<< HEAD
                 // Update Table to Available if DineIn
+=======
+                // Dine-in tables are released immediately after checkout.
+>>>>>>> origin/main
                 if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
                 {
+                    var tableIdSnapshot = order.TableId.Value; // Capture before nulling
                     var table = await _unitOfWork
                         .Repository<Table>()
                         .Query()
@@ -203,18 +244,61 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                         .FirstOrDefaultAsync(t => t.TableId == order.TableId, cancellationToken);
                     if (table != null)
                     {
-                        if (table.SetAvailable())
+                        var statusChanged = table.SetAvailable();
+                        if (statusChanged)
                         {
                             table.UpdatedAt = DateTime.UtcNow;
+                            table.UpdatedBy = auditorId;
                         }
+<<<<<<< HEAD
                         _unitOfWork.Repository<Table>().Update(table);
 
                         order.TableId = null;
                         _unitOfWork.Repository<Order>().Update(order);
+=======
+                        _unitOfWork.Repository<Domain.Entities.Table>().Update(table);
+
+                        // Cập nhật Reservation sang Completed
+                        if (order.ReservationId.HasValue)
+                        {
+                            var reservation = await _unitOfWork
+                                .Repository<Reservation>()
+                                .GetByIdAsync(order.ReservationId.Value);
+                            if (reservation != null)
+                            {
+                                reservation.Status = ReservationStatus.Completed;
+                                reservation.UpdatedAt = DateTime.UtcNow;
+                                reservation.UpdatedBy = auditorId;
+                                _unitOfWork.Repository<Reservation>().Update(reservation);
+                            }
+                        }
+
+                        // Ngắt kết nối đơn hàng với bàn sau khi đã giải phóng bàn xong
+                        order.TableId = null;
+                        _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+
+                        if (table != null)
+                        {
+                            await _signalRService.NotifyTableStatusChangedAsync(
+                                tableIdSnapshot,
+                                table.Status.ToString()
+                            );
+                        }
+>>>>>>> origin/main
                     }
                 }
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+                await _cacheService.RemoveByPatternAsync(
+                    CacheKey.TableList + "*",
+                    cancellationToken
+                );
+                await _cacheService.RemoveByPatternAsync(
+                    string.Format(CacheKey.TableListByArea, "*"),
+                    cancellationToken
+                );
+
                 await _unitOfWork.CommitTransactionAsync();
             }
             catch (Exception ex)

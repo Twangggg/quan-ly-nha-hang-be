@@ -12,14 +12,12 @@ namespace FoodHub.Application.Features.MergeSplitOrder.Commands.SplitOrder
         Guid SourceOrderId,
         Guid? DestinationOrderId,
         Guid? DestinationTableId,
+        Guid? DestinationReservationId,
         List<SplitOrderItemCommand> ItemsToSplit
     ) : IRequest<Result<SplitOrderResponse>>, IMustBeActive;
 
     /// <summary>
     /// Describes a partial or full quantity transfer for a single order item.
     /// </summary>
-    public record SplitOrderItemCommand(
-        Guid OrderItemId,
-        int QuantityToSplit
-    );
+    public record SplitOrderItemCommand(Guid OrderItemId, int QuantityToSplit);
 }

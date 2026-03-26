@@ -1,4 +1,9 @@
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -97,18 +102,7 @@ namespace FoodHub.Infrastructure.Persistence
                         _context.Employees.Add(e);
 
                         // Add Audit Log for Seed Data
-                        _context.AuditLogs.Add(
-                            new AuditLog
-                            {
-                                LogId = Guid.NewGuid(),
-                                Action = AuditAction.Create,
-                                TargetId = e.EmployeeId,
-                                PerformedByEmployeeId = e.EmployeeId, // Self-created for seed
-                                CreatedAt = DateTimeOffset.UtcNow,
-                                Reason = "Seed data initialization",
-                                Metadata = "{\"info\": \"System generated\"}", // Valid JSON for jsonb column
-                            }
-                        );
+                        _context.Employees.Add(e);
                     }
                 }
                 _context.SaveChanges();
@@ -261,6 +255,10 @@ namespace FoodHub.Infrastructure.Persistence
             if (!_context.SetMenus.Any())
             {
                 var comboCategory = _context.Categories.FirstOrDefault(c => c.Name == "Combo");
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/main
                 if (comboCategory != null)
                 {
                     var setMenu1 = new SetMenu
@@ -291,8 +289,17 @@ namespace FoodHub.Infrastructure.Persistence
                     _context.SaveChanges();
 
                     // Add some items to the first combo
+<<<<<<< HEAD
                     var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
                     var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
+=======
+                    var chickenRice = _context.MenuItems.FirstOrDefault(mi =>
+                        mi.Code == "MAIN-001"
+                    );
+                    var specialDrink = _context.MenuItems.FirstOrDefault(mi =>
+                        mi.Code == "DRK-007"
+                    );
+>>>>>>> origin/main
 
                     if (chickenRice != null && specialDrink != null)
                     {
@@ -318,11 +325,32 @@ namespace FoodHub.Infrastructure.Persistence
                         _context.SaveChanges();
                     }
                 }
+<<<<<<< HEAD
+=======
+            }
+
+            // Seed Inventory Groups
+            if (!_context.InventoryGroups.Any())
+            {
+                var groups = new[]
+                {
+                    InventoryGroup.Create("Thực phẩm tươi sống", "Các loại thịt, cá, hải sản tươi", 10m, 2, InventoryCostMethod.WeightedAverage),
+                    InventoryGroup.Create("Rau củ quả", "Các loại rau, củ, trái cây bảo quản lạnh", 5m, 3, InventoryCostMethod.WeightedAverage),
+                    InventoryGroup.Create("Gia vị & Đồ khô", "Muối, đường, hạt nêm, đồ đóng hộp", 15m, null, InventoryCostMethod.WeightedAverage),
+                    InventoryGroup.Create("Đồ uống", "Nước ngọt, bia, rượu, sữa", 20m, 30, InventoryCostMethod.WeightedAverage)
+                };
+                _context.InventoryGroups.AddRange(groups);
+                _context.SaveChanges();
+>>>>>>> origin/main
             }
 
             // Seed Ingredients for Inventory module
             if (!_context.Ingredients.Any())
             {
+                var freshFoodGroup = _context.InventoryGroups.FirstOrDefault(g => g.Name == "Thực phẩm tươi sống");
+                var vegetableGroup = _context.InventoryGroups.FirstOrDefault(g => g.Name == "Rau củ quả");
+                var drinkGroup = _context.InventoryGroups.FirstOrDefault(g => g.Name == "Đồ uống");
+
                 var seedIngredients = new[]
                 {
                     new
@@ -334,6 +362,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Thịt bò tươi cho món chính",
                         Stock = 0m,
                         Cost = 0m,
+                        GroupId = freshFoodGroup?.InventoryGroupId
                     },
                     new
                     {
@@ -344,6 +373,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Ức gà fillet không da",
                         Stock = 0m,
                         Cost = 0m,
+                        GroupId = freshFoodGroup?.InventoryGroupId
                     },
                     new
                     {
@@ -354,26 +384,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Rau xà lách Đà Lạt",
                         Stock = 0m,
                         Cost = 0m,
-                    },
-                    new
-                    {
-                        Code = "KHOAITAY",
-                        Name = "Khoai tây",
-                        Unit = "kg",
-                        LowStockThreshold = 15m,
-                        Description = "Khoai tây Hà Lan",
-                        Stock = 0m,
-                        Cost = 0m,
-                    },
-                    new
-                    {
-                        Code = "HANHTAY",
-                        Name = "Hành tây",
-                        Unit = "kg",
-                        LowStockThreshold = 8m,
-                        Description = "Hành tây tím",
-                        Stock = 0m,
-                        Cost = 0m,
+                        GroupId = vegetableGroup?.InventoryGroupId
                     },
                     new
                     {
@@ -384,6 +395,7 @@ namespace FoodHub.Infrastructure.Persistence
                         Description = "Sữa tươi tiệt trùng",
                         Stock = 0m,
                         Cost = 0m,
+                        GroupId = drinkGroup?.InventoryGroupId
                     },
                 };
 
@@ -398,7 +410,8 @@ namespace FoodHub.Infrastructure.Persistence
                         seed.LowStockThreshold,
                         seed.Stock,
                         seed.Cost,
-                        seed.Description
+                        seed.Description,
+                        inventoryGroupId: seed.GroupId
                     );
 
                     ingredient.UpdateStock(seed.Stock, seed.Cost);
@@ -435,10 +448,19 @@ namespace FoodHub.Infrastructure.Persistence
                     new Area
                     {
                         AreaId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                        Name = "VIP Room",
-                        CodePrefix = "VIP",
+                        Name = "Phòng VIP 1",
+                        CodePrefix = "VIP1",
                         Type = AreaType.VIP,
-                        Description = "Private VIP rooms",
+                        Description = "Phòng riêng VIP 1 - Sức chứa lớn",
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Area
+                    {
+                        AreaId = Guid.Parse("00000000-0000-0000-0000-000000000004"),
+                        Name = "Phòng VIP 2",
+                        CodePrefix = "VIP2",
+                        Type = AreaType.VIP,
+                        Description = "Phòng riêng VIP 2 - Sức chứa lớn",
                         CreatedAt = DateTime.UtcNow,
                     },
                 };
@@ -452,17 +474,36 @@ namespace FoodHub.Infrastructure.Persistence
                 var tableId = Guid.Parse($"00000000-0000-0000-0000-0000000000{i:D2}");
                 if (!_context.Tables.Any(t => t.TableId == tableId))
                 {
-                    var areaId =
-                        i <= 8 ? Guid.Parse("00000000-0000-0000-0000-000000000001")
-                        : i <= 10 ? Guid.Parse("00000000-0000-0000-0000-000000000002")
-                        : Guid.Parse("00000000-0000-0000-0000-000000000003");
+                    Guid areaId;
+                    int capacity;
+
+                    if (i <= 8)
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                        capacity = (i % 2 == 0 ? 4 : 2);
+                    }
+                    else if (i <= 10)
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+                        capacity = 4;
+                    }
+                    else if (i == 11)
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000003");
+                        capacity = 100; // Phòng VIP có thể chứa rất nhiều khách
+                    }
+                    else // i == 12
+                    {
+                        areaId = Guid.Parse("00000000-0000-0000-0000-000000000004");
+                        capacity = 100; // Phòng VIP có thể chứa rất nhiều khách
+                    }
 
                     _context.Tables.Add(
                         new Table
                         {
                             TableId = tableId,
                             TableNumber = i,
-                            Capacity = i <= 8 ? (i % 2 == 0 ? 4 : 2) : (i <= 10 ? 4 : 8),
+                            Capacity = capacity,
                             AreaId = areaId,
                             Status = TableStatus.Available,
                             CreatedAt = DateTime.UtcNow,
@@ -478,6 +519,20 @@ namespace FoodHub.Infrastructure.Persistence
                 var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
                 var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
                 var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
+<<<<<<< HEAD
+=======
+
+                if (
+                    admin == null
+                    || chickenRice == null
+                    || beefNoodle == null
+                    || specialDrink == null
+                )
+                {
+                    // Basic dependencies are missing, skip seeding orders as it depends on these specific items
+                    return;
+                }
+>>>>>>> origin/main
 
                 if (admin != null && chickenRice != null && beefNoodle != null && specialDrink != null)
                 {
@@ -487,6 +542,7 @@ namespace FoodHub.Infrastructure.Persistence
 
                     var order1 = new Order
                     {
+<<<<<<< HEAD
                         OrderId = Guid.NewGuid(),
                         OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0001",
                         OrderType = OrderType.DineIn,
@@ -496,6 +552,20 @@ namespace FoodHub.Infrastructure.Persistence
                         CreatedByEmployee = admin,
                         CreatedAt = DateTime.UtcNow.AddHours(-1),
                     };
+=======
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order1.OrderId,
+                        MenuItemId = chickenRice.MenuItemId,
+                        ItemCodeSnapshot = chickenRice.Code,
+                        ItemNameSnapshot = chickenRice.Name,
+                        StationSnapshot = chickenRice.Station.ToString(),
+                        Status = OrderItemStatus.Completed,
+                        Quantity = 1,
+                        UnitPriceSnapshot = chickenRice.Price,
+                        CreatedAt = order1.CreatedAt,
+                    }
+                );
+>>>>>>> origin/main
 
                     order1.OrderItems.Add(
                         new OrderItem
@@ -584,9 +654,184 @@ namespace FoodHub.Infrastructure.Persistence
                         }
                     );
 
+<<<<<<< HEAD
                     _context.Orders.AddRange(order1, order2, order3);
                     _context.SaveChanges();
                 }
+=======
+                order3.OrderItems.Add(
+                    new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order3.OrderId,
+                        MenuItemId = specialDrink.MenuItemId,
+                        ItemCodeSnapshot = specialDrink.Code,
+                        ItemNameSnapshot = specialDrink.Name,
+                        StationSnapshot = specialDrink.Station.ToString(),
+                        Status = OrderItemStatus.Completed,
+                        Quantity = 1,
+                        UnitPriceSnapshot = specialDrink.Price,
+                        CreatedAt = order3.CreatedAt,
+                    }
+                );
+
+                _context.Orders.AddRange(order1, order2, order3);
+
+                // Update Table statuses for seeded orders
+                var table1 =
+                    _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id)
+                    ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
+                var table2 =
+                    _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id)
+                    ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
+
+                if (table1 != null)
+                    table1.Status = TableStatus.Occupied;
+                if (table2 != null)
+                    table2.Status = TableStatus.Occupied;
+
+                _context.SaveChanges();
+>>>>>>> origin/main
+            }
+
+            SyncOccupiedTablesFromActiveOrders();
+
+            // Seed an invoice for the first order to demonstrate the relationship and for FE testing
+            var environmentName = System.Environment.GetEnvironmentVariable(
+                "ASPNETCORE_ENVIRONMENT"
+            );
+            var isDevOrDemo =
+                string.Equals(
+                    environmentName,
+                    "Development",
+                    System.StringComparison.OrdinalIgnoreCase
+                )
+                || string.Equals(
+                    environmentName,
+                    "Demo",
+                    System.StringComparison.OrdinalIgnoreCase
+                );
+
+            if (isDevOrDemo && !_context.Invoices.Any())
+            {
+                // Use the first available order (if any) without relying on hard-coded order codes/IDs
+                var order1 = _context.Orders.Include(o => o.OrderItems).FirstOrDefault();
+                if (order1 != null)
+                {
+                    var invoice1 = new Invoice
+                    {
+                        InvoiceId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        OrderId = order1.OrderId,
+                        InvoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-0001",
+                        SubTotal = order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot),
+                        TaxAmount =
+                            order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot) * 0.1m, // Assuming 10% tax
+                        DiscountAmount = 0m,
+                        TotalAmount =
+                            order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot) * 1.1m, // Subtotal + Tax
+                        AmountReceived =
+                            order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot) * 1.1m,
+                        AmountReturned = 0m,
+                        PaymentMethod = PaymentMethod.Cash,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+                    _context.Invoices.Add(invoice1);
+                    _context.SaveChanges();
+
+                    if (!_context.InvoiceItems.Any(ii => ii.InvoiceId == invoice1.InvoiceId))
+                    {
+                        var invoiceItems = order1
+                            .OrderItems.Select(oi => new InvoiceItem
+                            {
+                                InvoiceId = invoice1.InvoiceId,
+                                ItemName = oi.ItemNameSnapshot,
+                                Quantity = oi.Quantity,
+                                UnitPrice = oi.UnitPriceSnapshot,
+                                TotalPrice = oi.Quantity * oi.UnitPriceSnapshot,
+                                Note = oi.ItemNote,
+                                CreatedAt = DateTime.UtcNow,
+                            })
+                            .ToList();
+                        _context.InvoiceItems.AddRange(invoiceItems);
+                    }
+
+                    _context.SaveChanges();
+                }
+            }
+
+            if (isDevOrDemo && !_context.Promotions.Any())
+            {
+                var promo1 = new Promotion
+                {
+                    PromotionId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    Code = "DISCOUNT10",
+                    Type = PromotionType.Percent,
+                    Value = 10m,
+                    MaxDiscount = 50000m,
+                    MinOrderValue = 100000m,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddMonths(1),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                };
+
+                var drinkMenuItem = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
+
+                if (drinkMenuItem != null)
+                {
+                    var promo2 = new Promotion
+                    {
+                        PromotionId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        Code = "FREEDRINK",
+                        Type = PromotionType.FreeItem,
+                        ItemId = drinkMenuItem.MenuItemId,
+                        FreeQuantity = 1,
+                        MinOrderValue = 200000m,
+                        StartDate = DateTime.UtcNow,
+                        EndDate = DateTime.UtcNow.AddMonths(1),
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+
+                    _context.Promotions.Add(promo2);
+                }
+
+                _context.Promotions.Add(promo1);
+                _context.SaveChanges();
+            }
+
+            _context.SaveChanges();
+        }
+
+        private void SyncOccupiedTablesFromActiveOrders()
+        {
+            var occupiedTableIds = _context
+                .Orders.AsNoTracking()
+                .Where(o => o.Status == OrderStatus.Serving && o.TableId.HasValue)
+                .Select(o => o.TableId!.Value)
+                .Distinct()
+                .ToList();
+
+            if (occupiedTableIds.Count == 0)
+            {
+                return;
+            }
+
+            var tablesToUpdate = _context
+                .Tables.Where(t =>
+                    occupiedTableIds.Contains(t.TableId) && t.Status != TableStatus.Occupied
+                )
+                .ToList();
+
+            if (tablesToUpdate.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var table in tablesToUpdate)
+            {
+                table.Status = TableStatus.Occupied;
+                table.UpdatedAt = DateTime.UtcNow;
             }
 
             _context.SaveChanges();

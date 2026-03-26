@@ -14,25 +14,38 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.HasIndex(o => o.OrderCode).IsUnique();
             builder.Property(o => o.OrderType).IsRequired();
             builder.Property(o => o.Status).IsRequired();
+            builder.Property(o => o.SubTotal).HasColumnType("decimal(15,2)");
+            builder.Property(o => o.VatRate).HasColumnType("decimal(5,2)");
+            builder.Property(o => o.VatAmount).HasColumnType("decimal(15,2)");
             builder.Property(o => o.TotalAmount).HasColumnType("decimal(15,2)");
             builder.Property(o => o.Note).HasColumnType("text");
 
             // Relationships
             builder.HasOne(o => o.CreatedByEmployee).WithMany().HasForeignKey(o => o.CreatedBy);
 
-            builder.HasOne(o => o.Table)
-                   .WithMany(t => t.Orders)
-                   .HasForeignKey(o => o.TableId)
-                   .OnDelete(DeleteBehavior.SetNull);
+            builder
+                .HasOne(o => o.Table)
+                .WithMany(t => t.Orders)
+                .HasForeignKey(o => o.TableId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.Property(o => o.ReservationId).HasColumnName("reservation_id");
-            builder.HasOne(o => o.Reservation)
-                   .WithMany()
-                   .HasForeignKey(o => o.ReservationId)
-                   .OnDelete(DeleteBehavior.SetNull);
-            builder.HasIndex(o => o.ReservationId)
-                   .IsUnique()
-                   .HasFilter("reservation_id IS NOT NULL");
+            builder
+                .HasOne(o => o.Reservation)
+                .WithMany()
+                .HasForeignKey(o => o.ReservationId)
+                .OnDelete(DeleteBehavior.SetNull);
+            builder
+                .HasIndex(o => o.ReservationId)
+                .IsUnique()
+                .HasFilter("reservation_id IS NOT NULL");
+
+            builder.Property(o => o.PromotionId).HasColumnName("promotion_id");
+            builder
+                .HasOne(o => o.Promotion)
+                .WithMany(p => p.Orders)
+                .HasForeignKey(o => o.PromotionId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.Property(o => o.CreatedAt).HasDefaultValueSql("now()");
             builder.Property(o => o.CompletedAt).IsRequired(false);

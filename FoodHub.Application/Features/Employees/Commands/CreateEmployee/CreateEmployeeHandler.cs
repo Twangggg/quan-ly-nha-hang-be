@@ -2,7 +2,12 @@ using AutoMapper;
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -98,17 +103,6 @@ namespace FoodHub.Application.Features.Employees.Commands.CreateEmployee
                 employee.PasswordHash = _passwordService.HashPassword(randomPassword);
 
                 await _unitOfWork.Repository<Employee>().AddAsync(employee);
-
-                var auditLog = new AuditLog
-                {
-                    LogId = Guid.NewGuid(),
-                    Action = AuditAction.Create,
-                    TargetId = employee.EmployeeId,
-                    PerformedByEmployeeId = auditorId,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                    Reason = "Create new employee",
-                };
-                await _unitOfWork.Repository<AuditLog>().AddAsync(auditLog);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
 
                 // Queue email asynchronously

@@ -3,10 +3,16 @@ namespace FoodHub.Application.Features.Options.Commands.CreateOptionGroup
     public class CreateOptionGroupResponse
     {
         public Guid OptionGroupId { get; set; }
-        public Guid MenuItemId { get; set; }
+        public Guid? MenuItemId { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Type { get; set; }
         public bool IsRequired { get; set; }
+        public int MinSelect { get; set; }
+        public int MaxSelect { get; set; }
+        public int SortOrder { get; set; }
+        public bool IsVisible { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public List<OptionItemResponse>? OptionItems { get; set; }
     }
 

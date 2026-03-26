@@ -2,6 +2,12 @@ using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Authentication.Commands.Login;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -19,6 +25,7 @@ namespace FoodHub.Tests.Features.Authentication
         private readonly Mock<IRateLimiter> _mockRateLimiter;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ILogger<LoginHandler>> _mockLogger;
+        private readonly Mock<IAuditLogService> _mockAuditLogService;
         private readonly LoginHandler _handler;
 
         public LoginHandlerTests()
@@ -29,6 +36,7 @@ namespace FoodHub.Tests.Features.Authentication
             _mockRateLimiter = new Mock<IRateLimiter>();
             _mockMessageService = new Mock<IMessageService>();
             _mockLogger = new Mock<ILogger<LoginHandler>>();
+            _mockAuditLogService = new Mock<IAuditLogService>();
 
             _handler = new LoginHandler(
                 _mockUow.Object,
@@ -36,7 +44,8 @@ namespace FoodHub.Tests.Features.Authentication
                 _mockTokenService.Object,
                 _mockRateLimiter.Object,
                 _mockMessageService.Object,
-                _mockLogger.Object
+                _mockLogger.Object,
+                _mockAuditLogService.Object
             );
         }
 

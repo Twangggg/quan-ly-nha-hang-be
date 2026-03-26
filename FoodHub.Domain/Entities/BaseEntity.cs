@@ -10,6 +10,7 @@ namespace FoodHub.Domain.Entities
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdatedBy { get; set; }
         public DateTime? DeletedAt { get; set; }
+
         public void MarkDeleted(Guid? updatedBy = null)
         {
             DeletedAt = DateTime.UtcNow;

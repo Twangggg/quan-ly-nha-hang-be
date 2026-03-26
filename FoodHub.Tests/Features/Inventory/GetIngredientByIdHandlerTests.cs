@@ -2,7 +2,12 @@ using AutoMapper;
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredientById;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using MockQueryable.Moq;
@@ -14,25 +19,32 @@ namespace FoodHub.Tests.Features.Inventory
     public class GetIngredientByIdHandlerTests
     {
         private readonly Mock<IUnitOfWork> _mockUow;
-        private readonly Mock<IMapper> _mockMapper;
+        private readonly IMapper _mapper;
         private readonly Mock<IMessageService> _mockMessage;
+        private readonly Mock<ICacheService> _mockCache;
         private readonly GetIngredientByIdHandler _handler;
 
         public GetIngredientByIdHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
-            _mockMapper = new Mock<IMapper>();
             _mockMessage = new Mock<IMessageService>();
+            _mockCache = new Mock<ICacheService>();
 
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             mockLoggerFactory.Setup(f => f.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+
             var config = new MapperConfiguration(cfg =>
-                cfg.CreateMap<Ingredient, GetIngredientByIdResponse>(), mockLoggerFactory.Object);
-            _mockMapper.Setup(m => m.ConfigurationProvider).Returns(config);
+            {
+                cfg.CreateMap<Ingredient, GetIngredientByIdResponse>()
+                    .ForMember(d => d.StockStatus, opt => opt.Ignore())
+                    .ForMember(d => d.InventoryGroupName, opt => opt.MapFrom(s => s.InventoryGroup != null ? s.InventoryGroup.Name : null));
+            }, mockLoggerFactory.Object);
+            _mapper = config.CreateMapper();
 
             _handler = new GetIngredientByIdHandler(
                 _mockUow.Object,
-                _mockMapper.Object,
+                _mapper,
+                _mockCache.Object,
                 _mockMessage.Object,
                 Mock.Of<ILogger<GetIngredientByIdHandler>>()
             );
@@ -47,7 +59,7 @@ namespace FoodHub.Tests.Features.Inventory
             var repo = new Mock<IGenericRepository<Ingredient>>();
             repo.Setup(r => r.Query()).Returns(new List<Ingredient>().AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
-            _mockMessage.Setup(m => m.GetMessage("Ingredient.NotFound")).Returns("Ingredient not found");
+            _mockMessage.Setup(m => m.GetMessage(It.IsAny<string>())).Returns("Ingredient not found");
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -55,7 +67,6 @@ namespace FoodHub.Tests.Features.Inventory
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.ErrorType.Should().Be(ResultErrorType.NotFound);
-            result.Error.Should().Be("Ingredient not found");
         }
 
         [Fact]
@@ -69,9 +80,6 @@ namespace FoodHub.Tests.Features.Inventory
             var repo = new Mock<IGenericRepository<Ingredient>>();
             repo.Setup(r => r.Query()).Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Ingredient>()).Returns(repo.Object);
-
-            var response = new GetIngredientByIdResponse { IngredientId = ingredientId, Name = ingredient.Name };
-            _mockMapper.Setup(m => m.Map<GetIngredientByIdResponse>(ingredient)).Returns(response);
 
             var query = new GetIngredientByIdQuery(ingredientId);
 

@@ -7,7 +7,12 @@ using FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngredie
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GenerateIngredientCode;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredientById;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredients;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
@@ -107,7 +112,7 @@ namespace FoodHub.Presentation.Controllers
             [FromBody] UpdateIngredientCommand command
         )
         {
-            command = command with { RouteId = id, IngredientId = id };
+            command = command with { IngredientId = id };
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }

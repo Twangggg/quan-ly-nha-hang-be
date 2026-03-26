@@ -8,16 +8,14 @@ namespace FoodHub.Application.Features.Employees.Queries.GetAuditLogs
     {
         public Guid LogId { get; set; }
         public string Action { get; set; } = null!;
-        public string ActorName { get; set; } = null!;
+        public string? ActorInfo { get; set; }
         public DateTimeOffset Time { get; set; }
-        public string? Reason { get; set; }
-        public string? Metadata { get; set; }
+        public string? OldValues { get; set; }
+        public string? NewValues { get; set; }
 
         public void Mapping(Profile profile)
         {
             profile.CreateMap<AuditLog, GetAuditLogsResponse>()
-                .ForMember(d => d.Action, opt => opt.MapFrom(s => s.Action.ToString()))
-                .ForMember(d => d.ActorName, opt => opt.MapFrom(s => s.PerformedBy.FullName))
                 .ForMember(d => d.Time, opt => opt.MapFrom(s => s.CreatedAt));
         }
     }

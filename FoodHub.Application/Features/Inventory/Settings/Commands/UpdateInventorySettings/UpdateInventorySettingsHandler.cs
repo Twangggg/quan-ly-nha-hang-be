@@ -3,7 +3,12 @@ using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -41,11 +46,13 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
         )
         {
             _logger.LogInformation(
-                "Start handling UpdateInventorySettings with ExpiryWarningDays={ExpiryWarningDays}, DefaultLowStockThreshold={DefaultLowStockThreshold}, AutoDeductOnCompleted={AutoDeductOnCompleted}, MaxCostRecalcDays={MaxCostRecalcDays}",
+                "Start handling UpdateInventorySettings with ExpiryWarningDays={ExpiryWarningDays}, DefaultLowStockThreshold={DefaultLowStockThreshold}, AutoDeductOnCompleted={AutoDeductOnCompleted}, CostMethod={CostMethod}, MaxCostRecalcDays={MaxCostRecalcDays}, OpeningStockImportCooldownHours={OpeningStockImportCooldownHours}",
                 request.ExpiryWarningDays,
                 request.DefaultLowStockThreshold,
                 request.AutoDeductOnCompleted,
-                request.MaxCostRecalcDays
+                request.CostMethod,
+                request.MaxCostRecalcDays,
+                request.OpeningStockImportCooldownHours
             );
 
             var repo = _unitOfWork.Repository<InventorySettings>();
@@ -71,7 +78,9 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
                     request.ExpiryWarningDays,
                     request.DefaultLowStockThreshold,
                     request.AutoDeductOnCompleted!.Value,
+                    request.CostMethod,
                     request.MaxCostRecalcDays,
+                    request.OpeningStockImportCooldownHours,
                     actorId
                 );
 
@@ -99,8 +108,11 @@ namespace FoodHub.Application.Features.Inventory.Settings.Commands.UpdateInvento
                     AutoDeductOnCompleted = settings.AutoDeductOnCompleted,
                     CostMethod = settings.CostMethod,
                     MaxCostRecalcDays = settings.MaxCostRecalcDays,
+                    OpeningStockImportCooldownHours = settings.OpeningStockImportCooldownHours,
                     OpeningStockStatus = settings.OpeningStockStatus,
                     LockedAt = settings.LockedAt,
+                    LastOpeningStockImportedAt = settings.LastOpeningStockImportedAt,
+                    NextOpeningStockImportAllowedAt = settings.GetNextOpeningStockImportAllowedAt(),
                 };
 
                 _logger.LogInformation("End handling UpdateInventorySettings");

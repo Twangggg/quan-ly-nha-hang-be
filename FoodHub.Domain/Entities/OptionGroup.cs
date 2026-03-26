@@ -8,14 +8,60 @@ namespace FoodHub.Domain.Entities
 {
     public class OptionGroup : BaseEntity
     {
-        public Guid OptionGroupId { get; set; }
-        public Guid MenuItemId { get; set; }
-        public virtual MenuItem MenuItem { get; set; } = null!;
+        private OptionGroup() { }
 
-        public required string Name { get; set; }
-        public OptionGroupType OptionType { get; set; }
-        public bool IsRequired { get; set; }
+        public Guid OptionGroupId { get; private set; }
+        public Guid? MenuItemId { get; private set; }
+        public virtual MenuItem? MenuItem { get; private set; }
+
+        public string Name { get; private set; } = string.Empty;
+        public OptionGroupType OptionType { get; private set; }
+        public bool IsRequired { get; private set; }
         public virtual ICollection<OptionItem> OptionItems { get; set; } = new List<OptionItem>();
+        public virtual ICollection<MenuItemOptionGroup> MenuItemOptionGroups { get; set; } =
+            new List<MenuItemOptionGroup>();
+
+        public static OptionGroup Create(
+            string name,
+            OptionGroupType optionType,
+            bool isRequired,
+            Guid? legacyMenuItemId = null,
+            Guid? actorId = null
+        )
+        {
+            return new OptionGroup
+            {
+                OptionGroupId = Guid.NewGuid(),
+                MenuItemId = legacyMenuItemId,
+                Name = name.Trim(),
+                OptionType = optionType,
+                IsRequired = isRequired,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = actorId,
+                UpdatedBy = actorId,
+            };
+        }
+
+        public void Update(
+            string name,
+            OptionGroupType optionType,
+            bool isRequired,
+            Guid? actorId = null
+        )
+        {
+            Name = name.Trim();
+            OptionType = optionType;
+            IsRequired = isRequired;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = actorId;
+        }
+
+        public void AttachLegacyMenuItem(Guid? menuItemId, Guid? actorId = null)
+        {
+            MenuItemId = menuItemId;
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = actorId;
+        }
 
         public bool CanDelete()
         {
@@ -44,6 +90,16 @@ namespace FoodHub.Domain.Entities
             return IsRequired;
         }
 
+        public int GetDefaultMinSelect()
+        {
+            return IsRequired ? 1 : 0;
+        }
+
+        public int GetDefaultMaxSelect()
+        {
+            return OptionType == OptionGroupType.Single ? 1 : OptionItems.Count;
+        }
+
         public int GetOptionItemsCount()
         {
             return OptionItems.Count;
@@ -51,13 +107,15 @@ namespace FoodHub.Domain.Entities
 
         public decimal GetMaxExtraPrice()
         {
-            if (!OptionItems.Any()) return 0;
+            if (!OptionItems.Any())
+                return 0;
             return OptionItems.Max(oi => oi.ExtraPrice);
         }
 
         public decimal GetMinExtraPrice()
         {
-            if (!OptionItems.Any()) return 0;
+            if (!OptionItems.Any())
+                return 0;
             return OptionItems.Min(oi => oi.ExtraPrice);
         }
     }

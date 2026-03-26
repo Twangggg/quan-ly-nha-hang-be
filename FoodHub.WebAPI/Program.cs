@@ -3,6 +3,7 @@ using FoodHub.Application;
 using FoodHub.Infrastructure;
 using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Services.Hubs;
+using FoodHub.Infrastructure.Services.Messaging.Hubs;
 using FoodHub.Presentation.Middleware;
 using FoodHub.WebAPI.Presentation.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -84,10 +85,11 @@ try
                 }
 
                 logger.LogWarning(
-                    "Database not ready or Migration/Seed failed: {Message}. Retry {Count}/{Max}...",
-                    ex.Message,
+                    ex,
+                    "Database not ready. Retry {Count}/{Max}... Error: {ErrorMessage}",
                     retryCount,
-                    maxRetries
+                    maxRetries,
+                    ex.Message
                 );
                 await Task.Delay(3000);
             }
@@ -111,6 +113,7 @@ try
 
     app.MapHub<KdsHub>("/hubs/kds");
     app.MapHub<BillingHub>("/hubs/billing");
+    app.MapHub<TableStatusHub>("/hubs/table-status");
     app.MapHealthCheckEndpoints(); // GET /health & /health/detail
 
     await app.RunAsync();

@@ -13,8 +13,16 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
         public string OrderType { get; set; } = null!;
         public string Status { get; set; } = null!;
         public Guid? TableId { get; set; }
+        public Guid? ReservationId { get; set; }
         public string? Note { get; set; }
+        public decimal SubTotal { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal VatRate { get; set; }
+        public decimal VatAmount { get; set; }
         public decimal TotalAmount { get; set; }
+        public Guid? PromotionId { get; set; }
+        public string? PromotionCode { get; set; }
+        public string? VoucherCode { get; set; }
         public bool IsPriority { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
@@ -27,7 +35,9 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
                 .ForMember(d => d.OrderType,
                     opt => opt.MapFrom(s => s.OrderType.ToString()))
                 .ForMember(d => d.Status,
-                    opt => opt.MapFrom(s => s.Status.ToString()));
+                    opt => opt.MapFrom(s => s.Status.ToString()))
+                .ForMember(d => d.PromotionCode, opt => opt.MapFrom(s => s.Promotion != null ? s.Promotion.Code : null))
+                .ForMember(d => d.VoucherCode, opt => opt.MapFrom(s => s.Promotion != null ? s.Promotion.Code : null));
         }
     }
 }

@@ -1,7 +1,12 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +46,10 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrderById
             var order = await orderRepository
                 .Query()
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.OptionGroups)
+                    .ThenInclude(og => og.OptionValues)
+                .Include(o => o.Promotion)
+                    .ThenInclude(p => p!.Item)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
 

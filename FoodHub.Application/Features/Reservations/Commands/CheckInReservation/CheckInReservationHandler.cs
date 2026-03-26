@@ -1,6 +1,12 @@
+using System;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -15,18 +21,21 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly ISignalRService _signalRService;
         private readonly ILogger<CheckInReservationHandler> _logger;
 
         public CheckInReservationHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            ISignalRService signalRService,
             ILogger<CheckInReservationHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _signalRService = signalRService;
             _logger = logger;
         }
 
@@ -47,7 +56,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
             _logger.LogInformation(
                 "Check-in reservation {ReservationId} by user {UserId}",
                 request.ReservationId,
-                userId
+                _currentUserService.UserId
             );
 
             // 2. Find reservation with table + area
@@ -82,30 +91,58 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
                     ResultErrorType.BadRequest
                 );
             }
+            // 4. Validate table & Handle Auto-swap or Manual Area Switch
+            Table table = reservation.Table;
+            Guid targetAreaId = request.NewAreaId ?? table.AreaId;
 
-            // 4. Validate table availability (must be Available or Reserved)
-            var table = reservation.Table;
-            if (table.Status != TableStatus.Available && table.Status != TableStatus.Reserved)
+            // If the current table is busy OR the staff actively selects a new area
+            if (
+                (table.Status != TableStatus.Available && table.Status != TableStatus.Reserved)
+                || request.NewAreaId.HasValue
+            )
             {
-                _logger.LogWarning(
-                    "Cannot check-in — Table {TableId} is {Status}",
+                _logger.LogInformation(
+                    "Table {TableId} is busy or NewAreaId {NewAreaId} provided. Finding replacement in Area {TargetAreaId}",
                     table.TableId,
-                    table.Status
+                    request.NewAreaId,
+                    targetAreaId
                 );
-                return Result<CheckInReservationResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Reservation.TableOccupied),
-                    ResultErrorType.Conflict
-                );
+
+                var replacementTable = await _unitOfWork
+                    .Repository<Table>()
+                    .Query()
+                    .Where(t =>
+                        t.AreaId == targetAreaId
+                        && t.Status == TableStatus.Available
+                        && t.Capacity >= reservation.GuestCount
+                    )
+                    .OrderBy(t => t.Capacity)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (replacementTable == null)
+                {
+                    _logger.LogWarning(
+                        "No available table found in Area {TargetAreaId} for reservation {ReservationId}",
+                        targetAreaId,
+                        reservation.ReservationId
+                    );
+
+                    // Return Conflict to prompt UI to show area change popup
+                    return Result<CheckInReservationResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Reservation.NoTableInArea),
+                        ResultErrorType.Conflict
+                    );
+                }
+
+                table = replacementTable;
+                reservation.TableId = table.TableId;
             }
 
             // 5. Prevent duplicate: check no existing Order linked to this Reservation
             var alreadyHasOrder = await _unitOfWork
                 .Repository<Order>()
                 .Query()
-                .AnyAsync(
-                    o => o.ReservationId == request.ReservationId,
-                    cancellationToken
-                );
+                .AnyAsync(o => o.ReservationId == request.ReservationId, cancellationToken);
 
             if (alreadyHasOrder)
             {
@@ -171,6 +208,8 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+
+                await _signalRService.NotifyTableStatusChangedAsync(table.TableId, "Occupied");
 
                 _logger.LogInformation(
                     "Successfully checked-in reservation {ReservationId} → Order {OrderCode} (Id: {OrderId})",

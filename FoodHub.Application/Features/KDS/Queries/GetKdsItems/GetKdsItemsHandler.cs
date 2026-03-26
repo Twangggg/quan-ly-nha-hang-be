@@ -3,7 +3,12 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Features.KDS.Common;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -61,6 +66,8 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                     )
                 )
                 .Include(oi => oi.Order)
+                .Include(oi => oi.OptionGroups)
+                    .ThenInclude(og => og.OptionValues)
                 .ToListAsync(cancellationToken);
 
             var responseItems = items
@@ -82,7 +89,6 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                     FinishedOrderItems =
                         oi.Order?.OrderItems?.Count(x =>
                             x.Status == OrderItemStatus.Completed
-                            || x.Status == OrderItemStatus.Ready
                         ) ?? 0,
                     ExpectedTimeSeconds = (oi.MenuItem != null ? oi.MenuItem.ExpectedTime : 0) * 60,
                     ItemOptions = string.Join(

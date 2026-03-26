@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Enums;
 using FoodHub.Infrastructure.Services.Hubs;
+using FoodHub.Infrastructure.Services.Messaging.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
 namespace FoodHub.Infrastructure.Services
@@ -14,11 +16,17 @@ namespace FoodHub.Infrastructure.Services
     {
         private readonly IHubContext<KdsHub> _hubContext;
         private readonly IHubContext<BillingHub> _billingHubContext;
+        private readonly IHubContext<TableStatusHub> _tableStatusHubContext;
 
-        public SignalRService(IHubContext<KdsHub> hubContext, IHubContext<BillingHub> billingHubContext)
+        public SignalRService(
+            IHubContext<KdsHub> hubContext,
+            IHubContext<BillingHub> billingHubContext,
+            IHubContext<TableStatusHub> tableStatusHubContext
+        )
         {
             _hubContext = hubContext;
             _billingHubContext = billingHubContext;
+            _tableStatusHubContext = tableStatusHubContext;
         }
 
         // Thông báo khi có món ăn mới vừa được đặt (Submit Order/Add Item)
@@ -59,6 +67,41 @@ namespace FoodHub.Infrastructure.Services
             await _billingHubContext.Clients.All.SendAsync(
                 "OrderStatusChanged",
                 new { OrderId = orderId, Status = status }
+            );
+        }
+
+        /// <summary>
+        /// Thông báo cho nhân viên khi lịch ca làm việc thay đổi.
+        /// Frontend lắng nghe event "ShiftAssignmentChanged" trong group "{employeeId}".
+        /// </summary>
+        public async Task NotifyShiftAssignmentAsync(
+            Guid employeeId,
+            string shiftName,
+            DateOnly assignedDate,
+            bool isCancelled)
+        {
+            try
+            {
+                await _hubContext.Clients.Group(employeeId.ToString()).SendAsync(
+                    "ShiftAssignmentChanged",
+                    new
+                    {
+                        ShiftName = shiftName,
+                        AssignedDate = assignedDate.ToString("yyyy-MM-dd"),
+                        IsCancelled = isCancelled
+                    });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR Error in NotifyShiftAssignmentAsync: {ex.Message}");
+            }
+        }
+        public async Task NotifyTableStatusChangedAsync(Guid tableId, string newStatus)
+        {
+            // Bắn event tới tất cả client đang xem sơ đồ bàn
+            await _tableStatusHubContext.Clients.All.SendAsync(
+                "TableStatusChanged",
+                new { TableId = tableId, Status = newStatus }
             );
         }
     }

@@ -1,6 +1,11 @@
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -46,29 +51,21 @@ namespace FoodHub.Application.Features.Inventory.Settings.Queries.GetInventorySe
 
             var repo = _unitOfWork.Repository<InventorySettings>();
 
-            var response = await repo.Query()
+            var settings = await repo.Query()
                 .AsNoTracking()
-                .Where(x => x.SettingsKey == InventorySettings.DefaultSettingsKey)
-                .Select(MapToResponse())
-                .FirstOrDefaultAsync(cancellationToken);
+                .FirstOrDefaultAsync(
+                    x => x.SettingsKey == InventorySettings.DefaultSettingsKey,
+                    cancellationToken
+                );
 
-            if (response == null)
+            if (settings == null)
             {
-                var settings = InventorySettings.CreateDefault();
+                settings = InventorySettings.CreateDefault();
                 await repo.AddAsync(settings);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
-
-                response = new GetInventorySettingsResponse
-                {
-                    ExpiryWarningDays = settings.ExpiryWarningDays,
-                    DefaultLowStockThreshold = settings.DefaultLowStockThreshold,
-                    AutoDeductOnCompleted = settings.AutoDeductOnCompleted,
-                    CostMethod = settings.CostMethod,
-                    MaxCostRecalcDays = settings.MaxCostRecalcDays,
-                    OpeningStockStatus = settings.OpeningStockStatus,
-                    LockedAt = settings.LockedAt,
-                };
             }
+
+            var response = MapToResponse(settings);
 
             await _cacheService.SetAsync(
                 CacheKey.InventorySettings,
@@ -81,19 +78,20 @@ namespace FoodHub.Application.Features.Inventory.Settings.Queries.GetInventorySe
             return Result<GetInventorySettingsResponse>.Success(response);
         }
 
-        private static System.Linq.Expressions.Expression<
-            Func<InventorySettings, GetInventorySettingsResponse>
-        > MapToResponse()
+        private static GetInventorySettingsResponse MapToResponse(InventorySettings settings)
         {
-            return x => new GetInventorySettingsResponse
+            return new GetInventorySettingsResponse
             {
-                ExpiryWarningDays = x.ExpiryWarningDays,
-                DefaultLowStockThreshold = x.DefaultLowStockThreshold,
-                AutoDeductOnCompleted = x.AutoDeductOnCompleted,
-                CostMethod = x.CostMethod,
-                MaxCostRecalcDays = x.MaxCostRecalcDays,
-                OpeningStockStatus = x.OpeningStockStatus,
-                LockedAt = x.LockedAt,
+                ExpiryWarningDays = settings.ExpiryWarningDays,
+                DefaultLowStockThreshold = settings.DefaultLowStockThreshold,
+                AutoDeductOnCompleted = settings.AutoDeductOnCompleted,
+                CostMethod = settings.CostMethod,
+                MaxCostRecalcDays = settings.MaxCostRecalcDays,
+                OpeningStockImportCooldownHours = settings.OpeningStockImportCooldownHours,
+                OpeningStockStatus = settings.OpeningStockStatus,
+                LockedAt = settings.LockedAt,
+                LastOpeningStockImportedAt = settings.LastOpeningStockImportedAt,
+                NextOpeningStockImportAllowedAt = settings.GetNextOpeningStockImportAllowedAt(),
             };
         }
     }

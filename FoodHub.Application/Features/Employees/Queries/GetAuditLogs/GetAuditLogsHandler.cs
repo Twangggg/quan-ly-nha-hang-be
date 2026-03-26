@@ -4,7 +4,12 @@ using AutoMapper.QueryableExtensions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
-using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Messaging;
+using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
 
@@ -23,25 +28,25 @@ namespace FoodHub.Application.Features.Employees.Queries.GetAuditLogs
 
         public async Task<Result<PagedResult<GetAuditLogsResponse>>> Handle(GetAuditLogsQuery request, CancellationToken cancellationToken)
         {
+            var entityIdJson = $"{{\"EmployeeId\":\"{request.EmployeeId}\"}}";
             var query = _unitOfWork.Repository<AuditLog>().Query()
-                .Where(x => x.TargetId == request.EmployeeId);
+                .Where(x => x.EntityName == "Employee" && x.EntityId == entityIdJson);
 
             var filterMapping = new Dictionary<string, Expression<Func<AuditLog, object?>>>
             {
-                { "action", x => x.Action.ToString() }
+                { "action", x => x.Action }
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
-            var sortMappping = new Dictionary<string, Expression<Func<AuditLog, object?>>>
+            var sortMapping = new Dictionary<string, Expression<Func<AuditLog, object?>>>
             {
                     { "action", x => x.Action },
-                    { "time", x => x.CreatedAt },
-                    { "actor", x => x.PerformedBy.FullName }
+                    { "time", x => x.CreatedAt }
             };
 
             query = query.ApplySorting(
                 request.Pagination.OrderBy,
-                sortMappping,
+                sortMapping,
                 x => x.LogId
             );
 

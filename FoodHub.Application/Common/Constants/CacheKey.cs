@@ -50,7 +50,7 @@ public static class CacheKey
 
     /// <summary>
     /// Key cho danh sách set menus (base key)
-    /// Sẽ kết hợp với filters/pagination
+    /// Sẽ kết hợp with filters/pagination
     /// </summary>
     public const string SetMenuList = "setmenu:list";
 
@@ -67,6 +67,30 @@ public static class CacheKey
     /// Example: string.Format(OptionGroupsByMenuItem, "456") → "option:menuitem:456"
     /// </summary>
     public const string OptionGroupsByMenuItem = "option:menuitem:{0}";
+
+    /// <summary>
+    /// Key cho danh sách reusable option groups theo trang
+    /// Example: string.Format(OptionReusableList, 1, 100) → "option:reusable:list:1:100"
+    /// </summary>
+    public const string OptionReusableList = "option:reusable:list:{0}:{1}";
+
+    // ==================== INVENTORY ====================
+
+    public const string InventoryIngredientsList = "inventory:ingredients:list";
+    public const string InventoryIngredientById = "inventory:ingredient:{0}";
+    public const string InventoryChecksList = "inventory:checks:list";
+    public const string InventoryCheckById = "inventory:check:{0}";
+    public const string InventoryCheckCreateForm = "inventory:check:create-form";
+    public const string InventoryOpeningStockList = "inventory:opening-stock:list";
+    public const string InventoryStockInReceiptsList = "inventory:stockin:list";
+    public const string InventoryStockInReceiptById = "inventory:stockin:{0}";
+    public const string InventoryStockOutReceiptsList = "inventory:stockout:list";
+    public const string InventoryStockOutReceiptById = "inventory:stockout:{0}";
+    public const string InventoryLotsList = "inventory:lots:list";
+    public const string InventoryReportList = "inventory:report:list";
+    public const string InventoryLedgerList = "inventory:ledger:list";
+    public const string InventoryRecipeByMenuItem = "inventory:recipe:{0}";
+    public const string InventoryTransactionsList = "inventory:transactions:list";
 
     // ==================== ORDERS ====================
     public const string OrderList = "order:list";
@@ -103,6 +127,30 @@ public static class CacheKey
     public const string ReservationById = "reservation:{0}";
     // ==================== INVENTORY ====================
     public const string InventorySettings = "inventory:settings";
+
+    // ==================== VOUCHERS ====================
+    public const string VoucherList = "voucher:list";
+    public const string VoucherById = "voucher:id:{0}";
+    public const string VoucherByCode = "voucher:code:{0}";
+
+    // ==================== SHIFTS ====================
+    /// <summary>
+    /// Key cho danh sách tất cả ca làm việc
+    /// </summary>
+    public const string ShiftList = "shift:list:all";
+    /// <summary>
+    /// Key cho một ca làm việc cụ thể
+    /// Example: string.Format(ShiftById, "id") → "shift:{id}"
+    /// </summary>
+    public const string ShiftById = "shift:{0}";
+
+    // ==================== SHIFT ASSIGNMENTS ====================
+    /// <summary>Key cho danh sách phân công (có filter).</summary>
+    public const string ShiftAssignmentList = "shift-assignment:list";
+    /// <summary>Key cho 1 phân công cụ thể theo ID.</summary>
+    public const string ShiftAssignmentById = "shift-assignment:{0}";
+    /// <summary>Key cho danh sách phân công theo nhân viên + ngày.</summary>
+    public const string ShiftAssignmentByEmployee = "shift-assignment:employee:{0}:{1}";
 }
 public static class CacheTTL
 {
@@ -111,9 +159,13 @@ public static class CacheTTL
     public static readonly TimeSpan Employees = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan SetMenus = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Options = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan Inventory = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan Orders = TimeSpan.FromMinutes(5);
     public static readonly TimeSpan Areas = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan Tables = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan Reservations = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan InventorySettings = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan Vouchers = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan Shifts = TimeSpan.FromMinutes(15);
+    public static readonly TimeSpan ShiftAssignments = TimeSpan.FromMinutes(10);
 }
