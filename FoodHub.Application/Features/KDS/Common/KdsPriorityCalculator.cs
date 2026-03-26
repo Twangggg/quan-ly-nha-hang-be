@@ -1,19 +1,12 @@
-using System;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.KDS.Common
 {
-    /// <summary>
-    /// Phase 2 — Priority scoring cho KDS queue.
-    /// Phase 1: dùng FIFO (CreatedAt) đơn giản.
-    /// </summary>
     public class KdsPriorityCalculator
     {
-        /// <summary>
-        /// Tính điểm ưu tiên nâng cao cho món ăn (Phase 2 - Smart Heuristics).
-        /// </summary>
         public int Calculate(
+            KdsSettings settings,
             DateTime createdAt,
             bool isOrderPriority,
             int expectedTimeSeconds,
@@ -25,42 +18,82 @@ namespace FoodHub.Application.Features.KDS.Common
             var score = 0.0;
             var now = DateTime.UtcNow;
 
-            // Base Wait Time: +2 pts per minute
             var waitMinutes = (now - createdAt).TotalMinutes;
-            score += waitMinutes * 2;
+            score += waitMinutes * settings.WaitTimePerMinute;
 
-            // Order Priority: +100 pts
             if (isOrderPriority)
             {
-                score += 100;
+                score += settings.OrderPriorityBonus;
             }
 
-            // Preparation Type Weight
             var expectedTimeMinutes = expectedTimeSeconds / 60.0;
-            score += expectedTimeMinutes * 1.5;
+            score += expectedTimeMinutes * settings.ExpectedTimeWeight;
 
-            // Stale Item Penalty: +10 pts per minute AFTER ExpectedTime
             if (waitMinutes > expectedTimeMinutes)
             {
                 var overdueMinutes = waitMinutes - expectedTimeMinutes;
-                score += overdueMinutes * 10;
+                score += overdueMinutes * settings.OverduePerMinute;
             }
 
-            // Order Completion Boost
             if (totalOrderItems > 0)
             {
-                score += ((double)finishedOrderItems / totalOrderItems) * 50;
+                score +=
+                    ((double)finishedOrderItems / totalOrderItems)
+                    * settings.CompletionBoostWeight;
             }
 
-            // Order Type Factor
             score += orderType switch
             {
-                OrderType.Takeaway => 15,
-                OrderType.Delivery => 25,
+                OrderType.Takeaway => settings.TakeawayBonus,
+                OrderType.Delivery => settings.DeliveryBonus,
                 _ => 0,
             };
 
             return (int)Math.Round(score);
+        }
+
+        public List<T> SortQueue<T>(
+            IEnumerable<T> items,
+            KdsSortMode sortMode,
+            Func<T, int> prioritySelector,
+            Func<T, DateTime> createdAtSelector
+        )
+        {
+            return sortMode switch
+            {
+                KdsSortMode.Fifo => items.OrderBy(createdAtSelector).ToList(),
+                KdsSortMode.Priority => items
+                    .OrderByDescending(prioritySelector)
+                    .ThenBy(createdAtSelector)
+                    .ToList(),
+                _ => items.OrderByDescending(prioritySelector).ThenBy(createdAtSelector).ToList(),
+            };
+        }
+
+        public List<T> SortActiveItems<T>(
+            IEnumerable<T> items,
+            KdsSortMode sortMode,
+            Func<T, bool> isCookingSelector,
+            Func<T, int> prioritySelector,
+            Func<T, DateTime> createdAtSelector
+        )
+        {
+            return sortMode switch
+            {
+                KdsSortMode.Fifo => items
+                    .OrderBy(x => isCookingSelector(x) ? 0 : 1)
+                    .ThenBy(createdAtSelector)
+                    .ToList(),
+                KdsSortMode.Priority => items
+                    .OrderByDescending(prioritySelector)
+                    .ThenBy(createdAtSelector)
+                    .ToList(),
+                _ => items
+                    .OrderBy(x => isCookingSelector(x) ? 0 : 1)
+                    .ThenByDescending(prioritySelector)
+                    .ThenBy(createdAtSelector)
+                    .ToList(),
+            };
         }
     }
 }

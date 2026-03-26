@@ -1,6 +1,7 @@
 using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
@@ -11,6 +12,7 @@ using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
 using FoodHub.Infrastructure.Services.Inventory;
+using FoodHub.Infrastructure.Services.Kds;
 using FoodHub.Infrastructure.Services.Reservations;
 using FoodHub.Infrastructure.Services.Reporting;
 using FoodHub.Infrastructure.Services.External;
@@ -108,10 +110,12 @@ namespace FoodHub.Infrastructure
             // Inventory Services
             services.AddScoped<IInventoryDeductionService, InventoryDeductionService>();
             services.AddScoped<IReceiptCodeGenerator, ReceiptCodeGenerator>();
+            services.AddScoped<IInventoryExcelService, InventoryExcelService>();
 
             // Reservation Services
             services.AddScoped<IReservationSettingsProvider, ReservationSettingsProvider>();
             services.AddScoped<IReservationLifecyclePolicy, ReservationLifecyclePolicy>();
+            services.AddScoped<IKdsSettingsProvider, KdsSettingsProvider>();
 
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();

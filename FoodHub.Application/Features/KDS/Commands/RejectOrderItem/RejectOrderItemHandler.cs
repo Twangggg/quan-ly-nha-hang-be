@@ -5,6 +5,7 @@ using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.Security;
@@ -23,6 +24,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
         private readonly IMessageService _messageService;
         private readonly ISignalRService _signalRService;
         private readonly KdsPriorityCalculator _priorityCalculator;
+        private readonly IKdsSettingsProvider _kdsSettingsProvider;
         private readonly ILogger<RejectOrderItemHandler> _logger;
 
         public RejectOrderItemHandler(
@@ -31,6 +33,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
             IMessageService messageService,
             ISignalRService signalRService,
             KdsPriorityCalculator priorityCalculator,
+            IKdsSettingsProvider kdsSettingsProvider,
             ILogger<RejectOrderItemHandler> logger
         )
         {
@@ -39,6 +42,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
             _messageService = messageService;
             _signalRService = signalRService;
             _priorityCalculator = priorityCalculator;
+            _kdsSettingsProvider = kdsSettingsProvider;
             _logger = logger;
         }
 
@@ -59,6 +63,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                     ResultErrorType.Unauthorized
                 );
             }
+
             _logger.LogInformation(
                 "Attempting to reject OrderItemId: {OrderItemId}. Reason: {Reason}",
                 request.OrderItemId,
@@ -112,7 +117,7 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
-                // Auto-pull: Tìm món tiếp theo dựa trên độ ưu tiên thông minh
+                var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
                 var pendingItems = await orderItemRepository
                     .Query()
                     .Include(oi => oi.Order)
@@ -124,12 +129,13 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                     )
                     .ToListAsync(cancellationToken);
 
-                OrderItem? nextItem = null;
-                if (pendingItems.Any())
-                {
-                    nextItem = pendingItems
-                        .OrderByDescending(oi =>
+                var nextItem = _priorityCalculator
+                    .SortQueue(
+                        pendingItems,
+                        settings.SortMode,
+                        oi =>
                             _priorityCalculator.Calculate(
+                                settings,
                                 oi.CreatedAt,
                                 oi.Order?.IsPriority ?? false,
                                 (oi.MenuItem?.ExpectedTime ?? 0) * 60,
@@ -138,11 +144,10 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                                 oi.Order?.OrderItems?.Count(x =>
                                     x.Status == OrderItemStatus.Completed
                                 ) ?? 0
-                            )
-                        )
-                        .ThenBy(oi => oi.CreatedAt)
-                        .First();
-                }
+                            ),
+                        oi => oi.CreatedAt
+                    )
+                    .FirstOrDefault();
 
                 if (nextItem != null)
                 {
@@ -165,7 +170,6 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                         CreatedAt = DateTime.UtcNow,
                     };
                     await _unitOfWork.Repository<OrderAuditLog>().AddAsync(autoPullLog);
-
                     orderItemRepository.Update(nextItem);
                 }
 
@@ -178,7 +182,6 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                     request.OrderItemId
                 );
 
-                // SignalR Notify
                 _ = _signalRService.NotifyOrderItemStatusChangedAsync(
                     orderItem.OrderItemId,
                     OrderItemStatus.Rejected,
@@ -195,13 +198,8 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
 
                 return Result<Guid>.Success(orderItem.OrderItemId);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(
-                    ex,
-                    "Error occurred while rejecting OrderItemId: {OrderItemId}",
-                    request.OrderItemId
-                );
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }

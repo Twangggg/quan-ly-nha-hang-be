@@ -17,6 +17,7 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
         public string? RejectionReason { get; set; }
         public DateTime CreatedAt { get; set; }
         public int PriorityScore { get; set; }
+        public bool IsPriority { get; set; }
         public string? ItemOptions { get; set; }
         public bool IsOrderPriority { get; set; }
         public string OrderType { get; set; } = null!;

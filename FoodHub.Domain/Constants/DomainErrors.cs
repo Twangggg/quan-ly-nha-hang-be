@@ -134,6 +134,14 @@ namespace FoodHub.Domain.Constants
                 "ReservationSettings.InvalidBreakOutsideOperatingHours";
         }
 
+        public static class KdsSettings
+        {
+            public const string InvalidPriorityWeight = "KdsSettings.InvalidPriorityWeight";
+            public const string InvalidStationWipLimit = "KdsSettings.InvalidStationWipLimit";
+            public const string DuplicateStationWipLimit = "KdsSettings.DuplicateStationWipLimit";
+            public const string StationWipLimitsRequired = "KdsSettings.StationWipLimitsRequired";
+        }
+
         public static class StockInReceipt
         {
             public const string DuplicateIngredient = "StockInReceipt.DuplicateIngredient";

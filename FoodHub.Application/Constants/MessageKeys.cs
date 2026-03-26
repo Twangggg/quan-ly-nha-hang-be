@@ -167,6 +167,16 @@ namespace FoodHub.Application.Constants
             public const string ActionMaxLength = "KDS.ActionMaxLength";
         }
 
+        public static class KdsSettings
+        {
+            public const string InvalidSortMode = "KdsSettings.InvalidSortMode";
+            public const string InvalidPriorityWeight = "KdsSettings.InvalidPriorityWeight";
+            public const string InvalidStationWipLimit = "KdsSettings.InvalidStationWipLimit";
+            public const string DuplicateStationWipLimit = "KdsSettings.DuplicateStationWipLimit";
+            public const string StationWipLimitsRequired = "KdsSettings.StationWipLimitsRequired";
+            public const string MissingStationWipLimit = "KdsSettings.MissingStationWipLimit";
+        }
+
         public static class MenuItem
         {
             public const string NotFound = "MenuItem.NotFound";

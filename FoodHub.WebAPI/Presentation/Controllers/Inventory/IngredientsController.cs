@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Features.Inventory.ImportBalance.Commands.Import;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.ActivateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.DeactivateIngredient;
@@ -17,6 +18,8 @@ using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
+using ClosedXML.Excel;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -139,6 +142,55 @@ namespace FoodHub.Presentation.Controllers
         {
             var result = await _mediator.Send(new ActivateIngredientCommand(id));
             return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Nhập số dư tồn kho từ file Excel.
+        /// </summary>
+        [HttpPost("import-balance")]
+        [HasPermission(Permissions.Inventory.Import)]
+        [ProducesResponseType(typeof(Result<ImportInventoryBalanceResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<ImportInventoryBalanceResponse>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ImportInventoryBalance(
+            IFormFile file,
+            [FromQuery] bool confirmOverwrite = false
+        )
+        {
+            var result = await _mediator.Send(new ImportInventoryBalanceCommand(file, confirmOverwrite));
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Tải file mẫu nhập tồn kho Excel.
+        /// </summary>
+        [HttpGet("import-balance/template")]
+        [HasPermission(Permissions.Inventory.View)]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        public IActionResult DownloadImportBalanceTemplate()
+        {
+            using var workbook = new XLWorkbook();
+            var sheet = workbook.Worksheets.Add("Mau_Nhap_Ton_Kho");
+
+            sheet.Cell(1, 1).Value = "Mã nguyên liệu";
+            sheet.Cell(1, 2).Value = "Số lượng";
+            sheet.Cell(1, 3).Value = "Giá nhập";
+            sheet.Cell(1, 4).Value = "Đơn vị";
+
+            sheet.Range(1, 1, 1, 4).Style.Font.Bold = true;
+            sheet.Range(1, 1, 1, 4).Style.Fill.BackgroundColor = XLColor.LightBlue;
+
+            sheet.Cell(2, 1).Value = "NL001";
+            sheet.Cell(2, 2).Value = 100;
+            sheet.Cell(2, 3).Value = 50000;
+            sheet.Cell(2, 4).Value = "kg";
+
+            sheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            var bytes = stream.ToArray();
+
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Mau_Nhap_Ton_Kho.xlsx");
         }
     }
 }
