@@ -15,6 +15,7 @@ namespace FoodHub.Application.Features.Attendances.Queries.ExportAttendanceRepor
 {
     public class ExportAttendanceReportHandler : IRequestHandler<ExportAttendanceReportQuery, Result<byte[]>>
     {
+        private static readonly TimeZoneInfo _vietnamTz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAttendanceExcelService _excelService;
@@ -42,6 +43,25 @@ namespace FoodHub.Application.Features.Attendances.Queries.ExportAttendanceRepor
                     .ThenInclude(sa => sa.Shift)
                 .AsNoTracking();
 
+            // Apply Date Range filters
+            if (request.Date.HasValue)
+            {
+                var (startUtc, endUtc) = ToUtcRange(request.Date.Value, request.Date.Value);
+                query = query.Where(a => a.CheckInTime >= startUtc && a.CheckInTime < endUtc);
+            }
+            else if (request.StartDate.HasValue && request.EndDate.HasValue)
+            {
+                var (startUtc, endUtc) = ToUtcRange(request.StartDate.Value, request.EndDate.Value);
+                query = query.Where(a => a.CheckInTime >= startUtc && a.CheckInTime < endUtc);
+            }
+            else
+            {
+                var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _vietnamTz);
+                var today = DateOnly.FromDateTime(now);
+                var (startUtc, endUtc) = ToUtcRange(today, today);
+                query = query.Where(a => a.CheckInTime >= startUtc && a.CheckInTime < endUtc);
+            }
+
             var searchableFields = new List<Expression<Func<Attendance, string?>>>
             {
                 a => a.Employee.FullName,
@@ -53,8 +73,7 @@ namespace FoodHub.Application.Features.Attendances.Queries.ExportAttendanceRepor
             {
                 { "employeeid", a => a.EmployeeId },
                 { "islate", a => a.isLate },
-                { "isearlyleave", a => a.isEarlyLeave },
-                { "date", a => a.CheckInTime.Date }
+                { "isearlyleave", a => a.isEarlyLeave }
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
@@ -74,7 +93,14 @@ namespace FoodHub.Application.Features.Attendances.Queries.ExportAttendanceRepor
 
             foreach (var item in items)
             {
-                item.Date = item.AssignedDate ?? DateOnly.FromDateTime(item.CheckInTime.AddHours(7));
+                // Convert UTC to local Vietnam time for display in Excel
+                item.CheckInTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(item.CheckInTime, DateTimeKind.Utc), _vietnamTz);
+                if (item.CheckOutTime.HasValue)
+                {
+                    item.CheckOutTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(item.CheckOutTime.Value, DateTimeKind.Utc), _vietnamTz);
+                }
+
+                item.Date = item.AssignedDate ?? DateOnly.FromDateTime(item.CheckInTime);
                 item.Status = item.CheckOutTime == null ? "Thiếu giờ ra" 
                             : (item.isLate == true && item.isEarlyLeave == true) ? "Đi trễ & Về sớm"
                             : item.isLate == true ? "Đi trễ"
@@ -86,6 +112,17 @@ namespace FoodHub.Application.Features.Attendances.Queries.ExportAttendanceRepor
             _logger.LogInformation("Successfully exported Attendance Report to Excel with {Count} items", items.Count);
 
             return Result<byte[]>.Success(fileContent);
+        }
+
+        private static (DateTime StartUtc, DateTime EndUtc) ToUtcRange(DateOnly start, DateOnly end)
+        {
+            var startLocal = start.ToDateTime(TimeOnly.MinValue);
+            var endLocal = end.AddDays(1).ToDateTime(TimeOnly.MinValue);
+
+            return (
+                TimeZoneInfo.ConvertTimeToUtc(startLocal, _vietnamTz),
+                TimeZoneInfo.ConvertTimeToUtc(endLocal, _vietnamTz)
+            );
         }
     }
 }
