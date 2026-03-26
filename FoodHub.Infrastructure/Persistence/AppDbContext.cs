@@ -33,7 +33,8 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
 
         // Billing
-        // (Invoices and Payments removed)
+        public DbSet<PaymentMethodConfig> PaymentMethodConfigs { get; set; } = null!;
+        public DbSet<OrderPayment> OrderPayments { get; set; } = null!;
         public DbSet<Reservation> Reservations { get; set; } = null!;
 
         // Menu Management

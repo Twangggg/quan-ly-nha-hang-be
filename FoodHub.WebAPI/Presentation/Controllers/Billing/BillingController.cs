@@ -6,6 +6,7 @@ using FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook;
 using FoodHub.Application.Features.Billing.Queries.GetBillingHistory;
 using FoodHub.Application.Features.Billing.Queries.ExportPreCheckBillPdf;
 using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
+using FoodHub.Application.Features.Billing.Queries.GetRevenueByPaymentMethod;
 using FoodHub.Application.Interfaces;
 using FoodHub.Presentation.Controllers;
 using FoodHub.WebAPI.Presentation.Attributes;
@@ -106,6 +107,31 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Billing
         public async Task<IActionResult> GetBillingHistory([FromQuery] PaginationParams pagination)
         {
             var query = new GetBillingHistoryQuery { Pagination = pagination };
+            var result = await _mediator.Send(query);
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Báo cáo doanh thu theo phương thức thanh toán.
+        /// </summary>
+        /// <param name="dateFrom">Ngày bắt đầu (mặc định: hôm nay).</param>
+        /// <param name="dateTo">Ngày kết thúc (mặc định: hôm nay).</param>
+        /// <param name="paymentMethodConfigId">Lọc theo phương thức cụ thể (tùy chọn).</param>
+        /// <response code="200">Báo cáo doanh thu.</response>
+        [HttpGet("revenue-by-payment-method")]
+        [HasPermission(Permissions.Billing.ViewHistory)]
+        [ProducesResponseType(typeof(Result<GetRevenueByPaymentMethodResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetRevenueByPaymentMethod(
+            [FromQuery] DateTime? dateFrom,
+            [FromQuery] DateTime? dateTo,
+            [FromQuery] Guid? paymentMethodConfigId)
+        {
+            var query = new GetRevenueByPaymentMethodQuery
+            {
+                DateFrom = dateFrom,
+                DateTo = dateTo,
+                PaymentMethodConfigId = paymentMethodConfigId
+            };
             var result = await _mediator.Send(query);
             return HandleResult(result);
         }

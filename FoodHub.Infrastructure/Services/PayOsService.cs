@@ -1,6 +1,8 @@
 using System.Text.Json;
 using FoodHub.Application.Interfaces;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PayOS;
 using PayOS.Models.V2.PaymentRequests;
@@ -10,23 +12,39 @@ namespace FoodHub.Infrastructure.Services
 {
     public class PayOsService : IPaymentService
     {
-        private readonly PayOSClient _payOs;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly PayOsSettings _settings;
 
-        public PayOsService(IOptions<PayOsSettings> options)
+        public PayOsService(IUnitOfWork unitOfWork, IOptions<PayOsSettings> options)
         {
+            _unitOfWork = unitOfWork;
             _settings = options.Value;
+        }
+
+        private async Task<PayOSClient> GetDynamicPayOSClientAsync(CancellationToken token = default)
+        {
+            var config = await _unitOfWork.Repository<PaymentMethodConfig>()
+                .Query()
+                .FirstOrDefaultAsync(x => x.Type == PaymentMethodType.BankTransfer && x.IsActive, token);
+
+            if (config == null || string.IsNullOrWhiteSpace(config.PayOsClientId) || string.IsNullOrWhiteSpace(config.PayOsApiKey) || string.IsNullOrWhiteSpace(config.PayOsChecksumKey))
+            {
+                throw new InvalidOperationException("PayOS keys are not configured in the active BankTransfer payment method.");
+            }
+
             var payOsOptions = new PayOSOptions
             {
-                ClientId = _settings.ClientId,
-                ApiKey = _settings.ApiKey,
-                ChecksumKey = _settings.ChecksumKey
+                ClientId = config.PayOsClientId,
+                ApiKey = config.PayOsApiKey,
+                ChecksumKey = config.PayOsChecksumKey
             };
-            _payOs = new PayOSClient(payOsOptions);
+
+            return new PayOSClient(payOsOptions);
         }
 
         public async Task<PaymentLinkResponse> CreatePaymentLinkAsync(Order order, CancellationToken token = default)
         {
+            var payOs = await GetDynamicPayOSClientAsync(token);
             var amount = (long)Math.Max(1000, order.TotalAmount); // minimum amount rule for test
 
             var request = new CreatePaymentLinkRequest
@@ -38,7 +56,7 @@ namespace FoodHub.Infrastructure.Services
                 ReturnUrl = _settings.ReturnUrl
             };
 
-            var createPaymentResult = await _payOs.PaymentRequests.CreateAsync(request);
+            var createPaymentResult = await payOs.PaymentRequests.CreateAsync(request);
 
             return new PaymentLinkResponse
             {
@@ -58,7 +76,8 @@ namespace FoodHub.Infrastructure.Services
             var webhook = JsonSerializer.Deserialize<Webhook>(webhookBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (webhook == null) throw new ArgumentException("Invalid webhook data");
 
-            var verifiedData = await _payOs.Webhooks.VerifyAsync(webhook);
+            var payOs = await GetDynamicPayOSClientAsync();
+            var verifiedData = await payOs.Webhooks.VerifyAsync(webhook);
             if (verifiedData == null) throw new UnauthorizedAccessException("Webhook verification failed");
 
             return verifiedData.OrderCode;

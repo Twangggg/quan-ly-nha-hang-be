@@ -29,17 +29,16 @@ namespace FoodHub.Domain.Entities
         // Navigation properties
         public virtual Table? Table { get; set; }
         public virtual Reservation? Reservation { get; set; }
-
-        // Billing
         public PaymentMethod? PaymentMethod { get; set; }
         public decimal? AmountPaid { get; set; }
         public DateTime? PaidAt { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
+        public ICollection<OrderPayment> OrderPayments { get; set; } = new List<OrderPayment>();
 
         public bool IsActive() => Status == OrderStatus.Serving;
 
-        public DomainResult ProcessCheckout(PaymentMethod paymentMethod, decimal? amountPaid)
+        public DomainResult ProcessCheckout(PaymentMethod paymentMethod, decimal totalAmountReceived)
         {
             if (
                 Status == OrderStatus.Paid
@@ -55,19 +54,12 @@ namespace FoodHub.Domain.Entities
                 return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
             }
 
-            if (paymentMethod == FoodHub.Domain.Enums.PaymentMethod.Cash)
+            if (totalAmountReceived < TotalAmount)
             {
-                if ((amountPaid ?? 0) < TotalAmount)
-                {
-                    return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
-                }
-                AmountPaid = amountPaid;
-            }
-            else
-            {
-                AmountPaid = TotalAmount;
+                return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
             }
 
+            AmountPaid = totalAmountReceived;
             Status = OrderStatus.Paid;
             PaymentMethod = paymentMethod;
             PaidAt = DateTime.UtcNow;
@@ -110,8 +102,8 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
-        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived)
-            => ProcessCheckout(paymentMethod, amountReceived);
+        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal totalAmountReceived)
+            => ProcessCheckout(paymentMethod, totalAmountReceived);
 
         public bool CanComplete() =>
             Status == OrderStatus.Serving && OrderItems.All(oi => oi.IsFinished());

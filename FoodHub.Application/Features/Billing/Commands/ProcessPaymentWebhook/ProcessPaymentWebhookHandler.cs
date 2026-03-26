@@ -102,6 +102,25 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                     }
                 }
 
+                // Create OrderPayment record for webhook-based payment
+                var bankTransferConfig = await _unitOfWork.Repository<PaymentMethodConfig>()
+                    .Query()
+                    .FirstOrDefaultAsync(pm => pm.IsActive && pm.Type == PaymentMethodType.BankTransfer, cancellationToken);
+
+                if (bankTransferConfig != null)
+                {
+                    var orderPayment = new OrderPayment
+                    {
+                        OrderPaymentId = Guid.NewGuid(),
+                        OrderId = order.OrderId,
+                        PaymentMethodConfigId = bankTransferConfig.PaymentMethodConfigId,
+                        Amount = order.TotalAmount,
+                        PaidAt = DateTime.UtcNow,
+                        Note = $"PayOS Webhook OrderCode: {orderCode}",
+                    };
+                    await _unitOfWork.Repository<OrderPayment>().AddAsync(orderPayment);
+                }
+
                 _unitOfWork.Repository<Order>().Update(order);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();

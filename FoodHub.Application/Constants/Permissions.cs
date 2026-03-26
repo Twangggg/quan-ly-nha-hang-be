@@ -59,6 +59,14 @@ namespace FoodHub.Application.Constants
             public const string PreCheckBill = "Permissions.Billing.PreCheckBill";
         }
 
+        public static class PaymentMethods
+        {
+            public const string View = "Permissions.PaymentMethods.View";
+            public const string Create = "Permissions.PaymentMethods.Create";
+            public const string Update = "Permissions.PaymentMethods.Update";
+            public const string ToggleStatus = "Permissions.PaymentMethods.ToggleStatus";
+        }
+
         public static class Kds
         {
             public const string View = "Permissions.Kds.View";

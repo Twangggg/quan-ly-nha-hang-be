@@ -84,7 +84,8 @@ try
                 }
 
                 logger.LogWarning(
-                    "Database not ready. Retry {Count}/{Max}...",
+                    "Database not ready or Migration/Seed failed: {Message}. Retry {Count}/{Max}...",
+                    ex.Message,
                     retryCount,
                     maxRetries
                 );

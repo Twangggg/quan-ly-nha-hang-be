@@ -73,6 +73,17 @@ namespace FoodHub.Domain.Constants
             public const string NotFound = "Payment.NotFound";
             public const string InvalidInvoiceStatus = "Payment.InvalidInvoiceStatus";
             public const string AmountExceedsRemaining = "Payment.AmountExceedsRemaining";
+            public const string SplitTotalMismatch = "Payment.SplitTotalMismatch";
+        }
+
+        public static class PaymentMethodConfig
+        {
+            public const string NotFound = "PaymentMethodConfig.NotFound";
+            public const string CannotDeactivateDefault = "PaymentMethodConfig.CannotDeactivateDefault";
+            public const string BankInfoRequired = "PaymentMethodConfig.BankInfoRequired";
+            public const string DuplicateName = "PaymentMethodConfig.DuplicateName";
+            public const string CannotDeleteDefault = "PaymentMethodConfig.CannotDeleteDefault";
+            public const string Inactive = "PaymentMethodConfig.Inactive";
         }
 
         public static class Ingredient

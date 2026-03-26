@@ -34,7 +34,8 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             CancellationToken cancellationToken
         )
         {
-            _logger.LogInformation("Processing checkout for OrderId: {OrderId}", request.OrderId);
+            _logger.LogInformation("Processing checkout for OrderId: {OrderId} with {LineCount} payment line(s)",
+                request.OrderId, request.PaymentLines.Count);
 
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
@@ -45,7 +46,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             }
 
             var order = await _unitOfWork
-                .Repository<Domain.Entities.Order>()
+                .Repository<Order>()
                 .Query()
                 .Include(o => o.OrderItems)
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
@@ -59,11 +60,80 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 );
             }
 
-            // Rich Domain Model: delegate business logic to entity
-            var domainResult = order.ProcessCheckout(request.PaymentMethod, request.AmountPaid);
+            // Validate total matches
+            var totalPayment = request.PaymentLines.Sum(l => l.Amount);
+            if (totalPayment != order.TotalAmount)
+            {
+                _logger.LogWarning("Split payment total mismatch. Expected: {Expected}, Got: {Got}",
+                    order.TotalAmount, totalPayment);
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.Billing.SplitTotalMismatch),
+                    ResultErrorType.BadRequest
+                );
+            }
+
+            // Validate all payment method configs exist and are active
+            var paymentMethodIds = request.PaymentLines.Select(l => l.PaymentMethodConfigId).Distinct().ToList();
+            var paymentMethods = await _unitOfWork.Repository<PaymentMethodConfig>()
+                .Query()
+                .Where(pm => paymentMethodIds.Contains(pm.PaymentMethodConfigId))
+                .ToListAsync(cancellationToken);
+
+            if (paymentMethods.Count != paymentMethodIds.Count)
+            {
+                _logger.LogWarning("One or more PaymentMethodConfig not found");
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.PaymentMethodConfig.NotFound),
+                    ResultErrorType.BadRequest
+                );
+            }
+
+            var inactiveMethod = paymentMethods.FirstOrDefault(pm => !pm.IsActive);
+            if (inactiveMethod != null)
+            {
+                _logger.LogWarning("PaymentMethodConfig {Id} is inactive", inactiveMethod.PaymentMethodConfigId);
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.PaymentMethodConfig.Inactive),
+                    ResultErrorType.BadRequest
+                );
+            }
+
+            // Validate cash amount received
+            foreach (var line in request.PaymentLines)
+            {
+                var method = paymentMethods.First(pm => pm.PaymentMethodConfigId == line.PaymentMethodConfigId);
+                if (method.Type == PaymentMethodType.Cash && (line.AmountReceived ?? 0) < line.Amount)
+                {
+                    _logger.LogWarning("Insufficient cash amount for line {MethodId}", line.PaymentMethodConfigId);
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.InsufficientAmount),
+                        ResultErrorType.BadRequest
+                    );
+                }
+            }
+
+            // Determine legacy PaymentMethod from the first payment line type
+            var primaryMethod = paymentMethods.First(pm =>
+                pm.PaymentMethodConfigId == request.PaymentLines.First().PaymentMethodConfigId);
+            var legacyPaymentMethod = primaryMethod.Type switch
+            {
+                PaymentMethodType.Cash => PaymentMethod.Cash,
+                PaymentMethodType.BankTransfer => PaymentMethod.BankTransfer,
+                _ => PaymentMethod.Cash
+            };
+
+            // Calculate total exactly received (supports split payments including cash over-payment)
+            var totalReceived = request.PaymentLines.Sum(l => 
+            {
+                var m = paymentMethods.First(pm => pm.PaymentMethodConfigId == l.PaymentMethodConfigId);
+                return m.Type == PaymentMethodType.Cash ? (l.AmountReceived ?? l.Amount) : l.Amount;
+            });
+
+            var domainResult = order.ProcessCheckout(legacyPaymentMethod, totalReceived);
             if (!domainResult.IsSuccess)
             {
-                _logger.LogWarning("Checkout failed for OrderId: {OrderId}. Reason: {ErrorCode}", request.OrderId, domainResult.ErrorCode);
+                _logger.LogWarning("Checkout failed for OrderId: {OrderId}. Reason: {ErrorCode}",
+                    request.OrderId, domainResult.ErrorCode);
 
                 if (domainResult.ErrorCode == DomainErrors.Order.InvalidActionWithStatus)
                 {
@@ -87,7 +157,29 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                // Create OrderPayment records for each payment line
+                foreach (var line in request.PaymentLines)
+                {
+                    var orderPayment = new OrderPayment
+                    {
+                        OrderPaymentId = Guid.NewGuid(),
+                        OrderId = order.OrderId,
+                        PaymentMethodConfigId = line.PaymentMethodConfigId,
+                        Amount = line.Amount,
+                        PaidAt = DateTime.UtcNow,
+                        CreatedBy = auditorId,
+                    };
+                    await _unitOfWork.Repository<OrderPayment>().AddAsync(orderPayment);
+                }
+
                 // Audit Log
+                var paymentSummary = string.Join(", ",
+                    request.PaymentLines.Select(l =>
+                    {
+                        var m = paymentMethods.First(pm => pm.PaymentMethodConfigId == l.PaymentMethodConfigId);
+                        return $"{m.Name}: {l.Amount}";
+                    }));
+
                 var auditLog = new OrderAuditLog
                 {
                     LogId = Guid.NewGuid(),
@@ -95,17 +187,17 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                     EmployeeId = auditorId,
                     Action = AuditLogActions.CheckoutOrder,
                     CreatedAt = DateTime.UtcNow,
-                    NewValue = $"{{\"paymentMethod\": \"{request.PaymentMethod}\", \"totalAmount\": {order.TotalAmount}, \"amountPaid\": {order.AmountPaid}}}",
+                    NewValue = $"{{\"payments\": \"{paymentSummary}\", \"totalAmount\": {order.TotalAmount}}}",
                 };
 
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
-                _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+                _unitOfWork.Repository<Order>().Update(order);
 
-                // Update Table to Cleaning if DineIn
+                // Update Table to Available if DineIn
                 if (order.OrderType == OrderType.DineIn && order.TableId.HasValue)
                 {
                     var table = await _unitOfWork
-                        .Repository<Domain.Entities.Table>()
+                        .Repository<Table>()
                         .Query()
                         .Include(t => t.Orders)
                         .FirstOrDefaultAsync(t => t.TableId == order.TableId, cancellationToken);
@@ -115,12 +207,10 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                         {
                             table.UpdatedAt = DateTime.UtcNow;
                         }
-                        //table.MarkAsAvailable();
-                        _unitOfWork.Repository<Domain.Entities.Table>().Update(table);
+                        _unitOfWork.Repository<Table>().Update(table);
 
-                        // Ngắt kết nối đơn hàng với bàn sau khi đã giải phóng bàn xong
                         order.TableId = null;
-                        _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+                        _unitOfWork.Repository<Order>().Update(order);
                     }
                 }
 
@@ -139,8 +229,8 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             }
 
             _logger.LogInformation(
-                "Successfully completed checkout for OrderId: {OrderId}",
-                request.OrderId
+                "Successfully completed checkout for OrderId: {OrderId} with {LineCount} payment line(s)",
+                request.OrderId, request.PaymentLines.Count
             );
 
             return Result<Guid>.Success(order.OrderId);

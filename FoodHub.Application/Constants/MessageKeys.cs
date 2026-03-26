@@ -304,6 +304,21 @@ namespace FoodHub.Application.Constants
         public static class Billing
         {
             public const string PdfExportError = "Billing.PdfExportError";
+            public const string SplitTotalMismatch = "Billing.SplitTotalMismatch";
+        }
+
+        public static class PaymentMethodConfig
+        {
+            public const string NotFound = "PaymentMethodConfig.NotFound";
+            public const string NameRequired = "PaymentMethodConfig.NameRequired";
+            public const string NameMaxLength = "PaymentMethodConfig.NameMaxLength";
+            public const string NameDuplicate = "PaymentMethodConfig.NameDuplicate";
+            public const string TypeRequired = "PaymentMethodConfig.TypeRequired";
+            public const string BankInfoRequired = "PaymentMethodConfig.BankInfoRequired";
+            public const string CannotDeactivateDefault = "PaymentMethodConfig.CannotDeactivateDefault";
+            public const string CreateSuccess = "PaymentMethodConfig.CreateSuccess";
+            public const string UpdateSuccess = "PaymentMethodConfig.UpdateSuccess";
+            public const string Inactive = "PaymentMethodConfig.Inactive";
         }
 
         public static class StockInReceipt

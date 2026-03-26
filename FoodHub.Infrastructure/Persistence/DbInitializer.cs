@@ -260,59 +260,64 @@ namespace FoodHub.Infrastructure.Persistence
 
             if (!_context.SetMenus.Any())
             {
-                var comboCategory = _context.Categories.First(c => c.Name == "Combo");
-
-                var setMenu1 = new SetMenu
+                var comboCategory = _context.Categories.FirstOrDefault(c => c.Name == "Combo");
+                if (comboCategory != null)
                 {
-                    SetMenuId = Guid.NewGuid(),
-                    Code = "COMBO-01",
-                    ItemNumber = 1,
-                    CategoryId = comboCategory.CategoryId,
-                    Name = "Combo Ăn Trưa",
-                    Price = 99000,
-                    IsOutOfStock = false,
-                    CreatedAt = DateTime.UtcNow,
-                };
+                    var setMenu1 = new SetMenu
+                    {
+                        SetMenuId = Guid.NewGuid(),
+                        Code = "COMBO-01",
+                        ItemNumber = 1,
+                        CategoryId = comboCategory.CategoryId,
+                        Name = "Combo Ăn Trưa",
+                        Price = 99000,
+                        IsOutOfStock = false,
+                        CreatedAt = DateTime.UtcNow,
+                    };
 
-                var setMenu2 = new SetMenu
-                {
-                    SetMenuId = Guid.NewGuid(),
-                    Code = "COMBO-02",
-                    ItemNumber = 2,
-                    CategoryId = comboCategory.CategoryId,
-                    Name = "Combo Gia Đình",
-                    Price = 250000,
-                    IsOutOfStock = false,
-                    CreatedAt = DateTime.UtcNow,
-                };
+                    var setMenu2 = new SetMenu
+                    {
+                        SetMenuId = Guid.NewGuid(),
+                        Code = "COMBO-02",
+                        ItemNumber = 2,
+                        CategoryId = comboCategory.CategoryId,
+                        Name = "Combo Gia Đình",
+                        Price = 250000,
+                        IsOutOfStock = false,
+                        CreatedAt = DateTime.UtcNow,
+                    };
 
-                _context.SetMenus.AddRange(setMenu1, setMenu2);
-                _context.SaveChanges();
+                    _context.SetMenus.AddRange(setMenu1, setMenu2);
+                    _context.SaveChanges();
 
-                // Add some items to the first combo
-                var chickenRice = _context.MenuItems.First(mi => mi.Code == "MAIN-001");
-                var specialDrink = _context.MenuItems.First(mi => mi.Code == "DRK-007");
+                    // Add some items to the first combo
+                    var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
+                    var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
 
-                var setMenuItem1 = new SetMenuItem
-                {
-                    SetMenuItemId = Guid.NewGuid(),
-                    SetMenuId = setMenu1.SetMenuId,
-                    MenuItemId = chickenRice.MenuItemId,
-                    Quantity = 1,
-                    CreatedAt = DateTime.UtcNow,
-                };
+                    if (chickenRice != null && specialDrink != null)
+                    {
+                        var setMenuItem1 = new SetMenuItem
+                        {
+                            SetMenuItemId = Guid.NewGuid(),
+                            SetMenuId = setMenu1.SetMenuId,
+                            MenuItemId = chickenRice.MenuItemId,
+                            Quantity = 1,
+                            CreatedAt = DateTime.UtcNow,
+                        };
 
-                var setMenuItem2 = new SetMenuItem
-                {
-                    SetMenuItemId = Guid.NewGuid(),
-                    SetMenuId = setMenu1.SetMenuId,
-                    MenuItemId = specialDrink.MenuItemId,
-                    Quantity = 1,
-                    CreatedAt = DateTime.UtcNow,
-                };
+                        var setMenuItem2 = new SetMenuItem
+                        {
+                            SetMenuItemId = Guid.NewGuid(),
+                            SetMenuId = setMenu1.SetMenuId,
+                            MenuItemId = specialDrink.MenuItemId,
+                            Quantity = 1,
+                            CreatedAt = DateTime.UtcNow,
+                        };
 
-                _context.SetMenuItems.AddRange(setMenuItem1, setMenuItem2);
-                _context.SaveChanges();
+                        _context.SetMenuItems.AddRange(setMenuItem1, setMenuItem2);
+                        _context.SaveChanges();
+                    }
+                }
             }
 
             // Seed Ingredients for Inventory module
@@ -469,116 +474,119 @@ namespace FoodHub.Infrastructure.Persistence
 
             if (!_context.Orders.Any())
             {
-                var admin = _context.Employees.First(e => e.EmployeeCode == "M001001");
-                var chickenRice = _context.MenuItems.First(mi => mi.Code == "MAIN-001");
-                var beefNoodle = _context.MenuItems.First(mi => mi.Code == "MAIN-002");
-                var specialDrink = _context.MenuItems.First(mi => mi.Code == "DRK-007");
+                var admin = _context.Employees.FirstOrDefault(e => e.EmployeeCode == "M001001");
+                var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
+                var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
+                var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
 
-                // Table IDs that match FE expectation (ending with 01, 02)
-                var table01Id = Guid.Parse("00000000-0000-0000-0000-000000000001");
-                var table02Id = Guid.Parse("00000000-0000-0000-0000-000000000002");
-
-                var order1 = new Order
+                if (admin != null && chickenRice != null && beefNoodle != null && specialDrink != null)
                 {
-                    OrderId = Guid.NewGuid(),
-                    OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0001",
-                    OrderType = OrderType.DineIn,
-                    Status = OrderStatus.Serving,
-                    TableId = table02Id,
-                    TotalAmount = chickenRice.Price + specialDrink.Price,
-                    CreatedByEmployee = admin,
-                    CreatedAt = DateTime.UtcNow.AddHours(-1),
-                };
+                    // Table IDs that match FE expectation (ending with 01, 02)
+                    var table01Id = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                    var table02Id = Guid.Parse("00000000-0000-0000-0000-000000000002");
 
-                order1.OrderItems.Add(
-                    new OrderItem
+                    var order1 = new Order
                     {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order1.OrderId,
-                        MenuItemId = chickenRice.MenuItemId,
-                        ItemCodeSnapshot = chickenRice.Code,
-                        ItemNameSnapshot = chickenRice.Name,
-                        StationSnapshot = chickenRice.Station.ToString(),
-                        Status = OrderItemStatus.Ready,
-                        Quantity = 1,
-                        UnitPriceSnapshot = chickenRice.Price,
-                        CreatedAt = order1.CreatedAt,
-                    }
-                );
+                        OrderId = Guid.NewGuid(),
+                        OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0001",
+                        OrderType = OrderType.DineIn,
+                        Status = OrderStatus.Serving,
+                        TableId = table02Id,
+                        TotalAmount = chickenRice.Price + specialDrink.Price,
+                        CreatedByEmployee = admin,
+                        CreatedAt = DateTime.UtcNow.AddHours(-1),
+                    };
 
-                order1.OrderItems.Add(
-                    new OrderItem
+                    order1.OrderItems.Add(
+                        new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order1.OrderId,
+                            MenuItemId = chickenRice.MenuItemId,
+                            ItemCodeSnapshot = chickenRice.Code,
+                            ItemNameSnapshot = chickenRice.Name,
+                            StationSnapshot = chickenRice.Station.ToString(),
+                            Status = OrderItemStatus.Ready,
+                            Quantity = 1,
+                            UnitPriceSnapshot = chickenRice.Price,
+                            CreatedAt = order1.CreatedAt,
+                        }
+                    );
+
+                    order1.OrderItems.Add(
+                        new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order1.OrderId,
+                            MenuItemId = specialDrink.MenuItemId,
+                            ItemCodeSnapshot = specialDrink.Code,
+                            ItemNameSnapshot = specialDrink.Name,
+                            StationSnapshot = specialDrink.Station.ToString(),
+                            Status = OrderItemStatus.Completed,
+                            Quantity = 1,
+                            UnitPriceSnapshot = specialDrink.Price,
+                            CreatedAt = order1.CreatedAt,
+                        }
+                    );
+
+                    var order2 = new Order
                     {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order1.OrderId,
-                        MenuItemId = specialDrink.MenuItemId,
-                        ItemCodeSnapshot = specialDrink.Code,
-                        ItemNameSnapshot = specialDrink.Name,
-                        StationSnapshot = specialDrink.Station.ToString(),
-                        Status = OrderItemStatus.Completed,
-                        Quantity = 1,
-                        UnitPriceSnapshot = specialDrink.Price,
-                        CreatedAt = order1.CreatedAt,
-                    }
-                );
+                        OrderId = Guid.NewGuid(),
+                        OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0002",
+                        OrderType = OrderType.DineIn,
+                        Status = OrderStatus.Serving,
+                        TableId = table01Id,
+                        TotalAmount = beefNoodle.Price,
+                        CreatedByEmployee = admin,
+                        CreatedAt = DateTime.UtcNow.AddMinutes(-30),
+                    };
 
-                var order2 = new Order
-                {
-                    OrderId = Guid.NewGuid(),
-                    OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0002",
-                    OrderType = OrderType.DineIn,
-                    Status = OrderStatus.Serving,
-                    TableId = table01Id,
-                    TotalAmount = beefNoodle.Price,
-                    CreatedByEmployee = admin,
-                    CreatedAt = DateTime.UtcNow.AddMinutes(-30),
-                };
+                    order2.OrderItems.Add(
+                        new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order2.OrderId,
+                            MenuItemId = beefNoodle.MenuItemId,
+                            ItemCodeSnapshot = beefNoodle.Code,
+                            ItemNameSnapshot = beefNoodle.Name,
+                            StationSnapshot = beefNoodle.Station.ToString(),
+                            Status = OrderItemStatus.Preparing,
+                            Quantity = 1,
+                            UnitPriceSnapshot = beefNoodle.Price,
+                            CreatedAt = order2.CreatedAt,
+                        }
+                    );
 
-                order2.OrderItems.Add(
-                    new OrderItem
+                    var order3 = new Order
                     {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order2.OrderId,
-                        MenuItemId = beefNoodle.MenuItemId,
-                        ItemCodeSnapshot = beefNoodle.Code,
-                        ItemNameSnapshot = beefNoodle.Name,
-                        StationSnapshot = beefNoodle.Station.ToString(),
-                        Status = OrderItemStatus.Preparing,
-                        Quantity = 1,
-                        UnitPriceSnapshot = beefNoodle.Price,
-                        CreatedAt = order2.CreatedAt,
-                    }
-                );
+                        OrderId = Guid.NewGuid(),
+                        OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0003",
+                        OrderType = OrderType.Takeaway,
+                        Status = OrderStatus.Serving,
+                        TotalAmount = specialDrink.Price,
+                        CreatedByEmployee = admin,
+                        CreatedAt = DateTime.UtcNow.AddMinutes(-10),
+                    };
 
-                var order3 = new Order
-                {
-                    OrderId = Guid.NewGuid(),
-                    OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0003",
-                    OrderType = OrderType.Takeaway,
-                    Status = OrderStatus.Serving,
-                    TotalAmount = specialDrink.Price,
-                    CreatedByEmployee = admin,
-                    CreatedAt = DateTime.UtcNow.AddMinutes(-10),
-                };
+                    order3.OrderItems.Add(
+                        new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order3.OrderId,
+                            MenuItemId = specialDrink.MenuItemId,
+                            ItemCodeSnapshot = specialDrink.Code,
+                            ItemNameSnapshot = specialDrink.Name,
+                            StationSnapshot = specialDrink.Station.ToString(),
+                            Status = OrderItemStatus.Ready,
+                            Quantity = 1,
+                            UnitPriceSnapshot = specialDrink.Price,
+                            CreatedAt = order3.CreatedAt,
+                        }
+                    );
 
-                order3.OrderItems.Add(
-                    new OrderItem
-                    {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order3.OrderId,
-                        MenuItemId = specialDrink.MenuItemId,
-                        ItemCodeSnapshot = specialDrink.Code,
-                        ItemNameSnapshot = specialDrink.Name,
-                        StationSnapshot = specialDrink.Station.ToString(),
-                        Status = OrderItemStatus.Ready,
-                        Quantity = 1,
-                        UnitPriceSnapshot = specialDrink.Price,
-                        CreatedAt = order3.CreatedAt,
-                    }
-                );
-
-                _context.Orders.AddRange(order1, order2, order3);
-                _context.SaveChanges();
+                    _context.Orders.AddRange(order1, order2, order3);
+                    _context.SaveChanges();
+                }
             }
 
             _context.SaveChanges();
