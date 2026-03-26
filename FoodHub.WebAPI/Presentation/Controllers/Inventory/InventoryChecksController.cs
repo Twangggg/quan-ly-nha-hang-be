@@ -1,3 +1,5 @@
+using System.IO;
+using ClosedXML.Excel;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Commands.CreateInventoryCheck;
@@ -11,8 +13,6 @@ using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ClosedXML.Excel;
-using System.IO;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -24,7 +24,8 @@ namespace FoodHub.Presentation.Controllers
     {
         private readonly IMediator _mediator;
 
-        public InventoryChecksController(IMediator mediator, IMessageService messageService) : base(messageService)
+        public InventoryChecksController(IMediator mediator, IMessageService messageService)
+            : base(messageService)
         {
             _mediator = mediator;
         }
@@ -103,7 +104,8 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(command);
             return HandleCreated(
                 result,
-                data => Url.Action(nameof(ProcessInventoryCheck), new { id = data.InventoryCheckId })
+                data =>
+                    Url.Action(nameof(ProcessInventoryCheck), new { id = data.InventoryCheckId })
             );
         }
 
@@ -179,14 +181,16 @@ namespace FoodHub.Presentation.Controllers
                 sheet.Cell(currentRow, 5).Value = item.BookQuantity;
                 sheet.Cell(currentRow, 6).Value = item.PhysicalQuantity;
                 sheet.Cell(currentRow, 7).Value = item.DifferenceQuantity;
-                sheet.Cell(currentRow, 7).Style.Font.FontColor = item.DifferenceQuantity != 0 ? XLColor.Red : XLColor.Black;
+                sheet.Cell(currentRow, 7).Style.Font.FontColor =
+                    item.DifferenceQuantity != 0 ? XLColor.Red : XLColor.Black;
                 sheet.Cell(currentRow, 8).Value = item.BookValue;
                 sheet.Cell(currentRow, 8).Style.NumberFormat.Format = "#,##0";
                 sheet.Cell(currentRow, 9).Value = item.PhysicalValue;
                 sheet.Cell(currentRow, 9).Style.NumberFormat.Format = "#,##0";
                 sheet.Cell(currentRow, 10).Value = item.DifferenceValue;
                 sheet.Cell(currentRow, 10).Style.NumberFormat.Format = "#,##0";
-                sheet.Cell(currentRow, 10).Style.Font.FontColor = item.DifferenceValue != 0 ? XLColor.Red : XLColor.Black;
+                sheet.Cell(currentRow, 10).Style.Font.FontColor =
+                    item.DifferenceValue != 0 ? XLColor.Red : XLColor.Black;
                 sheet.Cell(currentRow, 11).Value = item.Reason;
 
                 currentRow++;
@@ -199,7 +203,8 @@ namespace FoodHub.Presentation.Controllers
             sheet.Cell(currentRow, 6).Value = data.Items.Sum(x => x.PhysicalQuantity);
             sheet.Cell(currentRow, 7).Value = data.TotalDifferenceValue;
             sheet.Cell(currentRow, 7).Style.Font.Bold = true;
-            sheet.Cell(currentRow, 7).Style.Font.FontColor = data.TotalDifferenceValue != 0 ? XLColor.Red : XLColor.Black;
+            sheet.Cell(currentRow, 7).Style.Font.FontColor =
+                data.TotalDifferenceValue != 0 ? XLColor.Red : XLColor.Black;
             sheet.Cell(currentRow, 8).Value = data.TotalBookValue;
             sheet.Cell(currentRow, 8).Style.NumberFormat.Format = "#,##0";
             sheet.Cell(currentRow, 8).Style.Font.Bold = true;
@@ -209,7 +214,8 @@ namespace FoodHub.Presentation.Controllers
             sheet.Cell(currentRow, 10).Value = data.TotalDifferenceValue;
             sheet.Cell(currentRow, 10).Style.NumberFormat.Format = "#,##0";
             sheet.Cell(currentRow, 10).Style.Font.Bold = true;
-            sheet.Cell(currentRow, 10).Style.Font.FontColor = data.TotalDifferenceValue != 0 ? XLColor.Red : XLColor.Black;
+            sheet.Cell(currentRow, 10).Style.Font.FontColor =
+                data.TotalDifferenceValue != 0 ? XLColor.Red : XLColor.Black;
 
             sheet.Columns().AdjustToContents();
 
@@ -218,7 +224,11 @@ namespace FoodHub.Presentation.Controllers
             var bytes = stream.ToArray();
 
             var fileName = $"Phieu_Kiem_Kho_{data.CheckDate:yyyyMMdd}_{data.InventoryCheckId}.xlsx";
-            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            return File(
+                bytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName
+            );
         }
     }
 }

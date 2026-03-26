@@ -2,10 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using Microsoft.Extensions.Options;
@@ -40,12 +40,6 @@ namespace FoodHub.Infrastructure.Security
                 new(ClaimTypes.Role, employee.Role.ToString()),
                 new("EmployeeCode", employee.EmployeeCode),
             };
-
-            // Thêm các quyền cụ thể vào Token
-            foreach (var permission in permissions)
-            {
-                claims.Add(new Claim("Permission", permission));
-            }
 
             if (!string.IsNullOrEmpty(employee.Username))
             {
