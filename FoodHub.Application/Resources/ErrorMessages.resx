@@ -508,7 +508,7 @@
     <value>Giá thêm phải lớn hơn hoặc bằng 0.</value>
   </data>
   <data name="EmployeeNotActive" xml:space="preserve">
-    <value>Nhân viên này hiện không hoạt động.</value>
+    <value>Nhân viên này không thể xóa vì đang ở trạng thái {0}.</value>
   </data>
   <data name="CannotPromoteToManager" xml:space="preserve">
     <value>Không thể chuyển sang vai trò Quản lý</value>

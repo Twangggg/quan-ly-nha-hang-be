@@ -382,7 +382,7 @@
     <value>Extra price must be greater than or equal to 0.</value>
   </data>
   <data name="EmployeeNotActive" xml:space="preserve">
-    <value>Employee is not active.</value>
+    <value>Employee cannot be deleted because their status is {0}.</value>
   </data>
   <data name="CannotPromoteToManager" xml:space="preserve">
     <value>Cannot promote to Manager directly.</value>

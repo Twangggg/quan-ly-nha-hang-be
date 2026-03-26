@@ -55,10 +55,11 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
 
             if (!employee.IsActive())
             {
-                return Result<DeleteEmployeeResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Employee.NotActive),
-                    ResultErrorType.BadRequest
+                var detail = _messageService.GetMessage(
+                    MessageKeys.Employee.NotActive,
+                    employee.Status
                 );
+                return Result<DeleteEmployeeResponse>.Failure(detail, ResultErrorType.BadRequest);
             }
 
             var refreshTokens = await _unitOfWork
