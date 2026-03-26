@@ -8,6 +8,7 @@ using FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssignme
 using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignmentById;
 using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignments;
 using FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftsByEmployeeId;
+using FoodHub.Application.Features.ShiftAssignments.Queries.GetSummary;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
@@ -174,6 +175,20 @@ namespace FoodHub.Presentation.Controllers
         public async Task<IActionResult> GetShiftAssignmentsByEmployeeId([FromQuery] PaginationParams pagination)
         {
             var result = await _mediator.Send(new GetSAsByEmployeeIdQuery(pagination));
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Lấy thông tin tổng quan về phân công ca trong một khoảng thời gian.
+        /// </summary>
+        /// <param name="query">Thông tin truy vấn tổng quan.</param>
+        /// <returns>Thông tin tổng quan về phân công ca.</returns>
+        [HttpGet("summary")]
+        [HasPermission(Permissions.ShiftAssignments.View)]
+        [ProducesResponseType(typeof(Result<GetSummaryResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSummary([FromQuery] GetSummaryQuery query)
+        {
+            var result = await _mediator.Send(query);
             return HandleResult(result);
         }
     }
