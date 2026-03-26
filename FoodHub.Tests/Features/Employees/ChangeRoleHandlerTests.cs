@@ -64,7 +64,7 @@ namespace FoodHub.Tests.Features.Employees
             var command = new ChangeRoleCommand
             {
                 EmployeeCode = "EMP001",
-                CurrentRole = EmployeeRole.Waiter,
+                CurrentRole = EmployeeRole.Cashier,
                 NewRole = EmployeeRole.ChefBar,
                 Reason = "Test reason",
             };
@@ -81,7 +81,7 @@ namespace FoodHub.Tests.Features.Employees
                 Phone = "123456789",
                 Address = "123 Main St",
                 DateOfBirth = DateOnly.Parse("1990-01-01"),
-                Role = EmployeeRole.Waiter,
+                Role = EmployeeRole.Cashier,
                 Status = EmployeeStatus.Active,
                 PasswordHash = "hashedpassword",
             };
@@ -159,7 +159,7 @@ namespace FoodHub.Tests.Features.Employees
             var command = new ChangeRoleCommand
             {
                 EmployeeCode = "EMP001",
-                CurrentRole = EmployeeRole.Waiter,
+                CurrentRole = EmployeeRole.Cashier,
                 NewRole = EmployeeRole.Manager,
                 Reason = "Test reason",
             };
@@ -186,8 +186,8 @@ namespace FoodHub.Tests.Features.Employees
             var command = new ChangeRoleCommand
             {
                 EmployeeCode = "EMP001",
-                CurrentRole = EmployeeRole.Waiter,
-                NewRole = EmployeeRole.Waiter,
+                CurrentRole = EmployeeRole.Cashier,
+                NewRole = EmployeeRole.Cashier,
                 Reason = "Test reason",
             };
 
@@ -213,7 +213,7 @@ namespace FoodHub.Tests.Features.Employees
             var command = new ChangeRoleCommand
             {
                 EmployeeCode = "EMP001",
-                CurrentRole = EmployeeRole.Waiter,
+                CurrentRole = EmployeeRole.Cashier,
                 NewRole = EmployeeRole.ChefBar,
                 Reason = "Test reason",
             };
@@ -247,7 +247,7 @@ namespace FoodHub.Tests.Features.Employees
             var command = new ChangeRoleCommand
             {
                 EmployeeCode = "EMP001",
-                CurrentRole = EmployeeRole.Waiter,
+                CurrentRole = EmployeeRole.Cashier,
                 NewRole = EmployeeRole.ChefBar,
                 Reason = "Test reason",
             };
@@ -258,7 +258,7 @@ namespace FoodHub.Tests.Features.Employees
             {
                 EmployeeId = oldEmployeeId,
                 EmployeeCode = "EMP001",
-                Role = EmployeeRole.Waiter,
+                Role = EmployeeRole.Cashier,
                 Status = EmployeeStatus.Inactive,
             };
 
@@ -289,7 +289,7 @@ namespace FoodHub.Tests.Features.Employees
             var command = new ChangeRoleCommand
             {
                 EmployeeCode = "EMP001",
-                CurrentRole = EmployeeRole.Waiter,
+                CurrentRole = EmployeeRole.Cashier,
                 NewRole = EmployeeRole.ChefBar,
                 Reason = "Test reason",
             };

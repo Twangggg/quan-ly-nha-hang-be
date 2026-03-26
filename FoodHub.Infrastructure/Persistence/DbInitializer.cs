@@ -66,19 +66,6 @@ namespace FoodHub.Infrastructure.Persistence
                     new Employee
                     {
                         EmployeeId = Guid.NewGuid(),
-                        EmployeeCode = "W003001",
-                        Username = "waiter",
-                        PasswordHash = _passwordService.HashPassword("New123!!"),
-                        FullName = "Waiter One",
-                        Email = "waiter@foodhub.com",
-                        Phone = "0909000003",
-                        Role = EmployeeRole.Waiter,
-                        Status = EmployeeStatus.Active,
-                        CreatedAt = DateTime.UtcNow,
-                    },
-                    new Employee
-                    {
-                        EmployeeId = Guid.NewGuid(),
                         EmployeeCode = "C004001",
                         Username = "cashier",
                         PasswordHash = _passwordService.HashPassword("New123!!"),
@@ -246,6 +233,21 @@ namespace FoodHub.Infrastructure.Persistence
                         CostPrice = 15000,
                         CreatedAt = DateTime.UtcNow,
                     },
+                    new MenuItem
+                    {
+                        MenuItemId = Guid.Parse("84b3ff00-82f6-4e52-8d2b-c669cc2524bd"),
+                        Code = "COMBO-03",
+                        ItemNumber = 3,
+                        Name = "Combo Ấm Áp",
+                        ImageUrl = "",
+                        Description = "Cơm gà xối mỡ + Cocktail đặc biệt + Chè khúc bạch",
+                        CategoryId = comboCategory.CategoryId,
+                        Station = Station.HotKitchen,
+                        ExpectedTime = 20,
+                        Price = 180000,
+                        CostPrice = 95000,
+                        CreatedAt = DateTime.UtcNow,
+                    },
                 };
 
                 _context.MenuItems.AddRange(menuItems);
@@ -292,6 +294,9 @@ namespace FoodHub.Infrastructure.Persistence
                     var specialDrink = _context.MenuItems.FirstOrDefault(mi =>
                         mi.Code == "DRK-007"
                     );
+                    var dessert = _context.MenuItems.FirstOrDefault(mi =>
+                        mi.Code == "DES-003"
+                    );
 
                     if (chickenRice != null && specialDrink != null)
                     {
@@ -314,6 +319,59 @@ namespace FoodHub.Infrastructure.Persistence
                         };
 
                         _context.SetMenuItems.AddRange(setMenuItem1, setMenuItem2);
+                        _context.SaveChanges();
+                    }
+
+                    // Add a third combo referencing the new COMBO-03 menu item
+                    var comboMenuItem = _context.MenuItems.FirstOrDefault(mi =>
+                        mi.Code == "COMBO-03"
+                    );
+
+                    if (comboMenuItem != null && chickenRice != null && specialDrink != null && dessert != null)
+                    {
+                        var setMenu3 = new SetMenu
+                        {
+                            SetMenuId = Guid.NewGuid(),
+                            Code = "COMBO-03",
+                            ItemNumber = 3,
+                            CategoryId = comboCategory.CategoryId,
+                            Name = "Combo Ấm Áp",
+                            Price = 180000,
+                            IsOutOfStock = false,
+                            CreatedAt = DateTime.UtcNow,
+                        };
+
+                        _context.SetMenus.Add(setMenu3);
+                        _context.SaveChanges();
+
+                        var setMenuItemA = new SetMenuItem
+                        {
+                            SetMenuItemId = Guid.NewGuid(),
+                            SetMenuId = setMenu3.SetMenuId,
+                            MenuItemId = chickenRice.MenuItemId,
+                            Quantity = 1,
+                            CreatedAt = DateTime.UtcNow,
+                        };
+
+                        var setMenuItemB = new SetMenuItem
+                        {
+                            SetMenuItemId = Guid.NewGuid(),
+                            SetMenuId = setMenu3.SetMenuId,
+                            MenuItemId = specialDrink.MenuItemId,
+                            Quantity = 1,
+                            CreatedAt = DateTime.UtcNow,
+                        };
+
+                        var setMenuItemC = new SetMenuItem
+                        {
+                            SetMenuItemId = Guid.NewGuid(),
+                            SetMenuId = setMenu3.SetMenuId,
+                            MenuItemId = dessert.MenuItemId,
+                            Quantity = 1,
+                            CreatedAt = DateTime.UtcNow,
+                        };
+
+                        _context.SetMenuItems.AddRange(setMenuItemA, setMenuItemB, setMenuItemC);
                         _context.SaveChanges();
                     }
                 }
@@ -886,9 +944,9 @@ namespace FoodHub.Infrastructure.Persistence
                         {
                             LogId = Guid.NewGuid(),
                             EntityName = "Employee",
-                            EntityId = "W003001",
+                            EntityId = "C004001",
                             Action = AuditAction.Create,
-                            NewValues = "{\"role\": \"Waiter\"}",
+                            NewValues = "{\"role\": \"Cashier\"}",
                             ActorInfo = admin.FullName,
                             CreatedAt = DateTimeOffset.UtcNow.AddDays(-2),
                         },
@@ -912,24 +970,24 @@ namespace FoodHub.Infrastructure.Persistence
                 if (admin != null && chickenRice != null && paidOrdersCount == 0)
                 {
                     var today = DateTime.UtcNow.Date;
-                    
+
                     // Orders from past 7 days for moving average calculation
                     var historicalOrders = new List<Order>();
-                    
+
                     // Yesterday
                     historicalOrders.Add(CreatePaidOrder(admin, chickenRice, specialDrink, today.AddDays(-1), 2));
                     historicalOrders.Add(CreatePaidOrder(admin, beefNoodle, null, today.AddDays(-1), 1));
-                    
+
                     // 2 days ago
                     historicalOrders.Add(CreatePaidOrder(admin, chickenRice, null, today.AddDays(-2), 1));
                     historicalOrders.Add(CreatePaidOrder(admin, springRoll, specialDrink, today.AddDays(-2), 3));
-                    
+
                     // 3 days ago
                     historicalOrders.Add(CreatePaidOrder(admin, beefNoodle, springRoll, today.AddDays(-3), 2));
-                    
+
                     // 4 days ago
                     historicalOrders.Add(CreatePaidOrder(admin, chickenRice, beefNoodle, today.AddDays(-4), 1));
-                    
+
                     // 5 days ago
                     historicalOrders.Add(CreatePaidOrder(admin, specialDrink, null, today.AddDays(-5), 4));
 
@@ -941,9 +999,9 @@ namespace FoodHub.Infrastructure.Persistence
             // Seed OrderItems in Preparing/Cooking status for KDS backlog
             if (isDevOrDemo)
             {
-                var preparingItemsCount = _context.OrderItems.Count(oi => 
+                var preparingItemsCount = _context.OrderItems.Count(oi =>
                     oi.Status == OrderItemStatus.Preparing || oi.Status == OrderItemStatus.Cooking);
-                
+
                 var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
                 var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
                 var springRoll = _context.MenuItems.FirstOrDefault(mi => mi.Code == "APP-001");

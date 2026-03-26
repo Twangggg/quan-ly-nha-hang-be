@@ -13,7 +13,8 @@ namespace FoodHub.Application.Extensions.Query
         public static IQueryable<T> ApplyGlobalSearch<T>(
             this IQueryable<T> query,
             string? search,
-            List<Expression<Func<T, string?>>> searchableFields)
+            List<Expression<Func<T, string?>>> searchableFields
+        )
         {
             if (string.IsNullOrWhiteSpace(search))
                 return query;
@@ -30,16 +31,24 @@ namespace FoodHub.Application.Extensions.Query
                 var memberAccess = Expression.Invoke(field, parameter);
 
                 // Chuy?n v? ch? thu?ng d? tìm ki?m không phân bi?t hoa thu?ng (Case-insensitive)
-                var toLowerCall = Expression.Call(memberAccess, typeof(string).GetMethod("ToLower", Type.EmptyTypes)!);
+                var toLowerCall = Expression.Call(
+                    memberAccess,
+                    typeof(string).GetMethod("ToLower", Type.EmptyTypes)!
+                );
 
                 // T?o l?nh .Contains() tuong ?ng v?i SQL LIKE '%search%'
-                var containsCall = Expression.Call(toLowerCall, containsMethod!, Expression.Constant(searchLower));
+                var containsCall = Expression.Call(
+                    toLowerCall,
+                    containsMethod!,
+                    Expression.Constant(searchLower)
+                );
 
                 // K?t h?p các di?u ki?n tìm ki?m b?ng toán t? OR (OrElse)
                 // Ví d?: FullName.Contains(...) OR Email.Contains(...)
-                combinedExpression = combinedExpression == null
-                    ? containsCall
-                    : Expression.OrElse(combinedExpression, containsCall);
+                combinedExpression =
+                    combinedExpression == null
+                        ? containsCall
+                        : Expression.OrElse(combinedExpression, containsCall);
             }
 
             if (combinedExpression != null)
@@ -58,7 +67,8 @@ namespace FoodHub.Application.Extensions.Query
         public static IQueryable<T> ApplyFilters<T>(
             this IQueryable<T> query,
             List<string>? filters,
-            Dictionary<string, Expression<Func<T, object?>>> filterMapping)
+            Dictionary<string, Expression<Func<T, object?>>> filterMapping
+        )
         {
             if (filters == null || !filters.Any())
                 return query;
@@ -67,7 +77,8 @@ namespace FoodHub.Application.Extensions.Query
             {
                 // Tách chu?i filter theo d?nh d?ng "key:value" (ví d?: "status:1", "minPrice:100000")
                 var parts = filter.Split(':', 2);
-                if (parts.Length != 2) continue;
+                if (parts.Length != 2)
+                    continue;
 
                 var rawKey = parts[0];
                 var value = parts[1].Trim();
@@ -84,12 +95,12 @@ namespace FoodHub.Application.Extensions.Query
                 else if (rawKey.StartsWith("max", StringComparison.OrdinalIgnoreCase))
                 {
                     key = rawKey.Substring(3).ToLower();
-                    filterType = ExpressionType.LessThanOrEqual;    // <=
+                    filterType = ExpressionType.LessThanOrEqual; // <=
                 }
                 else
                 {
                     key = rawKey.ToLower();
-                    filterType = ExpressionType.Equal;              // ==
+                    filterType = ExpressionType.Equal; // ==
                 }
 
                 if (filterMapping.TryGetValue(key, out var propertySelector))
@@ -98,7 +109,10 @@ namespace FoodHub.Application.Extensions.Query
 
                     // Trích xu?t thu?c tính th?c t? t? propertySelector (lo?i b? chuy?n d?i ki?u 'object' c?a AutoMapper)
                     Expression memberExpression = propertySelector.Body;
-                    if (memberExpression is UnaryExpression unary && unary.NodeType == ExpressionType.Convert)
+                    if (
+                        memberExpression is UnaryExpression unary
+                        && unary.NodeType == ExpressionType.Convert
+                    )
                     {
                         memberExpression = unary.Operand;
                     }
@@ -113,7 +127,10 @@ namespace FoodHub.Application.Extensions.Query
                     {
                         // 2. T? d?ng ép ki?u chu?i "value" sang ki?u d? li?u c?a thu?c tính (int, decimal, bool, DateTime, Enum, ...)
                         object? convertedValue;
-                        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                        if (
+                            propertyType.IsGenericType
+                            && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>)
+                        )
                         {
                             var underlyingType = Nullable.GetUnderlyingType(propertyType)!;
                             if (string.IsNullOrEmpty(value))
@@ -133,9 +150,19 @@ namespace FoodHub.Application.Extensions.Query
                             convertedValue = Convert.ChangeType(value, propertyType);
                         }
 
-                        // 3. T?o bi?u th?c nh? phân (Binary Expression) và thêm vào câu l?nh .Where()
+                        // 3. Force DateTimeKind.Utc for Npgsql compatibility with "timestamp with time zone"
+                        if (convertedValue is DateTime dt && dt.Kind != DateTimeKind.Utc)
+                        {
+                            convertedValue = dt.ToUniversalTime();
+                        }
+
+                        // 4. T?o bi?u th?c nh? phân (Binary Expression) và thêm vào câu l?nh .Where()
                         var constant = Expression.Constant(convertedValue, propertyType);
-                        Expression body = Expression.MakeBinary(filterType, memberExpression, constant);
+                        Expression body = Expression.MakeBinary(
+                            filterType,
+                            memberExpression,
+                            constant
+                        );
 
                         var lambda = Expression.Lambda<Func<T, bool>>(body, parameter);
                         query = query.Where(lambda);
@@ -160,7 +187,10 @@ namespace FoodHub.Application.Extensions.Query
             private readonly ParameterExpression _oldParameter;
             private readonly ParameterExpression _newParameter;
 
-            public ParameterRebinder(ParameterExpression oldParameter, ParameterExpression newParameter)
+            public ParameterRebinder(
+                ParameterExpression oldParameter,
+                ParameterExpression newParameter
+            )
             {
                 _oldParameter = oldParameter;
                 _newParameter = newParameter;
@@ -180,7 +210,8 @@ namespace FoodHub.Application.Extensions.Query
             this IQueryable<T> query,
             string? orderBy,
             Dictionary<string, Expression<Func<T, object?>>> mapping,
-            Expression<Func<T, object?>> defaultSort)
+            Expression<Func<T, object?>> defaultSort
+        )
         {
             // N?u không có yêu c?u s?p x?p, dùng m?c d?nh (thu?ng là s?p x?p theo ID ho?c ngày t?o)
             if (string.IsNullOrWhiteSpace(orderBy))
@@ -196,7 +227,9 @@ namespace FoodHub.Application.Extensions.Query
             {
                 var trimmedItem = item.Trim();
                 var isDescending = trimmedItem.StartsWith("-");
-                var propertyName = isDescending ? trimmedItem.Substring(1).ToLower() : trimmedItem.ToLower();
+                var propertyName = isDescending
+                    ? trimmedItem.Substring(1).ToLower()
+                    : trimmedItem.ToLower();
 
                 if (mapping.TryGetValue(propertyName, out var selectedSort))
                 {
