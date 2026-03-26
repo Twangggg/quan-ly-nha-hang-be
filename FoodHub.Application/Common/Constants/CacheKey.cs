@@ -129,7 +129,9 @@ public static class CacheKey
     public const string InventorySettings = "inventory:settings";
 
     // ==================== VOUCHERS ====================
+
     public const string VoucherList = "voucher:list";
+    public const string VoucherListPagination = "voucher:list:pagination:{0}";
     public const string VoucherById = "voucher:id:{0}";
     public const string VoucherByCode = "voucher:code:{0}";
 
@@ -151,6 +153,10 @@ public static class CacheKey
     public const string ShiftAssignmentById = "shift-assignment:{0}";
     /// <summary>Key cho danh sách phân công theo nhân viên + ngày.</summary>
     public const string ShiftAssignmentByEmployee = "shift-assignment:employee:{0}:{1}";
+    // Example: string.Format(ShiftAssignmentByEmployeePagination, "employee123", "2024-01-01", "page1") → "shift-assignment:employee:employee123:pagination:page1"
+    public const string ShiftAssignmentByEmployeePagination = "shift-assignment:employee:{0}:pagination:{2}";
+    // ==================== ATTENDANCES ====================
+    public const string AttendanceReportList = "attendance:report:list";
 }
 public static class CacheTTL
 {
@@ -168,4 +174,5 @@ public static class CacheTTL
     public static readonly TimeSpan Vouchers = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Shifts = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan ShiftAssignments = TimeSpan.FromMinutes(10);
+    public static readonly TimeSpan Attendances = TimeSpan.FromMinutes(10);
 }

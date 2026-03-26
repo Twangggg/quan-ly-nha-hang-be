@@ -6,12 +6,10 @@ using FoodHub.Application.Features.Shifts.Commands.UpdateShift;
 using FoodHub.Application.Features.Shifts.Commands.UpdateShiftStatus;
 using FoodHub.Application.Features.Shifts.Queries.GetShiftById;
 using FoodHub.Application.Features.Shifts.Queries.GetShifts;
-using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodHub.Presentation.Controllers
@@ -24,7 +22,6 @@ namespace FoodHub.Presentation.Controllers
     );
 
     [Tags("Ca làm việc (Shifts)")]
-    [HasPermission(Permissions.Shifts.View)]
     [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
     public class ShiftsController : ApiControllerBase
     {
@@ -47,6 +44,7 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="pagination">Tham số phân trang và lọc (PageNumber, PageSize).</param>
         /// <response code="200">Trả về danh sách ca làm việc kèm Header phân trang.</response>
         [HttpGet]
+        [HasPermission(Permissions.Shifts.View)]
         [ProducesResponseType(typeof(Result<PagedResult<GetShiftByIdResponse>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetShifts([FromQuery] PaginationParams pagination)
         {
@@ -68,6 +66,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Trả về thông tin chi tiết ca làm việc.</response>
         /// <response code="404">Không tìm thấy ca làm việc.</response>
         [HttpGet("{id:guid}")]
+        [HasPermission(Permissions.Shifts.View)]
         [ProducesResponseType(typeof(Result<GetShiftByIdResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetShift(Guid id)
