@@ -60,6 +60,18 @@ namespace FoodHub.Infrastructure.Services.Messaging
             }
         }
 
+        public async Task NotifyKdsItemUpdatedAsync(string station, object kdsItem)
+        {
+            try
+            {
+                await _hubContext.Clients.Group(station).SendAsync("KdsItemUpdated", kdsItem);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR Error in NotifyKdsItemUpdatedAsync: {ex.Message}");
+            }
+        }
+
         public async Task NotifyOrderStatusChangedAsync(Guid orderId, string status)
         {
             try

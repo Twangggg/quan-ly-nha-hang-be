@@ -38,8 +38,7 @@ namespace FoodHub.Application.Features.KDS.Common
             if (totalOrderItems > 0)
             {
                 score +=
-                    ((double)finishedOrderItems / totalOrderItems)
-                    * settings.CompletionBoostWeight;
+                    ((double)finishedOrderItems / totalOrderItems) * settings.CompletionBoostWeight;
             }
 
             score += orderType switch
@@ -62,10 +61,6 @@ namespace FoodHub.Application.Features.KDS.Common
             return sortMode switch
             {
                 KdsSortMode.Fifo => items.OrderBy(createdAtSelector).ToList(),
-                KdsSortMode.Priority => items
-                    .OrderByDescending(prioritySelector)
-                    .ThenBy(createdAtSelector)
-                    .ToList(),
                 _ => items.OrderByDescending(prioritySelector).ThenBy(createdAtSelector).ToList(),
             };
         }
@@ -82,10 +77,6 @@ namespace FoodHub.Application.Features.KDS.Common
             {
                 KdsSortMode.Fifo => items
                     .OrderBy(x => isCookingSelector(x) ? 0 : 1)
-                    .ThenBy(createdAtSelector)
-                    .ToList(),
-                KdsSortMode.Priority => items
-                    .OrderByDescending(prioritySelector)
                     .ThenBy(createdAtSelector)
                     .ToList(),
                 _ => items

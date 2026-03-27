@@ -35,12 +35,16 @@ namespace FoodHub.Presentation.Controllers
         /// <returns>Danh sách báo cáo chấm công đã được phân trang.</returns>
         [HttpGet("report")]
         [HasPermission(Permissions.Attendances.View)]
-        [ProducesResponseType(typeof(Result<PagedResult<GetAttendanceReportResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(
+            typeof(Result<PagedResult<GetAttendanceReportResponse>>),
+            StatusCodes.Status200OK
+        )]
         public async Task<IActionResult> GetAttendanceReport(
             [FromQuery] PaginationParams pagination,
             [FromQuery] DateOnly? date,
             [FromQuery] DateOnly? startDate,
-            [FromQuery] DateOnly? endDate)
+            [FromQuery] DateOnly? endDate
+        )
         {
             var query = new GetAttendanceReportQuery(pagination, date, startDate, endDate);
             var result = await _mediator.Send(query);
@@ -66,7 +70,8 @@ namespace FoodHub.Presentation.Controllers
             [FromQuery] PaginationParams pagination,
             [FromQuery] DateOnly? date,
             [FromQuery] DateOnly? startDate,
-            [FromQuery] DateOnly? endDate)
+            [FromQuery] DateOnly? endDate
+        )
         {
             var query = new ExportAttendanceReportQuery(pagination, date, startDate, endDate);
             var result = await _mediator.Send(query);

@@ -49,7 +49,7 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
             var query = await _unitOfWork
                 .Repository<OrderItem>()
                 .Query()
-                .AsNoTracking()
+                .AsNoTrackingWithIdentityResolution()
                 .Where(oi =>
                     targetStations.Contains(oi.StationSnapshot)
                     && oi.Status == OrderItemStatus.Preparing

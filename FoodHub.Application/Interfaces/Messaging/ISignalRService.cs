@@ -24,6 +24,11 @@ namespace FoodHub.Application.Interfaces.Messaging
         );
 
         /// <summary>
+        /// Gửi toàn bộ thông tin món ăn qua SignalR để Frontend cập nhật tức thời mà không cần re-fetch API.
+        /// </summary>
+        Task NotifyKdsItemUpdatedAsync(string station, object kdsItem);
+
+        /// <summary>
         /// (Tùy chọn) Thông báo khi toàn bộ Order thay đổi trạng thái.
         /// </summary>
         Task NotifyOrderStatusChangedAsync(Guid orderId, string status);

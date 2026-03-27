@@ -4,6 +4,5 @@ namespace FoodHub.Domain.Enums
     {
         Fifo = 1,
         Hybrid = 2,
-        Priority = 3,
     }
 }

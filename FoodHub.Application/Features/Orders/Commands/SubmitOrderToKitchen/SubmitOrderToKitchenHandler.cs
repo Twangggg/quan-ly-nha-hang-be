@@ -2,10 +2,12 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
+using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Features.Options.Common;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.Security;
@@ -25,6 +27,8 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
         private readonly ISignalRService _signalRService;
+        private readonly KdsPriorityCalculator _priorityCalculator;
+        private readonly IKdsSettingsProvider _kdsSettingsProvider;
         private readonly ILogger<SubmitOrderToKitchenHandler> _logger;
 
         public SubmitOrderToKitchenHandler(
@@ -33,6 +37,8 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             IMessageService messageService,
             ICacheService cacheService,
             ISignalRService signalRService,
+            KdsPriorityCalculator priorityCalculator,
+            IKdsSettingsProvider kdsSettingsProvider,
             ILogger<SubmitOrderToKitchenHandler> logger
         )
         {
@@ -41,6 +47,8 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             _messageService = messageService;
             _cacheService = cacheService;
             _signalRService = signalRService;
+            _priorityCalculator = priorityCalculator;
+            _kdsSettingsProvider = kdsSettingsProvider;
             _logger = logger;
         }
 
@@ -306,9 +314,16 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             }
 
             // 4. Notify KDS
-            // 4. Notify KDS
+            var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
             foreach (var item in processedItems)
             {
+                // Ensure Order navigation is set for mapping
+                item.Order = order;
+
+                var response = KdsMappingHelper.MapToResponse(item, _priorityCalculator, settings);
+                await _signalRService.NotifyKdsItemUpdatedAsync(item.StationSnapshot, response);
+
+                // Still notify status change for other legacy listeners if any
                 await _signalRService.NotifyOrderItemStatusChangedAsync(
                     item.OrderItemId,
                     item.Status,

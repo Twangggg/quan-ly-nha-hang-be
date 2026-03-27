@@ -780,12 +780,6 @@
   <data name="Shift.NameRequired" xml:space="preserve">
     <value>Tên ca làm việc không được để trống.</value>
   </data>
-  <data name="Shift.OutsideOperatingHours" xml:space="preserve">
-    <value>Thời gian ca làm nằm ngoài giờ hoạt động (10:30 - 23:00).</value>
-  </data>
-  <data name="Shift.DuringBreakTime" xml:space="preserve">
-    <value>Thời gian ca làm trùng với giờ nghỉ (14:00 - 17:00).</value>
-  </data>
   <data name="ShiftAssignment.NotFound" xml:space="preserve">
     <value>Không tìm thấy bản phân ca này.</value>
   </data>

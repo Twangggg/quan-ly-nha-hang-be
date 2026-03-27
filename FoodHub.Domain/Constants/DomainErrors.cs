@@ -46,6 +46,7 @@ namespace FoodHub.Domain.Constants
             public const string AlreadyInactive = "Shift.AlreadyInactive";
             public const string NotFound = "Shift.NotFound";
             public const string AlreadyActive = "Shift.AlreadyActive";
+            public const string InvalidTime = "Shift.InvalidTime";
         }
 
         public static class ShiftAssignment
