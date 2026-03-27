@@ -29,15 +29,17 @@ namespace FoodHub.Tests.Features.Reservations.Domain
                 settings.BreakEnabled,
                 settings.BreakStart,
                 settings.BreakEnd,
-                90,
                 30,
-                20
+                20,
+                15,
+                15
             );
 
             result.IsSuccess.Should().BeTrue();
-            settings.OverlapBufferMinutes.Should().Be(90);
-            settings.MinLeadTimeMinutes.Should().Be(30);
-            settings.GracePeriodMinutes.Should().Be(20);
+            settings.OverlapBufferMinutes.Should().Be(30);
+            settings.MinLeadTimeMinutes.Should().Be(20);
+            settings.GracePeriodMinutes.Should().Be(15);
+            settings.UpcomingBufferMinutes.Should().Be(15);
         }
     }
 }

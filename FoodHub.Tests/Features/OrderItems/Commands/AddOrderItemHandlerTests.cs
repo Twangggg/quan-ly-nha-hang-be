@@ -41,6 +41,10 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
                 .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(KdsSettings.CreateDefault());
 
+            _mockKdsAutoPullService
+                .Setup(x => x.GetAvailableSlotsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Dictionary<string, int>());
+
             _handler = new AddOrderItemHandler(
                 _mockUow.Object,
                 _mockCurrentUserService.Object,

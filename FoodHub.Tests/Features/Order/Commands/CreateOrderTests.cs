@@ -8,6 +8,7 @@ using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
+using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,8 @@ namespace FoodHub.Tests.Features.Order.Commands
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ICacheService> _mockCacheService;
         private readonly Mock<ISignalRService> _mockSignalRService;
+        private readonly Mock<IReservationSettingsProvider> _mockSettingsProvider;
+        private readonly Mock<IReservationLifecyclePolicy> _mockReservationLifecyclePolicy;
         private readonly Mock<ILogger<CreateOrderHandler>> _mockLogger;
         private readonly CreateOrderHandler _handler;
 
@@ -36,6 +39,8 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockMessageService = new Mock<IMessageService>();
             _mockCacheService = new Mock<ICacheService>();
             _mockSignalRService = new Mock<ISignalRService>();
+            _mockSettingsProvider = new Mock<IReservationSettingsProvider>();
+            _mockReservationLifecyclePolicy = new Mock<IReservationLifecyclePolicy>();
             _mockLogger = new Mock<ILogger<CreateOrderHandler>>();
 
             _handler = new CreateOrderHandler(
@@ -44,8 +49,15 @@ namespace FoodHub.Tests.Features.Order.Commands
                 _mockMessageService.Object,
                 _mockCacheService.Object,
                 _mockSignalRService.Object,
+                _mockSettingsProvider.Object,
+                _mockReservationLifecyclePolicy.Object,
                 _mockLogger.Object
             );
+
+            _mockSettingsProvider.Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ReservationSettings.CreateDefault());
+            _mockReservationLifecyclePolicy.Setup(x => x.GetBusinessNow())
+                .Returns(DateTime.UtcNow);
         }
 
         [Fact]

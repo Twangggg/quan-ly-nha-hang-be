@@ -40,7 +40,7 @@ namespace FoodHub.Tests.Features.Employees
         }
 
         [Fact]
-        public void DeleteEmployee_Should_Throw_When_EmployeeAlreadyInactive()
+        public void DeleteEmployee_Should_Throw_When_EmployeeIsActive()
         {
             var employee = new Employee
             {
@@ -48,7 +48,7 @@ namespace FoodHub.Tests.Features.Employees
                 EmployeeCode = "EMP001",
                 FullName = "John Doe",
                 Email = "john@example.com",
-                Status = EmployeeStatus.Inactive,
+                Status = EmployeeStatus.Active, // Should throw if active
             };
 
             var action = () => employee.DeleteEmployee(Guid.NewGuid());

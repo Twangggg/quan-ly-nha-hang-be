@@ -3,6 +3,7 @@ using FoodHub.Application.Features.Reservations.Settings.Commands.UpdateReservat
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Domain.Entities;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace FoodHub.Tests.Features.Reservations.Settings
@@ -29,7 +30,8 @@ namespace FoodHub.Tests.Features.Reservations.Settings
                 uow.Object,
                 provider.Object,
                 Mock.Of<IMessageService>(),
-                Mock.Of<Microsoft.Extensions.Logging.ILogger<UpdateReservationSettingsHandler>>()
+                Mock.Of<Microsoft.Extensions.Logging.ILogger<UpdateReservationSettingsHandler>>(),
+                Mock.Of<ICacheService>()
             );
 
             var result = await handler.Handle(
@@ -41,7 +43,8 @@ namespace FoodHub.Tests.Features.Reservations.Settings
                     "17:00",
                     30,
                     60,
-                    20
+                    20,
+                    15
                 ),
                 CancellationToken.None
             );
@@ -55,6 +58,7 @@ namespace FoodHub.Tests.Features.Reservations.Settings
             result.Data!.OverlapBufferMinutes.Should().Be(30);
             result.Data.MinLeadTimeMinutes.Should().Be(60);
             result.Data.GracePeriodMinutes.Should().Be(20);
+            result.Data.UpcomingBufferMinutes.Should().Be(15);
             settings.OpenTime.Should().Be(new TimeOnly(10, 30));
             settings.CloseTime.Should().Be(new TimeOnly(23, 0));
             settings.BreakEnabled.Should().BeTrue();
@@ -63,6 +67,7 @@ namespace FoodHub.Tests.Features.Reservations.Settings
             settings.OverlapBufferMinutes.Should().Be(30);
             settings.MinLeadTimeMinutes.Should().Be(60);
             settings.GracePeriodMinutes.Should().Be(20);
+            settings.UpcomingBufferMinutes.Should().Be(15);
         }
     }
 }

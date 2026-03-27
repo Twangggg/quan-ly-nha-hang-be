@@ -55,18 +55,19 @@ namespace FoodHub.Tests.Features.Employees
                 Email = "john@example.com",
                 Username = "johndoe",
                 Phone = "0123456789",
-                Status = EmployeeStatus.Active,
+                Status = EmployeeStatus.Inactive, // Must be inactive to delete
             };
 
             var employeeRepo = new Mock<IGenericRepository<Employee>>();
             employeeRepo.Setup(r => r.GetByIdAsync(employeeId)).ReturnsAsync(employee);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(employeeRepo.Object);
 
-            var refreshTokens = new List<RefreshToken>
+            var tokens = new List<RefreshToken>
             {
                 new RefreshToken { EmployeeId = employeeId, IsRevoked = false },
                 new RefreshToken { EmployeeId = employeeId, IsRevoked = false },
-            }.AsQueryable().BuildMock();
+            };
+            var refreshTokens = tokens.AsQueryable().BuildMock();
             var tokenRepo = new Mock<IGenericRepository<RefreshToken>>();
             tokenRepo.Setup(r => r.Query()).Returns(refreshTokens);
             _mockUow.Setup(u => u.Repository<RefreshToken>()).Returns(tokenRepo.Object);
@@ -92,13 +93,13 @@ namespace FoodHub.Tests.Features.Employees
             );
 
             result.IsSuccess.Should().BeTrue();
-            refreshTokens.All(x => x.IsRevoked).Should().BeTrue();
+            tokens.All(x => x.IsRevoked).Should().BeTrue();
             employee.Status.Should().Be(EmployeeStatus.Inactive);
             employee.DeletedAt.Should().NotBeNull();
         }
 
         [Fact]
-        public async Task Handle_Should_ReturnFailure_When_EmployeeAlreadyInactive()
+        public async Task Handle_Should_ReturnFailure_When_EmployeeIsActive()
         {
             var auditorId = Guid.NewGuid();
             var employeeId = Guid.NewGuid();
@@ -108,7 +109,7 @@ namespace FoodHub.Tests.Features.Employees
                 EmployeeCode = "EMP001",
                 Email = "john@example.com",
                 FullName = "John Doe",
-                Status = EmployeeStatus.Inactive,
+                Status = EmployeeStatus.Active,
             };
 
             var employeeRepo = new Mock<IGenericRepository<Employee>>();
@@ -116,8 +117,8 @@ namespace FoodHub.Tests.Features.Employees
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(employeeRepo.Object);
             _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
             _mockMessage
-                .Setup(m => m.GetMessage(MessageKeys.Employee.NotActive))
-                .Returns("Employee not active");
+                .Setup(m => m.GetMessage(MessageKeys.Employee.CannotDeleteActive, It.IsAny<object[]>()))
+                .Returns("Cannot delete active employee");
 
             var result = await _handler.Handle(
                 new DeleteEmployeeCommand(employeeId),
@@ -125,7 +126,7 @@ namespace FoodHub.Tests.Features.Employees
             );
 
             result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be("Employee not active");
+            result.Error.Should().Be("Cannot delete active employee");
             result.ErrorType.Should().Be(ResultErrorType.BadRequest);
         }
     }

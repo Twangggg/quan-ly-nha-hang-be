@@ -25,6 +25,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
         private readonly Mock<IReservationLifecyclePolicy> _mockReservationLifecyclePolicy;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ISignalRService> _mockSignalRService;
+        private readonly Mock<ICacheService> _mockCacheService;
         private readonly Mock<ILogger<CheckInReservationHandler>> _mockLogger;
         private readonly CheckInReservationHandler _handler;
 
@@ -35,6 +36,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
             _mockReservationLifecyclePolicy = new Mock<IReservationLifecyclePolicy>();
             _mockMessageService = new Mock<IMessageService>();
             _mockSignalRService = new Mock<ISignalRService>();
+            _mockCacheService = new Mock<ICacheService>();
             _mockLogger = new Mock<ILogger<CheckInReservationHandler>>();
 
             _handler = new CheckInReservationHandler(
@@ -43,6 +45,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
                 _mockReservationLifecyclePolicy.Object,
                 _mockMessageService.Object,
                 _mockSignalRService.Object,
+                _mockCacheService.Object,
                 _mockLogger.Object
             );
         }

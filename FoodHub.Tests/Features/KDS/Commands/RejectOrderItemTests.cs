@@ -44,6 +44,10 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(KdsSettings.CreateDefault());
 
+            _mockKdsAutoPullService
+                .Setup(x => x.ProcessAutoPullAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<OrderItem>());
+
             _handler = new RejectOrderItemHandler(
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
@@ -99,6 +103,11 @@ namespace FoodHub.Tests.Features.KDS.Commands
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId);
+
+            _mockKdsAutoPullService
+                .Setup(x => x.ProcessAutoPullAsync(station, Guid.Parse(userId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<OrderItem> { nextItem })
+                .Callback(() => nextItem.Status = OrderItemStatus.Cooking);
 
             var result = await _handler.Handle(
                 new RejectOrderItemCommand { OrderItemId = orderItemId, Reason = reason },
