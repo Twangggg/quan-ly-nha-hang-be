@@ -96,10 +96,14 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                 );
             }
 
-            if (order.Status != OrderStatus.Serving)
+            if (
+                order.Status != OrderStatus.Serving
+                && order.Status != OrderStatus.Paid
+                && order.Status != OrderStatus.Completed
+            )
             {
                 _logger.LogWarning(
-                    "Order not in Serving or Paid status for pre-check bill. OrderId: {OrderId}, Status: {Status}",
+                    "Order not in Serving, Paid or Completed status for pre-check bill. OrderId: {OrderId}, Status: {Status}",
                     request.OrderId,
                     order.Status
                 );

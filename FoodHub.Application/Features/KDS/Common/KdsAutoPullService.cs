@@ -43,11 +43,12 @@ namespace FoodHub.Application.Features.KDS.Common
             foreach (var station in stations.Distinct())
             {
                 var stationConfig = settings.StationWipLimits.FirstOrDefault(s =>
-                    s.Station.ToString().Equals(station, StringComparison.OrdinalIgnoreCase) && s.Enabled
+                    s.Station.ToString().Equals(station, StringComparison.OrdinalIgnoreCase)
+                    && s.Enabled
                 );
-                
+
                 // Fallback to 4 if not found or disabled
-                var limit = stationConfig?.Limit ?? 4; 
+                var limit = stationConfig?.Limit ?? 4;
 
                 var currentCookingCount = await _unitOfWork
                     .Repository<OrderItem>()
@@ -63,7 +64,7 @@ namespace FoodHub.Application.Features.KDS.Common
             return result;
         }
 
-        public async Task ProcessAutoPullAsync(
+        public async Task<List<OrderItem>> ProcessAutoPullAsync(
             string station,
             Guid employeeId,
             CancellationToken cancellationToken
@@ -71,7 +72,8 @@ namespace FoodHub.Application.Features.KDS.Common
         {
             var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
             var stationConfig = settings.StationWipLimits.FirstOrDefault(s =>
-                s.Station.ToString().Equals(station, StringComparison.OrdinalIgnoreCase) && s.Enabled
+                s.Station.ToString().Equals(station, StringComparison.OrdinalIgnoreCase)
+                && s.Enabled
             );
             var limit = stationConfig?.Limit ?? 4;
 
@@ -85,7 +87,7 @@ namespace FoodHub.Application.Features.KDS.Common
 
             int availableSlots = Math.Max(0, limit - currentCookingCount);
             if (availableSlots <= 0)
-                return;
+                return new List<OrderItem>();
 
             _logger.LogInformation(
                 "Attempting auto-pull for Station: {Station}. Available Slots: {Slots}",
@@ -97,12 +99,15 @@ namespace FoodHub.Application.Features.KDS.Common
                 .Repository<OrderItem>()
                 .Query()
                 .Include(oi => oi.Order)
+                    .ThenInclude(o => o.OrderItems)
                 .Include(oi => oi.MenuItem)
-                .Where(oi => oi.StationSnapshot == station && oi.Status == OrderItemStatus.Preparing)
+                .Where(oi =>
+                    oi.StationSnapshot == station && oi.Status == OrderItemStatus.Preparing
+                )
                 .ToListAsync(cancellationToken);
 
             if (!pendingItems.Any())
-                return;
+                return new List<OrderItem>();
 
             var sortedItems = _priorityCalculator.SortQueue(
                 pendingItems,
@@ -145,17 +150,9 @@ namespace FoodHub.Application.Features.KDS.Common
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(autoPullLog);
 
                 _unitOfWork.Repository<OrderItem>().Update(item);
-
-                // Notify SignalR Status Refresh for this item
-                var response = KdsMappingHelper.MapToResponse(item, _priorityCalculator, settings);
-                await _signalRService.NotifyKdsItemUpdatedAsync(station, response);
-                
-                await _signalRService.NotifyOrderItemStatusChangedAsync(
-                    item.OrderItemId,
-                    OrderItemStatus.Cooking,
-                    station
-                );
             }
+
+            return itemsToPull;
         }
     }
 }

@@ -13,6 +13,7 @@ namespace FoodHub.Domain.Entities
         public const int DefaultOverlapBufferMinutes = 120;
         public const int DefaultMinLeadTimeMinutes = 45;
         public const int DefaultGracePeriodMinutes = 15;
+        public const int DefaultUpcomingBufferMinutes = 30;
         public const bool DefaultBreakEnabled = true;
 
         protected ReservationSettings() { }
@@ -27,6 +28,7 @@ namespace FoodHub.Domain.Entities
         public int OverlapBufferMinutes { get; private set; }
         public int MinLeadTimeMinutes { get; private set; }
         public int GracePeriodMinutes { get; private set; }
+        public int UpcomingBufferMinutes { get; private set; }
 
         public static ReservationSettings CreateDefault(Guid? createdBy = null)
         {
@@ -42,6 +44,7 @@ namespace FoodHub.Domain.Entities
                 OverlapBufferMinutes = DefaultOverlapBufferMinutes,
                 MinLeadTimeMinutes = DefaultMinLeadTimeMinutes,
                 GracePeriodMinutes = DefaultGracePeriodMinutes,
+                UpcomingBufferMinutes = DefaultUpcomingBufferMinutes,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = createdBy,
                 UpdatedBy = createdBy,
@@ -57,6 +60,7 @@ namespace FoodHub.Domain.Entities
             int overlapBufferMinutes,
             int minLeadTimeMinutes,
             int gracePeriodMinutes,
+            int upcomingBufferMinutes,
             Guid? updatedBy = null
         )
         {
@@ -103,6 +107,20 @@ namespace FoodHub.Domain.Entities
                 );
             }
 
+            if (upcomingBufferMinutes < 0)
+            {
+                return DomainResult.Failure(
+                    DomainErrors.ReservationSettings.InvalidUpcomingBufferMinutes
+                );
+            }
+
+            if (upcomingBufferMinutes > minLeadTimeMinutes)
+            {
+                return DomainResult.Failure(
+                    DomainErrors.ReservationSettings.UpcomingBufferCannotExceedMinLeadTime
+                );
+            }
+
             OpenTime = openTime;
             CloseTime = closeTime;
             BreakEnabled = breakEnabled;
@@ -111,6 +129,7 @@ namespace FoodHub.Domain.Entities
             OverlapBufferMinutes = overlapBufferMinutes;
             MinLeadTimeMinutes = minLeadTimeMinutes;
             GracePeriodMinutes = gracePeriodMinutes;
+            UpcomingBufferMinutes = upcomingBufferMinutes;
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;
 

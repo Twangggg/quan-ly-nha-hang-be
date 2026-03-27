@@ -24,6 +24,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<IKdsSettingsProvider> _mockKdsSettingsProvider;
         private readonly Mock<ISignalRService> _mockSignalRService;
+        private readonly Mock<IKdsAutoPullService> _mockKdsAutoPullService;
         private readonly Mock<ILogger<RejectOrderItemHandler>> _mockLogger;
         private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly RejectOrderItemHandler _handler;
@@ -35,6 +36,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
             _mockMessageService = new Mock<IMessageService>();
             _mockKdsSettingsProvider = new Mock<IKdsSettingsProvider>();
             _mockSignalRService = new Mock<ISignalRService>();
+            _mockKdsAutoPullService = new Mock<IKdsAutoPullService>();
             _mockLogger = new Mock<ILogger<RejectOrderItemHandler>>();
             _priorityCalculator = new KdsPriorityCalculator();
 
@@ -49,6 +51,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 _mockSignalRService.Object,
                 _priorityCalculator,
                 _mockKdsSettingsProvider.Object,
+                _mockKdsAutoPullService.Object,
                 _mockLogger.Object
             );
         }

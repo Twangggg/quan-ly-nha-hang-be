@@ -30,7 +30,7 @@ namespace FoodHub.Domain.Entities
             {
                 AttendanceId = Guid.NewGuid(),
                 EmployeeId = (employee is null) ? employeeId : employee.EmployeeId,
-                Employee = employee,
+                Employee = employee!,
                 ShiftAssignmentId = shiftAssignmentId ?? shiftAssignment?.ShiftAssignmentId,
                 ShiftAssignment = shiftAssignment,
                 CheckInTime = checkInTime,

@@ -31,18 +31,21 @@ namespace FoodHub.Presentation.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly IMessageService _messageService;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             IMediator mediator,
             IWebHostEnvironment env,
             IMessageService messageService,
-            IConfiguration configuration
+            IConfiguration configuration,
+            ILogger<AuthController> logger
         ) : base(messageService)
         {
             _mediator = mediator;
             _env = env;
             _messageService = messageService;
             _configuration = configuration;
+            _logger = logger;
         }
 
         /// <summary>
@@ -140,20 +143,40 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="204">Đăng xuất thành công.</response>
         [HttpPost("logout")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> Logout([FromBody] RevokeTokenCommand command)
+        public async Task<IActionResult> Logout([FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] RevokeTokenCommand? command)
         {
-            var refreshToken = command.RefreshToken ?? Request.Cookies["refreshToken"];
+            var refreshToken = command?.RefreshToken ?? Request.Cookies["refreshToken"];
 
-            Response.Cookies.Delete("accessToken");
-            Response.Cookies.Delete("refreshToken");
+            var isDev = _env.IsDevelopment();
+            var enableHttps = _configuration.GetValue<bool>("EnableHttpsRedirection", true);
+            var isSecure = !isDev && enableHttps;
+
+            var deleteOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = isSecure,
+                SameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddDays(-1)
+            };
+
+            Response.Cookies.Delete("accessToken", deleteOptions);
+            Response.Cookies.Delete("refreshToken", deleteOptions);
 
             if (string.IsNullOrEmpty(refreshToken))
             {
                 return NoContent();
             }
 
-            var revokeCommand = new RevokeTokenCommand { RefreshToken = refreshToken };
-            var result = await _mediator.Send(revokeCommand);
+            try 
+            {
+                var revokeCommand = new RevokeTokenCommand { RefreshToken = refreshToken };
+                await _mediator.Send(revokeCommand);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to revoke refresh token during logout");
+            }
 
             return NoContent();
         }

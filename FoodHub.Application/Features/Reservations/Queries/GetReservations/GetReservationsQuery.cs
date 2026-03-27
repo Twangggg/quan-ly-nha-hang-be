@@ -20,6 +20,7 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
         public string Phone { get; set; } = string.Empty;
         public string Date { get; set; } = string.Empty;
         public string Time { get; set; } = string.Empty;
+        public Guid? AreaId { get; set; }
         public string Area { get; set; } = string.Empty;
         public int People { get; set; }
         public string Status { get; set; } = string.Empty;

@@ -7,10 +7,10 @@ using FoodHub.Application.Features.Categories.Commands.UpdateCategoryStatus;
 using FoodHub.Application.Features.Categories.Queries.GetAllCategories;
 using FoodHub.Application.Features.Categories.Queries.GetCategoryById;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
@@ -29,7 +29,8 @@ namespace FoodHub.Presentation.Controllers
         private readonly IMediator _mediator;
         private readonly IMessageService _messageService;
 
-        public CategoriesController(IMediator mediator, IMessageService messageService) : base(messageService)
+        public CategoriesController(IMediator mediator, IMessageService messageService)
+            : base(messageService)
         {
             _mediator = mediator;
             _messageService = messageService;

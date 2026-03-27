@@ -49,6 +49,7 @@ namespace FoodHub.Application.Features.Reservations.Settings.Queries.GetReservat
                 OverlapBufferMinutes = settings.OverlapBufferMinutes,
                 MinLeadTimeMinutes = settings.MinLeadTimeMinutes,
                 GracePeriodMinutes = settings.GracePeriodMinutes,
+                UpcomingBufferMinutes = settings.UpcomingBufferMinutes,
             };
         }
 

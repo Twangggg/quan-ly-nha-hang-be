@@ -129,10 +129,14 @@ namespace FoodHub.Domain.Constants
                 "ReservationSettings.InvalidMinLeadTimeMinutes";
             public const string InvalidGracePeriodMinutes =
                 "ReservationSettings.InvalidGracePeriodMinutes";
+            public const string InvalidUpcomingBufferMinutes =
+                "ReservationSettings.InvalidUpcomingBufferMinutes";
             public const string InvalidOperatingHours = "ReservationSettings.InvalidOperatingHours";
             public const string InvalidBreakHours = "ReservationSettings.InvalidBreakHours";
             public const string InvalidBreakOutsideOperatingHours =
                 "ReservationSettings.InvalidBreakOutsideOperatingHours";
+            public const string UpcomingBufferCannotExceedMinLeadTime =
+                "ReservationSettings.UpcomingBufferCannotExceedMinLeadTime";
         }
 
         public static class KdsSettings

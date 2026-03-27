@@ -1,9 +1,11 @@
 using FluentAssertions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Features.OrderItems.Commands.AddOrderItem;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
@@ -22,6 +24,8 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ISignalRService> _mockSignalRService;
+        private readonly Mock<IKdsSettingsProvider> _mockKdsSettingsProvider;
+        private readonly Mock<IKdsAutoPullService> _mockKdsAutoPullService;
         private readonly AddOrderItemHandler _handler;
 
         public AddOrderItemHandlerTests()
@@ -30,12 +34,21 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
             _mockSignalRService = new Mock<ISignalRService>();
+            _mockKdsSettingsProvider = new Mock<IKdsSettingsProvider>();
+            _mockKdsAutoPullService = new Mock<IKdsAutoPullService>();
+
+            _mockKdsSettingsProvider
+                .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(KdsSettings.CreateDefault());
 
             _handler = new AddOrderItemHandler(
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
                 _mockMessageService.Object,
-                _mockSignalRService.Object
+                _mockSignalRService.Object,
+                new KdsPriorityCalculator(),
+                _mockKdsSettingsProvider.Object,
+                _mockKdsAutoPullService.Object
             );
         }
 

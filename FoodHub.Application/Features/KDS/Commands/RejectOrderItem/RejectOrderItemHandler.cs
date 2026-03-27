@@ -121,13 +121,23 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
                 orderItemRepository.Update(orderItem);
-                
+
                 // Save first to free up slot
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
 
                 // Auto-pull next item if capacity allows
-                await _kdsAutoPullService.ProcessAutoPullAsync(orderItem.StationSnapshot, auditorId.Value, cancellationToken);
-                
+                var pulledItems = await _kdsAutoPullService.ProcessAutoPullAsync(
+                    orderItem.StationSnapshot,
+                    auditorId.Value,
+                    cancellationToken
+                );
+
+                // Save pulled items
+                if (pulledItems.Any())
+                {
+                    await _unitOfWork.SaveChangeAsync(cancellationToken);
+                }
+
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation(
@@ -135,11 +145,35 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                     request.OrderItemId
                 );
 
+                // Notify for rejected item
                 _ = _signalRService.NotifyOrderItemStatusChangedAsync(
                     orderItem.OrderItemId,
                     OrderItemStatus.Rejected,
                     orderItem.StationSnapshot
                 );
+
+                // Notify for Pulled Items
+                if (pulledItems.Any())
+                {
+                    var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
+                    foreach (var pulledItem in pulledItems)
+                    {
+                        var response = KdsMappingHelper.MapToResponse(
+                            pulledItem,
+                            _priorityCalculator,
+                            settings
+                        );
+                        _ = _signalRService.NotifyKdsItemUpdatedAsync(
+                            pulledItem.StationSnapshot,
+                            response
+                        );
+                        _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                            pulledItem.OrderItemId,
+                            OrderItemStatus.Cooking,
+                            pulledItem.StationSnapshot
+                        );
+                    }
+                }
 
                 return Result<Guid>.Success(orderItem.OrderItemId);
             }

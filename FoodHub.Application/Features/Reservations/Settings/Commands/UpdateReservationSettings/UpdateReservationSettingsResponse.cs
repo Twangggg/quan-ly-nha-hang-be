@@ -10,5 +10,6 @@ namespace FoodHub.Application.Features.Reservations.Settings.Commands.UpdateRese
         public int OverlapBufferMinutes { get; set; }
         public int MinLeadTimeMinutes { get; set; }
         public int GracePeriodMinutes { get; set; }
+        public int UpcomingBufferMinutes { get; set; }
     }
 }

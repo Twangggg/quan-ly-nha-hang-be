@@ -65,6 +65,12 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasDefaultValue(15)
                 .IsRequired();
 
+            builder
+                .Property(x => x.UpcomingBufferMinutes)
+                .HasColumnName("upcoming_buffer_minutes")
+                .HasDefaultValue(30)
+                .IsRequired();
+
             builder.Property(x => x.CreatedAt).HasColumnName("created_at");
             builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
             builder.Property(x => x.DeletedAt).HasColumnName("deleted_at");
