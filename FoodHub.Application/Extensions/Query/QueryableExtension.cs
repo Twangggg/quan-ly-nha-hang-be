@@ -112,6 +112,7 @@ namespace FoodHub.Application.Extensions.Query
                     var parameter = Expression.Parameter(typeof(T), "x");
                     var propertySelector = matchedFilter.Value;
                     // Trích xu?t thu?c tính th?c t? t? propertySelector (lo?i b? chuy?n d?i ki?u 'object' c?a AutoMapper)
+                    var propertySelector = matchedFilter.Value;
                     Expression memberExpression = propertySelector.Body;
                     if (
                         memberExpression is UnaryExpression unary
@@ -140,14 +141,14 @@ namespace FoodHub.Application.Extensions.Query
                             if (string.IsNullOrEmpty(value))
                                 convertedValue = null;
                             else if (underlyingType.IsEnum)
-                                convertedValue = Enum.Parse(underlyingType, value);
+                                convertedValue = Enum.Parse(underlyingType, value, ignoreCase: true);
                             else
                                 convertedValue = Convert.ChangeType(value, underlyingType);
                         }
                         else if (propertyType.IsEnum)
                         {
                             // Hỗ trợ filter theo Enum (vd: role:1, status:2)
-                            convertedValue = Enum.Parse(propertyType, value);
+                            convertedValue = Enum.Parse(propertyType, value, ignoreCase: true);
                         }
                         else
                         {
