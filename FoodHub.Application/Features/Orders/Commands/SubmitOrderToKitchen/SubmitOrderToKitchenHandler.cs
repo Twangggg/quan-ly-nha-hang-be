@@ -29,6 +29,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
         private readonly ISignalRService _signalRService;
         private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly IKdsSettingsProvider _kdsSettingsProvider;
+        private readonly IKdsAutoPullService _kdsAutoPullService;
         private readonly ILogger<SubmitOrderToKitchenHandler> _logger;
 
         public SubmitOrderToKitchenHandler(
@@ -39,6 +40,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             ISignalRService signalRService,
             KdsPriorityCalculator priorityCalculator,
             IKdsSettingsProvider kdsSettingsProvider,
+            IKdsAutoPullService kdsAutoPullService,
             ILogger<SubmitOrderToKitchenHandler> logger
         )
         {
@@ -49,6 +51,7 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             _signalRService = signalRService;
             _priorityCalculator = priorityCalculator;
             _kdsSettingsProvider = kdsSettingsProvider;
+            _kdsAutoPullService = kdsAutoPullService;
             _logger = logger;
         }
 
@@ -242,9 +245,22 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             }
 
             var processedItems = new List<OrderItem>();
+            
+            // Auto-start cooking logic: Get available slots for all stations involved
+            var stationsInRequest = groupedItems.Select(x => x.Item.StationSnapshot).Distinct();
+            var availableSlots = await _kdsAutoPullService.GetAvailableSlotsAsync(stationsInRequest, cancellationToken);
+
             foreach (var grouped in groupedItems)
             {
                 var newItem = grouped.Item;
+
+                // Check if we can auto-start cooking
+                if (availableSlots.TryGetValue(newItem.StationSnapshot, out int slots) && slots > 0)
+                {
+                    newItem.StartCooking();
+                    availableSlots[newItem.StationSnapshot]--;
+                    _logger.LogInformation("Auto-starting cooking for item {OrderItemId} at station {Station}", newItem.OrderItemId, newItem.StationSnapshot);
+                }
 
                 // Add to repository directly to ensure EF only performs an INSERT
                 await _unitOfWork.Repository<OrderItem>().AddAsync(newItem);

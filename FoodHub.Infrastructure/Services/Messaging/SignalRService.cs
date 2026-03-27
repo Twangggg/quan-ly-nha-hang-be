@@ -1,7 +1,7 @@
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Enums;
-using Microsoft.AspNetCore.SignalR;
 using FoodHub.Infrastructure.Services.Messaging.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace FoodHub.Infrastructure.Services.Messaging
 {

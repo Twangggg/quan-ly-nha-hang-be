@@ -117,6 +117,7 @@ namespace FoodHub.Infrastructure
             services.AddScoped<IReservationSettingsProvider, ReservationSettingsProvider>();
             services.AddScoped<IReservationLifecyclePolicy, ReservationLifecyclePolicy>();
             services.AddScoped<IKdsSettingsProvider, KdsSettingsProvider>();
+            services.AddScoped<IKdsAutoPullService, KdsAutoPullService>();
 
             // Authorization Services
             services.AddSingleton<IPermissionProvider, PermissionProvider>();

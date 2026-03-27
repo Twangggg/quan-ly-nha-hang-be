@@ -25,6 +25,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
         private readonly ISignalRService _signalRService;
         private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly IKdsSettingsProvider _kdsSettingsProvider;
+        private readonly IKdsAutoPullService _kdsAutoPullService;
 
         public AddOrderItemHandler(
             IUnitOfWork unitOfWork,
@@ -32,7 +33,8 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             IMessageService messageService,
             ISignalRService signalRService,
             KdsPriorityCalculator priorityCalculator,
-            IKdsSettingsProvider kdsSettingsProvider
+            IKdsSettingsProvider kdsSettingsProvider,
+            IKdsAutoPullService kdsAutoPullService
         )
         {
             _unitOfWork = unitOfWork;
@@ -41,6 +43,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             _signalRService = signalRService;
             _priorityCalculator = priorityCalculator;
             _kdsSettingsProvider = kdsSettingsProvider;
+            _kdsAutoPullService = kdsAutoPullService;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -137,6 +140,13 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 request.Note,
                 domainOptions
             );
+
+            // Auto-start cooking if capacity allows
+            var availableSlots = await _kdsAutoPullService.GetAvailableSlotsAsync(new[] { result.Item.StationSnapshot }, cancellationToken);
+            if (availableSlots.TryGetValue(result.Item.StationSnapshot, out int slots) && slots > 0)
+            {
+                result.Item.StartCooking();
+            }
 
             if (!result.IsNew && request.Reason == null)
             {
