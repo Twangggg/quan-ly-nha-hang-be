@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -51,8 +52,9 @@ public class GetKdsAuditLogsHandler
 
         if (!string.IsNullOrEmpty(request.Station) && request.Station != "all")
         {
+            var targetStations = KdsStationHelper.ExpandRequestedStations(request.Station);
             query = query.Where(x =>
-                x.Order.OrderItems.Any(oi => oi.StationSnapshot == request.Station)
+                x.Order.OrderItems.Any(oi => targetStations.Contains(oi.StationSnapshot))
             );
         }
 

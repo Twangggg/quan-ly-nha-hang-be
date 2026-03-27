@@ -228,6 +228,9 @@ namespace FoodHub.Application.Constants
             public const string MaxSelectAllowed = "OptionGroup.MaxSelectAllowed";
             public const string Required = "OptionGroup.Required";
             public const string NameRequired = "OptionGroup.NameRequired";
+            public const string Duplicate = "OptionGroup.Duplicate";
+            public const string AtLeastOneRequired = "OptionGroup.AtLeastOneRequired";
+            public const string QuantityGreaterZero = "OptionGroup.QuantityGreaterZero";
         }
 
         public static class OptionItem
@@ -236,9 +239,6 @@ namespace FoodHub.Application.Constants
             public const string NotBelongToGroup = "OptionItem.NotBelongToGroup";
             public const string LabelRequired = "OptionItem.LabelRequired";
             public const string ExtraPriceInvalid = "OptionItem.ExtraPriceInvalid";
-            public const string Duplicate = "OptionGroup.Duplicate";
-            public const string AtLeastOneRequired = "OptionGroup.AtLeastOneRequired";
-            public const string QuantityGreaterZero = "OptionGroup.QuantityGreaterZero";
         }
 
         public static class SetMenu

@@ -112,7 +112,6 @@ namespace FoodHub.Application.Extensions.Query
                     var parameter = Expression.Parameter(typeof(T), "x");
                     var propertySelector = matchedFilter.Value;
                     // Trích xu?t thu?c tính th?c t? t? propertySelector (lo?i b? chuy?n d?i ki?u 'object' c?a AutoMapper)
-                    var propertySelector = matchedFilter.Value;
                     Expression memberExpression = propertySelector.Body;
                     if (
                         memberExpression is UnaryExpression unary
