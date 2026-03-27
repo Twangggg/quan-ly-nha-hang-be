@@ -1,14 +1,13 @@
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace FoodHub.Infrastructure.Persistence.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
-    [Migration("20260327100000_AddUpcomingBufferToSettings")]
+    /// <inheritdoc />
     public partial class AddUpcomingBufferToSettings : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
@@ -16,16 +15,15 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
                 table: "reservation_settings",
                 type: "integer",
                 nullable: false,
-                defaultValue: 30
-            );
+                defaultValue: 30);
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
                 name: "upcoming_buffer_minutes",
-                table: "reservation_settings"
-            );
+                table: "reservation_settings");
         }
     }
 }
