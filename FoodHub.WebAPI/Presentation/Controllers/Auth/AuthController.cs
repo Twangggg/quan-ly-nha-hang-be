@@ -9,10 +9,10 @@ using FoodHub.Application.Features.Authentication.Commands.RevokeToken;
 using FoodHub.Application.Features.Authentication.Queries.VerifyResetToken;
 using FoodHub.Application.Features.Employees.Queries.GetMyProfile;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.WebAPI.Presentation.Attributes;
 using MediatR;
@@ -39,7 +39,8 @@ namespace FoodHub.Presentation.Controllers
             IMessageService messageService,
             IConfiguration configuration,
             ILogger<AuthController> logger
-        ) : base(messageService)
+        )
+            : base(messageService)
         {
             _mediator = mediator;
             _env = env;
@@ -143,7 +144,12 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="204">Đăng xuất thành công.</response>
         [HttpPost("logout")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> Logout([FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] RevokeTokenCommand? command)
+        public async Task<IActionResult> Logout(
+            [FromBody(
+                EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow
+            )]
+                RevokeTokenCommand? command
+        )
         {
             var refreshToken = command?.RefreshToken ?? Request.Cookies["refreshToken"];
 
@@ -151,24 +157,60 @@ namespace FoodHub.Presentation.Controllers
             var enableHttps = _configuration.GetValue<bool>("EnableHttpsRedirection", true);
             var isSecure = !isDev && enableHttps;
 
-            var deleteOptions = new CookieOptions
+            // Xóa cookies với nhiều cấu hình khác nhau để đảm bảo trình duyệt chấp nhận lệnh xóa
+            // (Đặc biệt quan trọng khi môi trường Dev/Prod có cấu hình Secure/SameSite khác nhau)
+
+            var baseOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddDays(-1),
+            };
+
+            // 1. Thử xóa với cấu hình hiện tại
+            var currentOptions = new CookieOptions
             {
                 HttpOnly = true,
                 Secure = isSecure,
                 SameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax,
                 Path = "/",
-                Expires = DateTime.UtcNow.AddDays(-1)
+                Expires = DateTime.UtcNow.AddDays(-1),
             };
+            Response.Cookies.Delete("accessToken", currentOptions);
+            Response.Cookies.Delete("refreshToken", currentOptions);
 
-            Response.Cookies.Delete("accessToken", deleteOptions);
-            Response.Cookies.Delete("refreshToken", deleteOptions);
+            Response.Cookies.Delete("accessToken", baseOptions);
+            Response.Cookies.Delete("refreshToken", baseOptions);
+
+            Response.Cookies.Delete(
+                "accessToken",
+                new CookieOptions
+                {
+                    Path = "/",
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTime.UtcNow.AddDays(-1),
+                }
+            );
+            Response.Cookies.Delete(
+                "refreshToken",
+                new CookieOptions
+                {
+                    Path = "/",
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTime.UtcNow.AddDays(-1),
+                }
+            );
 
             if (string.IsNullOrEmpty(refreshToken))
             {
                 return NoContent();
             }
 
-            try 
+            try
             {
                 var revokeCommand = new RevokeTokenCommand { RefreshToken = refreshToken };
                 await _mediator.Send(revokeCommand);
