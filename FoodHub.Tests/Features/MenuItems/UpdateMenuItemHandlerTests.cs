@@ -216,7 +216,7 @@ namespace FoodHub.Tests.Features.MenuItems
             );
 
             _mockCurrentUser.Setup(c => c.UserId).Returns(userId.ToString());
-            _mockCurrentUser.Setup(c => c.Role).Returns("Waiter");
+            _mockCurrentUser.Setup(c => c.Role).Returns("ChefBar");
 
             var menuItem = new MenuItem
             {

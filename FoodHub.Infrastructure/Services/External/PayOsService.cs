@@ -64,5 +64,12 @@ namespace FoodHub.Infrastructure.Services.External
 
             return verifiedData.OrderCode;
         }
+
+        public async Task<string> GetPaymentStatusAsync(long orderCode, CancellationToken token = default)
+        {
+            // Official SDK method to get status by orderCode
+            var paymentInfo = await _payOs.PaymentRequests.GetAsync(orderCode);
+            return paymentInfo.Status.ToString();
+        }
     }
 }

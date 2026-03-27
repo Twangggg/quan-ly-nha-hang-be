@@ -1,11 +1,12 @@
+using FoodHub.Application.Constants;
+using FoodHub.Application.Interfaces.Common;
 using FluentValidation;
-using FoodHub.Application.Interfaces;
 
 namespace FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssignment
 {
     public class UpdateShiftAssignmentValidator : AbstractValidator<UpdateShiftAssignmentCommand>
     {
-        public UpdateShiftAssignmentValidator()
+        public UpdateShiftAssignmentValidator(IMessageService messageService)
         {
             RuleFor(x => x.ShiftAssignmentId)
                 .NotEmpty();
@@ -19,7 +20,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssi
 
             RuleFor(x => x.AssignedDate)
                 .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)))
-                .WithMessage("Ngày phân công không được trong quá khứ xa (trước 1 ngày so với hôm nay).");
+                .WithMessage(messageService.GetMessage(MessageKeys.ShiftAssignment.DateInPast));
         }
     }
 }

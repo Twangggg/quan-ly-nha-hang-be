@@ -98,7 +98,8 @@ namespace FoodHub.Tests.Features.Reservations.Queries
                 settings.BreakEnd,
                 30,
                 settings.MinLeadTimeMinutes,
-                settings.GracePeriodMinutes
+                settings.GracePeriodMinutes,
+                15
             );
             _settingsProvider
                 .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))

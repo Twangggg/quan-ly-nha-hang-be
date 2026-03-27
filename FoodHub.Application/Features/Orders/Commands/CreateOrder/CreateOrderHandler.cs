@@ -13,6 +13,7 @@ using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using FoodHub.Application.Interfaces.Reservations;
 
 namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
 {
@@ -23,6 +24,8 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
         private readonly IMessageService _messageService;
         private readonly ICacheService _cacheService;
         private readonly ISignalRService _signalRService;
+        private readonly IReservationSettingsProvider _reservationSettingsProvider;
+        private readonly IReservationLifecyclePolicy _reservationLifecyclePolicy;
         private readonly ILogger<CreateOrderHandler> _logger;
 
         public CreateOrderHandler(
@@ -31,6 +34,8 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             IMessageService messageService,
             ICacheService cacheService,
             ISignalRService signalRService,
+            IReservationSettingsProvider reservationSettingsProvider,
+            IReservationLifecyclePolicy reservationLifecyclePolicy,
             ILogger<CreateOrderHandler> logger
         )
         {
@@ -39,6 +44,8 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
             _messageService = messageService;
             _cacheService = cacheService;
             _signalRService = signalRService;
+            _reservationSettingsProvider = reservationSettingsProvider;
+            _reservationLifecyclePolicy = reservationLifecyclePolicy;
             _logger = logger;
         }
 
@@ -90,11 +97,13 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                             t => t.TableId == request.TableId.Value,
                             cancellationToken
                         );
-
-                    var bufferTime = TimeSpan.FromHours(2);
-                    var vietnamTime = DateTime.UtcNow.AddHours(7);
-                    var currentTime = vietnamTime.TimeOfDay;
-                    var today = DateOnly.FromDateTime(vietnamTime);
+                    
+                    var settings = await _reservationSettingsProvider.GetOrCreateAsync(cancellationToken);
+                    var bufferTime = TimeSpan.FromMinutes(settings.OverlapBufferMinutes);
+                    var now = _reservationLifecyclePolicy.GetBusinessNow();
+                    var currentTime = now.TimeOfDay;
+                    var today = DateOnly.FromDateTime(now);
+                    
                     var upcomingReservation = await _unitOfWork
                         .Repository<Reservation>()
                         .Query()
@@ -252,6 +261,17 @@ namespace FoodHub.Application.Features.Orders.Commands.CreateOrder
                 {
                     table.Status = TableStatus.Occupied;
                     _unitOfWork.Repository<Table>().Update(table);
+                }
+
+                // Nếu tạo từ Reservation, cập nhật trạng thái Reservation sang CheckedIn
+                if (request.ReservationId.HasValue)
+                {
+                    var reservation = await _unitOfWork.Repository<Reservation>().GetByIdAsync(request.ReservationId.Value);
+                    if (reservation != null)
+                    {
+                        reservation.MarkCheckedIn(newOrder.CreatedAt, userId);
+                        _unitOfWork.Repository<Reservation>().Update(reservation);
+                    }
                 }
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);

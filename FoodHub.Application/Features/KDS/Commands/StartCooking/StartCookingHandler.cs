@@ -5,6 +5,7 @@ using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.Security;
@@ -21,6 +22,7 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
+        private readonly IKdsSettingsProvider _kdsSettingsProvider;
         private readonly ISignalRService _signalRService;
         private readonly ILogger<StartCookingHandler> _logger;
 
@@ -28,6 +30,7 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
+            IKdsSettingsProvider kdsSettingsProvider,
             ISignalRService signalRService,
             ILogger<StartCookingHandler> logger
         )
@@ -35,6 +38,7 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
+            _kdsSettingsProvider = kdsSettingsProvider;
             _signalRService = signalRService;
             _logger = logger;
         }
@@ -56,6 +60,7 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                     ResultErrorType.Unauthorized
                 );
             }
+
             _logger.LogInformation(
                 "Attempting to start cooking for OrderItemId: {OrderItemId}",
                 request.OrderItemId
@@ -78,37 +83,25 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                 );
             }
 
-            // Xác định nhóm trạm
-            var targetStations = new List<string> { orderItem.StationSnapshot };
-            if (
-                orderItem.StationSnapshot == Station.HotKitchen.ToString()
-                || orderItem.StationSnapshot == Station.ColdKitchen.ToString()
-            )
-            {
-                targetStations = new List<string>
-                {
-                    Station.HotKitchen.ToString(),
-                    Station.ColdKitchen.ToString(),
-                };
-            }
-
-            // WIP Limit Check (Max 4 items per Station Group)
+            var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
+            var wipLimit = settings.ResolveWipLimit(orderItem.StationSnapshot);
             var cookingCount = await orderItemRepository
                 .Query()
                 .AsNoTracking()
                 .CountAsync(
                     oi =>
-                        targetStations.Contains(oi.StationSnapshot)
+                        oi.StationSnapshot == orderItem.StationSnapshot
                         && oi.Status == OrderItemStatus.Cooking,
                     cancellationToken
                 );
 
-            if (cookingCount >= 4)
+            if (wipLimit.HasValue && cookingCount >= wipLimit.Value)
             {
                 _logger.LogWarning(
-                    "WIP limit exceeded for Station: {Station}. Current cooking: {Count}",
+                    "WIP limit exceeded for Station: {Station}. Current cooking: {Count}. Limit: {Limit}",
                     orderItem.StationSnapshot,
-                    cookingCount
+                    cookingCount,
+                    wipLimit.Value
                 );
                 return Result<Guid>.Failure(
                     _messageService.GetMessage(MessageKeys.KDS.WipLimitExceeded)
@@ -150,7 +143,6 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
                     orderItem.StationSnapshot
                 );
 
-                // SignalR Notify
                 _ = _signalRService.NotifyOrderItemStatusChangedAsync(
                     orderItem.OrderItemId,
                     OrderItemStatus.Cooking,
@@ -159,13 +151,8 @@ namespace FoodHub.Application.Features.KDS.Commands.StartCooking
 
                 return Result<Guid>.Success(orderItem.OrderItemId);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(
-                    ex,
-                    "Error occurred while starting cooking for OrderItemId: {OrderItemId}",
-                    request.OrderItemId
-                );
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }

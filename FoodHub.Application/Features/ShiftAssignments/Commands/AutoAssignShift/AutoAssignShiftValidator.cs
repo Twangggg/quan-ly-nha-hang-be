@@ -16,11 +16,11 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AutoAssignShift
 
             RuleFor(x => x.FromDate)
                 .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)))
-                .WithMessage("Ngày bắt đầu không được trong quá khứ xa.");
+                .WithMessage(messageService.GetMessage(MessageKeys.ShiftAssignment.StartDateInvalid));
 
             RuleFor(x => x.ToDate)
                 .GreaterThanOrEqualTo(x => x.FromDate)
-                .WithMessage("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
+                .WithMessage(messageService.GetMessage(MessageKeys.ShiftAssignment.EndDateInvalid));
 
             RuleFor(x => x.Note)
                 .MaximumLength(500)

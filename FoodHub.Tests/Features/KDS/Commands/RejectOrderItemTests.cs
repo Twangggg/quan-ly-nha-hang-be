@@ -2,10 +2,11 @@ using FluentAssertions;
 using FoodHub.Application.Features.KDS.Commands.RejectOrderItem;
 using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -21,7 +22,9 @@ namespace FoodHub.Tests.Features.KDS.Commands
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<IKdsSettingsProvider> _mockKdsSettingsProvider;
         private readonly Mock<ISignalRService> _mockSignalRService;
+        private readonly Mock<IKdsAutoPullService> _mockKdsAutoPullService;
         private readonly Mock<ILogger<RejectOrderItemHandler>> _mockLogger;
         private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly RejectOrderItemHandler _handler;
@@ -31,9 +34,19 @@ namespace FoodHub.Tests.Features.KDS.Commands
             _mockUow = new Mock<IUnitOfWork>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
+            _mockKdsSettingsProvider = new Mock<IKdsSettingsProvider>();
             _mockSignalRService = new Mock<ISignalRService>();
+            _mockKdsAutoPullService = new Mock<IKdsAutoPullService>();
             _mockLogger = new Mock<ILogger<RejectOrderItemHandler>>();
             _priorityCalculator = new KdsPriorityCalculator();
+
+            _mockKdsSettingsProvider
+                .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(KdsSettings.CreateDefault());
+
+            _mockKdsAutoPullService
+                .Setup(x => x.ProcessAutoPullAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<OrderItem>());
 
             _handler = new RejectOrderItemHandler(
                 _mockUow.Object,
@@ -41,6 +54,8 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 _mockMessageService.Object,
                 _mockSignalRService.Object,
                 _priorityCalculator,
+                _mockKdsSettingsProvider.Object,
+                _mockKdsAutoPullService.Object,
                 _mockLogger.Object
             );
         }
@@ -48,12 +63,17 @@ namespace FoodHub.Tests.Features.KDS.Commands
         [Fact]
         public async Task Handle_Should_RejectItem_And_TriggerAutoPull()
         {
-            // Arrange
             var orderItemId = Guid.NewGuid();
             var station = "ColdKitchen";
             var userId = Guid.NewGuid().ToString();
             var reason = "Hết nguyên liệu";
-            var menuItem = new MenuItem { ExpectedTime = 10, Code = "TEST001", Name = "Test Item", ImageUrl = "http://test.com/image.jpg" };
+            var menuItem = new MenuItem
+            {
+                ExpectedTime = 10,
+                Code = "TEST001",
+                Name = "Test Item",
+                ImageUrl = "http://test.com/image.jpg",
+            };
 
             var currentItem = new OrderItem
             {
@@ -84,18 +104,19 @@ namespace FoodHub.Tests.Features.KDS.Commands
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId);
 
-            // Act
+            _mockKdsAutoPullService
+                .Setup(x => x.ProcessAutoPullAsync(station, Guid.Parse(userId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<OrderItem> { nextItem })
+                .Callback(() => nextItem.Status = OrderItemStatus.Cooking);
+
             var result = await _handler.Handle(
                 new RejectOrderItemCommand { OrderItemId = orderItemId, Reason = reason },
                 CancellationToken.None
             );
 
-            // Assert
             result.IsSuccess.Should().BeTrue();
             currentItem.Status.Should().Be(OrderItemStatus.Rejected);
             currentItem.RejectionReason.Should().Be(reason);
-
-            // Auto-pull
             nextItem.Status.Should().Be(OrderItemStatus.Cooking);
         }
     }

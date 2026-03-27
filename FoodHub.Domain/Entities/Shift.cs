@@ -67,8 +67,8 @@ namespace FoodHub.Domain.Entities
             Guid? updatedBy = null
         )
         {
-            if (startTime >= endTime)
-                return DomainResult.Failure(DomainErrors.Shift.OverlappingTime);
+            if (startTime == endTime)
+                return DomainResult.Failure(DomainErrors.Shift.InvalidTime);
 
             Name = name.Trim();
             StartTime = startTime;

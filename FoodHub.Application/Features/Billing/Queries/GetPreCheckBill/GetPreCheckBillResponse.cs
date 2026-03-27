@@ -64,6 +64,11 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
         /// Tổng số tiền giảm giá áp dụng.
         /// </summary>
         public decimal Discount { get; set; }
+        
+        /// <summary>
+        /// Mã voucher đã áp dụng (nếu có).
+        /// </summary>
+        public string? VoucherCode { get; set; }
 
         /// <summary>
         /// % Thuế GTGT.

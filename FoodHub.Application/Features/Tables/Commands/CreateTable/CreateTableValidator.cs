@@ -1,22 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FoodHub.Application.Constants;
+using FoodHub.Application.Interfaces.Common;
 using FluentValidation;
 
 namespace FoodHub.Application.Features.Tables.Commands.CreateTable
 {
     public class CreateTableValidator : AbstractValidator<CreateTableCommand>
     {
-        public CreateTableValidator()
+        public CreateTableValidator(IMessageService messageService)
         {
             RuleFor(x => x.Capacity)
-                .GreaterThan(0).WithMessage("Capacity must be greater than 0.")
-                .LessThanOrEqualTo(100).WithMessage("Capacity must be less than or equal to 100.");
+                .GreaterThan(0).WithMessage(messageService.GetMessage(MessageKeys.Table.CapacityGreaterZero))
+                .LessThanOrEqualTo(100).WithMessage(messageService.GetMessage(MessageKeys.Table.CapacityMaxLimit));
 
             RuleFor(x => x.AreaId)
-                .NotEmpty().WithMessage("AreaId is required.");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Table.AreaIdRequired));
         }
     }
 }

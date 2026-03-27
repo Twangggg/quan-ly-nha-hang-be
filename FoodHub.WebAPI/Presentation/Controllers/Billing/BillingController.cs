@@ -4,6 +4,7 @@ using FoodHub.Application.Features.Billing.Commands.CheckoutOrder;
 using FoodHub.Application.Features.Billing.Commands.CreateQrPayment;
 using FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook;
 using FoodHub.Application.Features.Billing.Commands.SplitBill;
+using FoodHub.Application.Features.Billing.Commands.SyncPaymentStatus;
 using FoodHub.Application.Features.Billing.Queries.ExportPreCheckBillPdf;
 using FoodHub.Application.Features.Billing.Queries.GetBillingHistory;
 using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
@@ -168,6 +169,20 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Billing
             await _mediator.Send(command);
 
             return Ok(new { success = true });
+        }
+
+        /// <summary>
+        /// Đồng bộ trạng thái thanh toán từ PayOS cho một Order.
+        /// Dùng khi Webhook không thể gửi (môi trường local) hoặc bị chậm.
+        /// </summary>
+        [HttpPost("orders/{orderId:guid}/sync-payos-status")]
+        [HasPermission(Permissions.Billing.Checkout)]
+        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SyncPaymentStatus([FromRoute] Guid orderId)
+        {
+            var command = new SyncPaymentStatusCommand { OrderId = orderId };
+            var result = await _mediator.Send(command);
+            return HandleResult(result);
         }
     }
 }

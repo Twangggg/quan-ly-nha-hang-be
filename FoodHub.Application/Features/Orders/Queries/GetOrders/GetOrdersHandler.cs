@@ -5,10 +5,10 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Extensions.Pagination;
 using FoodHub.Application.Extensions.Query;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using MediatR;
@@ -17,43 +17,48 @@ using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Orders.Queries.GetOrders
 {
-    public class GetOrdersHandler : IRequestHandler<GetOrdersQuery, Result<PagedResult<GetOrdersResponse>>>
+    public class GetOrdersHandler
+        : IRequestHandler<GetOrdersQuery, Result<PagedResult<GetOrdersResponse>>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<GetOrdersHandler> _logger;
 
-        public GetOrdersHandler(IUnitOfWork unitOfWork, IMapper mapper, ILogger<GetOrdersHandler> logger)
+        public GetOrdersHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ILogger<GetOrdersHandler> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
         }
 
-        public async Task<Result<PagedResult<GetOrdersResponse>>> Handle(GetOrdersQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<GetOrdersResponse>>> Handle(
+            GetOrdersQuery request,
+            CancellationToken cancellationToken
+        )
         {
             var query = _unitOfWork.Repository<Order>().Query();
             query = query.Include(o => o.Promotion);
 
-            var searchableFields = new List<Expression<Func<Order, string?>>>
-            {
-                o => o.OrderCode,
-            };
+            var searchableFields = new List<Expression<Func<Order, string?>>> { o => o.OrderCode };
             query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
 
             var filterMapping = new Dictionary<string, Expression<Func<Order, object?>>>
             {
-                {"orderType", o => o.OrderType },
-                {"status", o => o.Status}
+                { "orderType", o => o.OrderType },
+                { "status", o => o.Status },
             };
             query = query.ApplyFilters(request.Pagination.Filters, filterMapping);
 
             var sortMapping = new Dictionary<string, Expression<Func<Order, object?>>>
             {
-                {"isPriority", o => o.IsPriority },
-                {"completedAt", o => o.CompletedAt },
-                {"createdAt", o => o.CreatedAt },
-                {"totalAmount", o => o.TotalAmount }
+                { "isPriority", o => o.IsPriority },
+                { "completedAt", o => o.CompletedAt },
+                { "createdAt", o => o.CreatedAt },
+                { "totalAmount", o => o.TotalAmount },
             };
             query = query.ApplySorting(request.Pagination.OrderBy, sortMapping, o => o.OrderCode);
 

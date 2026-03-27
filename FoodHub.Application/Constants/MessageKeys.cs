@@ -28,6 +28,19 @@ namespace FoodHub.Application.Constants
             public const string PageSizeBetween = "Common.PageSizeBetween";
             public const string ToDateAfterFromDate = "Common.ToDateAfterFromDate";
             public const string DateNotInFuture = "Common.DateNotInFuture";
+            public const string NameRequired = "Common.NameRequired";
+            public const string NameMaxLength = "Common.NameMaxLength";
+            public const string DescriptionMaxLength = "Common.DescriptionMaxLength";
+            public const string PriceGreaterZero = "Common.PriceGreaterZero";
+            public const string CostPriceGreaterEqualZero = "Common.CostPriceGreaterEqualZero";
+            public const string AtLeastOneRequired = "Common.AtLeastOneRequired";
+            public const string ImageUrlMaxLength = "Common.ImageUrlMaxLength";
+            public const string DuplicateItems = "Common.DuplicateItems";
+            public const string PaginationRequired = "Common.PaginationRequired";
+            public const string PageNumberMin = "Common.PageNumberMin";
+            public const string PageSizeMin = "Common.PageSizeMin";
+            public const string DateRangeInvalid = "Common.DateRangeInvalid";
+            public const string InvalidStatus = "Common.InvalidStatus";
         }
 
         public static class Password
@@ -90,6 +103,7 @@ namespace FoodHub.Application.Constants
             public const string NotFound = "EmployeeNotFound";
             public const string NotActive = "EmployeeNotActive";
             public const string CannotUpdateInactive = "Employee.CannotUpdateInactive";
+            public const string CannotDeleteActive = "Employee.CannotDeleteActive";
             public const string CannotIdentifyUser = "CannotIdentifyUser";
             public const string CannotIdentifyManager = "CannotIdentifyManager";
             public const string CannotPromoteToManager = "CannotPromoteToManager";
@@ -167,6 +181,16 @@ namespace FoodHub.Application.Constants
             public const string ActionMaxLength = "KDS.ActionMaxLength";
         }
 
+        public static class KdsSettings
+        {
+            public const string InvalidSortMode = "KdsSettings.InvalidSortMode";
+            public const string InvalidPriorityWeight = "KdsSettings.InvalidPriorityWeight";
+            public const string InvalidStationWipLimit = "KdsSettings.InvalidStationWipLimit";
+            public const string DuplicateStationWipLimit = "KdsSettings.DuplicateStationWipLimit";
+            public const string StationWipLimitsRequired = "KdsSettings.StationWipLimitsRequired";
+            public const string MissingStationWipLimit = "KdsSettings.MissingStationWipLimit";
+        }
+
         public static class MenuItem
         {
             public const string NotFound = "MenuItem.NotFound";
@@ -175,6 +199,14 @@ namespace FoodHub.Application.Constants
             public const string CodeExists = "MenuItem.CodeExists";
             public const string UpdateCostForbidden = "MenuItem.UpdateCostForbidden";
             public const string UpdateStockForbidden = "MenuItem.UpdateStockForbidden";
+            public const string NameRequired = "MenuItem.NameRequired";
+            public const string NameMaxLength = "MenuItem.NameMaxLength";
+            public const string CategoryIdRequired = "MenuItem.CategoryIdRequired";
+            public const string InvalidStation = "MenuItem.InvalidStation";
+            public const string ExpectedTimeMin = "MenuItem.ExpectedTimeMin";
+            public const string PriceMin = "MenuItem.PriceMin";
+            public const string CostPriceMin = "MenuItem.CostPriceMin";
+            public const string IdRequired = "MenuItem.IdRequired";
         }
 
         public static class Category
@@ -183,6 +215,7 @@ namespace FoodHub.Application.Constants
             public const string Inactive = "Category.Inactive";
             public const string InvalidType = "Category.InvalidType";
             public const string CannotChangeTypeNotEmpty = "Category.CannotChangeTypeNotEmpty";
+            public const string IdRequired = "Category.IdRequired";
         }
 
         public static class OptionGroup
@@ -195,6 +228,9 @@ namespace FoodHub.Application.Constants
             public const string MaxSelectAllowed = "OptionGroup.MaxSelectAllowed";
             public const string Required = "OptionGroup.Required";
             public const string NameRequired = "OptionGroup.NameRequired";
+            public const string Duplicate = "OptionGroup.Duplicate";
+            public const string AtLeastOneRequired = "OptionGroup.AtLeastOneRequired";
+            public const string QuantityGreaterZero = "OptionGroup.QuantityGreaterZero";
         }
 
         public static class OptionItem
@@ -211,6 +247,13 @@ namespace FoodHub.Application.Constants
             public const string CodeExists = "SetMenu.CodeExists";
             public const string UpdateForbidden = "SetMenu.UpdateForbidden";
             public const string DeleteForbidden = "SetMenu.DeleteForbidden";
+            public const string IdRequired = "SetMenu.IdRequired";
+            public const string NameRequired = "SetMenu.NameRequired";
+            public const string NameMaxLength = "SetMenu.NameMaxLength";
+            public const string CategoryIdRequired = "SetMenu.CategoryIdRequired";
+            public const string PriceGreaterZero = "SetMenu.PriceGreaterZero";
+            public const string CostPriceGreaterEqualZero = "SetMenu.CostPriceGreaterEqualZero";
+            public const string ItemsRequired = "SetMenu.ItemsRequired";
         }
 
         public static class ActiveUserBehavior
@@ -228,6 +271,10 @@ namespace FoodHub.Application.Constants
             public const string UpdateForbidden = "Table.UpdateForbidden";
             public const string UpdateFail = "Table.UpdateFail";
             public const string SameAsCurrentTable = "Table.SameAsCurrentTable";
+            public const string IdRequired = "Table.IdRequired";
+            public const string CapacityGreaterZero = "Table.CapacityGreaterZero";
+            public const string CapacityMaxLimit = "Table.CapacityMaxLimit";
+            public const string AreaIdRequired = "Table.AreaIdRequired";
         }
 
         public static class Area
@@ -236,6 +283,10 @@ namespace FoodHub.Application.Constants
             public const string CodeExists = "Area.CodeExists";
             public const string NameRequired = "Area.NameRequired";
             public const string CodeRequired = "Area.CodeRequired";
+            public const string CodeMaxLength = "Area.CodeMaxLength";
+            public const string NameMaxLength = "Area.NameMaxLength";
+            public const string TypeInvalid = "Area.TypeInvalid";
+            public const string DescriptionMaxLength = "Area.DescriptionMaxLength";
             public const string UpdateForbidden = "Area.UpdateForbidden";
             public const string DeleteForbidden = "Area.DeleteForbidden";
             public const string DeactivateForbidden = "Area.DeactivateForbidden";
@@ -461,6 +512,9 @@ namespace FoodHub.Application.Constants
             public const string EmployeeNotActive = "ShiftAssignment.EmployeeNotActive";
             public const string OvertimeExceeded = "ShiftAssignment.OvertimeExceeded";
             public const string MaxOneShiftPerDay = "ShiftAssignment.MaxOneShiftPerDay";
+            public const string StartDateInvalid = "ShiftAssignment.StartDateInvalid";
+            public const string EndDateInvalid = "ShiftAssignment.EndDateInvalid";
+            public const string DateInPast = "ShiftAssignment.DateInPast";
         }
         public static class Voucher
         {
@@ -487,6 +541,10 @@ namespace FoodHub.Application.Constants
             public const string AlreadyCheckedIn = "Attendance.AlreadyCheckedIn";
             public const string NotCheckedIn = "Attendance.NotCheckedIn";
             public const string InvalidCheckOutTime = "Attendance.InvalidCheckOutTime";
+            public const string PaginationRequired = "Attendance.PaginationRequired";
+            public const string PageNumberMin = "Attendance.PageNumberMin";
+            public const string PageSizeMin = "Attendance.PageSizeMin";
+            public const string DateRangeInvalid = "Attendance.DateRangeInvalid";
         }
     }
 }

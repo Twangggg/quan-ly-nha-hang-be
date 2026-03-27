@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -508,7 +508,10 @@
     <value>Giá thêm phải lớn hơn hoặc bằng 0.</value>
   </data>
   <data name="EmployeeNotActive" xml:space="preserve">
-    <value>Nhân viên này hiện không hoạt động.</value>
+    <value>Nhân viên này không thể xóa vì đang ở trạng thái {0}.</value>
+  </data>
+  <data name="Employee.CannotDeleteActive" xml:space="preserve">
+    <value>Không thể xóa nhân viên đang hoạt động. Vui lòng vô hiệu hóa trước.</value>
   </data>
   <data name="CannotPromoteToManager" xml:space="preserve">
     <value>Không thể chuyển sang vai trò Quản lý</value>
@@ -734,6 +737,81 @@
   </data>
   <data name="Voucher.FreeQuantityInvalid" xml:space="preserve">
     <value>Số lượng món tặng phải lớn hơn 0.</value>
+  </data>
+  <data name="KDS.WipLimitExceeded" xml:space="preserve">
+    <value>Trạm này đã đạt giới hạn món đang nấu. Vui lòng hoàn tất món hiện tại trước khi nhận thêm.</value>
+  </data>
+  <data name="KdsSettings.InvalidSortMode" xml:space="preserve">
+    <value>Chế độ sắp xếp KDS không hợp lệ.</value>
+  </data>
+  <data name="KdsSettings.InvalidPriorityWeight" xml:space="preserve">
+    <value>Trọng số ưu tiên KDS phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="KdsSettings.InvalidStationWipLimit" xml:space="preserve">
+    <value>Giới hạn WIP theo trạm không hợp lệ.</value>
+  </data>
+  <data name="KdsSettings.DuplicateStationWipLimit" xml:space="preserve">
+    <value>Mỗi trạm chỉ được cấu hình một giới hạn WIP.</value>
+  </data>
+  <data name="KdsSettings.StationWipLimitsRequired" xml:space="preserve">
+    <value>Vui lòng cấu hình ít nhất một giới hạn WIP cho KDS.</value>
+  </data>
+  <data name="KdsSettings.MissingStationWipLimit" xml:space="preserve">
+    <value>Vui lòng cấu hình đầy đủ giới hạn WIP cho tất cả trạm hiện có.</value>
+  </data>
+  <data name="Shift.NotFound" xml:space="preserve">
+    <value>Không tìm thấy ca làm việc.</value>
+  </data>
+  <data name="Shift.DuplicateTime" xml:space="preserve">
+    <value>Ca làm việc bị trùng lặp thời gian.</value>
+  </data>
+  <data name="Shift.OverlappingTime" xml:space="preserve">
+    <value>Ca làm việc bị chồng lấn thời gian với ca khác.</value>
+  </data>
+  <data name="Shift.ShiftNotActive" xml:space="preserve">
+    <value>Ca làm việc hiện đang không hoạt động.</value>
+  </data>
+  <data name="Shift.InvalidTime" xml:space="preserve">
+    <value>Thời gian ca làm không hợp lệ (giờ bắt đầu phải trước giờ kết thúc).</value>
+  </data>
+  <data name="Shift.AlreadyInactive" xml:space="preserve">
+    <value>Ca làm việc này đã ngưng hoạt động rồi.</value>
+  </data>
+  <data name="Shift.NameRequired" xml:space="preserve">
+    <value>Tên ca làm việc không được để trống.</value>
+  </data>
+  <data name="ShiftAssignment.NotFound" xml:space="preserve">
+    <value>Không tìm thấy bản phân ca này.</value>
+  </data>
+  <data name="ShiftAssignment.OverlappingShift" xml:space="preserve">
+    <value>Nhân viên đã được phân ca khác trong cùng khoảng thời gian.</value>
+  </data>
+  <data name="ShiftAssignment.ShiftNotActive" xml:space="preserve">
+    <value>Không thể phân vào ca làm việc đã ngưng hoạt động.</value>
+  </data>
+  <data name="ShiftAssignment.EmployeeNotActive" xml:space="preserve">
+    <value>Không thể phân ca cho nhân viên đã ngưng hoạt động.</value>
+  </data>
+  <data name="ShiftAssignment.OvertimeExceeded" xml:space="preserve">
+    <value>Thời gian làm việc vượt quá giới hạn tăng ca của nhân viên.</value>
+  </data>
+  <data name="ShiftAssignment.MaxOneShiftPerDay" xml:space="preserve">
+    <value>Mỗi nhân viên chỉ có thể được phân tối đa 1 ca một ngày.</value>
+  </data>
+  <data name="Attendance.NotFound" xml:space="preserve">
+    <value>Không tìm thấy thông tin điểm danh.</value>
+  </data>
+  <data name="Attendance.AlreadyCheckedIn" xml:space="preserve">
+    <value>Nhân viên đã điểm danh vào trước đó.</value>
+  </data>
+  <data name="Attendance.NotCheckedIn" xml:space="preserve">
+    <value>Chưa có thông tin điểm danh đầu ca.</value>
+  </data>
+  <data name="Attendance.InvalidCheckOutTime" xml:space="preserve">
+    <value>Giờ ra không hợp lệ (phải sau giờ vào).</value>
+  </data>
+  <data name="Shift.AlreadyActive" xml:space="preserve">
+    <value>Ca làm việc này đã đang hoạt động rồi.</value>
   </data>
 </root>
 

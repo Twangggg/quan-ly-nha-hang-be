@@ -16,12 +16,20 @@ namespace FoodHub.Application.Interfaces.External
 
     public interface IPaymentService
     {
-        Task<PaymentLinkResponse> CreatePaymentLinkAsync(Order order, CancellationToken token = default);
+        Task<PaymentLinkResponse> CreatePaymentLinkAsync(
+            Order order,
+            CancellationToken token = default
+        );
 
         /// <summary>
         /// Verify the webhook data and return the orderCode implicitly or explicitly.
         /// Throws exception if signature is invalid.
         /// </summary>
         Task<long> VerifyWebhookDataAsync(string webhookBody);
+
+        /// <summary>
+        /// Get payment status directly from PayOS by order code.
+        /// </summary>
+        Task<string> GetPaymentStatusAsync(long orderCode, CancellationToken token = default);
     }
 }

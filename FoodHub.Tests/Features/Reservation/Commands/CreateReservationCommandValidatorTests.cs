@@ -50,7 +50,8 @@ namespace FoodHub.Tests.Features.Reservation.Commands
                 settings.BreakEnd,
                 settings.OverlapBufferMinutes,
                 2000,
-                settings.GracePeriodMinutes
+                settings.GracePeriodMinutes,
+                15
             );
 
             _settingsProvider

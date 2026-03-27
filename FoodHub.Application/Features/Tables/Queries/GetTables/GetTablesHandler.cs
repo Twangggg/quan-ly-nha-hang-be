@@ -11,6 +11,7 @@ using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
+using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -27,18 +28,25 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICacheService _cacheService;
+        private readonly IReservationSettingsProvider _settingsProvider;
+        private readonly IReservationLifecyclePolicy _lifecyclePolicy;
 
         /// <summary>
-        /// Constructor to inject dependencies for the GetTablesHandler, including database access, mapping, and caching services.
+        /// Constructor to inject dependencies for the GetTablesHandler, including database access, mapping, caching services, and reservation settings.
         /// </summary>
-        /// <param name="unitOfWork"></param>
-        /// <param name="mapper"></param>
-        /// <param name="cacheService"></param>
-        public GetTablesHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cacheService)
+        public GetTablesHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ICacheService cacheService,
+            IReservationSettingsProvider settingsProvider,
+            IReservationLifecyclePolicy lifecyclePolicy
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cacheService = cacheService;
+            _settingsProvider = settingsProvider;
+            _lifecyclePolicy = lifecyclePolicy;
         }
 
         /// <summary>
@@ -103,9 +111,12 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
                 })
                 .ToList();
 
-            var today = DateOnly.FromDateTime(DateTime.Now);
-            var currentTime = DateTime.Now.TimeOfDay;
-            var bufferTime = TimeSpan.FromHours(2);
+            var settings = await _settingsProvider.GetOrCreateAsync(cancellationToken);
+            var now = _lifecyclePolicy.GetBusinessNow();
+            var today = DateOnly.FromDateTime(now);
+            var currentTime = now.TimeOfDay;
+            var graceTime = TimeSpan.FromMinutes(settings.GracePeriodMinutes);
+            var bufferTime = TimeSpan.FromMinutes(settings.UpcomingBufferMinutes);
 
             var tableIds = responseTables.Select(t => t.TableId).ToList();
 
@@ -116,7 +127,7 @@ namespace FoodHub.Application.Features.Tables.Queries.GetTables
                     tableIds.Contains(r.TableId)
                     && r.ReservationDate == today
                     && r.Status == ReservationStatus.Booked
-                    && r.ReservationTime > currentTime
+                    && r.ReservationTime > currentTime.Subtract(graceTime)
                     && r.ReservationTime <= currentTime.Add(bufferTime)
                 )
                 .Select(r => r.TableId)

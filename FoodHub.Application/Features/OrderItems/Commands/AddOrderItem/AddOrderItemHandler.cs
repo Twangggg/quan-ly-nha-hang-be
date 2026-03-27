@@ -12,6 +12,8 @@ using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using FoodHub.Application.Features.KDS.Common;
+using FoodHub.Application.Interfaces.Kds;
 
 namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 {
@@ -21,18 +23,27 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ISignalRService _signalRService;
+        private readonly KdsPriorityCalculator _priorityCalculator;
+        private readonly IKdsSettingsProvider _kdsSettingsProvider;
+        private readonly IKdsAutoPullService _kdsAutoPullService;
 
         public AddOrderItemHandler(
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IMessageService messageService,
-            ISignalRService signalRService
+            ISignalRService signalRService,
+            KdsPriorityCalculator priorityCalculator,
+            IKdsSettingsProvider kdsSettingsProvider,
+            IKdsAutoPullService kdsAutoPullService
         )
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _messageService = messageService;
             _signalRService = signalRService;
+            _priorityCalculator = priorityCalculator;
+            _kdsSettingsProvider = kdsSettingsProvider;
+            _kdsAutoPullService = kdsAutoPullService;
         }
 
         public async Task<Result<Guid>> Handle(
@@ -130,6 +141,13 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 domainOptions
             );
 
+            // Auto-start cooking if capacity allows
+            var availableSlots = await _kdsAutoPullService.GetAvailableSlotsAsync(new[] { result.Item.StationSnapshot }, cancellationToken);
+            if (availableSlots.TryGetValue(result.Item.StationSnapshot, out int slots) && slots > 0)
+            {
+                result.Item.StartCooking();
+            }
+
             if (!result.IsNew && request.Reason == null)
             {
                 return Result<Guid>.Failure(
@@ -152,6 +170,11 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             // Notify KDS
+            var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
+            result.Item.Order = order; // Ensure Order navigation is set
+            var response = KdsMappingHelper.MapToResponse(result.Item, _priorityCalculator, settings);
+            await _signalRService.NotifyKdsItemUpdatedAsync(result.Item.StationSnapshot, response);
+
             await _signalRService.NotifyOrderItemStatusChangedAsync(
                 result.Item.OrderItemId,
                 result.Item.Status,

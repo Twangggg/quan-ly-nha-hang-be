@@ -382,7 +382,10 @@
     <value>Extra price must be greater than or equal to 0.</value>
   </data>
   <data name="EmployeeNotActive" xml:space="preserve">
-    <value>Employee is not active.</value>
+    <value>Employee cannot be deleted because their status is {0}.</value>
+  </data>
+  <data name="Employee.CannotDeleteActive" xml:space="preserve">
+    <value>Cannot delete an active employee. Please deactivate first.</value>
   </data>
   <data name="CannotPromoteToManager" xml:space="preserve">
     <value>Cannot promote to Manager directly.</value>
@@ -603,6 +606,27 @@
   </data>
   <data name="KDS.ActionMaxLength" xml:space="preserve">
     <value>Action name cannot exceed 50 characters.</value>
+  </data>
+  <data name="KDS.WipLimitExceeded" xml:space="preserve">
+    <value>This station has reached its WIP limit. Please finish current items before starting more.</value>
+  </data>
+  <data name="KdsSettings.InvalidSortMode" xml:space="preserve">
+    <value>Invalid KDS sort mode.</value>
+  </data>
+  <data name="KdsSettings.InvalidPriorityWeight" xml:space="preserve">
+    <value>KDS priority weights must be greater than or equal to 0.</value>
+  </data>
+  <data name="KdsSettings.InvalidStationWipLimit" xml:space="preserve">
+    <value>Invalid station WIP limit.</value>
+  </data>
+  <data name="KdsSettings.DuplicateStationWipLimit" xml:space="preserve">
+    <value>Each station can only have one WIP limit configuration.</value>
+  </data>
+  <data name="KdsSettings.StationWipLimitsRequired" xml:space="preserve">
+    <value>Please configure at least one station WIP limit.</value>
+  </data>
+  <data name="KdsSettings.MissingStationWipLimit" xml:space="preserve">
+    <value>Please configure WIP limits for all available stations.</value>
   </data>
   <data name="Area.Inactive" xml:space="preserve">
     <value>Cannot perform this action because the area is inactive.</value>

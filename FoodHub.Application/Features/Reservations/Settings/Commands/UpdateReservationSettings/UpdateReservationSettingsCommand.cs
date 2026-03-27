@@ -11,6 +11,7 @@ namespace FoodHub.Application.Features.Reservations.Settings.Commands.UpdateRese
         string BreakEnd,
         int OverlapBufferMinutes,
         int MinLeadTimeMinutes,
-        int GracePeriodMinutes
+        int GracePeriodMinutes,
+        int UpcomingBufferMinutes
     ) : IRequest<Result<UpdateReservationSettingsResponse>>;
 }

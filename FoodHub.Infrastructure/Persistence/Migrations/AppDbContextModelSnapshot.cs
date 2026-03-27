@@ -1273,6 +1273,119 @@ namespace FoodHub.Migrations
                     b.ToTable("invoice_items", (string)null);
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.KdsSettings", b =>
+                {
+                    b.Property<Guid>("KdsSettingsId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("kds_settings_id");
+
+                    b.Property<double>("CompletionBoostWeight")
+                        .HasColumnType("double precision")
+                        .HasColumnName("completion_boost_weight");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<double>("DeliveryBonus")
+                        .HasColumnType("double precision")
+                        .HasColumnName("delivery_bonus");
+
+                    b.Property<double>("ExpectedTimeWeight")
+                        .HasColumnType("double precision")
+                        .HasColumnName("expected_time_weight");
+
+                    b.Property<double>("OrderPriorityBonus")
+                        .HasColumnType("double precision")
+                        .HasColumnName("order_priority_bonus");
+
+                    b.Property<double>("OverduePerMinute")
+                        .HasColumnType("double precision")
+                        .HasColumnName("overdue_per_minute");
+
+                    b.Property<string>("SettingsKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("settings_key");
+
+                    b.Property<string>("SortMode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("sort_mode");
+
+                    b.Property<double>("TakeawayBonus")
+                        .HasColumnType("double precision")
+                        .HasColumnName("takeaway_bonus");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.Property<double>("WaitTimePerMinute")
+                        .HasColumnType("double precision")
+                        .HasColumnName("wait_time_per_minute");
+
+                    b.HasKey("KdsSettingsId")
+                        .HasName("pk_kds_settings");
+
+                    b.HasIndex("SettingsKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_kds_settings_settings_key")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("kds_settings", (string)null);
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.KdsStationWipLimit", b =>
+                {
+                    b.Property<Guid>("KdsStationWipLimitId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("kds_station_wip_limit_id");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("enabled");
+
+                    b.Property<Guid>("KdsSettingsId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("kds_settings_id");
+
+                    b.Property<int>("Limit")
+                        .HasColumnType("integer")
+                        .HasColumnName("limit");
+
+                    b.Property<string>("Station")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("station");
+
+                    b.HasKey("KdsStationWipLimitId")
+                        .HasName("pk_kds_station_wip_limits");
+
+                    b.HasIndex("KdsSettingsId", "Station")
+                        .IsUnique()
+                        .HasDatabaseName("ix_kds_station_wip_limits_kds_settings_id_station");
+
+                    b.ToTable("kds_station_wip_limits", (string)null);
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.MenuItem", b =>
                 {
                     b.Property<Guid>("MenuItemId")
@@ -2395,6 +2508,12 @@ namespace FoodHub.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("settings_key");
 
+                    b.Property<int>("UpcomingBufferMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(30)
+                        .HasColumnName("upcoming_buffer_minutes");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -3218,6 +3337,16 @@ namespace FoodHub.Migrations
                     b.Navigation("Invoice");
                 });
 
+            modelBuilder.Entity("FoodHub.Domain.Entities.KdsStationWipLimit", b =>
+                {
+                    b.HasOne("FoodHub.Domain.Entities.KdsSettings", null)
+                        .WithMany("StationWipLimits")
+                        .HasForeignKey("KdsSettingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_kds_station_wip_limits_kds_settings_kds_settings_id");
+                });
+
             modelBuilder.Entity("FoodHub.Domain.Entities.MenuItem", b =>
                 {
                     b.HasOne("FoodHub.Domain.Entities.Category", "Category")
@@ -3630,6 +3759,11 @@ namespace FoodHub.Migrations
             modelBuilder.Entity("FoodHub.Domain.Entities.Invoice", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("FoodHub.Domain.Entities.KdsSettings", b =>
+                {
+                    b.Navigation("StationWipLimits");
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.MenuItem", b =>

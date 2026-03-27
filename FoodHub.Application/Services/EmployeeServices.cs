@@ -1,9 +1,9 @@
 using System.Text;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -26,19 +26,23 @@ namespace FoodHub.Application.Services
             {
                 EmployeeRole.Manager => 'M',
                 EmployeeRole.Cashier => 'C',
-                EmployeeRole.Waiter => 'W',
                 EmployeeRole.ChefBar => 'B',
-                _ => 'U'
+                _ => 'U',
             };
 
-            var lastEmployee = await _unitOfWork.Repository<Employee>()
+            var lastEmployee = await _unitOfWork
+                .Repository<Employee>()
                 .Query()
                 .Where(e => e.Role == role)
                 .OrderByDescending(e => e.EmployeeCode)
                 .FirstOrDefaultAsync();
 
             int nextNumber = 1;
-            if (lastEmployee != null && !string.IsNullOrEmpty(lastEmployee.EmployeeCode) && lastEmployee.EmployeeCode.Length > 1)
+            if (
+                lastEmployee != null
+                && !string.IsNullOrEmpty(lastEmployee.EmployeeCode)
+                && lastEmployee.EmployeeCode.Length > 1
+            )
             {
                 if (int.TryParse(lastEmployee.EmployeeCode.Substring(1), out int lastId))
                 {

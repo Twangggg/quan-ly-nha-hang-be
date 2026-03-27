@@ -1,4 +1,5 @@
 using System;
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
@@ -24,6 +25,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
         private readonly IReservationLifecyclePolicy _reservationLifecyclePolicy;
         private readonly IMessageService _messageService;
         private readonly ISignalRService _signalRService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<CheckInReservationHandler> _logger;
 
         public CheckInReservationHandler(
@@ -32,6 +34,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
             IReservationLifecyclePolicy reservationLifecyclePolicy,
             IMessageService messageService,
             ISignalRService signalRService,
+            ICacheService cacheService,
             ILogger<CheckInReservationHandler> logger
         )
         {
@@ -40,6 +43,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
             _reservationLifecyclePolicy = reservationLifecyclePolicy;
             _messageService = messageService;
             _signalRService = signalRService;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -95,6 +99,7 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
                     ResultErrorType.BadRequest
                 );
             }
+
             // 4. Validate table & Handle Auto-swap or Manual Area Switch
             Table table = reservation.Table;
             Guid targetAreaId = request.NewAreaId ?? table.AreaId;
@@ -201,9 +206,9 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
-             // Update reservation status → CheckIn
-             reservation.MarkCheckedIn(_reservationLifecyclePolicy.GetBusinessNow(), userId);
-             _unitOfWork.Repository<Reservation>().Update(reservation);
+                // Update reservation status → CheckIn
+                reservation.MarkCheckedIn(_reservationLifecyclePolicy.GetBusinessNow(), userId);
+                _unitOfWork.Repository<Reservation>().Update(reservation);
 
                 // Update table status → Occupied
                 table.Status = TableStatus.Occupied;
@@ -211,6 +216,10 @@ namespace FoodHub.Application.Features.Reservations.Commands.CheckInReservation
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+
+                // Clear Cache
+                await _cacheService.RemoveByPatternAsync("reservation:*", cancellationToken);
+                await _cacheService.RemoveByPatternAsync("table:*", cancellationToken);
 
                 await _signalRService.NotifyTableStatusChangedAsync(table.TableId, "Occupied");
 

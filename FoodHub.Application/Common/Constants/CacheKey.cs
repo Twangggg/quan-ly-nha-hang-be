@@ -127,6 +127,7 @@ public static class CacheKey
     public const string ReservationById = "reservation:{0}";
     // ==================== INVENTORY ====================
     public const string InventorySettings = "inventory:settings";
+    public const string KdsSettings = "kds:settings";
 
     // ==================== VOUCHERS ====================
 
@@ -171,6 +172,7 @@ public static class CacheTTL
     public static readonly TimeSpan Tables = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan Reservations = TimeSpan.FromMinutes(10);
     public static readonly TimeSpan InventorySettings = TimeSpan.FromMinutes(30);
+    public static readonly TimeSpan KdsSettings = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Vouchers = TimeSpan.FromMinutes(30);
     public static readonly TimeSpan Shifts = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan ShiftAssignments = TimeSpan.FromMinutes(10);

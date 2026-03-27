@@ -20,7 +20,8 @@ namespace FoodHub.Tests.Features.Reservations.Settings
                 settings.BreakEnd,
                 60,
                 90,
-                25
+                25,
+                15
             );
 
             var provider = new Mock<IReservationSettingsProvider>();
@@ -39,6 +40,7 @@ namespace FoodHub.Tests.Features.Reservations.Settings
             result.Data!.OverlapBufferMinutes.Should().Be(60);
             result.Data.MinLeadTimeMinutes.Should().Be(90);
             result.Data.GracePeriodMinutes.Should().Be(25);
+            result.Data.UpcomingBufferMinutes.Should().Be(15);
         }
     }
 }

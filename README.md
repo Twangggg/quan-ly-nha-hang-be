@@ -28,7 +28,7 @@ FoodHub Backend cung cấp RESTful API cho hệ thống quản lý nhà hàng, b
 
 ## ✨ Tính năng
 
-- **Quản lý nhân viên**: CRUD operations cho nhân viên với vai trò khác nhau (Manager, Chef, Waiter, Cashier)
+- **Quản lý nhân viên**: CRUD operations cho nhân viên với vai trò khác nhau (Manager, Chef, Cashier)
 - **Quản lý thực đơn**: Categories, Menu Items, Set Menus với tùy chọn linh hoạt
 - **Quản lý đơn hàng**: Tạo và theo dõi đơn hàng với trạng thái real-time
 - **Authentication & Authorization**: JWT-based authentication với refresh tokens
@@ -317,12 +317,9 @@ Dự án này được phân phối dưới giấy phép MIT. Xem file `LICENSE`
 
 Dữ liệu mẫu sẽ tự động được khởi tạo khi chạy lần đầu:
 
-| Role           | Username  | Password  |
-| :------------- | :-------- | :-------- |
-| 🛡️ **Manager** | `admin`   | `admin`   |
-| 👨‍🍳 **Chef**    | `chef`    | `chef`    |
-| 🤵 **Waiter**  | `waiter`  | `waiter`  |
-| 💰 **Cashier** | `cashier` | `cashier` |
+| 🛡️ **Manager** | `admin`   | `New123!!` |
+| 👨‍🍳 **Chef**    | `chef`    | `New123!!` |
+| 💰 **Cashier** | `cashier` | `New123!!` |
 
 ## ❓ Troubleshooting
 

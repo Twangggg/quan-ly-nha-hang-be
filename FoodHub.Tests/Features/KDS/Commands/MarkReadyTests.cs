@@ -4,6 +4,7 @@ using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.Security;
@@ -21,8 +22,10 @@ namespace FoodHub.Tests.Features.KDS.Commands
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
         private readonly Mock<IMessageService> _mockMessageService;
+        private readonly Mock<IKdsSettingsProvider> _mockKdsSettingsProvider;
         private readonly Mock<ISignalRService> _mockSignalRService;
         private readonly Mock<IInventoryDeductionService> _mockInventoryDeductionService;
+        private readonly Mock<IKdsAutoPullService> _mockKdsAutoPullService;
         private readonly Mock<ILogger<CompleteCookingHandler>> _mockLogger;
         private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly CompleteCookingHandler _handler;
@@ -32,10 +35,20 @@ namespace FoodHub.Tests.Features.KDS.Commands
             _mockUow = new Mock<IUnitOfWork>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
             _mockMessageService = new Mock<IMessageService>();
+            _mockKdsSettingsProvider = new Mock<IKdsSettingsProvider>();
             _mockSignalRService = new Mock<ISignalRService>();
             _mockInventoryDeductionService = new Mock<IInventoryDeductionService>();
+            _mockKdsAutoPullService = new Mock<IKdsAutoPullService>();
             _mockLogger = new Mock<ILogger<CompleteCookingHandler>>();
             _priorityCalculator = new KdsPriorityCalculator();
+
+            _mockKdsSettingsProvider
+                .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(KdsSettings.CreateDefault());
+
+            _mockKdsAutoPullService
+                .Setup(x => x.ProcessAutoPullAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<OrderItem>());
 
             _handler = new CompleteCookingHandler(
                 _mockUow.Object,
@@ -43,6 +56,8 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 _mockMessageService.Object,
                 _mockSignalRService.Object,
                 _priorityCalculator,
+                _mockKdsSettingsProvider.Object,
+                _mockKdsAutoPullService.Object,
                 _mockInventoryDeductionService.Object,
                 _mockLogger.Object
             );
@@ -101,6 +116,11 @@ namespace FoodHub.Tests.Features.KDS.Commands
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId);
 
+            _mockKdsAutoPullService
+                .Setup(x => x.ProcessAutoPullAsync(station, Guid.Parse(userId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<OrderItem> { vipItem })
+                .Callback(() => vipItem.Status = OrderItemStatus.Cooking);
+
             var result = await _handler.Handle(
                 new CompleteCookingCommand { OrderItemId = orderItemId },
                 CancellationToken.None
@@ -112,12 +132,7 @@ namespace FoodHub.Tests.Features.KDS.Commands
             normalItem.Status.Should().Be(OrderItemStatus.Preparing);
 
             _mockSignalRService.Verify(
-                s =>
-                    s.NotifyOrderItemStatusChangedAsync(
-                        vipItem.OrderItemId,
-                        OrderItemStatus.Cooking,
-                        station
-                    ),
+                s => s.NotifyOrderItemStatusChangedAsync(vipItem.OrderItemId, OrderItemStatus.Cooking, station),
                 Times.Once
             );
             _mockInventoryDeductionService.Verify(

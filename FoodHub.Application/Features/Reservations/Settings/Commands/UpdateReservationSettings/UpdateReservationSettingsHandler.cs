@@ -1,3 +1,4 @@
+using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
@@ -18,18 +19,21 @@ namespace FoodHub.Application.Features.Reservations.Settings.Commands.UpdateRese
         private readonly IReservationSettingsProvider _reservationSettingsProvider;
         private readonly IMessageService _messageService;
         private readonly ILogger<UpdateReservationSettingsHandler> _logger;
+        private readonly ICacheService _cacheService;
 
         public UpdateReservationSettingsHandler(
             IUnitOfWork unitOfWork,
             IReservationSettingsProvider reservationSettingsProvider,
             IMessageService messageService,
-            ILogger<UpdateReservationSettingsHandler> logger
+            ILogger<UpdateReservationSettingsHandler> logger,
+            ICacheService cacheService
         )
         {
             _unitOfWork = unitOfWork;
             _reservationSettingsProvider = reservationSettingsProvider;
             _messageService = messageService;
             _logger = logger;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<UpdateReservationSettingsResponse>> Handle(
@@ -38,9 +42,10 @@ namespace FoodHub.Application.Features.Reservations.Settings.Commands.UpdateRese
         )
         {
             _logger.LogInformation(
-                "Start handling UpdateReservationSettings with OverlapBufferMinutes={OverlapBufferMinutes}, MinLeadTimeMinutes={MinLeadTimeMinutes}",
+                "Start handling UpdateReservationSettings with OverlapBufferMinutes={OverlapBufferMinutes}, MinLeadTimeMinutes={MinLeadTimeMinutes}, UpcomingBufferMinutes={UpcomingBufferMinutes}",
                 request.OverlapBufferMinutes,
-                request.MinLeadTimeMinutes
+                request.MinLeadTimeMinutes,
+                request.UpcomingBufferMinutes
             );
 
             await _unitOfWork.BeginTransactionAsync();
@@ -57,7 +62,8 @@ namespace FoodHub.Application.Features.Reservations.Settings.Commands.UpdateRese
                     ParseTime(request.BreakEnd),
                     request.OverlapBufferMinutes,
                     request.MinLeadTimeMinutes,
-                    request.GracePeriodMinutes
+                    request.GracePeriodMinutes,
+                    request.UpcomingBufferMinutes
                 );
 
                 if (!domainResult.IsSuccess)
@@ -71,6 +77,10 @@ namespace FoodHub.Application.Features.Reservations.Settings.Commands.UpdateRese
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
+
+                // Clear cache as settings change affects table/reservation status logic
+                await _cacheService.RemoveByPatternAsync("reservation:*", cancellationToken);
+                await _cacheService.RemoveByPatternAsync("table:*", cancellationToken);
 
                 var response = MapToResponse(settings);
 
@@ -96,6 +106,7 @@ namespace FoodHub.Application.Features.Reservations.Settings.Commands.UpdateRese
                 OverlapBufferMinutes = settings.OverlapBufferMinutes,
                 MinLeadTimeMinutes = settings.MinLeadTimeMinutes,
                 GracePeriodMinutes = settings.GracePeriodMinutes,
+                UpcomingBufferMinutes = settings.UpcomingBufferMinutes,
             };
         }
 

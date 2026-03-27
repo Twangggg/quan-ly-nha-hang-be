@@ -18,17 +18,17 @@ namespace FoodHub.Application.Features.Areas.Commands.UpdateArea
 
             RuleFor(v => v.Name)
                 .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Area.NameRequired))
-                .MaximumLength(100).WithMessage("Maximum length of Name is 100 characters");
+                .MaximumLength(100).WithMessage(messageService.GetMessage(MessageKeys.Area.NameMaxLength));
 
             RuleFor(v => v.CodePrefix)
                 .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Area.CodeRequired))
-                .MaximumLength(10).WithMessage("Maximum length of Code is 10 characters");
+                .MaximumLength(10).WithMessage(messageService.GetMessage(MessageKeys.Area.CodeMaxLength));
 
             RuleFor(v => v.Description)
-                .MaximumLength(500).WithMessage("Maximum length of Description is 500 characters");
+                .MaximumLength(500).WithMessage(messageService.GetMessage(MessageKeys.Area.DescriptionMaxLength));
 
             RuleFor(v => v.Type)
-                .IsInEnum().WithMessage("Invalid area type");
+                .IsInEnum().WithMessage(messageService.GetMessage(MessageKeys.Area.TypeInvalid));
         }
     }
 }

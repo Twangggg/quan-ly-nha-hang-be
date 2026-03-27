@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
 {
-    public class GetReservationsHandler : IRequestHandler<GetReservationsQuery, Result<PagedResult<ReservationDto>>>
+    public class GetReservationsHandler
+        : IRequestHandler<GetReservationsQuery, Result<PagedResult<ReservationDto>>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -16,16 +17,23 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<PagedResult<ReservationDto>>> Handle(GetReservationsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<ReservationDto>>> Handle(
+            GetReservationsQuery request,
+            CancellationToken cancellationToken
+        )
         {
-            var query = _unitOfWork.Repository<Reservation>().Query()
+            var query = _unitOfWork
+                .Repository<Reservation>()
+                .Query()
                 .Include(r => r.Area)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(request.Search))
             {
                 var search = request.Search.Trim().ToLower();
-                query = query.Where(r => r.CustomerPhone.Contains(search) || r.CustomerName.ToLower().Contains(search));
+                query = query.Where(r =>
+                    r.CustomerPhone.Contains(search) || r.CustomerName.ToLower().Contains(search)
+                );
             }
 
             if (request.Date.HasValue)
@@ -46,10 +54,18 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
                     ReservationStatus parsedStatus = ReservationStatus.Booked;
                     switch (inputStatus)
                     {
-                        case "BOOKED": parsedStatus = ReservationStatus.Booked; break;
-                        case "CHECKED_IN": parsedStatus = ReservationStatus.CheckIn; break;
-                        case "CANCELLED": parsedStatus = ReservationStatus.Cancelled; break;
-                        case "NO_SHOW": parsedStatus = ReservationStatus.Cancelled; break;
+                        case "BOOKED":
+                            parsedStatus = ReservationStatus.Booked;
+                            break;
+                        case "CHECKED_IN":
+                            parsedStatus = ReservationStatus.CheckIn;
+                            break;
+                        case "CANCELLED":
+                            parsedStatus = ReservationStatus.Cancelled;
+                            break;
+                        case "NO_SHOW":
+                            parsedStatus = ReservationStatus.Cancelled;
+                            break;
                     }
                     query = query.Where(r => r.Status == parsedStatus);
                 }
@@ -81,9 +97,10 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
                 Phone = r.CustomerPhone,
                 Date = r.ReservationDate.ToString("yyyy-MM-dd"),
                 Time = r.ReservationTime.ToString(@"hh\:mm"),
+                AreaId = r.AreaId,
                 Area = r.Area?.Name ?? "N/A",
                 People = r.GuestCount,
-                Status = MapStatus(r.Status)
+                Status = MapStatus(r.Status),
             };
         }
 
@@ -95,7 +112,7 @@ namespace FoodHub.Application.Features.Reservations.Queries.GetReservations
                 ReservationStatus.CheckIn => "CHECKED_IN",
                 ReservationStatus.Cancelled => "CANCELLED",
                 ReservationStatus.NoShow => "NO_SHOW",
-                _ => "UNKNOWN"
+                _ => "UNKNOWN",
             };
         }
     }

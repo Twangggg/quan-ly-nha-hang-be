@@ -1,5 +1,9 @@
+using System.IO;
+using ClosedXML.Excel;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
+using FoodHub.Application.Features.Inventory.ImportBalance.Commands.Import;
+using FoodHub.Application.Features.Inventory.ImportBalance.Queries.ParseInventoryBalanceExcel;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.ActivateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.CreateIngredient;
 using FoodHub.Application.Features.Inventory.Ingredients.Commands.DeactivateIngredient;
@@ -8,10 +12,10 @@ using FoodHub.Application.Features.Inventory.Ingredients.Queries.GenerateIngredi
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredientById;
 using FoodHub.Application.Features.Inventory.Ingredients.Queries.GetIngredients;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
@@ -29,7 +33,8 @@ namespace FoodHub.Presentation.Controllers
         private readonly IMediator _mediator;
         private readonly IMessageService _messageService;
 
-        public IngredientsController(IMediator mediator, IMessageService messageService) : base(messageService)
+        public IngredientsController(IMediator mediator, IMessageService messageService)
+            : base(messageService)
         {
             _mediator = mediator;
             _messageService = messageService;
@@ -38,7 +43,7 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Lấy danh sách nguyên liệu với phân trang và lọc.
         /// </summary>
-        [HttpGet]
+        [HttpGet("/api/v{version:apiVersion}/ingredients")]
         [HasPermission(Permissions.Inventory.View)]
         [ProducesResponseType(
             typeof(Result<PagedResult<GetIngredientsResponse>>),
@@ -57,7 +62,7 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Sinh mã nguyên liệu từ tên để FE có thể preview ngay khi nhập.
         /// </summary>
-        [HttpGet("generate-code")]
+        [HttpGet("/api/v{version:apiVersion}/ingredients/generate-code")]
         [HasPermission(Permissions.Inventory.Create)]
         [ProducesResponseType(
             typeof(Result<GenerateIngredientCodeResponse>),
@@ -72,7 +77,7 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Lấy thông tin chi tiết nguyên liệu theo ID.
         /// </summary>
-        [HttpGet("{id:guid}")]
+        [HttpGet("/api/v{version:apiVersion}/ingredients/{id:guid}")]
         [HasPermission(Permissions.Inventory.View)]
         [ProducesResponseType(typeof(Result<GetIngredientByIdResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetIngredientById(Guid id)
@@ -84,7 +89,7 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Tạo mới nguyên liệu.
         /// </summary>
-        [HttpPost]
+        [HttpPost("/api/v{version:apiVersion}/ingredients")]
         [HasPermission(Permissions.Inventory.Create)]
         [ProducesResponseType(
             typeof(Result<CreateIngredientResponse>),
@@ -104,7 +109,7 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Cập nhật nguyên liệu.
         /// </summary>
-        [HttpPut("{id:guid}")]
+        [HttpPut("/api/v{version:apiVersion}/ingredients/{id:guid}")]
         [HasPermission(Permissions.Inventory.Update)]
         [ProducesResponseType(typeof(Result<UpdateIngredientResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateIngredient(
@@ -120,7 +125,7 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Vô hiệu hóa nguyên liệu.
         /// </summary>
-        [HttpPatch("{id:guid}/deactivate")]
+        [HttpPatch("/api/v{version:apiVersion}/ingredients/{id:guid}/deactivate")]
         [HasPermission(Permissions.Inventory.Deactivate)]
         [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeactivateIngredient(Guid id)
@@ -132,13 +137,89 @@ namespace FoodHub.Presentation.Controllers
         /// <summary>
         /// Kích hoạt lại nguyên liệu.
         /// </summary>
-        [HttpPatch("{id:guid}/activate")]
+        [HttpPatch("/api/v{version:apiVersion}/ingredients/{id:guid}/activate")]
         [HasPermission(Permissions.Inventory.Update)]
         [ProducesResponseType(typeof(Result<Unit>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ActivateIngredient(Guid id)
         {
             var result = await _mediator.Send(new ActivateIngredientCommand(id));
             return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Nhập số dư tồn kho từ file Excel.
+        /// </summary>
+        [HttpPost("/api/v{version:apiVersion}/ingredients/import-balance")]
+        [HasPermission(Permissions.Inventory.Import)]
+        [ProducesResponseType(
+            typeof(Result<ImportInventoryBalanceResponse>),
+            StatusCodes.Status200OK
+        )]
+        [ProducesResponseType(
+            typeof(Result<ImportInventoryBalanceResponse>),
+            StatusCodes.Status400BadRequest
+        )]
+        public async Task<IActionResult> ImportInventoryBalance(
+            [FromForm] IFormFile file,
+            [FromQuery] bool confirmOverwrite = false
+        )
+        {
+            var result = await _mediator.Send(
+                new ImportInventoryBalanceCommand(file, confirmOverwrite)
+            );
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Phân tích file Excel để xem trước (Preview) dữ liệu trước khi lưu.
+        /// </summary>
+        [HttpPost("/api/v{version:apiVersion}/ingredients/parse-balance")]
+        [HasPermission(Permissions.Inventory.Import)]
+        [ProducesResponseType(
+            typeof(Result<List<ParsedInventoryBalanceResponse>>),
+            StatusCodes.Status200OK
+        )]
+        public async Task<IActionResult> ParseInventoryBalance([FromForm] IFormFile file)
+        {
+            var result = await _mediator.Send(new ParseInventoryBalanceExcelQuery(file));
+            return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Tải file mẫu nhập tồn kho Excel.
+        /// </summary>
+        [HttpGet("/api/v{version:apiVersion}/ingredients/import-balance/template")]
+        [HasPermission(Permissions.Inventory.View)]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        public IActionResult DownloadImportBalanceTemplate()
+        {
+            using var workbook = new XLWorkbook();
+            var sheet = workbook.Worksheets.Add("Mau_Nhap_Ton_Kho");
+// ... skipped for brevity, keeping existing logic
+            sheet.Cell(1, 1).Value = "Mã nguyên liệu";
+            sheet.Cell(1, 2).Value = "Số lượng";
+            sheet.Cell(1, 3).Value = "Giá nhập";
+            sheet.Cell(1, 4).Value = "Đơn vị";
+
+            sheet.Range(1, 1, 1, 4).Style.Font.Bold = true;
+            sheet.Range(1, 1, 1, 4).Style.Fill.BackgroundColor = XLColor.LightBlue;
+
+            sheet.Cell(2, 1).Value = "NL001";
+            sheet.Cell(2, 2).Value = 100;
+            sheet.Cell(2, 3).Value = 50000;
+            sheet.Cell(2, 4).Value = "kg";
+
+            sheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            var bytes = stream.ToArray();
+
+            return File(
+                bytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "Mau_Nhap_Ton_Kho.xlsx"
+            );
         }
     }
 }

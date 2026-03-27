@@ -58,6 +58,8 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                         o.CreatedByEmployee != null ? o.CreatedByEmployee.FullName : string.Empty,
                     CustomerName = o.Reservation != null ? o.Reservation.CustomerName : null,
                     CustomerPhone = o.Reservation != null ? o.Reservation.CustomerPhone : null,
+                    DiscountAmount = o.DiscountAmount,
+                    PromotionCode = o.Promotion != null ? o.Promotion.Code : null,
                     Items = o
                         .OrderItems.Where(oi =>
                             oi.Status != OrderItemStatus.Cancelled
@@ -97,7 +99,7 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
             if (order.Status != OrderStatus.Serving)
             {
                 _logger.LogWarning(
-                    "Order not in Serving or Paid status for pre-check bill. OrderId: {OrderId}, Status: {Status}",
+                    "Order not in Serving, Paid or Completed status for pre-check bill. OrderId: {OrderId}, Status: {Status}",
                     request.OrderId,
                     order.Status
                 );
@@ -127,10 +129,10 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                 .ToList();
 
             var subTotal = items.Sum(i => i.LineTotal);
-            var discount = 0m;
+            var discount = order.DiscountAmount;
             var vatRate = Domain.Constants.OrderConstants.VatRate;
-            var vat = Math.Round(subTotal * vatRate, 0);
             var preTaxAmount = subTotal - discount;
+            var vat = Math.Round(preTaxAmount * vatRate, 0);
             var totalAmount = preTaxAmount + vat;
 
             var response = new GetPreCheckBillResponse
@@ -147,6 +149,7 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                 SubTotal = subTotal,
                 PreTaxAmount = preTaxAmount,
                 Discount = discount,
+                VoucherCode = order.PromotionCode,
                 VatRate = vatRate * 100,
                 Vat = vat,
                 TotalAmount = totalAmount,
@@ -185,6 +188,8 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
             public string EmployeeName { get; init; } = string.Empty;
             public string? CustomerName { get; init; }
             public string? CustomerPhone { get; init; }
+            public decimal DiscountAmount { get; init; }
+            public string? PromotionCode { get; init; }
             public List<PreCheckBillItemSnapshot> Items { get; init; } = new();
         }
 

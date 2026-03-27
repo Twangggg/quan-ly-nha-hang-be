@@ -67,7 +67,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="200">Trả về thông tin nhân viên.</response>
         /// <response code="404">Không tìm thấy nhân viên.</response>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(Result<GetEmployeesResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<GetEmployeeByIdResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetEmployeeById(Guid id)
         {

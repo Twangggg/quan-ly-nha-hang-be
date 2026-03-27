@@ -5,6 +5,7 @@ using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.Security;
@@ -23,6 +24,8 @@ namespace FoodHub.Application.Features.KDS.Commands.CompleteCooking
         private readonly IMessageService _messageService;
         private readonly ISignalRService _signalRService;
         private readonly KdsPriorityCalculator _priorityCalculator;
+        private readonly IKdsSettingsProvider _kdsSettingsProvider;
+        private readonly IKdsAutoPullService _kdsAutoPullService;
         private readonly IInventoryDeductionService _inventoryDeductionService;
         private readonly ILogger<CompleteCookingHandler> _logger;
 
@@ -32,6 +35,8 @@ namespace FoodHub.Application.Features.KDS.Commands.CompleteCooking
             IMessageService messageService,
             ISignalRService signalRService,
             KdsPriorityCalculator priorityCalculator,
+            IKdsSettingsProvider kdsSettingsProvider,
+            IKdsAutoPullService kdsAutoPullService,
             IInventoryDeductionService inventoryDeductionService,
             ILogger<CompleteCookingHandler> logger
         )
@@ -41,6 +46,8 @@ namespace FoodHub.Application.Features.KDS.Commands.CompleteCooking
             _messageService = messageService;
             _signalRService = signalRService;
             _priorityCalculator = priorityCalculator;
+            _kdsSettingsProvider = kdsSettingsProvider;
+            _kdsAutoPullService = kdsAutoPullService;
             _inventoryDeductionService = inventoryDeductionService;
             _logger = logger;
         }
@@ -69,7 +76,6 @@ namespace FoodHub.Application.Features.KDS.Commands.CompleteCooking
             );
 
             var orderItemRepository = _unitOfWork.Repository<OrderItem>();
-
             var orderItem = await orderItemRepository
                 .Query()
                 .FirstOrDefaultAsync(
@@ -116,76 +122,24 @@ namespace FoodHub.Application.Features.KDS.Commands.CompleteCooking
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
 
-                var targetStations = new List<string> { orderItem.StationSnapshot };
-                if (
-                    orderItem.StationSnapshot == Station.HotKitchen.ToString()
-                    || orderItem.StationSnapshot == Station.ColdKitchen.ToString()
-                )
-                {
-                    targetStations =
-                    [
-                        Station.HotKitchen.ToString(),
-                        Station.ColdKitchen.ToString(),
-                    ];
-                }
-
-                var pendingItems = await orderItemRepository
-                    .Query()
-                    .Include(oi => oi.Order)
-                        .ThenInclude(o => o.OrderItems)
-                    .Include(oi => oi.MenuItem)
-                    .Where(oi =>
-                        targetStations.Contains(oi.StationSnapshot)
-                        && oi.Status == OrderItemStatus.Preparing
-                    )
-                    .ToListAsync(cancellationToken);
-
-                OrderItem? nextItem = null;
-                if (pendingItems.Any())
-                {
-                    nextItem = pendingItems
-                        .OrderByDescending(oi =>
-                            _priorityCalculator.Calculate(
-                                oi.CreatedAt,
-                                oi.Order?.IsPriority ?? false,
-                                (oi.MenuItem?.ExpectedTime ?? 0) * 60,
-                                oi.Order?.OrderType ?? OrderType.DineIn,
-                                oi.Order?.OrderItems?.Count ?? 0,
-                                oi.Order?.OrderItems?.Count(x =>
-                                    x.Status == OrderItemStatus.Completed
-                                ) ?? 0
-                            )
-                        )
-                        .ThenBy(oi => oi.CreatedAt)
-                        .First();
-                }
-
-                if (nextItem != null)
-                {
-                    _logger.LogInformation(
-                        "Auto-pulling next item: {NextItemId} for Station: {Station}",
-                        nextItem.OrderItemId,
-                        orderItem.StationSnapshot
-                    );
-                    nextItem.StartCooking();
-
-                    var autoPullLog = new OrderAuditLog
-                    {
-                        LogId = Guid.NewGuid(),
-                        OrderId = nextItem.OrderId,
-                        EmployeeId = auditorId.Value,
-                        Action = AuditLogActions.KdsStartCooking,
-                        OldValue = $"\"{OrderItemStatus.Preparing}\"",
-                        NewValue = $"\"{OrderItemStatus.Cooking}\"",
-                        ChangeReason = "Auto-pull (Station Slot Freed)",
-                        CreatedAt = DateTime.UtcNow,
-                    };
-                    await _unitOfWork.Repository<OrderAuditLog>().AddAsync(autoPullLog);
-                    orderItemRepository.Update(nextItem);
-                }
-
                 orderItemRepository.Update(orderItem);
+
+                // Save complete first to free up the slot properly
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
+
+                // Auto-pull next item if capacity allows
+                var pulledItems = await _kdsAutoPullService.ProcessAutoPullAsync(
+                    orderItem.StationSnapshot,
+                    auditorId.Value,
+                    cancellationToken
+                );
+
+                // Save pulled items if any
+                if (pulledItems.Any())
+                {
+                    await _unitOfWork.SaveChangeAsync(cancellationToken);
+                }
+
                 await _unitOfWork.CommitTransactionAsync();
 
                 await _inventoryDeductionService.DeductStockForItemAsync(
@@ -198,29 +152,40 @@ namespace FoodHub.Application.Features.KDS.Commands.CompleteCooking
                     request.OrderItemId
                 );
 
+                // Notify for Completed Item
                 _ = _signalRService.NotifyOrderItemStatusChangedAsync(
                     orderItem.OrderItemId,
                     OrderItemStatus.Completed,
                     orderItem.StationSnapshot
                 );
-                if (nextItem != null)
+
+                // Notify for Pulled Items
+                if (pulledItems.Any())
                 {
-                    _ = _signalRService.NotifyOrderItemStatusChangedAsync(
-                        nextItem.OrderItemId,
-                        OrderItemStatus.Cooking,
-                        nextItem.StationSnapshot
-                    );
+                    var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
+                    foreach (var pulledItem in pulledItems)
+                    {
+                        var response = KdsMappingHelper.MapToResponse(
+                            pulledItem,
+                            _priorityCalculator,
+                            settings
+                        );
+                        _ = _signalRService.NotifyKdsItemUpdatedAsync(
+                            pulledItem.StationSnapshot,
+                            response
+                        );
+                        _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                            pulledItem.OrderItemId,
+                            OrderItemStatus.Cooking,
+                            pulledItem.StationSnapshot
+                        );
+                    }
                 }
 
                 return Result<Guid>.Success(orderItem.OrderItemId);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(
-                    ex,
-                    "Error occurred while completing cooking for OrderItemId: {OrderItemId}",
-                    request.OrderItemId
-                );
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }

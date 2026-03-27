@@ -138,10 +138,8 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateReservation
                     selectedTable.TableId
                 );
 
-                await _cacheService.RemoveByPatternAsync(
-                    CacheKey.ReservationList + "*",
-                    cancellationToken
-                );
+                await _cacheService.RemoveByPatternAsync("reservation:*", cancellationToken);
+                await _cacheService.RemoveByPatternAsync("table:*", cancellationToken);
 
                 return Result<CreateReservationResponse>.Success(
                     new CreateReservationResponse

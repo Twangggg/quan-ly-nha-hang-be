@@ -1,13 +1,8 @@
-using AutoMapper;
 using FluentAssertions;
 using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Features.KDS.Queries.GetKdsItems;
 using FoodHub.Application.Interfaces.Common;
-using FoodHub.Application.Interfaces.Inventory;
-using FoodHub.Application.Interfaces.Messaging;
-using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
-using FoodHub.Application.Interfaces.Security;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -20,7 +15,7 @@ namespace FoodHub.Tests.Features.KDS.Queries
     public class GetKdsItemsTests
     {
         private readonly Mock<IUnitOfWork> _mockUow;
-        private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<IKdsSettingsProvider> _mockKdsSettingsProvider;
         private readonly Mock<ILogger<GetKdsItemsHandler>> _mockLogger;
         private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly GetKdsItemsHandler _handler;
@@ -28,14 +23,18 @@ namespace FoodHub.Tests.Features.KDS.Queries
         public GetKdsItemsTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
-            _mockMapper = new Mock<IMapper>();
+            _mockKdsSettingsProvider = new Mock<IKdsSettingsProvider>();
             _mockLogger = new Mock<ILogger<GetKdsItemsHandler>>();
             _priorityCalculator = new KdsPriorityCalculator();
 
+            _mockKdsSettingsProvider
+                .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(KdsSettings.CreateDefault());
+
             _handler = new GetKdsItemsHandler(
                 _mockUow.Object,
-                _mockMapper.Object,
                 _priorityCalculator,
+                _mockKdsSettingsProvider.Object,
                 _mockLogger.Object
             );
         }
@@ -43,12 +42,17 @@ namespace FoodHub.Tests.Features.KDS.Queries
         [Fact]
         public async Task Handle_Should_ReturnItems_SortedByCookingThenPriority()
         {
-            // Arrange
             var station = "Bar";
             var order = new FoodHub.Domain.Entities.Order { IsPriority = false };
             var vipOrder = new FoodHub.Domain.Entities.Order { IsPriority = true };
 
-            var menuItem = new MenuItem { ExpectedTime = 10, Code = "TEST001", Name = "Test Item", ImageUrl = "http://test.com/image.jpg" };
+            var menuItem = new MenuItem
+            {
+                ExpectedTime = 10,
+                Code = "TEST001",
+                Name = "Test Item",
+                ImageUrl = "http://test.com/image.jpg",
+            };
 
             var cookingItem = new OrderItem
             {
@@ -77,7 +81,7 @@ namespace FoodHub.Tests.Features.KDS.Queries
                 StationSnapshot = station,
                 Order = vipOrder,
                 MenuItem = menuItem,
-                CreatedAt = DateTime.UtcNow, // Mới tạo nhưng là VIP
+                CreatedAt = DateTime.UtcNow,
             };
 
             var items = new List<OrderItem> { preparingNormal, cookingItem, preparingVip };
@@ -86,34 +90,14 @@ namespace FoodHub.Tests.Features.KDS.Queries
             mockRepo.Setup(r => r.Query()).Returns(items.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockRepo.Object);
 
-            // Mock Mapper chuyển đổi sang Response
-            _mockMapper
-                .Setup(m => m.Map<List<KdsItemResponse>>(It.IsAny<List<OrderItem>>()))
-                .Returns(
-                    (List<OrderItem> src) =>
-                        src.Select(s => new KdsItemResponse
-                        {
-                            OrderItemId = s.OrderItemId,
-                            Status = s.Status.ToString(),
-                            CreatedAt = s.CreatedAt,
-                        })
-                            .ToList()
-                );
-
-            // Act
             var result = await _handler.Handle(
                 new GetKdsItemsQuery { Station = station },
                 CancellationToken.None
             );
 
-            // Assert
             result.IsSuccess.Should().BeTrue();
             var data = result.Data!;
 
-            // Thứ tự kỳ vọng:
-            // 1. Cooking
-            // 2. VIP (điểm cao nhất do +50)
-            // 3. Normal
             data[0].OrderItemId.Should().Be(cookingItem.OrderItemId);
             data[1].OrderItemId.Should().Be(preparingVip.OrderItemId);
             data[2].OrderItemId.Should().Be(preparingNormal.OrderItemId);

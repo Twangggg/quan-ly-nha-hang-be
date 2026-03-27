@@ -1,50 +1,43 @@
-using FluentValidation;
-using FoodHub.Application.Common.Constants;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
-using FoodHub.Application.Interfaces.Inventory;
-using FoodHub.Application.Interfaces.Messaging;
-using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
-using FoodHub.Application.Interfaces.Security;
+using FluentValidation;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.CreateSetMenu
 {
     public class CreateSetMenuValidator : AbstractValidator<CreateSetMenuCommand>
     {
-
-        public CreateSetMenuValidator()
+        public CreateSetMenuValidator(IMessageService messageService)
         {
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Name is required.")
-                .MaximumLength(150).WithMessage("Name must not exceed 150 characters.");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.SetMenu.NameRequired))
+                .MaximumLength(150).WithMessage(messageService.GetMessage(MessageKeys.SetMenu.NameMaxLength));
 
             RuleFor(x => x.CategoryId)
-                .NotEmpty().WithMessage("Category ID is required.");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.SetMenu.CategoryIdRequired));
 
             RuleFor(x => x.ImageUrl)
                 .MaximumLength(255).When(x => !string.IsNullOrEmpty(x.ImageUrl))
-                .WithMessage("Image URL must not exceed 255 characters.");
+                .WithMessage(messageService.GetMessage(MessageKeys.Common.ImageUrlMaxLength));
 
             RuleFor(x => x.Description)
                 .MaximumLength(500).When(x => !string.IsNullOrEmpty(x.Description))
-                .WithMessage("Description must not exceed 500 characters.");
+                .WithMessage(messageService.GetMessage(MessageKeys.Common.DescriptionMaxLength));
 
             RuleFor(x => x.Price)
-                .GreaterThan(0).WithMessage("Price must be greater than 0.");
+                .GreaterThan(0).WithMessage(messageService.GetMessage(MessageKeys.Common.PriceGreaterZero));
 
             RuleFor(x => x.CostPrice)
-                .GreaterThanOrEqualTo(0).WithMessage("Cost price must be greater than or equal to 0.");
+                .GreaterThanOrEqualTo(0).WithMessage(messageService.GetMessage(MessageKeys.Common.CostPriceGreaterEqualZero));
 
             RuleFor(x => x.Items)
-                .NotNull().WithMessage("Items list cannot be null.")
-                .Must(items => items != null && items.Any()).WithMessage("At least one menu item is required.");
+                .NotNull().WithMessage(messageService.GetMessage(MessageKeys.Common.AtLeastOneRequired))
+                .Must(items => items != null && items.Any()).WithMessage(messageService.GetMessage(MessageKeys.SetMenu.ItemsRequired));
 
             RuleForEach(x => x.Items).ChildRules(items =>
             {
                 items.RuleFor(i => i.Quantity)
-                    .GreaterThan(0).WithMessage("Quantity must be greater than 0.");
+                    .GreaterThan(0).WithMessage(messageService.GetMessage(MessageKeys.OrderItem.InvalidQuantity));
             });
         }
-
     }
 }

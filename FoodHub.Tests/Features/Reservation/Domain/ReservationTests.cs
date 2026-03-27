@@ -87,6 +87,7 @@ namespace FoodHub.Tests.Features.Reservations.Domain
                 settings.BreakEnd,
                 settings.OverlapBufferMinutes,
                 settings.MinLeadTimeMinutes,
+                15,
                 15
             );
 

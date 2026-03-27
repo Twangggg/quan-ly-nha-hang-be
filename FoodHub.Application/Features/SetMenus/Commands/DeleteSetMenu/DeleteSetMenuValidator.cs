@@ -1,14 +1,15 @@
+using FoodHub.Application.Constants;
+using FoodHub.Application.Interfaces.Common;
 using FluentValidation;
-using FoodHub.Application.Features.MenuItems.Commands.UpdateMenuItem;
 
 namespace FoodHub.Application.Features.SetMenus.Commands.DeleteSetMenu
 {
     public class DeleteSetMenuValidator : AbstractValidator<DeleteSetMenuCommand>
     {
-        public DeleteSetMenuValidator()
+        public DeleteSetMenuValidator(IMessageService messageService)
         {
             RuleFor(x => x.SetMenuId)
-                .NotEmpty().WithMessage("SetMenuId is required.");
+                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.SetMenu.IdRequired));
         }
     }
 }

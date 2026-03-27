@@ -7,7 +7,9 @@ using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Security;
+using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -24,6 +26,8 @@ namespace FoodHub.Tests.Features.Order.Commands
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ICacheService> _mockCacheService;
         private readonly Mock<ISignalRService> _mockSignalRService;
+        private readonly Mock<IKdsSettingsProvider> _mockKdsSettingsProvider;
+        private readonly Mock<IKdsAutoPullService> _mockKdsAutoPullService;
         private readonly Mock<ILogger<SubmitOrderToKitchenHandler>> _mockLogger;
         private readonly SubmitOrderToKitchenHandler _handler;
 
@@ -34,7 +38,17 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockMessageService = new Mock<IMessageService>();
             _mockCacheService = new Mock<ICacheService>();
             _mockSignalRService = new Mock<ISignalRService>();
+            _mockKdsSettingsProvider = new Mock<IKdsSettingsProvider>();
+            _mockKdsAutoPullService = new Mock<IKdsAutoPullService>();
             _mockLogger = new Mock<ILogger<SubmitOrderToKitchenHandler>>();
+
+            _mockKdsSettingsProvider
+                .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(KdsSettings.CreateDefault());
+
+            _mockKdsAutoPullService
+                .Setup(x => x.GetAvailableSlotsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Dictionary<string, int>());
 
             _handler = new SubmitOrderToKitchenHandler(
                 _mockUow.Object,
@@ -42,6 +56,9 @@ namespace FoodHub.Tests.Features.Order.Commands
                 _mockMessageService.Object,
                 _mockCacheService.Object,
                 _mockSignalRService.Object,
+                new KdsPriorityCalculator(),
+                _mockKdsSettingsProvider.Object,
+                _mockKdsAutoPullService.Object,
                 _mockLogger.Object
             );
         }

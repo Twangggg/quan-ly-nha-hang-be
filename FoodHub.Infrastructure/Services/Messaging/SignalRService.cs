@@ -1,7 +1,7 @@
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Enums;
-using Microsoft.AspNetCore.SignalR;
 using FoodHub.Infrastructure.Services.Messaging.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace FoodHub.Infrastructure.Services.Messaging
 {
@@ -57,6 +57,18 @@ namespace FoodHub.Infrastructure.Services.Messaging
             catch (Exception ex)
             {
                 Console.WriteLine($"SignalR Error in NotifyOrderItemStatusChangedAsync: {ex.Message}");
+            }
+        }
+
+        public async Task NotifyKdsItemUpdatedAsync(string station, object kdsItem)
+        {
+            try
+            {
+                await _hubContext.Clients.Group(station).SendAsync("KdsItemUpdated", kdsItem);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SignalR Error in NotifyKdsItemUpdatedAsync: {ex.Message}");
             }
         }
 

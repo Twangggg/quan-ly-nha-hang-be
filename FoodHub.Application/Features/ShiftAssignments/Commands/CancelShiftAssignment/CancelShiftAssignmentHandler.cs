@@ -70,7 +70,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.CancelShiftAssi
                 if (!domainResult.IsSuccess)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    return Result<bool>.Failure(domainResult.ErrorCode ?? "Domain logic failed");
+                    return Result<bool>.Failure(_messageService.GetMessage(domainResult.ErrorCode ?? MessageKeys.Common.InternalServerError));
                 }
 
                 await _unitOfWork.SaveChangeAsync(cancellationToken);

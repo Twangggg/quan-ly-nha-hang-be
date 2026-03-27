@@ -2,9 +2,11 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Commands.CreateInventoryCheck;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Commands.ProcessInventoryCheck;
+using FoodHub.Application.Features.Inventory.InventoryChecks.Queries.ExportInventoryCheck;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInventoryCheckById;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInventoryCheckCreateForm;
 using FoodHub.Application.Features.Inventory.InventoryChecks.Queries.GetInventoryChecks;
+using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Domain.Enums;
 using FoodHub.WebAPI.Presentation.Attributes;
 using FoodHub.WebAPI.Presentation.Extensions;
@@ -20,10 +22,17 @@ namespace FoodHub.Presentation.Controllers
     public class InventoryChecksController : ApiControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IInventoryCheckExcelService _excelService;
 
-        public InventoryChecksController(IMediator mediator, IMessageService messageService) : base(messageService)
+        public InventoryChecksController(
+            IMediator mediator,
+            IMessageService messageService,
+            IInventoryCheckExcelService excelService
+        )
+            : base(messageService)
         {
             _mediator = mediator;
+            _excelService = excelService;
         }
 
         /// <summary>
@@ -100,7 +109,8 @@ namespace FoodHub.Presentation.Controllers
             var result = await _mediator.Send(command);
             return HandleCreated(
                 result,
-                data => Url.Action(nameof(ProcessInventoryCheck), new { id = data.InventoryCheckId })
+                data =>
+                    Url.Action(nameof(ProcessInventoryCheck), new { id = data.InventoryCheckId })
             );
         }
 
@@ -117,6 +127,31 @@ namespace FoodHub.Presentation.Controllers
         {
             var result = await _mediator.Send(new ProcessInventoryCheckCommand(id));
             return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Xuất phiếu kiểm kê kho ra Excel.
+        /// </summary>
+        [HttpGet("/api/v{version:apiVersion}/inventory/check/{id:guid}/export")]
+        [HasPermission(Permissions.Inventory.View)]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ExportInventoryCheck(Guid id)
+        {
+            var result = await _mediator.Send(new ExportInventoryCheckQuery(id));
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return HandleResult(result);
+            }
+
+            var data = result.Data;
+            var bytes = _excelService.ExportInventoryCheckToExcel(data);
+
+            var fileName = $"Phieu_Kiem_Kho_{data.CheckDate:yyyyMMdd}_{data.InventoryCheckId}.xlsx";
+            return File(
+                bytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName
+            );
         }
     }
 }

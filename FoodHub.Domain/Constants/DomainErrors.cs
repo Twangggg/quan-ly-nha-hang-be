@@ -46,6 +46,7 @@ namespace FoodHub.Domain.Constants
             public const string AlreadyInactive = "Shift.AlreadyInactive";
             public const string NotFound = "Shift.NotFound";
             public const string AlreadyActive = "Shift.AlreadyActive";
+            public const string InvalidTime = "Shift.InvalidTime";
         }
 
         public static class ShiftAssignment
@@ -128,10 +129,22 @@ namespace FoodHub.Domain.Constants
                 "ReservationSettings.InvalidMinLeadTimeMinutes";
             public const string InvalidGracePeriodMinutes =
                 "ReservationSettings.InvalidGracePeriodMinutes";
+            public const string InvalidUpcomingBufferMinutes =
+                "ReservationSettings.InvalidUpcomingBufferMinutes";
             public const string InvalidOperatingHours = "ReservationSettings.InvalidOperatingHours";
             public const string InvalidBreakHours = "ReservationSettings.InvalidBreakHours";
             public const string InvalidBreakOutsideOperatingHours =
                 "ReservationSettings.InvalidBreakOutsideOperatingHours";
+            public const string UpcomingBufferCannotExceedMinLeadTime =
+                "ReservationSettings.UpcomingBufferCannotExceedMinLeadTime";
+        }
+
+        public static class KdsSettings
+        {
+            public const string InvalidPriorityWeight = "KdsSettings.InvalidPriorityWeight";
+            public const string InvalidStationWipLimit = "KdsSettings.InvalidStationWipLimit";
+            public const string DuplicateStationWipLimit = "KdsSettings.DuplicateStationWipLimit";
+            public const string StationWipLimitsRequired = "KdsSettings.StationWipLimitsRequired";
         }
 
         public static class StockInReceipt

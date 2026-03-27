@@ -3,10 +3,10 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -15,7 +15,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
 {
-    public class DeleteEmployeeHandler : IRequestHandler<DeleteEmployeeCommand, Result<DeleteEmployeeResponse>>
+    public class DeleteEmployeeHandler
+        : IRequestHandler<DeleteEmployeeCommand, Result<DeleteEmployeeResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -28,7 +29,8 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
             IMapper mapper,
             ICurrentUserService currentUserService,
             IMessageService messageService,
-            ICacheService cacheService)
+            ICacheService cacheService
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -37,11 +39,17 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
             _cacheService = cacheService;
         }
 
-        public async Task<Result<DeleteEmployeeResponse>> Handle(DeleteEmployeeCommand request, CancellationToken cancellationToken)
+        public async Task<Result<DeleteEmployeeResponse>> Handle(
+            DeleteEmployeeCommand request,
+            CancellationToken cancellationToken
+        )
         {
             if (!Guid.TryParse(_currentUserService.UserId, out var auditorId))
             {
-                return Result<DeleteEmployeeResponse>.Failure(_messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser), ResultErrorType.Unauthorized);
+                return Result<DeleteEmployeeResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.Employee.CannotIdentifyUser),
+                    ResultErrorType.Unauthorized
+                );
             }
 
             var employeeRepository = _unitOfWork.Repository<Employee>();
@@ -50,15 +58,18 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
 
             if (employee == null)
             {
-                return Result<DeleteEmployeeResponse>.NotFound(_messageService.GetMessage(MessageKeys.Employee.NotFound));
+                return Result<DeleteEmployeeResponse>.NotFound(
+                    _messageService.GetMessage(MessageKeys.Employee.NotFound)
+                );
             }
 
-            if (!employee.IsActive())
+            if (employee.IsActive())
             {
-                return Result<DeleteEmployeeResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Employee.NotActive),
-                    ResultErrorType.BadRequest
+                var detail = _messageService.GetMessage(
+                    MessageKeys.Employee.CannotDeleteActive,
+                    employee.Status
                 );
+                return Result<DeleteEmployeeResponse>.Failure(detail, ResultErrorType.BadRequest);
             }
 
             var refreshTokens = await _unitOfWork
@@ -75,10 +86,12 @@ namespace FoodHub.Application.Features.Employees.Commands.DeleteEmployee
             employee.DeleteEmployee(auditorId);
             employeeRepository.Update(employee);
 
-            employeeRepository.Update(employee);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
             await _cacheService.RemoveByPatternAsync("employee:list", cancellationToken);
-            await _cacheService.RemoveAsync(string.Format(CacheKey.EmployeeById, request.EmployeeId), cancellationToken);
+            await _cacheService.RemoveAsync(
+                string.Format(CacheKey.EmployeeById, request.EmployeeId),
+                cancellationToken
+            );
 
             var response = _mapper.Map<DeleteEmployeeResponse>(employee);
             return Result<DeleteEmployeeResponse>.Success(response);
