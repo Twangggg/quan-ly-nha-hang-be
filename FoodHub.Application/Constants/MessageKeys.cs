@@ -90,6 +90,7 @@ namespace FoodHub.Application.Constants
             public const string NotFound = "EmployeeNotFound";
             public const string NotActive = "EmployeeNotActive";
             public const string CannotUpdateInactive = "Employee.CannotUpdateInactive";
+            public const string CannotDeleteActive = "Employee.CannotDeleteActive";
             public const string CannotIdentifyUser = "CannotIdentifyUser";
             public const string CannotIdentifyManager = "CannotIdentifyManager";
             public const string CannotPromoteToManager = "CannotPromoteToManager";

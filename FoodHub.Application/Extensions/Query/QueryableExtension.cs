@@ -103,10 +103,14 @@ namespace FoodHub.Application.Extensions.Query
                     filterType = ExpressionType.Equal; // ==
                 }
 
-                if (filterMapping.TryGetValue(key, out var propertySelector))
+                var matchedFilter = filterMapping.FirstOrDefault(kvp =>
+                    string.Equals(kvp.Key, key, StringComparison.OrdinalIgnoreCase)
+                );
+
+                if (!string.IsNullOrEmpty(matchedFilter.Key))
                 {
                     var parameter = Expression.Parameter(typeof(T), "x");
-
+                    var propertySelector = matchedFilter.Value;
                     // Trích xu?t thu?c tính th?c t? t? propertySelector (lo?i b? chuy?n d?i ki?u 'object' c?a AutoMapper)
                     Expression memberExpression = propertySelector.Body;
                     if (

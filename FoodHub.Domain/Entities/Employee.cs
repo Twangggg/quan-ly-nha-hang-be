@@ -153,9 +153,9 @@ namespace FoodHub.Domain.Entities
 
         public void DeleteEmployee(Guid auditorId)
         {
-            if (!IsActive())
+            if (IsActive())
             {
-                throw new InvalidOperationException("Only active employees can be deactivated.");
+                throw new InvalidOperationException("Only inactive employees can be deactivated.");
             }
 
             var shortId = Guid.NewGuid().ToString("N")[..8];

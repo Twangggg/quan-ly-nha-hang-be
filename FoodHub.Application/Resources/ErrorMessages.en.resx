@@ -384,6 +384,9 @@
   <data name="EmployeeNotActive" xml:space="preserve">
     <value>Employee cannot be deleted because their status is {0}.</value>
   </data>
+  <data name="Employee.CannotDeleteActive" xml:space="preserve">
+    <value>Cannot delete an active employee. Please deactivate first.</value>
+  </data>
   <data name="CannotPromoteToManager" xml:space="preserve">
     <value>Cannot promote to Manager directly.</value>
   </data>

@@ -50,7 +50,7 @@ namespace FoodHub.Application.Features.Shifts.Commands.UpdateShiftStatus
 
             var domainResult = shift.UpdateStatus(request.IsActive, auditorId);
             if (!domainResult.IsSuccess)
-                return Result<bool>.Failure(domainResult.ErrorCode ?? "Domain Error");
+                return Result<bool>.Failure(_messageService.GetMessage(domainResult.ErrorCode ?? MessageKeys.Common.InternalServerError));
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
