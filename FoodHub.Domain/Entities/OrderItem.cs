@@ -10,7 +10,7 @@ namespace FoodHub.Domain.Entities
     {
         public Guid OrderItemId { get; set; }
         public Guid OrderId { get; set; }
-        public Guid MenuItemId { get; set; }
+        public Guid? MenuItemId { get; set; }
         public bool StockDeducted { get; set; }
 
         // Snapshots

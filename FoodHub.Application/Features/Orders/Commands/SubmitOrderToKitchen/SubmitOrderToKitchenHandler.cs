@@ -91,33 +91,43 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 );
             }
 
-            //Validate All Menu Items Exist
-            var menuItemIds = request.Items.Select(i => i.MenuItemId).Distinct().ToList();
+            // --- DECOMPOSITION LOGIC START ---
+
+            // Collect IDs
+            var menuItemIdsFromRequest = request
+                .Items.Where(i => i.SetMenuId == null)
+                .Select(i => i.MenuItemId)
+                .Distinct()
+                .ToList();
+            var setMenuIdsFromRequest = request
+                .Items.Where(i => i.SetMenuId != null)
+                .Select(i => i.SetMenuId!.Value)
+                .Distinct()
+                .ToList();
+            var allIdsInRequest = request.Items.Select(i => i.MenuItemId).ToList();
+
+            // Fetch Entities
             var menuItems = await _unitOfWork
                 .Repository<MenuItem>()
                 .Query()
-                .Where(m => menuItemIds.Contains(m.MenuItemId))
+                .Where(m => menuItemIdsFromRequest.Contains(m.MenuItemId))
                 .Include(m => m.MenuItemOptionGroups)
                     .ThenInclude(miog => miog.OptionGroup)
                         .ThenInclude(og => og.OptionItems)
                 .ToDictionaryAsync(m => m.MenuItemId, cancellationToken);
-            if (menuItems.Count != menuItemIds.Count)
-            {
-                var missingIds = menuItemIds.Except(menuItems.Keys);
-                return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.MenuItem.NotFound)
-                );
-            }
 
-            //Check Out of Stock
-            var outOfStockItem = menuItems.Values.Where(x => x.IsOutOfStock).ToList();
-            if (outOfStockItem.Any())
-            {
-                return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.MenuItem.OutOfStock)
-                        + $"{string.Join(", ", outOfStockItem.Select(m => m.Name))}"
-                );
-            }
+            var setMenus = await _unitOfWork
+                .Repository<SetMenu>()
+                .Query()
+                .Where(s =>
+                    setMenuIdsFromRequest.Contains(s.SetMenuId)
+                    || allIdsInRequest.Contains(s.SetMenuId)
+                )
+                .Include(sm => sm.SetMenuItems)
+                    .ThenInclude(smi => smi.MenuItem)
+                .ToDictionaryAsync(s => s.SetMenuId, cancellationToken);
+
+            // --- DECOMPOSITION LOGIC END ---
 
             Table? table = null;
             if (orderType == OrderType.DineIn && tableId.HasValue)
@@ -183,92 +193,165 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
 
             // Group items by signature to merge duplicates within the same request
             var groupedItems = new List<(OrderItemDto Dto, OrderItem Item)>();
+            var comboComponents = new List<OrderItem>();
+            var processedItems = new List<OrderItem>();
 
             foreach (var itemDto in request.Items)
             {
-                var menuItem = menuItems[itemDto.MenuItemId];
-
-                // Prepare options for Domain method
-                var selectionValidation = OptionSelectionValidation.ValidateForMenuItem(
-                    menuItem,
-                    itemDto
-                        .SelectedOptions?.Select(x => new RequestedOptionSelection(
-                            x.OptionGroupId,
-                            x.SelectedValues.Select(v => new RequestedOptionValue(
-                                    v.OptionItemId,
-                                    v.Quantity,
-                                    v.Note
-                                ))
-                                .ToList()
-                        ))
-                        .ToList(),
-                    _messageService
-                );
-                if (!selectionValidation.IsSuccess)
-                {
-                    return Result<Guid>.Failure(
-                        selectionValidation.Error!,
-                        selectionValidation.ErrorType
+                // Check if it's a SetMenu
+                var setMenuIdFound =
+                    itemDto.SetMenuId
+                    ?? (
+                        setMenus.ContainsKey(itemDto.MenuItemId)
+                        && !menuItems.ContainsKey(itemDto.MenuItemId)
+                            ? itemDto.MenuItemId
+                            : (Guid?)null
                     );
+
+                if (
+                    setMenuIdFound.HasValue
+                    && setMenus.TryGetValue(setMenuIdFound.Value, out var setMenu)
+                )
+                {
+                    // 1. Create Parent Item (for billing)
+                    var parentItem = new OrderItem
+                    {
+                        OrderItemId = Guid.NewGuid(),
+                        OrderId = order.OrderId,
+                        MenuItemId = null,
+                        Quantity = itemDto.Quantity,
+                        ItemNote = itemDto.Note,
+                        CreatedAt = DateTime.UtcNow,
+                        Status = OrderItemStatus.Preparing,
+                        ItemNameSnapshot = $"{setMenu.Name} (Combo)",
+                        ItemCodeSnapshot = setMenu.Code,
+                        UnitPriceSnapshot = setMenu.Price,
+                        StationSnapshot = "None", // Skip KDS
+                    };
+
+                    groupedItems.Add((itemDto, parentItem));
+
+                    // 2. Decompose into components (for KDS)
+                    foreach (var component in setMenu.SetMenuItems)
+                    {
+                        var componentItem = new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order.OrderId,
+                            MenuItemId = component.MenuItemId,
+                            Quantity = component.Quantity * itemDto.Quantity,
+                            ItemNote = $"[Combo: {setMenu.Name}] {itemDto.Note ?? ""}".Trim(),
+                            CreatedAt = DateTime.UtcNow,
+                            Status = OrderItemStatus.Preparing,
+                            ItemNameSnapshot = component.MenuItem.Name,
+                            ItemCodeSnapshot = component.MenuItem.Code,
+                            UnitPriceSnapshot = 0,
+                            StationSnapshot = component.MenuItem.Station.ToString(),
+                            IsFreeItem = true,
+                        };
+                        comboComponents.Add(componentItem);
+                    }
+                    continue;
                 }
 
-                var domainOptions = selectionValidation
-                    .Data!.Select(x => (x.Assignment, x.Group, x.Selections))
-                    .ToList();
-
-                // Create Item using lightweight method
-                var newItem = order.CreateOrderItem(
-                    menuItem,
-                    itemDto.Quantity,
-                    itemDto.Note,
-                    domainOptions
-                );
-
-                // Find if we already have an identical item in this request (Grouping logic)
-                // We use AddOrUpdateItem's signature logic indirectly or just compare signatures.
-                // Actually, let's just use a simple grouping here to avoid polluting 'order.OrderItems' yet.
-
-                var existingGrouped = groupedItems.FirstOrDefault(x =>
-                    x.Item.MenuItemId == newItem.MenuItemId
-                    && (x.Item.ItemNote ?? "") == (newItem.ItemNote ?? "")
-                    && order.GetItemSignature(x.Item) == order.GetItemSignature(newItem)
-                );
-
-                if (existingGrouped.Item != null)
+                // Regular MenuItem
+                if (menuItems.TryGetValue(itemDto.MenuItemId, out var menuItem))
                 {
-                    existingGrouped.Item.Quantity += newItem.Quantity;
+                    if (menuItem.IsOutOfStock)
+                    {
+                        return Result<Guid>.Failure(
+                            _messageService.GetMessage(MessageKeys.MenuItem.OutOfStock)
+                                + $": {menuItem.Name}"
+                        );
+                    }
+
+                    var selectionValidation = OptionSelectionValidation.ValidateForMenuItem(
+                        menuItem,
+                        itemDto
+                            .SelectedOptions?.Select(x => new RequestedOptionSelection(
+                                x.OptionGroupId,
+                                x.SelectedValues.Select(v => new RequestedOptionValue(
+                                        v.OptionItemId,
+                                        v.Quantity,
+                                        v.Note
+                                    ))
+                                    .ToList()
+                            ))
+                            .ToList(),
+                        _messageService
+                    );
+
+                    if (!selectionValidation.IsSuccess)
+                    {
+                        return Result<Guid>.Failure(
+                            selectionValidation.Error!,
+                            selectionValidation.ErrorType
+                        );
+                    }
+
+                    var domainOptions = selectionValidation
+                        .Data!.Select(x => (x.Assignment, x.Group, x.Selections))
+                        .ToList();
+                    var newItem = order.CreateOrderItem(
+                        menuItem,
+                        itemDto.Quantity,
+                        itemDto.Note,
+                        domainOptions
+                    );
+
+                    var existingGrouped = groupedItems.FirstOrDefault(x =>
+                        x.Item.MenuItemId == newItem.MenuItemId
+                        && (x.Item.ItemNote ?? "") == (newItem.ItemNote ?? "")
+                        && order.GetItemSignature(x.Item) == order.GetItemSignature(newItem)
+                    );
+
+                    if (existingGrouped.Item != null)
+                    {
+                        existingGrouped.Item.Quantity += newItem.Quantity;
+                    }
+                    else
+                    {
+                        groupedItems.Add((itemDto, newItem));
+                    }
                 }
                 else
                 {
-                    groupedItems.Add((itemDto, newItem));
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(MessageKeys.MenuItem.NotFound)
+                    );
                 }
             }
 
-            var processedItems = new List<OrderItem>();
-            
-            // Auto-start cooking logic: Get available slots for all stations involved
-            var stationsInRequest = groupedItems.Select(x => x.Item.StationSnapshot).Distinct();
-            var availableSlots = await _kdsAutoPullService.GetAvailableSlotsAsync(stationsInRequest, cancellationToken);
+            var allItemsToProcess = groupedItems
+                .Select(x => x.Item)
+                .Concat(comboComponents)
+                .ToList();
 
-            foreach (var grouped in groupedItems)
+            // Auto-start cooking logic
+            var stationsInRequest = allItemsToProcess
+                .Select(x => x.StationSnapshot)
+                .Distinct()
+                .Where(s => s != "None");
+            var availableSlots = await _kdsAutoPullService.GetAvailableSlotsAsync(
+                stationsInRequest,
+                cancellationToken
+            );
+
+            foreach (var newItem in allItemsToProcess)
             {
-                var newItem = grouped.Item;
-
-                // Check if we can auto-start cooking
-                if (availableSlots.TryGetValue(newItem.StationSnapshot, out int slots) && slots > 0)
+                if (
+                    newItem.StationSnapshot != "None"
+                    && availableSlots.TryGetValue(newItem.StationSnapshot, out int slots)
+                    && slots > 0
+                )
                 {
                     newItem.StartCooking();
                     availableSlots[newItem.StationSnapshot]--;
-                    _logger.LogInformation("Auto-starting cooking for item {OrderItemId} at station {Station}", newItem.OrderItemId, newItem.StationSnapshot);
                 }
 
-                // Add to repository directly to ensure EF only performs an INSERT
                 await _unitOfWork.Repository<OrderItem>().AddAsync(newItem);
-
-                // Track for SignalR notification
                 processedItems.Add(newItem);
 
-                // Update Order TotalAmount (Incremental Update)
                 var itemTotal = newItem.Quantity * newItem.UnitPriceSnapshot;
                 var optionsTotal = newItem
                     .OptionGroups.SelectMany(og => og.OptionValues)
@@ -278,8 +361,6 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 order.SubTotal += itemTotal + (optionsTotal * newItem.Quantity);
                 order.UpdatedAt = DateTime.UtcNow;
 
-                // For New Order, we also add to the collection so the initial AddAsync(order) includes them.
-                // This preserves the expected behavior in existing tests.
                 if (isNewOrder)
                 {
                     order.OrderItems.Add(newItem);
@@ -333,13 +414,13 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
             foreach (var item in processedItems)
             {
-                // Ensure Order navigation is set for mapping
-                item.Order = order;
+                if (item.StationSnapshot == "None")
+                    continue;
 
+                item.Order = order;
                 var response = KdsMappingHelper.MapToResponse(item, _priorityCalculator, settings);
                 await _signalRService.NotifyKdsItemUpdatedAsync(item.StationSnapshot, response);
 
-                // Still notify status change for other legacy listeners if any
                 await _signalRService.NotifyOrderItemStatusChangedAsync(
                     item.OrderItemId,
                     item.Status,

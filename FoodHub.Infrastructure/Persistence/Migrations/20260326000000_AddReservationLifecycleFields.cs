@@ -12,20 +12,8 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "grace_period_minutes",
-                table: "reservation_settings",
-                type: "integer",
-                nullable: false,
-                defaultValue: 15
-            );
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "checked_in_at",
-                table: "reservations",
-                type: "timestamp with time zone",
-                nullable: true
-            );
+            migrationBuilder.Sql("ALTER TABLE reservation_settings ADD COLUMN IF NOT EXISTS grace_period_minutes integer NOT NULL DEFAULT 15");
+            migrationBuilder.Sql("ALTER TABLE reservations ADD COLUMN IF NOT EXISTS checked_in_at timestamp with time zone NULL");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

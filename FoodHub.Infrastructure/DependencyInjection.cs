@@ -1,5 +1,6 @@
 using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Branding;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
@@ -12,6 +13,7 @@ using FoodHub.Infrastructure.Persistence;
 using FoodHub.Infrastructure.Persistence.Repositories;
 using FoodHub.Infrastructure.Security;
 using FoodHub.Infrastructure.Services.Inventory;
+using FoodHub.Infrastructure.Services.Branding;
 using FoodHub.Infrastructure.Services.Kds;
 using FoodHub.Infrastructure.Services.Reservations;
 using FoodHub.Infrastructure.Services.Reporting;
@@ -96,6 +98,8 @@ namespace FoodHub.Infrastructure
             // Cloudinary Service
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<IPaymentService, PayOsService>();
+            services.AddScoped<IBrandingSettingsProvider, BrandingSettingsProvider>();
+            services.AddScoped<IBrandingFormatter, BrandingFormatter>();
 
             // SignalR Service
             services.AddScoped<ISignalRService, SignalRService>();

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,12 +10,7 @@ namespace FoodHub.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "upcoming_buffer_minutes",
-                table: "reservation_settings",
-                type: "integer",
-                nullable: false,
-                defaultValue: 30);
+            migrationBuilder.Sql("ALTER TABLE reservation_settings ADD COLUMN IF NOT EXISTS upcoming_buffer_minutes integer NOT NULL DEFAULT 30");
         }
 
         /// <inheritdoc />

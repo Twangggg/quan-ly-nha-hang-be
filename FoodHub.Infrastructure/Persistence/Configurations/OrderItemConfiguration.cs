@@ -25,6 +25,13 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
                 .HasForeignKey(oi => oi.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder
+                .HasOne(oi => oi.MenuItem)
+                .WithMany()
+                .HasForeignKey(oi => oi.MenuItemId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
+
             builder.Property(oi => oi.CreatedAt).HasDefaultValueSql("now()");
 
             // KDS Fields

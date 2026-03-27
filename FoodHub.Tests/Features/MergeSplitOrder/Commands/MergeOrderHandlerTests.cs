@@ -40,7 +40,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
 
             firstOrder.OrderItems.Add(CreateOrderItem(firstOrderId, Guid.NewGuid(), 1, 10m, "Pho"));
             secondOrder.OrderItems.Add(
-                CreateOrderItem(secondOrderId, firstOrder.OrderItems.First().MenuItemId, 2, 10m, "Pho")
+                CreateOrderItem(secondOrderId, firstOrder.OrderItems.First().MenuItemId!.Value, 2, 10m, "Pho")
             );
             firstOrder.RecalculateTotalAmount();
             secondOrder.RecalculateTotalAmount();
@@ -93,7 +93,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                         .Select(item => new OrderItemDto
                         {
                             OrderItemId = item.OrderItemId,
-                            MenuItemId = item.MenuItemId,
+                            MenuItemId = item.MenuItemId ?? Guid.Empty,
                             ItemNameSnapshot = item.ItemNameSnapshot,
                             Quantity = item.Quantity,
                             PriceSnapshot = item.UnitPriceSnapshot,
@@ -251,7 +251,7 @@ namespace FoodHub.Tests.Features.MergeSplitOrder.Commands
                         .Select(item => new OrderItemDto
                         {
                             OrderItemId = item.OrderItemId,
-                            MenuItemId = item.MenuItemId,
+                            MenuItemId = item.MenuItemId ?? Guid.Empty,
                             ItemNameSnapshot = item.ItemNameSnapshot,
                             Quantity = item.Quantity,
                             PriceSnapshot = item.UnitPriceSnapshot,
