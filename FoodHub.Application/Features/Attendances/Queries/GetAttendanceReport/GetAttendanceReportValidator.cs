@@ -1,27 +1,29 @@
+using FoodHub.Application.Constants;
+using FoodHub.Application.Interfaces.Common;
 using FluentValidation;
 
 namespace FoodHub.Application.Features.Attendances.Queries.GetAttendanceReport
 {
     public class GetAttendanceReportValidator : AbstractValidator<GetAttendanceReportQuery>
     {
-        public GetAttendanceReportValidator()
+        public GetAttendanceReportValidator(IMessageService messageService)
         {
             RuleFor(x => x.Pagination)
                 .NotNull()
-                .WithMessage("Pagination parameters are required.");
+                .WithMessage(messageService.GetMessage(MessageKeys.Attendance.PaginationRequired));
 
             RuleFor(x => x.Pagination.PageNumber)
                 .GreaterThanOrEqualTo(1)
-                .WithMessage("Page number must be at least 1.");
+                .WithMessage(messageService.GetMessage(MessageKeys.Attendance.PageNumberMin));
 
             RuleFor(x => x.Pagination.PageSize)
                 .GreaterThanOrEqualTo(1)
-                .WithMessage("Page size must be at least 1.");
+                .WithMessage(messageService.GetMessage(MessageKeys.Attendance.PageSizeMin));
 
             RuleFor(x => x.EndDate)
                 .GreaterThanOrEqualTo(x => x.StartDate ?? DateOnly.MinValue)
                 .When(x => x.StartDate.HasValue && x.EndDate.HasValue)
-                .WithMessage("End date must be greater than or equal to start date.");
+                .WithMessage(messageService.GetMessage(MessageKeys.Attendance.DateRangeInvalid));
         }
     }
 }

@@ -23,7 +23,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.AssignShift
 
             RuleFor(x => x.AssignedDate)
                 .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)))
-                .WithMessage("Ngày phân công không được trong quá khứ xa (trước 1 ngày so với hôm nay).");
+                .WithMessage(messageService.GetMessage(MessageKeys.ShiftAssignment.DateInPast));
         }
     }
 }
