@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
@@ -22,13 +23,15 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
         private readonly ILogger<ProcessPaymentWebhookHandler> _logger;
         private readonly ICacheService _cacheService;
         private readonly ISignalRService _signalRService;
+        private readonly IMessageService _messageService;
 
         public ProcessPaymentWebhookHandler(
             IUnitOfWork unitOfWork,
             IPaymentService paymentService,
             ILogger<ProcessPaymentWebhookHandler> logger,
             ICacheService cacheService,
-            ISignalRService signalRService
+            ISignalRService signalRService,
+            IMessageService messageService
         )
         {
             _unitOfWork = unitOfWork;
@@ -36,6 +39,7 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
             _logger = logger;
             _cacheService = cacheService;
             _signalRService = signalRService;
+            _messageService = messageService;
         }
 
         public async Task<Result<bool>> Handle(
@@ -53,7 +57,10 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Invalid PayOS Webhook Signature");
-                return Result<bool>.Failure("Invalid Signature", ResultErrorType.BadRequest);
+                return Result<bool>.Failure(
+                    MessageKeys.Billing.InvalidSignature,
+                    ResultErrorType.BadRequest
+                );
             }
 
             // PayOS test webhook validation handler

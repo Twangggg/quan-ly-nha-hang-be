@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Domain.Entities;
@@ -12,14 +13,17 @@ public class ParseInventoryBalanceExcelHandler
 {
     private readonly IInventoryExcelService _excelService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMessageService _messageService;
 
     public ParseInventoryBalanceExcelHandler(
         IInventoryExcelService excelService,
-        IUnitOfWork unitOfWork
+        IUnitOfWork unitOfWork,
+        IMessageService messageService
     )
     {
         _excelService = excelService;
         _unitOfWork = unitOfWork;
+        _messageService = messageService;
     }
 
     public async Task<Result<List<ParsedInventoryBalanceResponse>>> Handle(
@@ -29,7 +33,9 @@ public class ParseInventoryBalanceExcelHandler
     {
         if (request.File == null || request.File.Length == 0)
         {
-            return Result<List<ParsedInventoryBalanceResponse>>.Failure("File không hợp lệ");
+            return Result<List<ParsedInventoryBalanceResponse>>.Failure(
+                _messageService.GetMessage(MessageKeys.Common.InvalidFile)
+            );
         }
 
         List<InventoryBalanceImportDto> rawItems;
@@ -41,7 +47,7 @@ public class ParseInventoryBalanceExcelHandler
         catch (Exception ex)
         {
             return Result<List<ParsedInventoryBalanceResponse>>.Failure(
-                "Lỗi khi đọc file Excel: " + ex.Message
+                _messageService.GetMessage(MessageKeys.Common.ExcelRequired)
             );
         }
 

@@ -71,13 +71,17 @@ namespace FoodHub.Application.Features.Orders.Commands.UnapplyPromotion
             if (promotion.Type == Domain.Enums.PromotionType.FreeItem && promotion.ItemId.HasValue)
             {
                 var freeItems = order
-                    .OrderItems.Where(oi => oi.IsFreeItem && oi.MenuItemId == promotion.ItemId.Value)
+                    .OrderItems.Where(oi =>
+                        oi.IsFreeItem && oi.MenuItemId == promotion.ItemId.Value
+                    )
                     .ToList();
 
                 // Chặn nếu món tặng đã bắt đầu nấu
                 if (freeItems.Any(fi => fi.Status != OrderItemStatus.Preparing))
                 {
-                    return Result<Unit>.Failure("Không thể gỡ voucher vì món tặng đang được chế biến");
+                    return Result<Unit>.Failure(
+                        _messageService.GetMessage(MessageKeys.Voucher.GiftInProcess)
+                    );
                 }
 
                 foreach (var freeItem in freeItems)

@@ -1,14 +1,15 @@
 using System.Net;
 using System.Net.Mail;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
+using FoodHub.Infrastructure.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using FoodHub.Infrastructure.Settings;
 
 namespace FoodHub.Infrastructure.Services.Messaging
 {
@@ -16,15 +17,23 @@ namespace FoodHub.Infrastructure.Services.Messaging
     {
         private readonly ILogger<EmailService> _logger;
         private readonly EmailSettings _emailSettings;
+        private readonly IMessageService _messageService;
 
-        public EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
+        public EmailService(
+            IOptions<EmailSettings> emailSettings,
+            ILogger<EmailService> logger,
+            IMessageService messageService
+        )
         {
             _logger = logger;
             _emailSettings = emailSettings.Value;
+            _messageService = messageService;
 
             if (string.IsNullOrWhiteSpace(_emailSettings.SenderEmail))
             {
-                _logger.LogWarning("EmailService: SenderEmail is not configured. Email sending will fail.");
+                _logger.LogWarning(
+                    "EmailService: SenderEmail is not configured. Email sending will fail."
+                );
             }
         }
 
@@ -32,23 +41,30 @@ namespace FoodHub.Infrastructure.Services.Messaging
             string email,
             string resetLink,
             string employeeName,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             try
             {
-                using var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort)
+                using var smtpClient = new SmtpClient(
+                    _emailSettings.SmtpHost,
+                    _emailSettings.SmtpPort
+                )
                 {
                     EnableSsl = true,
-                    Credentials = new NetworkCredential(_emailSettings.SenderEmail, _emailSettings.AppPassword),
-                    Timeout = 30000 // 30 seconds
+                    Credentials = new NetworkCredential(
+                        _emailSettings.SenderEmail,
+                        _emailSettings.AppPassword
+                    ),
+                    Timeout = 30000, // 30 seconds
                 };
 
                 var mailMessage = new MailMessage
                 {
                     From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
-                    Subject = "Password Reset - FoodHub",
+                    Subject = _messageService.GetMessage(MessageKeys.Email.PasswordResetSubject),
                     Body = EmailTemplates.GetPasswordResetTemplate(employeeName, resetLink),
-                    IsBodyHtml = true
+                    IsBodyHtml = true,
                 };
 
                 mailMessage.To.Add(email);
@@ -64,30 +80,49 @@ namespace FoodHub.Infrastructure.Services.Messaging
             }
         }
 
-        public async Task SendEmailAsync(string to, string subject, string body, CancellationToken ct = default)
+        public async Task SendEmailAsync(
+            string to,
+            string subject,
+            string body,
+            CancellationToken ct = default
+        )
         {
-            if (string.IsNullOrWhiteSpace(to)) throw new ArgumentNullException(nameof(to));
-            if (string.IsNullOrWhiteSpace(subject)) throw new ArgumentNullException(nameof(subject));
-            if (string.IsNullOrWhiteSpace(body)) throw new ArgumentNullException(nameof(body));
+            if (string.IsNullOrWhiteSpace(to))
+                throw new ArgumentNullException(nameof(to));
+            if (string.IsNullOrWhiteSpace(subject))
+                throw new ArgumentNullException(nameof(subject));
+            if (string.IsNullOrWhiteSpace(body))
+                throw new ArgumentNullException(nameof(body));
 
             if (!IsValidEmail(to))
             {
-                throw new ArgumentException("Invalid email format", nameof(to));
+                throw new ArgumentException(
+                    _messageService.GetMessage(MessageKeys.Common.EmailInvalid),
+                    nameof(to)
+                );
             }
 
             ct.ThrowIfCancellationRequested();
 
             try
             {
-                using var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort)
+                using var smtpClient = new SmtpClient(
+                    _emailSettings.SmtpHost,
+                    _emailSettings.SmtpPort
+                )
                 {
-                    Credentials = new NetworkCredential(_emailSettings.SenderEmail, _emailSettings.AppPassword),
-                    EnableSsl = true
+                    Credentials = new NetworkCredential(
+                        _emailSettings.SenderEmail,
+                        _emailSettings.AppPassword
+                    ),
+                    EnableSsl = true,
                 };
 
                 if (string.IsNullOrWhiteSpace(_emailSettings.SenderEmail))
                 {
-                    throw new InvalidOperationException("Cannot send email: SenderEmail configuration is missing.");
+                    throw new InvalidOperationException(
+                        "Cannot send email: SenderEmail configuration is missing."
+                    );
                 }
 
                 using var mailMessage = new MailMessage
@@ -95,7 +130,7 @@ namespace FoodHub.Infrastructure.Services.Messaging
                     From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
                     Subject = subject,
                     Body = body,
-                    IsBodyHtml = true
+                    IsBodyHtml = true,
                 };
                 mailMessage.To.Add(to);
 
@@ -116,33 +151,51 @@ namespace FoodHub.Infrastructure.Services.Messaging
             string employeeCode,
             string role,
             string password,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             if (!IsValidEmail(email))
             {
-                throw new ArgumentException("Invalid email format", nameof(email));
+                throw new ArgumentException(
+                    _messageService.GetMessage(MessageKeys.Common.EmailInvalid),
+                    nameof(email)
+                );
             }
             try
             {
-                using var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort)
+                using var smtpClient = new SmtpClient(
+                    _emailSettings.SmtpHost,
+                    _emailSettings.SmtpPort
+                )
                 {
                     EnableSsl = true,
-                    Credentials = new NetworkCredential(_emailSettings.SenderEmail, _emailSettings.AppPassword),
-                    Timeout = 30000
+                    Credentials = new NetworkCredential(
+                        _emailSettings.SenderEmail,
+                        _emailSettings.AppPassword
+                    ),
+                    Timeout = 30000,
                 };
 
                 var mailMessage = new MailMessage
                 {
                     From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
-                    Subject = "Chào mừng đến FoodHub - Thông tin tài khoản",
-                    Body = EmailTemplates.GetAccountCreationTemplate(employeeName, employeeCode, role, password),
-                    IsBodyHtml = true
+                    Subject = _messageService.GetMessage(MessageKeys.Email.AccountCreationSubject),
+                    Body = EmailTemplates.GetAccountCreationTemplate(
+                        employeeName,
+                        employeeCode,
+                        role,
+                        password
+                    ),
+                    IsBodyHtml = true,
                 };
 
                 mailMessage.To.Add(email);
 
                 await smtpClient.SendMailAsync(mailMessage, cancellationToken);
-                _logger.LogInformation("Account creation email sent successfully to {Email}", email);
+                _logger.LogInformation(
+                    "Account creation email sent successfully to {Email}",
+                    email
+                );
                 return true;
             }
             catch (Exception ex)
@@ -159,38 +212,61 @@ namespace FoodHub.Infrastructure.Services.Messaging
             string newEmployeeCode,
             string oldRole,
             string newRole,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             if (!IsValidEmail(email))
             {
-                throw new ArgumentException("Invalid email format", nameof(email));
+                throw new ArgumentException(
+                    _messageService.GetMessage(MessageKeys.Common.EmailInvalid),
+                    nameof(email)
+                );
             }
             try
             {
-                using var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort)
+                using var smtpClient = new SmtpClient(
+                    _emailSettings.SmtpHost,
+                    _emailSettings.SmtpPort
+                )
                 {
                     EnableSsl = true,
-                    Credentials = new NetworkCredential(_emailSettings.SenderEmail, _emailSettings.AppPassword),
-                    Timeout = 30000
+                    Credentials = new NetworkCredential(
+                        _emailSettings.SenderEmail,
+                        _emailSettings.AppPassword
+                    ),
+                    Timeout = 30000,
                 };
 
                 var mailMessage = new MailMessage
                 {
                     From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
-                    Subject = "Thông báo thay đổi vai trò - FoodHub",
-                    Body = EmailTemplates.GetRoleChangeTemplate(employeeName, oldEmployeeCode, newEmployeeCode, oldRole, newRole),
-                    IsBodyHtml = true
+                    Subject = _messageService.GetMessage(MessageKeys.Email.RoleChangeSubject),
+                    Body = EmailTemplates.GetRoleChangeTemplate(
+                        employeeName,
+                        oldEmployeeCode,
+                        newEmployeeCode,
+                        oldRole,
+                        newRole
+                    ),
+                    IsBodyHtml = true,
                 };
 
                 mailMessage.To.Add(email);
 
                 await smtpClient.SendMailAsync(mailMessage, cancellationToken);
-                _logger.LogInformation("Role change confirmation email sent successfully to {Email}", email);
+                _logger.LogInformation(
+                    "Role change confirmation email sent successfully to {Email}",
+                    email
+                );
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send role change confirmation email to {Email}", email);
+                _logger.LogError(
+                    ex,
+                    "Failed to send role change confirmation email to {Email}",
+                    email
+                );
                 return false;
             }
         }
@@ -205,7 +281,8 @@ namespace FoodHub.Infrastructure.Services.Messaging
                 // Strict Regex for Email Validation
                 var regex = new System.Text.RegularExpressions.Regex(
                     @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                );
 
                 return regex.IsMatch(email);
             }
@@ -215,42 +292,65 @@ namespace FoodHub.Infrastructure.Services.Messaging
             }
         }
 
-
         public async Task<bool> SendPasswordResetByManagerEmailAsync(
             string email,
             string employeeName,
             string employeeCode,
             string newPassword,
             string managerName,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             if (!IsValidEmail(email))
             {
-                throw new ArgumentException("Invalid email format", nameof(email));
+                throw new ArgumentException(
+                    _messageService.GetMessage(MessageKeys.Common.EmailInvalid),
+                    nameof(email)
+                );
             }
             try
             {
-                using var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort)
+                using var smtpClient = new SmtpClient(
+                    _emailSettings.SmtpHost,
+                    _emailSettings.SmtpPort
+                )
                 {
                     EnableSsl = true,
-                    Credentials = new NetworkCredential(_emailSettings.SenderEmail, _emailSettings.AppPassword),
-                    Timeout = 30000
+                    Credentials = new NetworkCredential(
+                        _emailSettings.SenderEmail,
+                        _emailSettings.AppPassword
+                    ),
+                    Timeout = 30000,
                 };
                 var mailMessage = new MailMessage
                 {
                     From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
-                    Subject = "Mật khẩu của bạn đã được reset - FoodHub",
-                    Body = EmailTemplates.GetPasswordResetByManagerTemplate(employeeName, employeeCode, newPassword, managerName),
-                    IsBodyHtml = true
+                    Subject = _messageService.GetMessage(
+                        MessageKeys.Email.PasswordResetByManagerSubject
+                    ),
+                    Body = EmailTemplates.GetPasswordResetByManagerTemplate(
+                        employeeName,
+                        employeeCode,
+                        newPassword,
+                        managerName
+                    ),
+                    IsBodyHtml = true,
                 };
                 mailMessage.To.Add(email);
                 await smtpClient.SendMailAsync(mailMessage, cancellationToken);
-                _logger.LogInformation("Password reset by manager email sent successfully to {Email}", email);
+                _logger.LogInformation(
+                    "Password reset by manager email sent successfully to {Email}",
+                    email
+                );
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send password reset by manager email to {Email}", email);
+                _logger.LogError(
+                    ex,
+                    "Failed to send password reset by manager email to {Email}",
+                    email
+                );
                 return false;
             }
         }

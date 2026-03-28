@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Constants;
@@ -10,7 +11,8 @@ using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
 {
-    public class ApplyPromotionHandler : IRequestHandler<ApplyPromotionCommand, Result<ApplyPromotionResponse>>
+    public class ApplyPromotionHandler
+        : IRequestHandler<ApplyPromotionCommand, Result<ApplyPromotionResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
@@ -44,7 +46,7 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
             if (!Guid.TryParse(_currentUserService.UserId, out var userId))
             {
                 return Result<ApplyPromotionResponse>.Failure(
-                    "User not authenticated",
+                    _messageService.GetMessage(MessageKeys.Common.Unauthorized),
                     ResultErrorType.Unauthorized
                 );
             }
@@ -105,9 +107,7 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                 }
 
                 // Remove existing free items when switching promotions
-                var existingFreeItems = order.OrderItems
-                    .Where(oi => oi.IsFreeItem)
-                    .ToList();
+                var existingFreeItems = order.OrderItems.Where(oi => oi.IsFreeItem).ToList();
 
                 // Validation: If any gift item is already cooking or completed, prevent switching voucher
                 if (existingFreeItems.Any(fi => fi.Status != OrderItemStatus.Preparing))
@@ -118,7 +118,7 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     );
                     await _unitOfWork.RollbackTransactionAsync();
                     return Result<ApplyPromotionResponse>.Failure(
-                        "Không thể đổi voucher vì món tặng đã bắt đầu được chế biến"
+                        _messageService.GetMessage(MessageKeys.Voucher.GiftInProcess)
                     );
                 }
 
@@ -142,7 +142,11 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                 promotion.IncrementUsed(userId);
 
                 // Handle FreeItem promotion: create a free OrderItem
-                if (promotion.Type == PromotionType.FreeItem && promotion.ItemId.HasValue && promotion.Item != null)
+                if (
+                    promotion.Type == PromotionType.FreeItem
+                    && promotion.ItemId.HasValue
+                    && promotion.Item != null
+                )
                 {
                     var freeOrderItem = new OrderItem
                     {
@@ -223,7 +227,7 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     request.OrderId
                 );
                 return Result<ApplyPromotionResponse>.Failure(
-                    _messageService.GetMessage("Common.DatabaseUpdateError"),
+                    _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError),
                     ResultErrorType.Conflict
                 );
             }

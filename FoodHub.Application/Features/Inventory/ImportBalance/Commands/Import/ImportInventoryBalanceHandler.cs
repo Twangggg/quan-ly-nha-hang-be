@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Domain.Entities;
@@ -15,18 +16,21 @@ public class ImportInventoryBalanceHandler
     private readonly IInventoryExcelService _excelService;
     private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<ImportInventoryBalanceHandler> _logger;
+    private readonly IMessageService _messageService;
 
     public ImportInventoryBalanceHandler(
         IUnitOfWork unitOfWork,
         IInventoryExcelService excelService,
         ICurrentUserService currentUserService,
-        ILogger<ImportInventoryBalanceHandler> logger
+        ILogger<ImportInventoryBalanceHandler> logger,
+        IMessageService messageService
     )
     {
         _unitOfWork = unitOfWork;
         _excelService = excelService;
         _currentUserService = currentUserService;
         _logger = logger;
+        _messageService = messageService;
     }
 
     public async Task<Result<ImportInventoryBalanceResponse>> Handle(
@@ -39,7 +43,7 @@ public class ImportInventoryBalanceHandler
         if (request.File == null || request.File.Length == 0)
         {
             return Result<ImportInventoryBalanceResponse>.Failure(
-                "File Excel không hợp lệ"
+                _messageService.GetMessage(MessageKeys.Common.InvalidFile)
             );
         }
 
@@ -48,7 +52,7 @@ public class ImportInventoryBalanceHandler
         if (!allowedExtensions.Contains(extension))
         {
             return Result<ImportInventoryBalanceResponse>.Failure(
-                "Chỉ chấp nhận file Excel (.xlsx, .xls)"
+                _messageService.GetMessage(MessageKeys.Common.ExcelRequired)
             );
         }
 
@@ -65,19 +69,25 @@ public class ImportInventoryBalanceHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error parsing Excel file");
-            return Result<ImportInventoryBalanceResponse>.Failure("Lỗi khi đọc file Excel");
+            return Result<ImportInventoryBalanceResponse>.Failure(
+                _messageService.GetMessage(MessageKeys.Common.ExcelRequired)
+            );
         }
 
         if (items.Count == 0)
         {
-            return Result<ImportInventoryBalanceResponse>.Failure("File Excel không có dữ liệu");
+            return Result<ImportInventoryBalanceResponse>.Failure(
+                _messageService.GetMessage(MessageKeys.Common.FileNoData)
+            );
         }
 
         var ingredientCodes = items.Select(x => x.IngredientCode).Distinct().ToList();
-        
+
         if (!Guid.TryParse(_currentUserService.UserId, out var actorId))
         {
-            return Result<ImportInventoryBalanceResponse>.Failure("Không xác định được người dùng");
+            return Result<ImportInventoryBalanceResponse>.Failure(
+                _messageService.GetMessage(MessageKeys.Common.UserNotIdentified)
+            );
         }
 
         var ingredients = await _unitOfWork
@@ -86,10 +96,7 @@ public class ImportInventoryBalanceHandler
             .Where(x => ingredientCodes.Contains(x.Code) && x.IsActive)
             .ToListAsync(cancellationToken);
 
-        var response = new ImportInventoryBalanceResponse
-        {
-            TotalRows = items.Count
-        };
+        var response = new ImportInventoryBalanceResponse { TotalRows = items.Count };
 
         var ingredientMap = ingredients.ToDictionary(x => x.Code);
         var errors = new List<ImportInventoryBalanceError>();
@@ -102,31 +109,45 @@ public class ImportInventoryBalanceHandler
             {
                 if (!ingredientMap.TryGetValue(item.IngredientCode, out var ingredient))
                 {
-                    errors.Add(new ImportInventoryBalanceError
-                    {
-                        Row = item.RowNumber,
-                        Message = $"Mã nguyên liệu '{item.IngredientCode}' không tồn tại"
-                    });
+                    errors.Add(
+                        new ImportInventoryBalanceError
+                        {
+                            Row = item.RowNumber,
+                            Message = _messageService.GetMessage(
+                                MessageKeys.Ingredient.NotFoundWithCode,
+                                item.IngredientCode
+                            ),
+                        }
+                    );
                     continue;
                 }
 
                 if (item.Quantity < 0)
                 {
-                    errors.Add(new ImportInventoryBalanceError
-                    {
-                        Row = item.RowNumber,
-                        Message = "Số lượng phải >= 0"
-                    });
+                    errors.Add(
+                        new ImportInventoryBalanceError
+                        {
+                            Row = item.RowNumber,
+                            Message = _messageService.GetMessage(
+                                MessageKeys.Common.QuantityMinZero
+                            ),
+                        }
+                    );
                     continue;
                 }
 
                 if (!request.ConfirmOverwrite && ingredient.CurrentStock > 0)
                 {
-                    errors.Add(new ImportInventoryBalanceError
-                    {
-                        Row = item.RowNumber,
-                        Message = $"Nguyên liệu '{ingredient.Name}' đã có tồn kho, cần xác nhận ghi đè"
-                    });
+                    errors.Add(
+                        new ImportInventoryBalanceError
+                        {
+                            Row = item.RowNumber,
+                            Message = _messageService.GetMessage(
+                                MessageKeys.Ingredient.AlreadyHasStock,
+                                ingredient.Name
+                            ),
+                        }
+                    );
                     continue;
                 }
 
@@ -138,11 +159,15 @@ public class ImportInventoryBalanceHandler
 
                 if (!domainResult.IsSuccess)
                 {
-                    errors.Add(new ImportInventoryBalanceError
-                    {
-                        Row = item.RowNumber,
-                        Message = domainResult.ErrorCode ?? "Lỗi khi cập nhật tồn kho"
-                    });
+                    errors.Add(
+                        new ImportInventoryBalanceError
+                        {
+                            Row = item.RowNumber,
+                            Message = _messageService.GetMessage(
+                                domainResult.ErrorCode ?? MessageKeys.Common.DatabaseUpdateError
+                            ),
+                        }
+                    );
                     continue;
                 }
 
@@ -159,7 +184,6 @@ public class ImportInventoryBalanceHandler
                 );
                 await _unitOfWork.Repository<InventoryTransaction>().AddAsync(transaction);
             }
-
 
             response.FailedCount = errors.Count;
             response.Errors = errors;
@@ -187,7 +211,9 @@ public class ImportInventoryBalanceHandler
         {
             await _unitOfWork.RollbackTransactionAsync();
             _logger.LogError(ex, "Import inventory balance failed");
-            return Result<ImportInventoryBalanceResponse>.Failure("Lỗi khi nhập tồn kho: " + ex.Message);
+            return Result<ImportInventoryBalanceResponse>.Failure(
+                _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError)
+            );
         }
     }
 }

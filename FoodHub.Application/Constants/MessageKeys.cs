@@ -41,6 +41,27 @@ namespace FoodHub.Application.Constants
             public const string PageSizeMin = "Common.PageSizeMin";
             public const string DateRangeInvalid = "Common.DateRangeInvalid";
             public const string InvalidStatus = "Common.InvalidStatus";
+            public const string ExcelRequired = "Common.ExcelRequired";
+            public const string ExcelInvalidFormat = "Common.ExcelInvalidFormat";
+            public const string FileNoData = "Common.FileNoData";
+            public const string UserNotIdentified = "Common.UserNotIdentified";
+            public const string QuantityMinZero = "Common.QuantityMinZero";
+            public const string EmailInvalid = "Common.EmailInvalid";
+            public const string CheckoutFailed = "Common.CheckoutFailed";
+        }
+
+        public static class Billing
+        {
+            public const string InvalidSignature = "Billing.InvalidSignature";
+            public const string OrderOrPaymentNotFound = "Billing.OrderOrPaymentNotFound";
+        }
+
+        public static class Email
+        {
+            public const string PasswordResetSubject = "Email.PasswordResetSubject";
+            public const string AccountCreationSubject = "Email.AccountCreationSubject";
+            public const string RoleChangeSubject = "Email.RoleChangeSubject";
+            public const string PasswordResetByManagerSubject = "Email.PasswordResetByManagerSubject";
         }
 
         public static class Password
@@ -368,6 +389,8 @@ namespace FoodHub.Application.Constants
             public const string CodeExists = "Ingredient.CodeExists";
             public const string NameExists = "Ingredient.NameExists";
             public const string UsedInRecipe = "Ingredient.UsedInRecipe";
+            public const string NotFoundWithCode = "Ingredient.NotFoundWithCode";
+            public const string AlreadyHasStock = "Ingredient.AlreadyHasStock";
 
             // Validator keys
             public const string IdRequired = "Ingredient.IdRequired";
@@ -533,6 +556,7 @@ namespace FoodHub.Application.Constants
             public const string StartTimeEndTimeRequired = "Voucher.StartTimeEndTimeRequired";
             public const string FreeItemRequired = "Voucher.FreeItemRequired";
             public const string FreeQuantityInvalid = "Voucher.FreeQuantityInvalid";
+            public const string GiftInProcess = "Voucher.GiftInProcess";
         }
 
         public static class Attendance

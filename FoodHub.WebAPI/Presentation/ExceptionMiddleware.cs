@@ -4,10 +4,10 @@ using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using Microsoft.Extensions.Hosting;
 
@@ -62,22 +62,35 @@ public class ExceptionMiddleware
         {
             case ValidationException validationException:
                 statusCode = (int)HttpStatusCode.BadRequest;
-                errors = validationException.Errors.Select(x => x.ErrorMessage).ToList();
+                var validationErrors = validationException
+                    .Errors.Select(x =>
+                        messageService.HasKey(x.ErrorMessage)
+                            ? messageService.GetMessage(x.ErrorMessage)
+                            : x.ErrorMessage
+                    )
+                    .ToList();
+                errors = validationErrors;
                 message =
-                    errors.FirstOrDefault()
+                    validationErrors.FirstOrDefault()
                     ?? messageService.GetMessage(MessageKeys.Common.ValidationFailed);
                 break;
             case BusinessException businessException:
                 statusCode = (int)HttpStatusCode.BadRequest;
-                message = businessException.Message;
+                message = messageService.HasKey(businessException.Message)
+                    ? messageService.GetMessage(businessException.Message)
+                    : messageService.GetMessage(MessageKeys.Common.ValidationFailed);
                 break;
             case NotFoundException notFoundException:
                 statusCode = (int)HttpStatusCode.NotFound;
-                message = notFoundException.Message;
+                message = messageService.HasKey(notFoundException.Message)
+                    ? messageService.GetMessage(notFoundException.Message)
+                    : messageService.GetMessage(MessageKeys.Common.NotFound);
                 break;
             case ForbiddenException forbiddenException:
                 statusCode = (int)HttpStatusCode.Forbidden;
-                message = forbiddenException.Message;
+                message = messageService.HasKey(forbiddenException.Message)
+                    ? messageService.GetMessage(forbiddenException.Message)
+                    : messageService.GetMessage(MessageKeys.Common.Forbidden);
                 break;
             default:
                 if (_env.IsDevelopment())
@@ -106,9 +119,10 @@ public class ExceptionMiddleware
         }
 
         var statusCode = context.Response.StatusCode;
-        var message = statusCode == StatusCodes.Status401Unauthorized
-            ? messageService.GetMessage(MessageKeys.Common.Unauthorized)
-            : messageService.GetMessage(MessageKeys.Common.Forbidden);
+        var message =
+            statusCode == StatusCodes.Status401Unauthorized
+                ? messageService.GetMessage(MessageKeys.Common.Unauthorized)
+                : messageService.GetMessage(MessageKeys.Common.Forbidden);
 
         context.Response.ContentType = "application/json";
 

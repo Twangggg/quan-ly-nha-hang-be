@@ -28,5 +28,19 @@ namespace FoodHub.Application.Services
             var message = GetMessage(key);
             return string.Format(message, args);
         }
-    }
-}
++
++        public bool HasKey(string key)
++        {
++            if (string.IsNullOrEmpty(key)) return false;
++            
++            var message = Resources.Messages.ResourceManager.GetString(key, CultureInfo.CurrentUICulture);
++            if (string.IsNullOrEmpty(message))
++            {
++                message = Resources.ErrorMessages.ResourceManager.GetString(key, CultureInfo.CurrentUICulture);
++            }
++            
++            return !string.IsNullOrEmpty(message);
++        }
++    }
++}
++
