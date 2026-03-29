@@ -9,6 +9,7 @@ namespace FoodHub.Application.Constants
             public const string DatabaseUpdateError = "DatabaseUpdateError";
             public const string OperationCancelled = "OperationCancelled";
             public const string Unauthorized = "Unauthorized";
+            public const string Required = "Common.Required";
             public const string Forbidden = "Common.Forbidden";
             public const string InvalidFormat = "Common.InvalidFormat";
             public const string InvalidDate = "Common.InvalidDate";
@@ -54,6 +55,9 @@ namespace FoodHub.Application.Constants
         {
             public const string InvalidSignature = "Billing.InvalidSignature";
             public const string OrderOrPaymentNotFound = "Billing.OrderOrPaymentNotFound";
+            public const string PdfExportError = "Billing.PdfExportError";
+            public const string SplitBillRequiresItems = "Billing.SplitBillRequiresItems";
+            public const string SplitBillFailed = "Billing.SplitBillFailed";
         }
 
         public static class Email
@@ -431,12 +435,6 @@ namespace FoodHub.Application.Constants
             public const string ImportSuccess = "OpeningStock.ImportSuccess";
         }
 
-        public static class Billing
-        {
-            public const string PdfExportError = "Billing.PdfExportError";
-            public const string SplitBillRequiresItems = "Billing.SplitBillRequiresItems";
-            public const string SplitBillFailed = "Billing.SplitBillFailed";
-        }
 
         public static class StockInReceipt
         {
