@@ -84,6 +84,8 @@ namespace FoodHub.Infrastructure.Security
                 // Check In/Out permissions for cashiers
                 Permissions.Attendances.CheckIn,
                 Permissions.Attendances.CheckOut,
+                // Image permissions for branding/avatar
+                Permissions.Images.Manage,
             };
         }
 

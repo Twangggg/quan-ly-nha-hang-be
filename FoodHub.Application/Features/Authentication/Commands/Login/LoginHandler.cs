@@ -160,6 +160,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 RefreshToken = refreshToken,
                 RefreshTokenExpiresIn = (refreshTokenEntity.Expires - DateTime.UtcNow).TotalSeconds,
                 EmployeeCode = employee.EmployeeCode,
+                Username = employee.Username,
+                FullName = employee.FullName,
                 Email = employee.Email,
                 Role = employee.Role.ToString(),
                 ExpiresIn = expiresIn,

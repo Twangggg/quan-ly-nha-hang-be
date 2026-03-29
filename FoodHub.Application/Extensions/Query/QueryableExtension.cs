@@ -129,7 +129,7 @@ namespace FoodHub.Application.Extensions.Query
 
                     try
                     {
-                        // 2. T? d?ng ép ki?u chu?i "value" sang ki?u d? li?u c?a thu?c tính (int, decimal, bool, DateTime, Enum, ...)
+                        // 2. Tự động ép kiểu chuỗi "value" sang kiểu dữ liệu của thuộc tính (int, decimal, bool, DateTime, Enum, Guid, ...)
                         object? convertedValue;
                         if (
                             propertyType.IsGenericType
@@ -141,6 +141,8 @@ namespace FoodHub.Application.Extensions.Query
                                 convertedValue = null;
                             else if (underlyingType.IsEnum)
                                 convertedValue = Enum.Parse(underlyingType, value, ignoreCase: true);
+                            else if (underlyingType == typeof(Guid))
+                                convertedValue = Guid.Parse(value);
                             else
                                 convertedValue = Convert.ChangeType(value, underlyingType);
                         }
@@ -148,6 +150,11 @@ namespace FoodHub.Application.Extensions.Query
                         {
                             // Hỗ trợ filter theo Enum (vd: role:1, status:2)
                             convertedValue = Enum.Parse(propertyType, value, ignoreCase: true);
+                        }
+                        else if (propertyType == typeof(Guid))
+                        {
+                            // Hỗ trợ filter theo Guid (vd: ingredientId:...)
+                            convertedValue = Guid.Parse(value);
                         }
                         else
                         {
