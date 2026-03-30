@@ -1,4 +1,5 @@
 using System.Text.Json;
+using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -43,15 +44,15 @@ namespace FoodHub.Infrastructure.Services.External
             return new PayOSClient(payOsOptions);
         }
 
-        public async Task<PaymentLinkResponse> CreatePaymentLinkAsync(Order order, CancellationToken token = default)
+        public async Task<PaymentLinkResponse> CreatePaymentLinkAsync(Order order, decimal amount, CancellationToken token = default)
         {
             var payOs = await GetDynamicPayOSClientAsync(token);
-            var amount = (long)Math.Max(1000, order.TotalAmount); // minimum amount rule for test
+            var payAmount = (long)Math.Max(1000, amount); // minimum amount rule for test
 
             var request = new CreatePaymentLinkRequest
             {
                 OrderCode = order.TransactionCode,
-                Amount = amount,
+                Amount = payAmount,
                 Description = $"Thanh toan don {order.TransactionCode}",
                 CancelUrl = _settings.CancelUrl,
                 ReturnUrl = _settings.ReturnUrl

@@ -4,7 +4,7 @@ using FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Messaging;
-using FoodHub.Application.Interfaces.Security;
+using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Domain.Entities;
 using DomainOrder = FoodHub.Domain.Entities.Order;
 using FoodHub.Domain.Enums;

@@ -3,10 +3,8 @@ using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Billing.Commands.CheckoutOrder;
 using FoodHub.Application.Interfaces.Common;
-using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -153,8 +151,8 @@ namespace FoodHub.Tests.Features.Billing.Commands
                 OrderId = orderId,
                 PaymentLines = new List<PaymentLineDto>
                 {
-                    new() { PaymentMethodConfigId = cashMethodId, Amount = 200, AmountReceived = 200 },
-                    new() { PaymentMethodConfigId = bankMethodId, Amount = 100 },
+                    new() { PaymentMethodConfigId = cashMethodId, Amount = 400, AmountReceived = 400 },
+                    new() { PaymentMethodConfigId = bankMethodId, Amount = 200 },
                 }
             };
 
@@ -182,7 +180,9 @@ namespace FoodHub.Tests.Features.Billing.Commands
                 _mockUow.Object,
                 _mockLogger.Object,
                 _mockMessageService.Object,
-                _mockCurrentUserService.Object
+                _mockCurrentUserService.Object,
+                _mockCacheService.Object,
+                new Mock<ISignalRService>().Object
             );
 
             var result = await handler.Handle(command, CancellationToken.None);

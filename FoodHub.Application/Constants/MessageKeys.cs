@@ -337,8 +337,9 @@ namespace FoodHub.Application.Constants
         public static class Billing
         {
             public const string PdfExportError = "Billing.PdfExportError";
-<<<<<<< HEAD
             public const string SplitTotalMismatch = "Billing.SplitTotalMismatch";
+            public const string SplitBillRequiresItems = "Billing.SplitBillRequiresItems";
+            public const string SplitBillFailed = "Billing.SplitBillFailed";
         }
 
         public static class PaymentMethodConfig
@@ -353,10 +354,6 @@ namespace FoodHub.Application.Constants
             public const string CreateSuccess = "PaymentMethodConfig.CreateSuccess";
             public const string UpdateSuccess = "PaymentMethodConfig.UpdateSuccess";
             public const string Inactive = "PaymentMethodConfig.Inactive";
-=======
-            public const string SplitBillRequiresItems = "Billing.SplitBillRequiresItems";
-            public const string SplitBillFailed = "Billing.SplitBillFailed";
->>>>>>> origin/main
         }
 
         public static class StockInReceipt

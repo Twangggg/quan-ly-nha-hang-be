@@ -2,10 +2,8 @@ using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
-using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
@@ -110,12 +108,17 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                     return Result<bool>.Success(true);
                 }
 
-                var domainResult = order.Checkout(PaymentMethod.QRCode, order.TotalAmount);
+                // Tính số tiền còn lại và cộng dồn vào AmountPaid
+                var remainingAmount = order.GetRemainingAmount();
+                order.AmountPaid = (order.AmountPaid ?? 0) + remainingAmount;
+
+                // Hoàn tất thanh toán
+                var domainResult = order.CompletePayment();
                 if (!domainResult.IsSuccess)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
                     _logger.LogWarning(
-                        "Order {OrderId} checkout failed via webhook: {Error}",
+                        "Order {OrderId} CompletePayment failed via webhook: {Error}",
                         order.OrderId,
                         domainResult.ErrorCode
                     );
@@ -141,11 +144,11 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                         }
                         _unitOfWork.Repository<Table>().Update(table);
 
-                        order.TableId = null;
+                        order.ReleaseTable();
                     }
                 }
 
-                // Create OrderPayment record for webhook-based payment
+                // Create OrderPayment record for the transfer portion
                 var bankTransferConfig = await _unitOfWork.Repository<PaymentMethodConfig>()
                     .Query()
                     .FirstOrDefaultAsync(pm => pm.IsActive && pm.Type == PaymentMethodType.BankTransfer, cancellationToken);
@@ -157,7 +160,7 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                         OrderPaymentId = Guid.NewGuid(),
                         OrderId = order.OrderId,
                         PaymentMethodConfigId = bankTransferConfig.PaymentMethodConfigId,
-                        Amount = order.TotalAmount,
+                        Amount = remainingAmount,
                         PaidAt = DateTime.UtcNow,
                         Note = $"PayOS Webhook OrderCode: {orderCode}",
                     };
@@ -182,8 +185,9 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
                 );
 
                 _logger.LogInformation(
-                    "Successfully processed webhook for OrderId: {OrderId}",
-                    order.OrderId
+                    "Successfully processed webhook for OrderId: {OrderId}. RemainingPaid: {Amount}",
+                    order.OrderId,
+                    remainingAmount
                 );
                 return Result<bool>.Success(true);
             }
@@ -199,7 +203,7 @@ namespace FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook
             }
             finally
             {
-                // Lock will expire automatically to prevent blocking if something fails and we need to retry later.
+                // Lock will expire automatically
             }
         }
     }

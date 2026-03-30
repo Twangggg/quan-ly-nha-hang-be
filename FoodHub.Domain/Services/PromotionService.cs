@@ -1,5 +1,6 @@
 using FoodHub.Domain.Common;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 
 namespace FoodHub.Domain.Services
 {
@@ -17,7 +18,7 @@ namespace FoodHub.Domain.Services
             }
 
             decimal discount = 0;
-            if (promotion.Type == Enums.PromotionType.Percent)
+            if (promotion.Type == PromotionType.Percent)
             {
                 discount = order.SubTotal * promotion.Value / 100;
                 if (promotion.MaxDiscount.HasValue)
@@ -25,7 +26,7 @@ namespace FoodHub.Domain.Services
                     discount = Math.Min(discount, promotion.MaxDiscount.Value);
                 }
             }
-            else if (promotion.Type == Enums.PromotionType.Fixed)
+            else if (promotion.Type == PromotionType.Fixed)
             {
                 discount = promotion.Value;
             }

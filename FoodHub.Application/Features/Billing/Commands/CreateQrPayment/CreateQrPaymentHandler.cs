@@ -1,10 +1,8 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
-using FoodHub.Application.Interfaces.Inventory;
-using FoodHub.Application.Interfaces.Messaging;
-using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
+using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -74,17 +72,35 @@ namespace FoodHub.Application.Features.Billing.Commands.CreateQrPayment
 
             try
             {
-                // Recalculate total to ensure VAT is included (handles orders created before VAT was added)
+                // Recalculate total to ensure VAT is included
                 order.RecalculateTotalAmount();
 
-                // Regenerate a unique TransactionCode to avoid "Đơn thanh toán đã tồn tại" error on repeated generation
-                // Using int precision (9 digits) to fit TransactionCode type
+                // Tính số tiền còn lại cần thanh toán (sau khi đã trả tiền mặt một phần)
+                var remainingAmount = order.GetRemainingAmount();
+
+                if (remainingAmount <= 0)
+                {
+                    _logger.LogWarning("Order {OrderId} already fully paid. AmountPaid: {AmountPaid}", 
+                        request.OrderId, order.AmountPaid);
+                    return Result<PaymentLinkResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Order.InvalidAction),
+                        ResultErrorType.BadRequest
+                    );
+                }
+
+                _logger.LogInformation(
+                    "Generating QR for remaining amount: {RemainingAmount} (Total: {Total}, Already Paid: {Paid})",
+                    remainingAmount, order.TotalAmount, order.AmountPaid ?? 0);
+
+                // Regenerate a unique TransactionCode to avoid "Đơn thanh toán đã tồn tại" error
                 order.TransactionCode = int.Parse(DateTimeOffset.Now.ToString("HHmmssfff"));
                 _unitOfWork.Repository<Order>().Update(order);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-                var paymentLink = await _paymentService.CreatePaymentLinkAsync(order, cancellationToken);
-                _logger.LogInformation("Payment link successfully generated for OrderId: {OrderId}", request.OrderId);
+                // Tạo payment link với số tiền còn lại thay vì toàn bộ
+                var paymentLink = await _paymentService.CreatePaymentLinkAsync(order, remainingAmount, cancellationToken);
+                _logger.LogInformation("Payment link successfully generated for OrderId: {OrderId}, Amount: {Amount}",
+                    request.OrderId, remainingAmount);
                 return Result<PaymentLinkResponse>.Success(paymentLink);
             }
             catch (Exception ex)

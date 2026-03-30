@@ -46,7 +46,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
             // Arrange
             _mockUser.Setup(u => u.UserId).Returns(Guid.NewGuid().ToString());
             var orderId = Guid.NewGuid();
-            var order = new DomainOrder { OrderId = orderId, Status = OrderStatus.Serving };
+            var order = new DomainOrder { OrderId = orderId, Status = OrderStatus.Serving, TotalAmount = 100000 };
             
             var orders = new List<DomainOrder> { order }.AsQueryable().BuildMock();
             var repo = new Mock<IGenericRepository<DomainOrder>>();
@@ -54,7 +54,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
             _mockUow.Setup(u => u.Repository<DomainOrder>()).Returns(repo.Object);
 
             var payLink = new PaymentLinkResponse { CheckoutUrl = "https://payos.vn", QrCode = "QR" };
-            _mockPayment.Setup(p => p.CreatePaymentLinkAsync(order, It.IsAny<CancellationToken>()))
+            _mockPayment.Setup(p => p.CreatePaymentLinkAsync(It.IsAny<DomainOrder>(), It.IsAny<decimal>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(payLink);
 
             var command = new CreateQrPaymentCommand { OrderId = orderId };

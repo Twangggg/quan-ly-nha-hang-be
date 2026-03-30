@@ -44,13 +44,35 @@ namespace FoodHub.Domain.Entities
 
         public bool IsActive() => Status == OrderStatus.Serving;
 
-        public DomainResult ProcessCheckout(PaymentMethod paymentMethod, decimal totalAmountReceived)
+        /// <summary>
+        /// Ghi nhận thanh toán một phần (tiền mặt). Cộng dồn vào AmountPaid nhưng KHÔNG đổi trạng thái.
+        /// Order vẫn ở trạng thái Serving để chờ thanh toán phần còn lại.
+        /// </summary>
+        public DomainResult AddCashPayment(decimal cashAmount)
         {
-            if (
-                Status == OrderStatus.Paid
-                || Status == OrderStatus.Completed
-                || Status == OrderStatus.Cancelled
-            )
+            if (Status != OrderStatus.Serving)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            if (cashAmount <= 0)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
+            }
+
+            AmountPaid = (AmountPaid ?? 0) + cashAmount;
+            UpdatedAt = DateTime.UtcNow;
+
+            return DomainResult.Success();
+        }
+
+        /// <summary>
+        /// Hoàn tất thanh toán. Gọi khi tổng AmountPaid >= TotalAmount.
+        /// Chuyển trạng thái sang Paid.
+        /// </summary>
+        public DomainResult CompletePayment()
+        {
+            if (Status == OrderStatus.Paid || Status == OrderStatus.Completed || Status == OrderStatus.Cancelled)
             {
                 return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
             }
@@ -60,18 +82,45 @@ namespace FoodHub.Domain.Entities
                 return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
             }
 
-            if (totalAmountReceived < TotalAmount)
+            if ((AmountPaid ?? 0) < TotalAmount)
             {
                 return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
             }
 
-            AmountPaid = totalAmountReceived;
             Status = OrderStatus.Paid;
-            PaymentMethod = paymentMethod;
             PaidAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
 
             return DomainResult.Success();
+        }
+
+        /// <summary>
+        /// Legacy: Thanh toán toàn bộ một lần (dùng cho webhook hoặc full checkout).
+        /// </summary>
+        public DomainResult ProcessCheckout(decimal totalAmountReceived)
+        {
+            if (Status != OrderStatus.Serving)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            AmountPaid = (AmountPaid ?? 0) + totalAmountReceived;
+
+            if ((AmountPaid ?? 0) < TotalAmount)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
+            }
+
+            Status = OrderStatus.Paid;
+            PaidAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+
+            return DomainResult.Success();
+        }
+
+        public void ReleaseTable()
+        {
+            TableId = null;
         }
 
         public bool CanCancel() => Status == OrderStatus.Serving;
@@ -114,13 +163,17 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
-<<<<<<< HEAD
-        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal totalAmountReceived)
-            => ProcessCheckout(paymentMethod, totalAmountReceived);
-=======
-        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived) =>
-            ProcessCheckout(paymentMethod, amountReceived);
->>>>>>> origin/main
+        /// <summary>
+        /// Helper: thanh toán toàn bộ một lần (backward-compatible).
+        /// </summary>
+        public DomainResult Checkout(decimal totalAmountReceived)
+            => ProcessCheckout(totalAmountReceived);
+
+        /// <summary>
+        /// Lấy số tiền còn lại cần thanh toán.
+        /// </summary>
+        public decimal GetRemainingAmount()
+            => Math.Max(TotalAmount - (AmountPaid ?? 0), 0);
 
         public bool CanComplete() =>
             Status == OrderStatus.Serving && OrderItems.All(oi => oi.IsFinished());

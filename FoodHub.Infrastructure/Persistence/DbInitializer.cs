@@ -255,10 +255,7 @@ namespace FoodHub.Infrastructure.Persistence
             if (!_context.SetMenus.Any())
             {
                 var comboCategory = _context.Categories.FirstOrDefault(c => c.Name == "Combo");
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/main
                 if (comboCategory != null)
                 {
                     var setMenu1 = new SetMenu
@@ -289,17 +286,12 @@ namespace FoodHub.Infrastructure.Persistence
                     _context.SaveChanges();
 
                     // Add some items to the first combo
-<<<<<<< HEAD
-                    var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
-                    var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
-=======
                     var chickenRice = _context.MenuItems.FirstOrDefault(mi =>
                         mi.Code == "MAIN-001"
                     );
                     var specialDrink = _context.MenuItems.FirstOrDefault(mi =>
                         mi.Code == "DRK-007"
                     );
->>>>>>> origin/main
 
                     if (chickenRice != null && specialDrink != null)
                     {
@@ -325,8 +317,6 @@ namespace FoodHub.Infrastructure.Persistence
                         _context.SaveChanges();
                     }
                 }
-<<<<<<< HEAD
-=======
             }
 
             // Seed Inventory Groups
@@ -341,7 +331,6 @@ namespace FoodHub.Infrastructure.Persistence
                 };
                 _context.InventoryGroups.AddRange(groups);
                 _context.SaveChanges();
->>>>>>> origin/main
             }
 
             // Seed Ingredients for Inventory module
@@ -519,9 +508,6 @@ namespace FoodHub.Infrastructure.Persistence
                 var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
                 var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
                 var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
-<<<<<<< HEAD
-=======
-
                 if (
                     admin == null
                     || chickenRice == null
@@ -532,7 +518,6 @@ namespace FoodHub.Infrastructure.Persistence
                     // Basic dependencies are missing, skip seeding orders as it depends on these specific items
                     return;
                 }
->>>>>>> origin/main
 
                 if (admin != null && chickenRice != null && beefNoodle != null && specialDrink != null)
                 {
@@ -542,7 +527,6 @@ namespace FoodHub.Infrastructure.Persistence
 
                     var order1 = new Order
                     {
-<<<<<<< HEAD
                         OrderId = Guid.NewGuid(),
                         OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0001",
                         OrderType = OrderType.DineIn,
@@ -552,20 +536,6 @@ namespace FoodHub.Infrastructure.Persistence
                         CreatedByEmployee = admin,
                         CreatedAt = DateTime.UtcNow.AddHours(-1),
                     };
-=======
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order1.OrderId,
-                        MenuItemId = chickenRice.MenuItemId,
-                        ItemCodeSnapshot = chickenRice.Code,
-                        ItemNameSnapshot = chickenRice.Name,
-                        StationSnapshot = chickenRice.Station.ToString(),
-                        Status = OrderItemStatus.Completed,
-                        Quantity = 1,
-                        UnitPriceSnapshot = chickenRice.Price,
-                        CreatedAt = order1.CreatedAt,
-                    }
-                );
->>>>>>> origin/main
 
                     order1.OrderItems.Add(
                         new OrderItem
@@ -576,7 +546,7 @@ namespace FoodHub.Infrastructure.Persistence
                             ItemCodeSnapshot = chickenRice.Code,
                             ItemNameSnapshot = chickenRice.Name,
                             StationSnapshot = chickenRice.Station.ToString(),
-                            Status = OrderItemStatus.Ready,
+                            Status = OrderItemStatus.Completed,
                             Quantity = 1,
                             UnitPriceSnapshot = chickenRice.Price,
                             CreatedAt = order1.CreatedAt,
@@ -647,51 +617,30 @@ namespace FoodHub.Infrastructure.Persistence
                             ItemCodeSnapshot = specialDrink.Code,
                             ItemNameSnapshot = specialDrink.Name,
                             StationSnapshot = specialDrink.Station.ToString(),
-                            Status = OrderItemStatus.Ready,
+                            Status = OrderItemStatus.Completed,
                             Quantity = 1,
                             UnitPriceSnapshot = specialDrink.Price,
                             CreatedAt = order3.CreatedAt,
                         }
                     );
 
-<<<<<<< HEAD
                     _context.Orders.AddRange(order1, order2, order3);
+
+                    // Update Table statuses for seeded orders
+                    var table1 =
+                        _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id)
+                        ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
+                    var table2 =
+                        _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id)
+                        ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
+
+                    if (table1 != null)
+                        table1.Status = TableStatus.Occupied;
+                    if (table2 != null)
+                        table2.Status = TableStatus.Occupied;
+
                     _context.SaveChanges();
                 }
-=======
-                order3.OrderItems.Add(
-                    new OrderItem
-                    {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order3.OrderId,
-                        MenuItemId = specialDrink.MenuItemId,
-                        ItemCodeSnapshot = specialDrink.Code,
-                        ItemNameSnapshot = specialDrink.Name,
-                        StationSnapshot = specialDrink.Station.ToString(),
-                        Status = OrderItemStatus.Completed,
-                        Quantity = 1,
-                        UnitPriceSnapshot = specialDrink.Price,
-                        CreatedAt = order3.CreatedAt,
-                    }
-                );
-
-                _context.Orders.AddRange(order1, order2, order3);
-
-                // Update Table statuses for seeded orders
-                var table1 =
-                    _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id)
-                    ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
-                var table2 =
-                    _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id)
-                    ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
-
-                if (table1 != null)
-                    table1.Status = TableStatus.Occupied;
-                if (table2 != null)
-                    table2.Status = TableStatus.Occupied;
-
-                _context.SaveChanges();
->>>>>>> origin/main
             }
 
             SyncOccupiedTablesFromActiveOrders();
