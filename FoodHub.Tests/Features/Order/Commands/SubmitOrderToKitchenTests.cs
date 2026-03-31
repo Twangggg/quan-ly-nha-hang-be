@@ -26,6 +26,8 @@ namespace FoodHub.Tests.Features.Order.Commands
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ICacheService> _mockCacheService;
         private readonly Mock<ISignalRService> _mockSignalRService;
+        private readonly Mock<IGenericRepository<FoodHub.Domain.Entities.Order>> _mockOrderRepo;
+        private readonly Mock<IGenericRepository<SetMenu>> _mockSetMenuRepo;
         private readonly Mock<IKdsSettingsProvider> _mockKdsSettingsProvider;
         private readonly Mock<IKdsAutoPullService> _mockKdsAutoPullService;
         private readonly Mock<ILogger<SubmitOrderToKitchenHandler>> _mockLogger;
@@ -38,6 +40,8 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockMessageService = new Mock<IMessageService>();
             _mockCacheService = new Mock<ICacheService>();
             _mockSignalRService = new Mock<ISignalRService>();
+            _mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
+            _mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
             _mockKdsSettingsProvider = new Mock<IKdsSettingsProvider>();
             _mockKdsAutoPullService = new Mock<IKdsAutoPullService>();
             _mockLogger = new Mock<ILogger<SubmitOrderToKitchenHandler>>();
@@ -49,6 +53,15 @@ namespace FoodHub.Tests.Features.Order.Commands
             _mockKdsAutoPullService
                 .Setup(x => x.GetAvailableSlotsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new Dictionary<string, int>());
+
+            _mockOrderRepo
+                .Setup(r => r.Query())
+                .Returns(new List<FoodHub.Domain.Entities.Order>().AsQueryable().BuildMock());
+            _mockSetMenuRepo
+                .Setup(r => r.Query())
+                .Returns(new List<SetMenu>().AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(_mockOrderRepo.Object);
+            _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(_mockSetMenuRepo.Object);
 
             _handler = new SubmitOrderToKitchenHandler(
                 _mockUow.Object,
