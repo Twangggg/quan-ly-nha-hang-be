@@ -13,6 +13,7 @@ using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using MediatR;
 
 namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
@@ -41,7 +42,9 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
                 return Result<PagedResult<GetSetMenusResponse>>.Success(cachedResult);
             }
 
-            var query = _unitOfWork.Repository<SetMenu>().Query();
+            IQueryable<SetMenu> query = _unitOfWork
+                .Repository<SetMenu>()
+                .Query();
 
             // 1. Apply Global Search (search by Code, Name, Description)
             var searchableFields = new List<Expression<Func<SetMenu, string?>>>
@@ -75,6 +78,8 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenus
                 s => s.Name);
 
             var pagedResult = await query
+                .Include(x => x.SetMenuItems)
+                    .ThenInclude(x => x.MenuItem)
                 .ProjectTo<GetSetMenusResponse>(_mapper.ConfigurationProvider)
                 .ToPagedResultAsync(request.Pagination);
 
