@@ -104,43 +104,55 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.GetBestSellers
                     oi.Status != OrderItemStatus.Cancelled && oi.Status != OrderItemStatus.Rejected
                 );
 
-            var totalRevenueAllRecords = await orderItemsQuery.SumAsync(
-                oi =>
-                    oi.Quantity
-                    * (
-                        oi.UnitPriceSnapshot
-                        + oi.OptionGroups.SelectMany(og => og.OptionValues)
-                            .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity)
-                    ),
-                cancellationToken
-            );
+            var totalRevenueAllRecords =
+                await orderItemsQuery.SumAsync(
+                    oi =>
+                        (decimal?)(
+                            oi.Quantity
+                            * (
+                                oi.UnitPriceSnapshot
+                                + (
+                                    oi.OptionGroups.SelectMany(og => og.OptionValues).Sum(ov =>
+                                        (decimal?)ov.ExtraPriceSnapshot * ov.Quantity
+                                    ) ?? 0
+                                )
+                            )
+                        ),
+                    cancellationToken
+                ) ?? 0;
 
             var bestSellersRaw = await orderItemsQuery
                 .GroupBy(oi => new
                 {
                     oi.MenuItemId,
                     oi.ItemNameSnapshot,
-                    CategoryName = oi.MenuItem.Category.Name,
-                    oi.MenuItem.CostPrice,
+                    CategoryName = oi.MenuItem != null ? oi.MenuItem.Category.Name : "N/A",
+                    CostPrice = oi.MenuItem != null ? (decimal?)oi.MenuItem.CostPrice : 0,
                 })
                 .Select(g => new
                 {
                     ItemName = g.Key.ItemNameSnapshot,
                     CategoryName = g.Key.CategoryName,
-                    CostPrice = g.Key.CostPrice,
+                    CostPrice = g.Key.CostPrice ?? 0,
                     TotalQuantity = g.Sum(x => x.Quantity),
-                    ItemTotalRevenue = g.Sum(x =>
-                        x.Quantity
-                        * (
-                            x.UnitPriceSnapshot
-                            + x.OptionGroups.SelectMany(og => og.OptionValues)
-                                .Sum(ov => ov.ExtraPriceSnapshot * ov.Quantity)
-                        )
-                    ),
+                    ItemTotalRevenue =
+                        g.Sum(x =>
+                            (decimal?)(
+                                x.Quantity
+                                * (
+                                    x.UnitPriceSnapshot
+                                    + (
+                                        x.OptionGroups.SelectMany(og => og.OptionValues).Sum(ov =>
+                                            (decimal?)ov.ExtraPriceSnapshot * ov.Quantity
+                                        ) ?? 0
+                                    )
+                                )
+                            )
+                        ) ?? 0,
                 })
                 .OrderByDescending(x => x.TotalQuantity)
                 .ThenByDescending(x => x.ItemTotalRevenue)
-                .Take(request.Top)
+                .Take(top)
                 .ToListAsync(cancellationToken);
 
             var bestSellers = bestSellersRaw

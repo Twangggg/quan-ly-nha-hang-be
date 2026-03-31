@@ -4,5 +4,6 @@ namespace FoodHub.Application.Interfaces.Common
     {
         string GetMessage(string key);
         string GetMessage(string key, params object[] args);
+        bool HasKey(string key);
     }
 }

@@ -18,15 +18,16 @@ namespace FoodHub.Presentation.Controllers
     /// </summary>
     [Tags("Hình ảnh (Images)")]
     [RateLimit(maxRequests: 10, windowMinutes: 5, blockMinutes: 15)]
-    public class ImageController : ApiControllerBase
+    [Route("api/v{version:apiVersion}/images")]
+    public class ImagesController : ApiControllerBase
     {
         private readonly ICloudinaryService _cloudinaryService;
-        private readonly ILogger<ImageController> _logger;
+        private readonly ILogger<ImagesController> _logger;
         private readonly IMessageService _messageService;
 
-        public ImageController(
+        public ImagesController(
             ICloudinaryService cloudinaryService,
-            ILogger<ImageController> logger,
+            ILogger<ImagesController> logger,
             IMessageService messageService
         ) : base(messageService)
         {
@@ -51,7 +52,7 @@ namespace FoodHub.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UploadImage(
-            IFormFile file,
+            [FromForm] IFormFile file,
             [FromQuery] string folder = "menu-items"
         )
         {

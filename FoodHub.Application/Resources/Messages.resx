@@ -293,4 +293,16 @@
   <data name="Reservation.CancelReservationSuccess" xml:space="preserve">
     <value>Hủy đặt chỗ thành công.</value>
   </data>
+  <data name="Email.PasswordResetSubject" xml:space="preserve">
+    <value>Đặt lại mật khẩu - FoodHub</value>
+  </data>
+  <data name="Email.AccountCreationSubject" xml:space="preserve">
+    <value>Chào mừng đến FoodHub - Thông tin tài khoản</value>
+  </data>
+  <data name="Email.RoleChangeSubject" xml:space="preserve">
+    <value>Thông báo thay đổi vai trò - FoodHub</value>
+  </data>
+  <data name="Email.PasswordResetByManagerSubject" xml:space="preserve">
+    <value>Mật khẩu của bạn đã được reset - FoodHub</value>
+  </data>
 </root>

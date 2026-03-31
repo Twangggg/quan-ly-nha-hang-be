@@ -68,7 +68,10 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 
             if (menuItem == null)
             {
-                return Result<Guid>.Failure("MenuItem.NotFound", ResultErrorType.NotFound);
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(MessageKeys.MenuItem.NotFound),
+                    ResultErrorType.NotFound
+                );
             }
 
             var ingredientIds = request.Items.Select(x => x.IngredientId).ToList();

@@ -4,6 +4,7 @@ using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace FoodHub.Presentation.Controllers
 {
@@ -57,10 +58,21 @@ namespace FoodHub.Presentation.Controllers
                 _ => 400,
             };
 
-            var response = new ErrorResponse(
-                statusCode,
-                result.Error ?? MessageService.GetMessage(MessageKeys.Common.InternalServerError)
-            );
+            var errorMessage = string.IsNullOrEmpty(result.Error)
+                ? MessageService.GetMessage(MessageKeys.Common.InternalServerError)
+                : (
+                    MessageService.HasKey(result.Error)
+                        ? MessageService.GetMessage(result.Error)
+                        : (
+                            HttpContext
+                                .RequestServices.GetRequiredService<IHostEnvironment>()
+                                .IsDevelopment()
+                                ? result.Error
+                                : MessageService.GetMessage(MessageKeys.Common.ValidationFailed)
+                        )
+                );
+
+            var response = new ErrorResponse(statusCode, errorMessage);
             return StatusCode(statusCode, response);
         }
 

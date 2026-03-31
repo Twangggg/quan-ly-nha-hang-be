@@ -16,9 +16,10 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
     public record OrderItemDto
     {
         public Guid MenuItemId { get; init; }
+        public Guid? SetMenuId { get; init; } // Added to support explicit combo selection
         public int Quantity { get; init; }
         public string? Note { get; init; }
-        public List<OrderItemOptionGroupDto>? SelectedOptions { get; init; } // NEW
+        public List<OrderItemOptionGroupDto>? SelectedOptions { get; init; }
     }
     public record OrderItemOptionGroupDto
     {

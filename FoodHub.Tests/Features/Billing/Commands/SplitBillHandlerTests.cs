@@ -94,7 +94,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
                         {
                             OrderItemId = item.OrderItemId,
                             OrderId = item.OrderId,
-                            MenuItemId = item.MenuItemId,
+                            MenuItemId = item.MenuItemId ?? Guid.Empty,
                             ItemNameSnapshot = item.ItemNameSnapshot,
                             Quantity = item.Quantity,
                             UnitPriceSnapshot = item.UnitPriceSnapshot,

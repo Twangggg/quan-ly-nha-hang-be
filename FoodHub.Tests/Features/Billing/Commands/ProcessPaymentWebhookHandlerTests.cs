@@ -20,6 +20,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
         private readonly Mock<IPaymentService> _mockPayment;
         private readonly Mock<ICacheService> _mockCache;
         private readonly Mock<ISignalRService> _mockSignalR;
+        private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ILogger<ProcessPaymentWebhookHandler>> _mockLogger;
         private readonly ProcessPaymentWebhookHandler _handler;
 
@@ -29,6 +30,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
             _mockPayment = new Mock<IPaymentService>();
             _mockCache = new Mock<ICacheService>();
             _mockSignalR = new Mock<ISignalRService>();
+            _mockMessageService = new Mock<IMessageService>();
             _mockLogger = new Mock<ILogger<ProcessPaymentWebhookHandler>>();
 
             _handler = new ProcessPaymentWebhookHandler(
@@ -36,7 +38,8 @@ namespace FoodHub.Tests.Features.Billing.Commands
                 _mockPayment.Object,
                 _mockLogger.Object,
                 _mockCache.Object,
-                _mockSignalR.Object);
+                _mockSignalR.Object,
+                _mockMessageService.Object);
         }
 
         [Fact]

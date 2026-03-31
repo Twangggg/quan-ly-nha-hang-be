@@ -23,10 +23,7 @@ namespace FoodHub.Infrastructure.Persistence
 
         public void Initialize()
         {
-            // IMPORTANT: Ensure schema fixes run BEFORE EF Migrations
-            EnsureReservationSettingsSchema();
-
-            // Auto Migrate
+            // Seed Data
             if (_context.Database.GetPendingMigrations().Any())
             {
                 _context.Database.Migrate();
@@ -1243,48 +1240,6 @@ namespace FoodHub.Infrastructure.Persistence
             _context.SaveChanges();
         }
 
-        private void EnsureReservationSettingsSchema()
-        {
-            try
-            {
-                // Check if grace_period_minutes exists in reservation_settings
-                var rsColumnsSQL =
-                    "SELECT column_name FROM information_schema.columns WHERE table_name = 'reservation_settings' AND column_name = 'grace_period_minutes'";
-                var colExists = _context.Database.SqlQueryRaw<string>(rsColumnsSQL).ToList().Any();
 
-                if (!colExists)
-                {
-                    _context.Database.ExecuteSqlRaw(
-                        "ALTER TABLE reservation_settings ADD COLUMN IF NOT EXISTS grace_period_minutes integer NOT NULL DEFAULT 15"
-                    );
-                }
-
-                _context.Database.ExecuteSqlRaw(
-                    "ALTER TABLE reservation_settings ADD COLUMN IF NOT EXISTS overlap_buffer_minutes integer NOT NULL DEFAULT 120"
-                );
-                _context.Database.ExecuteSqlRaw(
-                    "ALTER TABLE reservation_settings ADD COLUMN IF NOT EXISTS upcoming_buffer_minutes integer NOT NULL DEFAULT 30"
-                );
-
-                // Also check checked_in_at in reservations
-                var resColumnsSQL =
-                    "SELECT column_name FROM information_schema.columns WHERE table_name = 'reservations' AND column_name = 'checked_in_at'";
-                var checkedInExists = _context
-                    .Database.SqlQueryRaw<string>(resColumnsSQL)
-                    .ToList()
-                    .Any();
-
-                if (!checkedInExists)
-                {
-                    _context.Database.ExecuteSqlRaw(
-                        "ALTER TABLE reservations ADD COLUMN IF NOT EXISTS checked_in_at timestamp with time zone NULL"
-                    );
-                }
-            }
-            catch (Exception)
-            {
-                // Silently ignore if table doesn't exist yet (migrations will handle it)
-            }
-        }
     }
 }

@@ -1,5 +1,6 @@
 using FoodHub.Application.Features.Billing.Queries.GetPreCheckBill;
 using FoodHub.Application.Interfaces;
+using FoodHub.Application.Interfaces.Branding;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Domain.Entities;
 using QuestPDF.Fluent;
@@ -10,8 +11,17 @@ namespace FoodHub.Infrastructure.Services
 {
     public class PdfService : IPdfService
     {
+        private readonly IBrandingSettingsProvider _brandingSettingsProvider;
+
+        public PdfService(IBrandingSettingsProvider brandingSettingsProvider)
+        {
+            _brandingSettingsProvider = brandingSettingsProvider;
+        }
+
         public byte[] GeneratePreCheckBill(GetPreCheckBillResponse data)
         {
+            var branding = _brandingSettingsProvider.GetOrCreateAsync().GetAwaiter().GetResult();
+            var printedAt = FormatDateTime(data.PrintedAt, branding.Timezone, branding.DateFormat);
             var document = Document.Create(container =>
             {
                 container.Page(page =>
@@ -24,8 +34,8 @@ namespace FoodHub.Infrastructure.Services
                     {
                         headerContainer.Column(column =>
                         {
-                            column.Item().AlignCenter().Text("PHIẾU TẠM TÍNH").FontSize(14).SemiBold();
-                            column.Item().AlignCenter().Text("FoodHub Restaurant").FontSize(12).SemiBold();
+                            column.Item().AlignCenter().Text(branding.BillTitle).FontSize(14).SemiBold();
+                            column.Item().AlignCenter().Text(branding.RestaurantName).FontSize(12).SemiBold();
                             column.Item().AlignCenter().Text($"Số: {data.OrderCode}").FontSize(10).SemiBold();
                         });
                     });
@@ -42,7 +52,7 @@ namespace FoodHub.Infrastructure.Services
                             });
 
                             table.Cell().Text("Ngày:").SemiBold();
-                            table.Cell().Text(data.PrintedAt.ToLocalTime().ToString("dd/MM/yyyy (hh:mm tt)"));
+                            table.Cell().Text(printedAt);
 
                             table.Cell().Text("Bàn:").SemiBold();
                             table.Cell().Text(data.TableNumber.HasValue ? $"Bàn {data.TableNumber}" : "Mang về");
@@ -143,8 +153,11 @@ namespace FoodHub.Infrastructure.Services
                     page.Footer().AlignCenter().Column(column =>
                     {
                         column.Item().PaddingTop(10).LineHorizontal(1);
-                        column.Item().PaddingTop(5).Text("Đây không phải là hóa đơn thanh toán").Italic().FontSize(9);
-                        column.Item().Text("Cảm ơn quý khách và hẹn gặp lại!").FontSize(9);
+                        column.Item().PaddingTop(5).Text(branding.BillFooter).Italic().FontSize(9);
+                        if (!string.IsNullOrWhiteSpace(branding.Address))
+                        {
+                            column.Item().Text(branding.Address).FontSize(9);
+                        }
                     });
                 });
             });
@@ -154,6 +167,8 @@ namespace FoodHub.Infrastructure.Services
 
         public byte[] GenerateInvoicePdf(Invoice invoice)
         {
+            var branding = _brandingSettingsProvider.GetOrCreateAsync().GetAwaiter().GetResult();
+            var printedAt = FormatDateTime(invoice.CreatedAt, branding.Timezone, branding.DateFormat);
             var document = Document.Create(container =>
             {
                 container.Page(page =>
@@ -167,7 +182,7 @@ namespace FoodHub.Infrastructure.Services
                         headerContainer.Column(column =>
                         {
                             column.Item().AlignCenter().Text("HÓA ĐƠN THANH TOÁN").FontSize(14).SemiBold();
-                            column.Item().AlignCenter().Text("FoodHub Restaurant").FontSize(12).SemiBold();
+                            column.Item().AlignCenter().Text(branding.RestaurantName).FontSize(12).SemiBold();
                             column.Item().AlignCenter().Text($"Số HĐ: {invoice.InvoiceNumber}").FontSize(10).SemiBold();
                         });
                     });
@@ -184,7 +199,7 @@ namespace FoodHub.Infrastructure.Services
                             });
 
                             table.Cell().Text("Ngày:").SemiBold();
-                            table.Cell().Text(invoice.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy (hh:mm tt)"));
+                            table.Cell().Text(printedAt);
 
                             table.Cell().Text("Bàn:").SemiBold();
                             table.Cell().Text(!string.IsNullOrEmpty(invoice.TableNumber) ? $"Bàn {invoice.TableNumber}" : "Mang về");
@@ -283,13 +298,28 @@ namespace FoodHub.Infrastructure.Services
                     page.Footer().AlignCenter().Column(column =>
                     {
                         column.Item().PaddingTop(10).LineHorizontal(1);
-                        column.Item().PaddingTop(5).Text("Cảm ơn quý khách và hẹn gặp lại!").FontSize(9).SemiBold();
-                        column.Item().Text("Powered by FoodHub System").FontSize(8).Italic();
+                        column.Item().PaddingTop(5).Text(branding.BillFooter).FontSize(9).SemiBold();
+                        column.Item().Text(branding.AppTitle).FontSize(8).Italic();
                     });
                 });
             });
 
             return document.GeneratePdf();
+        }
+
+        private static string FormatDateTime(DateTime value, string timezoneId, string dateFormat)
+        {
+            try
+            {
+                var tz = TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
+                var utc = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+                var local = TimeZoneInfo.ConvertTimeFromUtc(utc, tz);
+                return local.ToString($"{dateFormat} HH:mm");
+            }
+            catch
+            {
+                return value.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
+            }
         }
     }
 }

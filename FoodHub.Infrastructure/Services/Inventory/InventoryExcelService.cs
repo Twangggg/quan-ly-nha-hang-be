@@ -1,6 +1,6 @@
+using System.IO;
 using ClosedXML.Excel;
 using FoodHub.Application.Interfaces.Inventory;
-using System.IO;
 
 namespace FoodHub.Infrastructure.Services.Inventory;
 
@@ -28,7 +28,6 @@ public class InventoryExcelService : IInventoryExcelService
             return Task.FromResult(result);
         }
 
-
         var headerRow = sheet.Row(1);
         var headers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
@@ -37,14 +36,24 @@ public class InventoryExcelService : IInventoryExcelService
             headers[cell.GetString().Trim()] = cell.Address.ColumnNumber;
         }
 
-        var codeCol = headers.TryGetValue("Mã nguyên liệu", out var c1) ? c1 : (headers.TryGetValue("MaNguyenLieu", out var c2) ? c2 : 0);
-        var quantityCol = headers.TryGetValue("Số lượng", out var q1) ? q1 : (headers.TryGetValue("SoLuong", out var q2) ? q2 : 0);
-        var priceCol = headers.TryGetValue("Giá nhập", out var p1) ? p1 : (headers.TryGetValue("GiaNhap", out var p2) ? p2 : 0);
-        var unitCol = headers.TryGetValue("Đơn vị", out var u1) ? u1 : (headers.TryGetValue("DonVi", out var u2) ? u2 : 0);
+        var codeCol = headers.TryGetValue("Mã nguyên liệu", out var c1)
+            ? c1
+            : (headers.TryGetValue("MaNguyenLieu", out var c2) ? c2 : 0);
+        var quantityCol = headers.TryGetValue("Số lượng", out var q1)
+            ? q1
+            : (headers.TryGetValue("SoLuong", out var q2) ? q2 : 0);
+        var priceCol = headers.TryGetValue("Giá nhập", out var p1)
+            ? p1
+            : (headers.TryGetValue("GiaNhap", out var p2) ? p2 : 0);
+        var unitCol = headers.TryGetValue("Đơn vị", out var u1)
+            ? u1
+            : (headers.TryGetValue("DonVi", out var u2) ? u2 : 0);
 
         if (codeCol == 0 || quantityCol == 0 || priceCol == 0)
         {
-            throw new InvalidOperationException("File Excel phải có các cột: Mã nguyên liệu, Số lượng, Giá nhập");
+            throw new InvalidOperationException(
+                FoodHub.Application.Constants.MessageKeys.Common.ExcelInvalidFormat
+            );
         }
 
         for (int row = 2; row <= rowCount; row++)
@@ -65,14 +74,16 @@ public class InventoryExcelService : IInventoryExcelService
             var price = priceCell.GetValue<decimal>();
             var unit = unitCell?.GetString()?.Trim();
 
-            result.Add(new InventoryBalanceImportDto
-            {
-                IngredientCode = code,
-                Quantity = quantity,
-                CostPrice = price,
-                Unit = string.IsNullOrEmpty(unit) ? null : unit,
-                RowNumber = row
-            });
+            result.Add(
+                new InventoryBalanceImportDto
+                {
+                    IngredientCode = code,
+                    Quantity = quantity,
+                    CostPrice = price,
+                    Unit = string.IsNullOrEmpty(unit) ? null : unit,
+                    RowNumber = row,
+                }
+            );
         }
 
         return Task.FromResult(result);

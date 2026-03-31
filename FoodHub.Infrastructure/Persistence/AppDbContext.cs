@@ -183,6 +183,7 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<ReservationSettings> ReservationSettings { get; set; } = null!;
         public DbSet<KdsSettings> KdsSettings { get; set; } = null!;
         public DbSet<KdsStationWipLimit> KdsStationWipLimits { get; set; } = null!;
+        public DbSet<BrandingSettings> BrandingSettings { get; set; } = null!;
         public DbSet<Invoice> Invoices { get; set; } = null!;
         public DbSet<InvoiceItem> InvoiceItems { get; set; } = null!;
 
