@@ -246,6 +246,12 @@ namespace FoodHub.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("app_title");
 
+                    b.Property<string>("LogoUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("logo_url");
+
                     b.Property<string>("BillFooter")
                         .IsRequired()
                         .HasMaxLength(500)

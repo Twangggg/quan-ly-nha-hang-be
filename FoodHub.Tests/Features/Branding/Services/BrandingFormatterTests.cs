@@ -25,7 +25,8 @@ namespace FoodHub.Tests.Features.Branding.Services
                 "BILL",
                 "FOOTER",
                 "KDS",
-                "APP"
+                "APP",
+                ""
             );
 
             var provider = new Mock<IBrandingSettingsProvider>();
@@ -56,7 +57,8 @@ namespace FoodHub.Tests.Features.Branding.Services
                 "BILL",
                 "FOOTER",
                 "KDS",
-                "APP"
+                "APP",
+                ""
             );
 
             var provider = new Mock<IBrandingSettingsProvider>();
