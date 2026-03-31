@@ -3603,6 +3603,10 @@ namespace FoodHub.Migrations
 
             modelBuilder.Entity("FoodHub.Domain.Entities.OrderItem", b =>
                 {
+                    b.Property<Guid?>("ComboParentOrderItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("combo_parent_order_item_id");
+
                     b.HasOne("FoodHub.Domain.Entities.MenuItem", "MenuItem")
                         .WithMany()
                         .HasForeignKey("MenuItemId")

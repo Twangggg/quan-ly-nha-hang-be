@@ -10,6 +10,7 @@ namespace FoodHub.Application.Features.OrderItems.Common
         public Guid OrderItemId { get; set; }
         public Guid OrderId { get; set; }
         public Guid MenuItemId { get; set; }
+        public Guid? ComboParentOrderItemId { get; set; }
 
         public string ItemCodeSnapshot { get; set; } = null!;
         public string ItemNameSnapshot { get; set; } = null!;

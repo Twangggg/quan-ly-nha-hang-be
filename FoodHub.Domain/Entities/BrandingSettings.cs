@@ -11,7 +11,7 @@ namespace FoodHub.Domain.Entities
         public const string DefaultDateFormat = "dd/MM/yyyy";
         public const string DefaultTimezone = "Asia/Ho_Chi_Minh";
         public const string DefaultLanguage = "vi";
-        public const string DefaultBillTitle = "PHIẾU TẠM TÍNH";
+        public const string DefaultBillTitle = "HÓA ĐƠN THANH TOÁN";
         public const string DefaultBillFooter = "CẢM ƠN QUÝ KHÁCH - HẸN GẶP LẠI";
         public const string DefaultKdsTitle = "KDS Dashboard";
         public const string DefaultAppTitle = "FoodHub | Premium Restaurant Management";

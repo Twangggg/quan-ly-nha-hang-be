@@ -91,11 +91,14 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 );
             }
 
-            // --- DECOMPOSITION LOGIC START ---
-
             // Collect IDs
             var menuItemIdsFromRequest = request
                 .Items.Where(i => i.SetMenuId == null)
+                .Select(i => i.MenuItemId)
+                .Distinct()
+                .ToList();
+            var comboMenuItemIdsFromRequest = request
+                .Items.SelectMany(i => i.ComboItems ?? Enumerable.Empty<OrderItemComboDto>())
                 .Select(i => i.MenuItemId)
                 .Distinct()
                 .ToList();
@@ -104,13 +107,19 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 .Select(i => i.SetMenuId!.Value)
                 .Distinct()
                 .ToList();
-            var allIdsInRequest = request.Items.Select(i => i.MenuItemId).ToList();
+            var allIdsInRequest = request
+                .Items.Select(i => i.MenuItemId)
+                .Concat(comboMenuItemIdsFromRequest)
+                .ToList();
 
             // Fetch Entities
             var menuItems = await _unitOfWork
                 .Repository<MenuItem>()
                 .Query()
-                .Where(m => menuItemIdsFromRequest.Contains(m.MenuItemId))
+                .Where(m =>
+                    menuItemIdsFromRequest.Contains(m.MenuItemId)
+                    || comboMenuItemIdsFromRequest.Contains(m.MenuItemId)
+                )
                 .Include(m => m.MenuItemOptionGroups)
                     .ThenInclude(miog => miog.OptionGroup)
                         .ThenInclude(og => og.OptionItems)
@@ -234,21 +243,98 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                     // 2. Decompose into components (for KDS)
                     foreach (var component in setMenu.SetMenuItems)
                     {
+                        var comboChildRequest = itemDto.ComboItems?.FirstOrDefault(x =>
+                            x.MenuItemId == component.MenuItemId
+                        );
+
+                        var comboChildMenuItem = comboChildRequest != null
+                            && menuItems.TryGetValue(comboChildRequest.MenuItemId, out var childMenuItem)
+                            ? childMenuItem
+                            : component.MenuItem;
+
+                        var comboChildSelectionValidation = OptionSelectionValidation.ValidateForMenuItem(
+                            comboChildMenuItem,
+                            comboChildRequest?.SelectedOptions?.Select(x => new RequestedOptionSelection(
+                                    x.OptionGroupId,
+                                    x.SelectedValues.Select(v => new RequestedOptionValue(
+                                            v.OptionItemId,
+                                            v.Quantity,
+                                            v.Note
+                                        ))
+                                        .ToList()
+                                ))
+                                .ToList(),
+                            _messageService
+                        );
+
+                        if (!comboChildSelectionValidation.IsSuccess)
+                        {
+                            return Result<Guid>.Failure(
+                                comboChildSelectionValidation.Error!,
+                                comboChildSelectionValidation.ErrorType
+                            );
+                        }
+
+                        var comboChildDomainOptions = comboChildSelectionValidation
+                            .Data!
+                            .Select(x => (x.Assignment, x.Group, x.Selections))
+                            .ToList();
                         var componentItem = new OrderItem
                         {
                             OrderItemId = Guid.NewGuid(),
                             OrderId = order.OrderId,
                             MenuItemId = component.MenuItemId,
+                            ComboParentOrderItemId = parentItem.OrderItemId,
                             Quantity = component.Quantity * itemDto.Quantity,
-                            ItemNote = $"[Combo: {setMenu.Name}] {itemDto.Note ?? ""}".Trim(),
+                            ItemNote = string.Join(
+                                "; ",
+                                new[]
+                                {
+                                    $"[Combo: {setMenu.Name}]",
+                                    itemDto.Note,
+                                    comboChildRequest?.Note
+                                }.Where(x => !string.IsNullOrWhiteSpace(x))
+                            ),
                             CreatedAt = DateTime.UtcNow,
                             Status = OrderItemStatus.Preparing,
                             ItemNameSnapshot = component.MenuItem.Name,
                             ItemCodeSnapshot = component.MenuItem.Code,
                             UnitPriceSnapshot = 0,
                             StationSnapshot = component.MenuItem.Station.ToString(),
-                            IsFreeItem = true,
+                            IsFreeItem = false,
                         };
+
+                        foreach (var optGroup in comboChildDomainOptions)
+                        {
+                            var orderItemOptGroup = new OrderItemOptionGroup
+                            {
+                                OrderItemOptionGroupId = Guid.NewGuid(),
+                                OrderItemId = componentItem.OrderItemId,
+                                GroupNameSnapshot = optGroup.Group.Name,
+                                GroupTypeSnapshot = optGroup.Group.OptionType.ToString(),
+                                IsRequiredSnapshot = optGroup.Assignment.IsRequired,
+                                CreatedAt = DateTime.UtcNow,
+                            };
+
+                            foreach (var selection in optGroup.Selections)
+                            {
+                                orderItemOptGroup.OptionValues.Add(
+                                    new OrderItemOptionValue
+                                    {
+                                        OrderItemOptionValueId = Guid.NewGuid(),
+                                        OrderItemOptionGroupId = orderItemOptGroup.OrderItemOptionGroupId,
+                                        OptionItemId = selection.Item.OptionItemId,
+                                        LabelSnapshot = selection.Item.Label,
+                                        ExtraPriceSnapshot = selection.Item.ExtraPrice,
+                                        Quantity = selection.Quantity,
+                                        Note = selection.Note,
+                                        CreatedAt = DateTime.UtcNow,
+                                    }
+                                );
+                            }
+
+                            componentItem.OptionGroups.Add(orderItemOptGroup);
+                        }
                         comboComponents.Add(componentItem);
                     }
                     continue;
