@@ -77,7 +77,6 @@ namespace FoodHub.Application.Features.Authentication.Commands.ChangePassword
             employee.PasswordHash = _passwordService.HashPassword(request.NewPassword);
             employee.UpdatedAt = DateTime.UtcNow;
 
-            //Revoke existing refresh tokens
             var refreshTokens = await _unitOfWork.Repository<Domain.Entities.RefreshToken>()
                 .Query()
                 .Where(rt => rt.EmployeeId == employee.EmployeeId && !rt.IsRevoked)

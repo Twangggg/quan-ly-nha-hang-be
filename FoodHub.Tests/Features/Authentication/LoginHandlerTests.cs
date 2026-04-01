@@ -84,7 +84,6 @@ namespace FoodHub.Tests.Features.Authentication
             _mockTokenService.Setup(t => t.GetTokenExpirationSeconds()).Returns(3600);
             _mockTokenService.Setup(t => t.GenerateRefreshToken()).Returns("refresh_token");
             _mockTokenService.Setup(t => t.GetRefreshTokenExpirationDays()).Returns(7);
-
             var refreshTokenRepo = new Mock<IGenericRepository<RefreshToken>>();
             _mockUow.Setup(u => u.Repository<RefreshToken>()).Returns(refreshTokenRepo.Object);
             _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);

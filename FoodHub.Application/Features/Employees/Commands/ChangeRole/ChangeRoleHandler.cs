@@ -98,7 +98,6 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
                 );
             }
 
-            // Revoke all existing refresh tokens for the old account
             var refreshTokens = await _unitOfWork
                 .Repository<RefreshToken>()
                 .Query()
