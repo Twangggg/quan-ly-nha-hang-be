@@ -29,9 +29,15 @@ namespace FoodHub.Application.Features.Authentication.Commands.RevokeToken
 
         public async Task<Result<bool>> Handle(RevokeTokenCommand request, CancellationToken cancellationToken)
         {
+            var hashedRefreshToken = FoodHub.Domain.Entities.RefreshToken.HashToken(
+                request.RefreshToken
+            );
             var token = await _unitOfWork.Repository<FoodHub.Domain.Entities.RefreshToken>()
                 .Query()
-                .FirstOrDefaultAsync(x => x.Token == request.RefreshToken, cancellationToken);
+                .FirstOrDefaultAsync(
+                    x => x.Token == hashedRefreshToken || x.Token == request.RefreshToken,
+                    cancellationToken
+                );
 
             if (token == null)
             {

@@ -13,6 +13,15 @@ namespace FoodHub.WebAPI.Presentation.Extensions;
 
 public static class WebExtensions
 {
+    private static readonly HashSet<string> CsrfExemptPaths = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "/api/v1/auth/login",
+        "/api/v1/auth/csrf-token",
+        "/api/v1/auth/logout",
+        "/api/v1/auth/request-password-reset",
+        "/api/v1/auth/reset-password",
+    };
+
     /// <summary>
     /// Cấu hình các dịch vụ Web cơ bản (Redis, Rate Limit, Versioning...)
     /// </summary>
@@ -162,24 +171,48 @@ public static class WebExtensions
         // --- Cấu hình Anti-CSRF Token cho Frontend ---
         app.UseAntiforgery();
         app.Use(
-            (context, next) =>
+            async (context, next) =>
             {
-                var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
-                var tokens = antiforgery.GetAndStoreTokens(context);
-
-                // Gửi Token vào Cookie (XSRF-TOKEN) để React có thể đọc và gửi ngược lại trong Header (X-XSRF-TOKEN)
-                context.Response.Cookies.Append(
-                    "XSRF-TOKEN",
-                    tokens.RequestToken!,
-                    new CookieOptions
+                if (
+                    HttpMethods.IsPost(context.Request.Method)
+                    || HttpMethods.IsPut(context.Request.Method)
+                    || HttpMethods.IsPatch(context.Request.Method)
+                    || HttpMethods.IsDelete(context.Request.Method)
+                )
+                {
+                    var path = context.Request.Path.Value ?? string.Empty;
+                    if (CsrfExemptPaths.Contains(path))
                     {
-                        HttpOnly = false,
-                        SameSite = SameSiteMode.Lax,
-                        Secure = context.Request.IsHttps,
+                        await next(context);
+                        return;
                     }
-                );
 
-                return next(context);
+                    var hasAuthCookie =
+                        context.Request.Cookies.ContainsKey("accessToken")
+                        || context.Request.Cookies.ContainsKey("refreshToken");
+
+                    if (hasAuthCookie)
+                    {
+                        try
+                        {
+                            var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+                            await antiforgery.ValidateRequestAsync(context);
+                        }
+                        catch (AntiforgeryValidationException)
+                        {
+                            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                            context.Response.ContentType = "application/json";
+                            await context.Response.WriteAsync(
+                                """
+                                {"statusCode":400,"message":"Invalid or missing CSRF token."}
+                                """
+                            );
+                            return;
+                        }
+                    }
+                }
+
+                await next(context);
             }
         );
 

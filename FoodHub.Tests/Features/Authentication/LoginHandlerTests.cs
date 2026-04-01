@@ -127,6 +127,7 @@ namespace FoodHub.Tests.Features.Authentication
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Invalid credentials");
+            result.ErrorType.Should().Be(ResultErrorType.Unauthorized);
         }
 
         [Fact]
@@ -176,6 +177,7 @@ namespace FoodHub.Tests.Features.Authentication
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Invalid credentials");
+            result.ErrorType.Should().Be(ResultErrorType.Unauthorized);
             _mockRateLimiter.Verify(
                 r =>
                     r.RegisterFailAsync(
@@ -208,6 +210,7 @@ namespace FoodHub.Tests.Features.Authentication
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Account blocked");
+            result.ErrorType.Should().Be(ResultErrorType.Unauthorized);
         }
 
         [Fact]
@@ -249,6 +252,7 @@ namespace FoodHub.Tests.Features.Authentication
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Account inactive");
+            result.ErrorType.Should().Be(ResultErrorType.Unauthorized);
         }
     }
 }

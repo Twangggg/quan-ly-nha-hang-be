@@ -29,10 +29,14 @@ namespace FoodHub.Application.Features.Authentication.Commands.RefreshToken
 
         public async Task<Result<LoginResponse>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
         {
+            var hashedRefreshToken = Domain.Entities.RefreshToken.HashToken(request.RefreshToken);
             var storedToken = await _unitOfWork.Repository<Domain.Entities.RefreshToken>()
                 .Query()
                 .Include(x => x.Employee) // Load Employee explicitly
-                .FirstOrDefaultAsync(x => x.Token == request.RefreshToken, cancellationToken);
+                .FirstOrDefaultAsync(
+                    x => x.Token == hashedRefreshToken || x.Token == request.RefreshToken,
+                    cancellationToken
+                );
 
             // Validation Checks
             if (storedToken == null)
@@ -77,12 +81,11 @@ namespace FoodHub.Application.Features.Authentication.Commands.RefreshToken
             var isLongLived = oldDurationDays > (defaultDays + 1);
             var newDurationDays = isLongLived ? 30 : defaultDays;
 
-            var newRefreshTokenEntity = new Domain.Entities.RefreshToken
-            {
-                Token = newRefreshToken,
-                Expires = DateTime.UtcNow.AddDays(newDurationDays),
-                EmployeeId = employee.EmployeeId
-            };
+            var newRefreshTokenEntity = Domain.Entities.RefreshToken.CreateWithDays(
+                employee.EmployeeId,
+                newRefreshToken,
+                newDurationDays
+            );
 
             await _unitOfWork.Repository<Domain.Entities.RefreshToken>().AddAsync(newRefreshTokenEntity);
             await _unitOfWork.SaveChangeAsync(cancellationToken);

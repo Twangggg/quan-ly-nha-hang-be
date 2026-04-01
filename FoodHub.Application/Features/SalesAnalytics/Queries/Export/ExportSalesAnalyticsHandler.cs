@@ -71,8 +71,7 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.Export
             {
                 startDate = request.StartDate.Value;
                 endDate = request.EndDate.Value;
-                reportTitle =
-                    $"Báo cáo doanh thu từ {startDate:dd/MM/yyyy} đến {endDate:dd/MM/yyyy}";
+                reportTitle = BuildRangeReportTitle(startDate, endDate);
             }
             else
             {
@@ -139,6 +138,70 @@ namespace FoodHub.Application.Features.SalesAnalytics.Queries.Export
             );
 
             return Result<byte[]>.Success(fileContent);
+        }
+
+        private static string BuildRangeReportTitle(DateOnly startDate, DateOnly endDate)
+        {
+            if (TryGetQuarter(startDate, endDate, out var quarter, out var year))
+            {
+                return $"Báo cáo doanh thu quý {quarter}/{year}";
+            }
+
+            return $"Báo cáo doanh thu {startDate:dd/MM/yyyy} - {endDate:dd/MM/yyyy}";
+        }
+
+        private static bool TryGetQuarter(
+            DateOnly startDate,
+            DateOnly endDate,
+            out int quarter,
+            out int year
+        )
+        {
+            quarter = 0;
+            year = startDate.Year;
+
+            if (startDate.Year != endDate.Year)
+            {
+                return false;
+            }
+
+            if (
+                startDate == new DateOnly(startDate.Year, 1, 1)
+                && endDate == new DateOnly(startDate.Year, 3, 31)
+            )
+            {
+                quarter = 1;
+                return true;
+            }
+
+            if (
+                startDate == new DateOnly(startDate.Year, 4, 1)
+                && endDate == new DateOnly(startDate.Year, 6, 30)
+            )
+            {
+                quarter = 2;
+                return true;
+            }
+
+            if (
+                startDate == new DateOnly(startDate.Year, 7, 1)
+                && endDate == new DateOnly(startDate.Year, 9, 30)
+            )
+            {
+                quarter = 3;
+                return true;
+            }
+
+            if (
+                startDate == new DateOnly(startDate.Year, 10, 1)
+                && endDate == new DateOnly(startDate.Year, 12, 31)
+            )
+            {
+                quarter = 4;
+                return true;
+            }
+
+            return false;
         }
 
         private static (DateTime StartUtc, DateTime EndUtc) ToUtcRange(DateOnly start, DateOnly end)

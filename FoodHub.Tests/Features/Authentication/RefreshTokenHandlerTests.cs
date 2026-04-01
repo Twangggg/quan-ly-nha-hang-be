@@ -49,7 +49,7 @@ namespace FoodHub.Tests.Features.Authentication
             };
             var refreshTokenEntity = new RefreshToken
             {
-                Token = "old_refresh_token",
+                Token = RefreshToken.HashToken("old_refresh_token"),
                 Expires = DateTime.UtcNow.AddDays(10),
                 IsRevoked = false,
                 EmployeeId = employee.EmployeeId,
@@ -61,6 +61,10 @@ namespace FoodHub.Tests.Features.Authentication
             var refreshTokens = new List<RefreshToken> { refreshTokenEntity }.AsQueryable().BuildMock();
             var repo = new Mock<IGenericRepository<RefreshToken>>();
             repo.Setup(r => r.Query()).Returns(refreshTokens);
+            RefreshToken? addedRefreshToken = null;
+            repo.Setup(r => r.AddAsync(It.IsAny<RefreshToken>()))
+                .Callback<RefreshToken>(token => addedRefreshToken = token)
+                .Returns(Task.CompletedTask);
             _mockUow.Setup(u => u.Repository<RefreshToken>()).Returns(repo.Object);
 
             _mockTokenService.Setup(t => t.GenerateAccessToken(employee)).Returns("new_access_token");
@@ -82,6 +86,8 @@ namespace FoodHub.Tests.Features.Authentication
             result.Data.Email.Should().Be("test@example.com");
             result.Data.Role.Should().Be("Manager");
             refreshTokenEntity.IsRevoked.Should().BeTrue();
+            addedRefreshToken.Should().NotBeNull();
+            addedRefreshToken!.Token.Should().Be(RefreshToken.HashToken("new_refresh_token"));
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -118,7 +124,7 @@ namespace FoodHub.Tests.Features.Authentication
             };
             var refreshTokenEntity = new RefreshToken
             {
-                Token = "expired_token",
+                Token = RefreshToken.HashToken("expired_token"),
                 Expires = DateTime.UtcNow.AddDays(-1),
                 IsRevoked = false,
                 EmployeeId = employee.EmployeeId,
@@ -153,7 +159,7 @@ namespace FoodHub.Tests.Features.Authentication
             };
             var refreshTokenEntity = new RefreshToken
             {
-                Token = "revoked_token",
+                Token = RefreshToken.HashToken("revoked_token"),
                 Expires = DateTime.UtcNow.AddDays(10),
                 IsRevoked = true,
                 EmployeeId = employee.EmployeeId,
@@ -188,7 +194,7 @@ namespace FoodHub.Tests.Features.Authentication
             };
             var refreshTokenEntity = new RefreshToken
             {
-                Token = "valid_token",
+                Token = RefreshToken.HashToken("valid_token"),
                 Expires = DateTime.UtcNow.AddDays(10),
                 IsRevoked = false,
                 EmployeeId = employee.EmployeeId,

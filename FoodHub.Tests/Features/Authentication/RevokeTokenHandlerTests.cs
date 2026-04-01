@@ -42,7 +42,7 @@ namespace FoodHub.Tests.Features.Authentication
             var refreshToken = new RefreshToken
             {
                 Id = Guid.NewGuid(),
-                Token = "valid_refresh_token",
+                Token = RefreshToken.HashToken("valid_refresh_token"),
 
                 EmployeeId = Guid.NewGuid(),
                 Expires = DateTime.UtcNow.AddDays(7),

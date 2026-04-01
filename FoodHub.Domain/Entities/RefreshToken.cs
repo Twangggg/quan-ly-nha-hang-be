@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 namespace FoodHub.Domain.Entities
 {
     public class RefreshToken
@@ -23,9 +26,20 @@ namespace FoodHub.Domain.Entities
         {
             var expirationDays = rememberMe ? 30 : configDays;
 
+            return CreateWithDays(employeeId, token, expirationDays);
+        }
+
+        public static RefreshToken CreateWithDays(
+            Guid employeeId,
+            string token,
+            int expirationDays
+        )
+        {
+            var hashedToken = HashToken(token);
+
             return new RefreshToken
             {
-                Token = token,
+                Token = hashedToken,
                 Expires = DateTime.UtcNow.AddDays(expirationDays),
                 EmployeeId = employeeId,
             };
@@ -40,6 +54,14 @@ namespace FoodHub.Domain.Entities
 
             IsRevoked = true;
             UpdatedAt = revokedAt ?? DateTime.UtcNow;
+        }
+
+        public static string HashToken(string token)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(token);
+
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+            return Convert.ToHexString(bytes);
         }
     }
 }

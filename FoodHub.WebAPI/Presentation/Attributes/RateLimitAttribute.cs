@@ -6,6 +6,7 @@ using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Linq;
 
 namespace FoodHub.WebAPI.Presentation.Attributes
 {
@@ -15,6 +16,7 @@ namespace FoodHub.WebAPI.Presentation.Attributes
         private readonly int _maxRequests;
         private readonly int _windowMinutes;
         private readonly int _blockMinutes;
+        public int[]? CountStatusCodes { get; set; }
 
         public RateLimitAttribute(
             int maxRequests = 500,
@@ -64,10 +66,19 @@ namespace FoodHub.WebAPI.Presentation.Attributes
             }
 
             var executedContext = await next();
-            if (
-                executedContext.Exception != null
-                || (executedContext.Result is ObjectResult result && result.StatusCode >= 400)
-            )
+            if (executedContext.Exception != null)
+            {
+                await rateLimiter.RegisterFailAsync(
+                    rateLimitKey,
+                    _maxRequests,
+                    TimeSpan.FromMinutes(_windowMinutes),
+                    TimeSpan.FromMinutes(_blockMinutes),
+                    CancellationToken.None
+                );
+                return;
+            }
+
+            if (executedContext.Result is ObjectResult result && ShouldCountStatusCode(result.StatusCode))
             {
                 await rateLimiter.RegisterFailAsync(
                     rateLimitKey,
@@ -88,6 +99,21 @@ namespace FoodHub.WebAPI.Presentation.Attributes
             var ipAdress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
             return string.IsNullOrEmpty(userId) ? ipAdress : $"{userId}:{ipAdress}";
+        }
+
+        private bool ShouldCountStatusCode(int? statusCode)
+        {
+            if (!statusCode.HasValue)
+            {
+                return false;
+            }
+
+            if (CountStatusCodes is { Length: > 0 })
+            {
+                return CountStatusCodes.Contains(statusCode.Value);
+            }
+
+            return statusCode.Value >= 400;
         }
     }
 }

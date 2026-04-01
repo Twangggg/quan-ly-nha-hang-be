@@ -53,13 +53,13 @@ namespace FoodHub.Presentation.Controllers
         /// Đăng nhập vào hệ thống.
         /// </summary>
         /// <remarks>
-        /// Trả về Access Token và Refresh Token qua Cookies (HttpOnly) và Body.
+        /// Trả về thông tin người dùng; Access Token và Refresh Token được cấp qua Cookies (HttpOnly).
         /// </remarks>
         /// <param name="command">Thông tin đăng nhập.</param>
         /// <response code="200">Đăng nhập thành công.</response>
         /// <response code="401">Thông tin đăng nhập không chính xác.</response>
         [HttpPost("login")]
-        [RateLimit(maxRequests: 50, windowMinutes: 10, blockMinutes: 5)]
+        [RateLimit(maxRequests: 25, windowMinutes: 5, blockMinutes: 5, CountStatusCodes = new[] { StatusCodes.Status401Unauthorized })]
         [ProducesResponseType(typeof(Result<LoginResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromBody] LoginCommand command)
@@ -107,6 +107,28 @@ namespace FoodHub.Presentation.Controllers
             }
 
             return HandleResult(result);
+        }
+
+        /// <summary>
+        /// Khởi tạo Anti-Forgery token cho trình duyệt trước các request thay đổi dữ liệu.
+        /// </summary>
+        /// <response code="200">CSRF token đã được cấp.</response>
+        [HttpGet("csrf-token")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetCsrfToken()
+        {
+            var antiforgery = HttpContext.RequestServices.GetRequiredService<
+                Microsoft.AspNetCore.Antiforgery.IAntiforgery
+            >();
+            var tokens = antiforgery.GetAndStoreTokens(HttpContext);
+
+            return Ok(
+                new
+                {
+                    csrfToken = tokens.RequestToken,
+                }
+            );
         }
 
         private void SetTokenCookies(LoginResponse response)
@@ -157,53 +179,8 @@ namespace FoodHub.Presentation.Controllers
             var enableHttps = _configuration.GetValue<bool>("EnableHttpsRedirection", true);
             var isSecure = !isDev && enableHttps;
 
-            // Xóa cookies với nhiều cấu hình khác nhau để đảm bảo trình duyệt chấp nhận lệnh xóa
-            // (Đặc biệt quan trọng khi môi trường Dev/Prod có cấu hình Secure/SameSite khác nhau)
-
-            var baseOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Path = "/",
-                Expires = DateTime.UtcNow.AddDays(-1),
-            };
-
-            // 1. Thử xóa với cấu hình hiện tại
-            var currentOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = isSecure,
-                SameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax,
-                Path = "/",
-                Expires = DateTime.UtcNow.AddDays(-1),
-            };
-            Response.Cookies.Delete("accessToken", currentOptions);
-            Response.Cookies.Delete("refreshToken", currentOptions);
-
-            Response.Cookies.Delete("accessToken", baseOptions);
-            Response.Cookies.Delete("refreshToken", baseOptions);
-
-            Response.Cookies.Delete(
-                "accessToken",
-                new CookieOptions
-                {
-                    Path = "/",
-                    HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Lax,
-                    Expires = DateTime.UtcNow.AddDays(-1),
-                }
-            );
-            Response.Cookies.Delete(
-                "refreshToken",
-                new CookieOptions
-                {
-                    Path = "/",
-                    HttpOnly = true,
-                    Secure = false,
-                    SameSite = SameSiteMode.Lax,
-                    Expires = DateTime.UtcNow.AddDays(-1),
-                }
-            );
+            ExpireAuthCookie("accessToken", isSecure);
+            ExpireAuthCookie("refreshToken", isSecure);
 
             if (string.IsNullOrEmpty(refreshToken))
             {
@@ -221,6 +198,53 @@ namespace FoodHub.Presentation.Controllers
             }
 
             return NoContent();
+        }
+
+        private void ExpireAuthCookie(string name, bool isSecure)
+        {
+            var variants = new[]
+            {
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = isSecure,
+                    SameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddDays(-1),
+                    MaxAge = TimeSpan.Zero,
+                },
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddDays(-1),
+                    MaxAge = TimeSpan.Zero,
+                },
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Strict,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddDays(-1),
+                    MaxAge = TimeSpan.Zero,
+                },
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddDays(-1),
+                    MaxAge = TimeSpan.Zero,
+                },
+            };
+
+            foreach (var options in variants)
+            {
+                Response.Cookies.Delete(name, options);
+                Response.Cookies.Append(name, string.Empty, options);
+            }
         }
 
         /// <summary>

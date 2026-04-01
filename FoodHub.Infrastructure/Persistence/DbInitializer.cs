@@ -23,11 +23,13 @@ namespace FoodHub.Infrastructure.Persistence
 
         public void Initialize()
         {
-            // Seed Data
+            // Apply pending migrations first.
             if (_context.Database.GetPendingMigrations().Any())
             {
                 _context.Database.Migrate();
             }
+
+            RepairKnownSchemaDrift();
 
             // Seed Data
             if (!_context.Employees.Any())
@@ -1238,6 +1240,16 @@ namespace FoodHub.Infrastructure.Persistence
             }
 
             _context.SaveChanges();
+        }
+
+        private void RepairKnownSchemaDrift()
+        {
+            _context.Database.ExecuteSqlRaw(
+                """
+                ALTER TABLE order_items
+                ADD COLUMN IF NOT EXISTS combo_parent_order_item_id uuid NULL;
+                """
+            );
         }
 
 
