@@ -82,6 +82,7 @@ namespace FoodHub.Infrastructure
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ITokenService, JwtTokenService>();
+            services.AddScoped<IAccessTokenBlacklistService, AccessTokenBlacklistService>();
             services.AddSingleton<KdsPriorityCalculator>();
             services.AddScoped<DbInitializer>();
 

@@ -32,13 +32,15 @@ namespace FoodHub.Presentation.Controllers
         private readonly IMessageService _messageService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthController> _logger;
+        private readonly IAccessTokenBlacklistService _accessTokenBlacklistService;
 
         public AuthController(
             IMediator mediator,
             IWebHostEnvironment env,
             IMessageService messageService,
             IConfiguration configuration,
-            ILogger<AuthController> logger
+            ILogger<AuthController> logger,
+            IAccessTokenBlacklistService accessTokenBlacklistService
         )
             : base(messageService)
         {
@@ -47,6 +49,7 @@ namespace FoodHub.Presentation.Controllers
             _messageService = messageService;
             _configuration = configuration;
             _logger = logger;
+            _accessTokenBlacklistService = accessTokenBlacklistService;
         }
 
         /// <summary>
@@ -174,10 +177,29 @@ namespace FoodHub.Presentation.Controllers
         )
         {
             var refreshToken = command?.RefreshToken ?? Request.Cookies["refreshToken"];
+            var accessToken = Request.Cookies["accessToken"];
 
             var isDev = _env.IsDevelopment();
             var enableHttps = _configuration.GetValue<bool>("EnableHttpsRedirection", true);
             var isSecure = !isDev && enableHttps;
+
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                try
+                {
+                    await _accessTokenBlacklistService.BlacklistAsync(
+                        accessToken,
+                        HttpContext.Connection.RemoteIpAddress?.ToString(),
+                        User.Identity?.Name,
+                        refreshToken,
+                        HttpContext.RequestAborted
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to blacklist access token during logout");
+                }
+            }
 
             ExpireAuthCookie("accessToken", isSecure);
             ExpireAuthCookie("refreshToken", isSecure);
