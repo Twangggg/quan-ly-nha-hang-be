@@ -2422,6 +2422,71 @@ namespace FoodHub.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
+                    
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsDefault")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_default");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("PayOsApiKey")
+                        .HasColumnType("text")
+                        .HasColumnName("pay_os_api_key");
+
+                    b.Property<string>("PayOsChecksumKey")
+                        .HasColumnType("text")
+                        .HasColumnName("pay_os_checksum_key");
+
+                    b.Property<string>("PayOsClientId")
+                        .HasColumnType("text")
+                        .HasColumnName("pay_os_client_id");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("PaymentMethodConfigId")
+                        .HasName("pk_payment_method_configs");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("ix_payment_method_configs_is_active");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_payment_method_configs_name");
+
+                    b.HasIndex("Type")
+                        .HasDatabaseName("ix_payment_method_configs_type");
+
+                    b.ToTable("payment_method_configs", (string)null);
                 });
 
             modelBuilder.Entity("FoodHub.Domain.Entities.Promotion", b =>
@@ -2460,35 +2525,12 @@ namespace FoodHub.Migrations
                     b.Property<int?>("FreeQuantity")
                         .HasColumnType("integer")
                         .HasColumnName("free_quantity");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true)
                         .HasColumnName("is_active");
-
-                    b.Property<bool>("IsDefault")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_default");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("PayOsApiKey")
-                        .HasColumnType("text")
-                        .HasColumnName("pay_os_api_key");
-
-                    b.Property<string>("PayOsChecksumKey")
-                        .HasColumnType("text")
-                        .HasColumnName("pay_os_checksum_key");
-
-                    b.Property<string>("PayOsClientId")
-                        .HasColumnType("text")
-                        .HasColumnName("pay_os_client_id");
 
                     b.Property<Guid?>("ItemId")
                         .HasColumnType("uuid")
@@ -2523,21 +2565,6 @@ namespace FoodHub.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("updated_by");
-
-                    b.HasKey("PaymentMethodConfigId")
-                        .HasName("pk_payment_method_configs");
-
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("ix_payment_method_configs_is_active");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("ix_payment_method_configs_name");
-
-                    b.HasIndex("Type")
-                        .HasDatabaseName("ix_payment_method_configs_type");
-
-                    b.ToTable("payment_method_configs", (string)null);
 
                     b.Property<int?>("UsageLimit")
                         .HasColumnType("integer")
