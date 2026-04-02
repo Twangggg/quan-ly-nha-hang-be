@@ -109,10 +109,8 @@ namespace FoodHub.Application.Features.Billing.Commands.SyncPaymentStatus
                     return Result<bool>.Success(true);
                 }
 
-                var domainResult = reloadOrder.Checkout(
-                    PaymentMethod.QRCode,
-                    reloadOrder.TotalAmount
-                );
+                reloadOrder.PaymentMethod = PaymentMethod.QRCode;
+                var domainResult = reloadOrder.Checkout(reloadOrder.TotalAmount);
                 if (!domainResult.IsSuccess)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
