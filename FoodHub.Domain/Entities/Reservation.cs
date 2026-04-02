@@ -105,6 +105,13 @@ namespace FoodHub.Domain.Entities
             UpdatedBy = updatedBy;
         }
 
+        public void Complete(DateTime completedAt, Guid? completedBy)
+        {
+            Status = ReservationStatus.Completed;
+            UpdatedAt = completedAt;
+            UpdatedBy = completedBy;
+        }
+
         public bool CanFitTable(Table table)
         {
             ArgumentNullException.ThrowIfNull(table);

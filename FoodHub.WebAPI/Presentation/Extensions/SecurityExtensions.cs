@@ -28,7 +28,7 @@ public static class SecurityExtensions
                 "AllowReact",
                 policy =>
                     policy
-                        .WithOrigins(corsOrigins)
+                        .SetIsOriginAllowed(origin => true) // Cho phép Chrome Extension và mọi Origin trong lúc làm Development
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials()

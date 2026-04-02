@@ -596,7 +596,6 @@ namespace FoodHub.Infrastructure.Persistence
                 var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
                 var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
                 var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
-
                 if (
                     admin == null
                     || chickenRice == null
@@ -608,125 +607,128 @@ namespace FoodHub.Infrastructure.Persistence
                     return;
                 }
 
-                // Table IDs that match FE expectation (ending with 01, 02)
-                var table01Id = Guid.Parse("00000000-0000-0000-0000-000000000001");
-                var table02Id = Guid.Parse("00000000-0000-0000-0000-000000000002");
-
-                var order1 = new Order
+                if (admin != null && chickenRice != null && beefNoodle != null && specialDrink != null)
                 {
-                    OrderId = Guid.NewGuid(),
-                    OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0001",
-                    OrderType = OrderType.DineIn,
-                    Status = OrderStatus.Serving,
-                    TableId = table02Id,
-                    TotalAmount = chickenRice.Price + specialDrink.Price,
-                    CreatedByEmployee = admin,
-                    CreatedAt = DateTime.UtcNow.AddHours(-1),
-                };
+                    // Table IDs that match FE expectation (ending with 01, 02)
+                    var table01Id = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                    var table02Id = Guid.Parse("00000000-0000-0000-0000-000000000002");
 
-                order1.OrderItems.Add(
-                    new OrderItem
+                    var order1 = new Order
                     {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order1.OrderId,
-                        MenuItemId = chickenRice.MenuItemId,
-                        ItemCodeSnapshot = chickenRice.Code,
-                        ItemNameSnapshot = chickenRice.Name,
-                        StationSnapshot = chickenRice.Station.ToString(),
-                        Status = OrderItemStatus.Completed,
-                        Quantity = 1,
-                        UnitPriceSnapshot = chickenRice.Price,
-                        CreatedAt = order1.CreatedAt,
-                    }
-                );
+                        OrderId = Guid.NewGuid(),
+                        OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0001",
+                        OrderType = OrderType.DineIn,
+                        Status = OrderStatus.Serving,
+                        TableId = table02Id,
+                        TotalAmount = chickenRice.Price + specialDrink.Price,
+                        CreatedByEmployee = admin,
+                        CreatedAt = DateTime.UtcNow.AddHours(-1),
+                    };
 
-                order1.OrderItems.Add(
-                    new OrderItem
+                    order1.OrderItems.Add(
+                        new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order1.OrderId,
+                            MenuItemId = chickenRice.MenuItemId,
+                            ItemCodeSnapshot = chickenRice.Code,
+                            ItemNameSnapshot = chickenRice.Name,
+                            StationSnapshot = chickenRice.Station.ToString(),
+                            Status = OrderItemStatus.Completed,
+                            Quantity = 1,
+                            UnitPriceSnapshot = chickenRice.Price,
+                            CreatedAt = order1.CreatedAt,
+                        }
+                    );
+
+                    order1.OrderItems.Add(
+                        new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order1.OrderId,
+                            MenuItemId = specialDrink.MenuItemId,
+                            ItemCodeSnapshot = specialDrink.Code,
+                            ItemNameSnapshot = specialDrink.Name,
+                            StationSnapshot = specialDrink.Station.ToString(),
+                            Status = OrderItemStatus.Completed,
+                            Quantity = 1,
+                            UnitPriceSnapshot = specialDrink.Price,
+                            CreatedAt = order1.CreatedAt,
+                        }
+                    );
+
+                    var order2 = new Order
                     {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order1.OrderId,
-                        MenuItemId = specialDrink.MenuItemId,
-                        ItemCodeSnapshot = specialDrink.Code,
-                        ItemNameSnapshot = specialDrink.Name,
-                        StationSnapshot = specialDrink.Station.ToString(),
-                        Status = OrderItemStatus.Completed,
-                        Quantity = 1,
-                        UnitPriceSnapshot = specialDrink.Price,
-                        CreatedAt = order1.CreatedAt,
-                    }
-                );
+                        OrderId = Guid.NewGuid(),
+                        OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0002",
+                        OrderType = OrderType.DineIn,
+                        Status = OrderStatus.Serving,
+                        TableId = table01Id,
+                        TotalAmount = beefNoodle.Price,
+                        CreatedByEmployee = admin,
+                        CreatedAt = DateTime.UtcNow.AddMinutes(-30),
+                    };
 
-                var order2 = new Order
-                {
-                    OrderId = Guid.NewGuid(),
-                    OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0002",
-                    OrderType = OrderType.DineIn,
-                    Status = OrderStatus.Serving,
-                    TableId = table01Id,
-                    TotalAmount = beefNoodle.Price,
-                    CreatedByEmployee = admin,
-                    CreatedAt = DateTime.UtcNow.AddMinutes(-30),
-                };
+                    order2.OrderItems.Add(
+                        new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order2.OrderId,
+                            MenuItemId = beefNoodle.MenuItemId,
+                            ItemCodeSnapshot = beefNoodle.Code,
+                            ItemNameSnapshot = beefNoodle.Name,
+                            StationSnapshot = beefNoodle.Station.ToString(),
+                            Status = OrderItemStatus.Preparing,
+                            Quantity = 1,
+                            UnitPriceSnapshot = beefNoodle.Price,
+                            CreatedAt = order2.CreatedAt,
+                        }
+                    );
 
-                order2.OrderItems.Add(
-                    new OrderItem
+                    var order3 = new Order
                     {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order2.OrderId,
-                        MenuItemId = beefNoodle.MenuItemId,
-                        ItemCodeSnapshot = beefNoodle.Code,
-                        ItemNameSnapshot = beefNoodle.Name,
-                        StationSnapshot = beefNoodle.Station.ToString(),
-                        Status = OrderItemStatus.Preparing,
-                        Quantity = 1,
-                        UnitPriceSnapshot = beefNoodle.Price,
-                        CreatedAt = order2.CreatedAt,
-                    }
-                );
+                        OrderId = Guid.NewGuid(),
+                        OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0003",
+                        OrderType = OrderType.Takeaway,
+                        Status = OrderStatus.Serving,
+                        TotalAmount = specialDrink.Price,
+                        CreatedByEmployee = admin,
+                        CreatedAt = DateTime.UtcNow.AddMinutes(-10),
+                    };
 
-                var order3 = new Order
-                {
-                    OrderId = Guid.NewGuid(),
-                    OrderCode = $"ORD-{DateTime.Now:yyyyMMdd}-0003",
-                    OrderType = OrderType.Takeaway,
-                    Status = OrderStatus.Serving,
-                    TotalAmount = specialDrink.Price,
-                    CreatedByEmployee = admin,
-                    CreatedAt = DateTime.UtcNow.AddMinutes(-10),
-                };
+                    order3.OrderItems.Add(
+                        new OrderItem
+                        {
+                            OrderItemId = Guid.NewGuid(),
+                            OrderId = order3.OrderId,
+                            MenuItemId = specialDrink.MenuItemId,
+                            ItemCodeSnapshot = specialDrink.Code,
+                            ItemNameSnapshot = specialDrink.Name,
+                            StationSnapshot = specialDrink.Station.ToString(),
+                            Status = OrderItemStatus.Completed,
+                            Quantity = 1,
+                            UnitPriceSnapshot = specialDrink.Price,
+                            CreatedAt = order3.CreatedAt,
+                        }
+                    );
 
-                order3.OrderItems.Add(
-                    new OrderItem
-                    {
-                        OrderItemId = Guid.NewGuid(),
-                        OrderId = order3.OrderId,
-                        MenuItemId = specialDrink.MenuItemId,
-                        ItemCodeSnapshot = specialDrink.Code,
-                        ItemNameSnapshot = specialDrink.Name,
-                        StationSnapshot = specialDrink.Station.ToString(),
-                        Status = OrderItemStatus.Completed,
-                        Quantity = 1,
-                        UnitPriceSnapshot = specialDrink.Price,
-                        CreatedAt = order3.CreatedAt,
-                    }
-                );
+                    _context.Orders.AddRange(order1, order2, order3);
 
-                _context.Orders.AddRange(order1, order2, order3);
+                    // Update Table statuses for seeded orders
+                    var table1 =
+                        _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id)
+                        ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
+                    var table2 =
+                        _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id)
+                        ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
 
-                // Update Table statuses for seeded orders
-                var table1 =
-                    _context.Tables.Local.FirstOrDefault(t => t.TableId == table01Id)
-                    ?? _context.Tables.FirstOrDefault(t => t.TableId == table01Id);
-                var table2 =
-                    _context.Tables.Local.FirstOrDefault(t => t.TableId == table02Id)
-                    ?? _context.Tables.FirstOrDefault(t => t.TableId == table02Id);
+                    if (table1 != null)
+                        table1.Status = TableStatus.Occupied;
+                    if (table2 != null)
+                        table2.Status = TableStatus.Occupied;
 
-                if (table1 != null)
-                    table1.Status = TableStatus.Occupied;
-                if (table2 != null)
-                    table2.Status = TableStatus.Occupied;
-
-                _context.SaveChanges();
+                    _context.SaveChanges();
+                }
             }
 
             SyncOccupiedTablesFromActiveOrders();

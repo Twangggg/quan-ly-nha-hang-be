@@ -28,7 +28,9 @@ namespace FoodHub.Application.Features.Billing.Queries.GetBillingHistory
                 .ForMember(d => d.Status,
                     opt => opt.MapFrom(s => s.Status.ToString()))
                 .ForMember(d => d.PaymentMethod,
-                    opt => opt.MapFrom(s => s.PaymentMethod != null ? s.PaymentMethod.ToString() : null));
+                    opt => opt.MapFrom(s => s.OrderPayments.Any() 
+                        ? string.Join(", ", s.OrderPayments.Select(p => p.PaymentMethodConfig.Name)) 
+                        : (s.PaymentMethod != null ? s.PaymentMethod.ToString() : null)));
         }
     }
 }
