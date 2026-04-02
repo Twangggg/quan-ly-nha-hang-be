@@ -124,8 +124,10 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
 
                 foreach (var freeItem in existingFreeItems)
                 {
+                    // Cascade is configured: removing from the collection automatically
+                    // marks the entity as Deleted. Do NOT call orderItemRepo.Delete()
+                    // again — that would cause an EF tracking conflict.
                     order.OrderItems.Remove(freeItem);
-                    orderItemRepo.Delete(freeItem);
                 }
 
                 // If existing promotion, decrement its usage (if it's a different one)
@@ -176,8 +178,11 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     );
                 }
 
-                orderRepo.Update(order);
-                promotionRepo.Update(promotion);
+                // All entities (order, promotion, old promotion) were loaded via
+                // tracked queries on the same DbContext, so their in-memory mutations
+                // are already detected by EF's change tracker.
+                // Calling _dbSet.Update() here would walk the entire entity graph and
+                // produce tracking-state conflicts — so we intentionally omit it.
 
                 // Add audit log
                 var auditLog = new OrderAuditLog
@@ -186,8 +191,10 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     OrderId = order.OrderId,
                     EmployeeId = userId,
                     Action = "ApplyPromotion",
-                    NewValue =
-                        $"{{\"PromotionCode\": \"{promotion.Code}\", \"DiscountAmount\": {order.DiscountAmount}}}",
+                    NewValue = System.Text.Json.JsonSerializer.Serialize(new { 
+                        PromotionCode = promotion.Code, 
+                        DiscountAmount = order.DiscountAmount 
+                    }),
                     CreatedAt = DateTime.UtcNow,
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
@@ -223,12 +230,13 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(
                     ex,
-                    "Error applying promotion {Code} to order {OrderId}",
+                    "Error applying promotion {Code} to order {OrderId}. Inner: {Inner}",
                     request.Code,
-                    request.OrderId
+                    request.OrderId,
+                    ex.InnerException?.Message
                 );
                 return Result<ApplyPromotionResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError),
+                    $"Error: {ex.Message} | Inner: {ex.InnerException?.Message}",
                     ResultErrorType.Conflict
                 );
             }

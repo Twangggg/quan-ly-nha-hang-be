@@ -23,6 +23,9 @@ public static class WebExtensions
         "/api/v1/auth/logout",
         "/api/v1/auth/request-password-reset",
         "/api/v1/auth/reset-password",
+        "/hubs/kds/negotiate",
+        "/hubs/billing/negotiate",
+        "/hubs/table-status/negotiate",
     };
 
     /// <summary>
