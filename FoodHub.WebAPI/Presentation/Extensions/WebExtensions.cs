@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace FoodHub.WebAPI.Presentation.Extensions;
 
@@ -16,6 +18,7 @@ public static class WebExtensions
     private static readonly HashSet<string> CsrfExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
         "/api/v1/auth/login",
+        "/api/v1/auth/refresh-token",
         "/api/v1/auth/csrf-token",
         "/api/v1/auth/logout",
         "/api/v1/auth/request-password-reset",
@@ -198,15 +201,37 @@ public static class WebExtensions
                             var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
                             await antiforgery.ValidateRequestAsync(context);
                         }
-                        catch (AntiforgeryValidationException)
+                        catch (AntiforgeryValidationException ex)
                         {
+                            var logger = context.RequestServices
+                                .GetRequiredService<ILoggerFactory>()
+                                .CreateLogger("FoodHub.Antiforgery");
+                            var env = context.RequestServices.GetRequiredService<IHostEnvironment>();
+                            var csrfHeader = context.Request.Headers["X-XSRF-TOKEN"].ToString();
+                            var csrfCookie = context.Request.Cookies["XSRF-TOKEN"];
+
+                            logger.LogWarning(
+                                ex,
+                                "CSRF validation failed for {Method} {Path}. HasAccessToken={HasAccessToken}, HasRefreshToken={HasRefreshToken}, HasCsrfHeader={HasCsrfHeader}, HasCsrfCookie={HasCsrfCookie}, Error={Error}",
+                                context.Request.Method,
+                                path,
+                                context.Request.Cookies.ContainsKey("accessToken"),
+                                context.Request.Cookies.ContainsKey("refreshToken"),
+                                !string.IsNullOrWhiteSpace(csrfHeader),
+                                !string.IsNullOrWhiteSpace(csrfCookie),
+                                ex.Message
+                            );
+
                             context.Response.StatusCode = StatusCodes.Status400BadRequest;
                             context.Response.ContentType = "application/json";
-                            await context.Response.WriteAsync(
+                            var payload = env.IsDevelopment()
+                                ? $$"""
+                                {"statusCode":400,"message":"Invalid or missing CSRF token.","detail":"{{System.Text.Json.JsonEncodedText.Encode(ex.Message)}}"}
                                 """
+                                : """
                                 {"statusCode":400,"message":"Invalid or missing CSRF token."}
-                                """
-                            );
+                                """;
+                            await context.Response.WriteAsync(payload);
                             return;
                         }
                     }

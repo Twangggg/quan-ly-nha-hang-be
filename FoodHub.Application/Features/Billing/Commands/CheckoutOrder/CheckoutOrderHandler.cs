@@ -61,6 +61,8 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 .Repository<Order>()
                 .Query()
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.OptionGroups)
+                        .ThenInclude(og => og.OptionValues)
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
 
             if (order == null)
@@ -75,9 +77,18 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 );
             }
 
+            // Recalculate from persisted line items so checkout does not depend on a stale TotalAmount.
+            order.RecalculateTotalAmount();
+
             // Tính số tiền còn lại cần thanh toán
             var remainingAmount = order.GetRemainingAmount();
-            var totalPayment = request.PaymentLines.Sum(l => l.Amount);
+            var paymentLines = await ResolvePaymentLinesAsync(
+                request,
+                order,
+                remainingAmount,
+                cancellationToken
+            );
+            var totalPayment = paymentLines.Sum(l => l.Amount);
 
             if (totalPayment <= 0)
             {
@@ -99,7 +110,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             }
 
             // Validate all payment method configs exist and are active
-            var paymentMethodIds = request.PaymentLines.Select(l => l.PaymentMethodConfigId).Distinct().ToList();
+            var paymentMethodIds = paymentLines.Select(l => l.PaymentMethodConfigId).Distinct().ToList();
             var paymentMethods = await _unitOfWork.Repository<PaymentMethodConfig>()
                 .Query()
                 .Where(pm => paymentMethodIds.Contains(pm.PaymentMethodConfigId))
@@ -125,7 +136,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             }
 
             // Validate cash amount received
-            foreach (var line in request.PaymentLines)
+            foreach (var line in paymentLines)
             {
                 var method = paymentMethods.First(pm => pm.PaymentMethodConfigId == line.PaymentMethodConfigId);
                 if (method.Type == PaymentMethodType.Cash && (line.AmountReceived ?? 0) < line.Amount)
@@ -186,7 +197,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             try
             {
                 // Create OrderPayment records for each payment line
-                foreach (var line in request.PaymentLines)
+                foreach (var line in paymentLines)
                 {
                     var orderPayment = new OrderPayment
                     {
@@ -202,7 +213,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
 
                 // Audit Log
                 var paymentSummary = string.Join(", ",
-                    request.PaymentLines.Select(l =>
+                    paymentLines.Select(l =>
                     {
                         var m = paymentMethods.First(pm => pm.PaymentMethodConfigId == l.PaymentMethodConfigId);
                         return $"{m.Name}: {l.Amount}";
@@ -305,6 +316,59 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             );
 
             return Result<Guid>.Success(order.OrderId);
+        }
+
+        private async Task<List<PaymentLineDto>> ResolvePaymentLinesAsync(
+            CheckoutOrderCommand request,
+            Order order,
+            decimal remainingAmount,
+            CancellationToken cancellationToken
+        )
+        {
+            if (request.PaymentLines.Count > 0)
+            {
+                return request.PaymentLines;
+            }
+
+            if (!request.LegacyPaymentMethod.HasValue)
+            {
+                return [];
+            }
+
+            var paymentType = request.LegacyPaymentMethod.Value switch
+            {
+                PaymentMethod.Cash => PaymentMethodType.Cash,
+                PaymentMethod.BankTransfer => PaymentMethodType.BankTransfer,
+                PaymentMethod.CreditCard => PaymentMethodType.Other,
+                _ => PaymentMethodType.Other,
+            };
+
+            var paymentMethodConfig = await _unitOfWork
+                .Repository<PaymentMethodConfig>()
+                .Query()
+                .Where(pm => pm.IsActive && pm.Type == paymentType)
+                .OrderByDescending(pm => pm.IsDefault)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (paymentMethodConfig == null)
+            {
+                _logger.LogWarning(
+                    "No active PaymentMethodConfig found for legacy payment method {PaymentMethod} on OrderId {OrderId}",
+                    request.LegacyPaymentMethod,
+                    order.OrderId
+                );
+                return [];
+            }
+
+            return
+            [
+                new PaymentLineDto
+                {
+                    PaymentMethodConfigId = paymentMethodConfig.PaymentMethodConfigId,
+                    Amount = remainingAmount,
+                    AmountReceived = request.LegacyAmountReceived,
+                },
+            ];
         }
     }
 }

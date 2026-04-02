@@ -590,6 +590,33 @@ namespace FoodHub.Infrastructure.Persistence
             }
             _context.SaveChanges();
 
+            // Seed default PaymentMethodConfigs - required for checkout to work
+            if (!_context.PaymentMethodConfigs.Any())
+            {
+                var cashConfig = new PaymentMethodConfig
+                {
+                    PaymentMethodConfigId = Guid.Parse("10000000-0000-0000-0000-000000000001"),
+                    Name = "Tiền mặt",
+                    Type = PaymentMethodType.Cash,
+                    IsActive = true,
+                    IsDefault = true,
+                    CreatedAt = DateTime.UtcNow,
+                };
+
+                var bankConfig = new PaymentMethodConfig
+                {
+                    PaymentMethodConfigId = Guid.Parse("10000000-0000-0000-0000-000000000002"),
+                    Name = "Chuyển khoản",
+                    Type = PaymentMethodType.BankTransfer,
+                    IsActive = true,
+                    IsDefault = false,
+                    CreatedAt = DateTime.UtcNow,
+                };
+
+                _context.PaymentMethodConfigs.AddRange(cashConfig, bankConfig);
+                _context.SaveChanges();
+            }
+
             if (!_context.Orders.Any())
             {
                 var admin = _context.Employees.FirstOrDefault(e => e.EmployeeCode == "M001001");

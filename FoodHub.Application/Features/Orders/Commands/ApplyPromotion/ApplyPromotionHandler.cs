@@ -163,8 +163,9 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                         CreatedAt = DateTime.UtcNow,
                     };
 
+                    // Adding to the tracked collection is enough — EF will automatically
+                    // mark the new entity as Added without a separate AddAsync call.
                     order.OrderItems.Add(freeOrderItem);
-                    await orderItemRepo.AddAsync(freeOrderItem);
 
                     _logger.LogInformation(
                         "Added free item {ItemName} x{Qty} to order {OrderCode} via FreeItem promotion {Code}",

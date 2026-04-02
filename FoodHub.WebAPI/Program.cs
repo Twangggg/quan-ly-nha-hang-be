@@ -43,7 +43,6 @@ try
 
     // --- Bước 4: Cấu hình Middleware Pipeline (Luồng xử lý Request) ---
     app.UseCors("AllowReact");
-    app.UseWebPresentation(); // Rate Limiting, Localization, Compression...
     app.UseMiddleware<ExceptionMiddleware>(); // Xử lý lỗi tập trung
     app.UseSerilogRequestLogging(); // Ghi log lỗi/Request tự động
 
@@ -106,6 +105,7 @@ try
     }
 
     app.UseAuthentication(); // Xác thực người dùng
+    app.UseWebPresentation(); // Rate Limiting, Localization, Compression...
     app.UseAuthorization(); // Phân quyền người dùng
 
     app.MapControllers(); // Map các API Controller
