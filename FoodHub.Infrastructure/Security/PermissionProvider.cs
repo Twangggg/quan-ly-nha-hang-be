@@ -61,6 +61,7 @@ namespace FoodHub.Infrastructure.Security
                 Permissions.Billing.Checkout,
                 Permissions.Billing.ViewHistory,
                 Permissions.Billing.PreCheckBill,
+                Permissions.PaymentMethods.View,
                 Permissions.Billing.SplitBill,
                 Permissions.Reservations.View,
                 Permissions.Reservations.Create,

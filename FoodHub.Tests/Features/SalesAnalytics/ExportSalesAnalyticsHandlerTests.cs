@@ -174,5 +174,57 @@ namespace FoodHub.Tests.Features.SalesAnalytics
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage("Excel Service Error");
         }
+
+        [Fact]
+        public async Task Handle_WithQuarterRange_ShouldUseQuarterTitle()
+        {
+            // Arrange
+            SetupOrderRepo(new List<FoodHub.Domain.Entities.Order>());
+            _mockMediator
+                .Setup(m => m.Send(It.IsAny<GetBestSellersQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Result<GetBestSellersResponse>.Success(new GetBestSellersResponse()));
+            _mockMediator
+                .Setup(m =>
+                    m.Send(It.IsAny<GetCategoryReportQuery>(), It.IsAny<CancellationToken>())
+                )
+                .ReturnsAsync(
+                    Result<GetCategoryReportResponse>.Success(new GetCategoryReportResponse())
+                );
+
+            byte[] expectedBytes = { 9, 9, 9 };
+            _mockExcelService
+                .Setup(s =>
+                    s.ExportAnalyticsToExcel(
+                        "Báo cáo doanh thu quý 2/2026",
+                        It.IsAny<FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport.GetDailyReportResponse>(),
+                        It.IsAny<List<BestSellerDto>>(),
+                        It.IsAny<List<CategoryReportDto>>()
+                    )
+                )
+                .Returns(expectedBytes);
+
+            var query = new ExportSalesAnalyticsQuery
+            {
+                StartDate = new DateOnly(2026, 4, 1),
+                EndDate = new DateOnly(2026, 6, 30),
+            };
+
+            // Act
+            var result = await _handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data.Should().BeEquivalentTo(expectedBytes);
+            _mockExcelService.Verify(
+                s =>
+                    s.ExportAnalyticsToExcel(
+                        "Báo cáo doanh thu quý 2/2026",
+                        It.IsAny<FoodHub.Application.Features.SalesAnalytics.Queries.GetDailyReport.GetDailyReportResponse>(),
+                        It.IsAny<List<BestSellerDto>>(),
+                        It.IsAny<List<CategoryReportDto>>()
+                    ),
+                Times.Once
+            );
+        }
     }
 }

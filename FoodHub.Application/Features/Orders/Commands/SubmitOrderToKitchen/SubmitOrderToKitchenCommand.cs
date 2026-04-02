@@ -20,6 +20,14 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
         public int Quantity { get; init; }
         public string? Note { get; init; }
         public List<OrderItemOptionGroupDto>? SelectedOptions { get; init; }
+        public List<OrderItemComboDto>? ComboItems { get; init; }
+    }
+    public record OrderItemComboDto
+    {
+        public Guid MenuItemId { get; init; }
+        public int Quantity { get; init; } = 1;
+        public string? Note { get; init; }
+        public List<OrderItemOptionGroupDto>? SelectedOptions { get; init; }
     }
     public record OrderItemOptionGroupDto
     {

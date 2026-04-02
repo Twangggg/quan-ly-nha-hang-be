@@ -42,6 +42,7 @@ try
     var app = builder.Build();
 
     // --- Bước 4: Cấu hình Middleware Pipeline (Luồng xử lý Request) ---
+    app.UseCors("AllowReact");
     app.UseWebPresentation(); // Rate Limiting, Localization, Compression...
     app.UseMiddleware<ExceptionMiddleware>(); // Xử lý lỗi tập trung
     app.UseSerilogRequestLogging(); // Ghi log lỗi/Request tự động
@@ -95,8 +96,6 @@ try
             }
         }
     }
-
-    app.UseCors("AllowReact");
 
     if (
         !app.Environment.IsDevelopment()

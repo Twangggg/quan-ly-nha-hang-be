@@ -34,6 +34,7 @@ namespace FoodHub.Infrastructure.Security
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, employee.EmployeeId.ToString()),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
                 new(ClaimTypes.NameIdentifier, employee.EmployeeId.ToString()),
                 new(ClaimTypes.Name, employee.FullName),
                 new(ClaimTypes.Email, employee.Email),

@@ -4,7 +4,7 @@ using FoodHub.Application.Features.Billing.Commands.ProcessPaymentWebhook;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Messaging;
-using FoodHub.Application.Interfaces.Security;
+using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Domain.Entities;
 using DomainOrder = FoodHub.Domain.Entities.Order;
 using FoodHub.Domain.Enums;
@@ -70,6 +70,22 @@ namespace FoodHub.Tests.Features.Billing.Commands
                 .Returns(new List<Table> { table }.AsQueryable().BuildMock());
             _mockUow.Setup(u => u.Repository<Table>()).Returns(repoTable.Object);
 
+            // Mock PaymentMethodConfig repo (needed for OrderPayment creation)
+            var bankConfig = new PaymentMethodConfig
+            {
+                PaymentMethodConfigId = Guid.NewGuid(),
+                Name = "Bank Transfer",
+                Type = PaymentMethodType.BankTransfer,
+                IsActive = true,
+            };
+            var repoPmc = new Mock<IGenericRepository<PaymentMethodConfig>>();
+            repoPmc.Setup(r => r.Query())
+                .Returns(new List<PaymentMethodConfig> { bankConfig }.AsQueryable().BuildMock());
+            _mockUow.Setup(u => u.Repository<PaymentMethodConfig>()).Returns(repoPmc.Object);
+
+            var repoOp = new Mock<IGenericRepository<OrderPayment>>();
+            _mockUow.Setup(u => u.Repository<OrderPayment>()).Returns(repoOp.Object);
+
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -81,6 +97,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
             _mockUow.Verify(u => u.BeginTransactionAsync(), Times.Once);
             _mockUow.Verify(u => u.CommitTransactionAsync(), Times.Once);
             _mockSignalR.Verify(s => s.NotifyOrderStatusChangedAsync(orderId, "Paid"), Times.Once);
+            repoOp.Verify(r => r.AddAsync(It.IsAny<OrderPayment>()), Times.Once);
         }
 
         [Fact]

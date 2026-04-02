@@ -64,7 +64,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 );
                 await _auditLogService.LogActivityAsync(AuditAction.LoginFailed, "Auth", null, null, new { code = request.EmployeeCode, reason = "RateLimited" });
                 return Result<LoginResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Auth.AccountBlocked)
+                    _messageService.GetMessage(MessageKeys.Auth.AccountBlocked),
+                    ResultErrorType.Unauthorized
                 );
             }
 
@@ -85,7 +86,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 );
                 await _auditLogService.LogActivityAsync(AuditAction.LoginFailed, "Auth", null, null, new { code = request.EmployeeCode, reason = "NotFound" });
                 return Result<LoginResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Auth.InvalidCredentials)
+                    _messageService.GetMessage(MessageKeys.Auth.InvalidCredentials),
+                    ResultErrorType.Unauthorized
                 );
             }
 
@@ -109,7 +111,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 await _auditLogService.LogActivityAsync(AuditAction.LoginFailed, "Auth", employee.EmployeeId.ToString(), null, new { code = request.EmployeeCode, reason = "InvalidPassword" });
 
                 return Result<LoginResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Auth.InvalidCredentials)
+                    _messageService.GetMessage(MessageKeys.Auth.InvalidCredentials),
+                    ResultErrorType.Unauthorized
                 );
             }
 
@@ -125,7 +128,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.Login
                 );
                 await _auditLogService.LogActivityAsync(AuditAction.LoginFailed, "Auth", employee.EmployeeId.ToString(), null, new { code = request.EmployeeCode, reason = "Inactive" });
                 return Result<LoginResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Auth.AccountInactive)
+                    _messageService.GetMessage(MessageKeys.Auth.AccountInactive),
+                    ResultErrorType.Unauthorized
                 );
             }
 

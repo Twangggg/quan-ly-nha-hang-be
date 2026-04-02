@@ -29,10 +29,14 @@ namespace FoodHub.Application.Features.Authentication.Commands.RefreshToken
 
         public async Task<Result<LoginResponse>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
         {
+            var hashedRefreshToken = Domain.Entities.RefreshToken.HashToken(request.RefreshToken);
             var storedToken = await _unitOfWork.Repository<Domain.Entities.RefreshToken>()
                 .Query()
-                .Include(x => x.Employee) // Load Employee explicitly
-                .FirstOrDefaultAsync(x => x.Token == request.RefreshToken, cancellationToken);
+                .Include(x => x.Employee)
+                .FirstOrDefaultAsync(
+                    x => x.Token == hashedRefreshToken || x.Token == request.RefreshToken,
+                    cancellationToken
+                );
 
             // Validation Checks
             if (storedToken == null)
@@ -50,10 +54,8 @@ namespace FoodHub.Application.Features.Authentication.Commands.RefreshToken
                 return Result<LoginResponse>.Failure(_messageService.GetMessage(MessageKeys.Auth.RefreshTokenRevoked));
             }
 
-            // Revoke current token (Token Rotation)
             storedToken.IsRevoked = true;
             storedToken.UpdatedAt = DateTime.UtcNow;
-
             _unitOfWork.Repository<Domain.Entities.RefreshToken>().Update(storedToken);
 
             // Generate new tokens
@@ -68,30 +70,28 @@ namespace FoodHub.Application.Features.Authentication.Commands.RefreshToken
             var newAccessToken = _tokenService.GenerateAccessToken(employee);
             var newRefreshToken = _tokenService.GenerateRefreshToken();
 
-            // Logic: Inherit "Remember Me" status from the old token
-            // Check if the old token had a duration significantly longer than the default (7 days)
             var defaultDays = _tokenService.GetRefreshTokenExpirationDays();
             var oldDurationDays = (storedToken.Expires - storedToken.CreatedAt).TotalDays;
-
-            // If old usage was > default + 1 (allow small margin), treat as RememberMe (30 days)
             var isLongLived = oldDurationDays > (defaultDays + 1);
             var newDurationDays = isLongLived ? 30 : defaultDays;
 
-            var newRefreshTokenEntity = new Domain.Entities.RefreshToken
-            {
-                Token = newRefreshToken,
-                Expires = DateTime.UtcNow.AddDays(newDurationDays),
-                EmployeeId = employee.EmployeeId
-            };
+            var newRefreshTokenEntity = Domain.Entities.RefreshToken.CreateWithDays(
+                employee.EmployeeId,
+                newRefreshToken,
+                newDurationDays
+            );
 
             await _unitOfWork.Repository<Domain.Entities.RefreshToken>().AddAsync(newRefreshTokenEntity);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             var response = new LoginResponse
             {
+                EmployeeId = employee.EmployeeId,
                 AccessToken = newAccessToken,
                 RefreshToken = newRefreshToken,
                 EmployeeCode = employee.EmployeeCode,
+                Username = employee.Username,
+                FullName = employee.FullName,
                 Email = employee.Email,
                 Role = employee.Role.ToString(),
                 RefreshTokenExpiresIn = (newRefreshTokenEntity.Expires - DateTime.UtcNow).TotalSeconds,

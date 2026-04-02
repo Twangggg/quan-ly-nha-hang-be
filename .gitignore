@@ -62,3 +62,18 @@ TestResults/
 *.coverage
 *.coveragexml
 *.cobertura.xml
+
+# Debug/build output text files
+*_errors*.txt
+*_logs*.txt
+*_log.txt
+full_logs.txt
+backend_logs.txt
+last_line.txt
+authors.txt
+*_commits.txt
+*_files.txt
+*_status*.txt
+
+# Gemini agent
+.gemini/

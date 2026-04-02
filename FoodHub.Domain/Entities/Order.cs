@@ -30,13 +30,12 @@ namespace FoodHub.Domain.Entities
         // Navigation properties
         public virtual Table? Table { get; set; }
         public virtual Reservation? Reservation { get; set; }
-
-        // Billing
         public PaymentMethod? PaymentMethod { get; set; }
         public decimal? AmountPaid { get; set; }
         public DateTime? PaidAt { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<OrderAuditLog> OrderAuditLogs { get; set; } = new List<OrderAuditLog>();
+        public ICollection<OrderPayment> OrderPayments { get; set; } = new List<OrderPayment>();
 
         // Promotion
         public decimal DiscountAmount { get; set; }
@@ -45,13 +44,35 @@ namespace FoodHub.Domain.Entities
 
         public bool IsActive() => Status == OrderStatus.Serving;
 
-        public DomainResult ProcessCheckout(PaymentMethod paymentMethod, decimal? amountPaid)
+        /// <summary>
+        /// Ghi nhận thanh toán một phần (tiền mặt). Cộng dồn vào AmountPaid nhưng KHÔNG đổi trạng thái.
+        /// Order vẫn ở trạng thái Serving để chờ thanh toán phần còn lại.
+        /// </summary>
+        public DomainResult AddCashPayment(decimal cashAmount)
         {
-            if (
-                Status == OrderStatus.Paid
-                || Status == OrderStatus.Completed
-                || Status == OrderStatus.Cancelled
-            )
+            if (Status != OrderStatus.Serving)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            if (cashAmount <= 0)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
+            }
+
+            AmountPaid = (AmountPaid ?? 0) + cashAmount;
+            UpdatedAt = DateTime.UtcNow;
+
+            return DomainResult.Success();
+        }
+
+        /// <summary>
+        /// Hoàn tất thanh toán. Gọi khi tổng AmountPaid >= TotalAmount.
+        /// Chuyển trạng thái sang Paid.
+        /// </summary>
+        public DomainResult CompletePayment()
+        {
+            if (Status == OrderStatus.Paid || Status == OrderStatus.Completed || Status == OrderStatus.Cancelled)
             {
                 return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
             }
@@ -61,25 +82,45 @@ namespace FoodHub.Domain.Entities
                 return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
             }
 
-            if (paymentMethod == FoodHub.Domain.Enums.PaymentMethod.Cash)
+            if ((AmountPaid ?? 0) < TotalAmount)
             {
-                if ((amountPaid ?? 0) < TotalAmount)
-                {
-                    return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
-                }
-                AmountPaid = amountPaid;
-            }
-            else
-            {
-                AmountPaid = TotalAmount;
+                return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
             }
 
             Status = OrderStatus.Paid;
-            PaymentMethod = paymentMethod;
             PaidAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
 
             return DomainResult.Success();
+        }
+
+        /// <summary>
+        /// Legacy: Thanh toán toàn bộ một lần (dùng cho webhook hoặc full checkout).
+        /// </summary>
+        public DomainResult ProcessCheckout(decimal totalAmountReceived)
+        {
+            if (Status != OrderStatus.Serving)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InvalidActionWithStatus);
+            }
+
+            AmountPaid = (AmountPaid ?? 0) + totalAmountReceived;
+
+            if ((AmountPaid ?? 0) < TotalAmount)
+            {
+                return DomainResult.Failure(DomainErrors.Order.InsufficientAmount);
+            }
+
+            Status = OrderStatus.Paid;
+            PaidAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
+
+            return DomainResult.Success();
+        }
+
+        public void ReleaseTable()
+        {
+            TableId = null;
         }
 
         public bool CanCancel() => Status == OrderStatus.Serving;
@@ -122,8 +163,17 @@ namespace FoodHub.Domain.Entities
             return DomainResult.Success();
         }
 
-        public DomainResult Checkout(Enums.PaymentMethod paymentMethod, decimal? amountReceived) =>
-            ProcessCheckout(paymentMethod, amountReceived);
+        /// <summary>
+        /// Helper: thanh toán toàn bộ một lần (backward-compatible).
+        /// </summary>
+        public DomainResult Checkout(decimal totalAmountReceived)
+            => ProcessCheckout(totalAmountReceived);
+
+        /// <summary>
+        /// Lấy số tiền còn lại cần thanh toán.
+        /// </summary>
+        public decimal GetRemainingAmount()
+            => Math.Max(TotalAmount - (AmountPaid ?? 0), 0);
 
         public bool CanComplete() =>
             Status == OrderStatus.Serving && OrderItems.All(oi => oi.IsFinished());

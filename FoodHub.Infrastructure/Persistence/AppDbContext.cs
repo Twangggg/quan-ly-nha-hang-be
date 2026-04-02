@@ -179,6 +179,8 @@ namespace FoodHub.Infrastructure.Persistence
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
 
         // Billing
+        public DbSet<PaymentMethodConfig> PaymentMethodConfigs { get; set; } = null!;
+        public DbSet<OrderPayment> OrderPayments { get; set; } = null!;
         public DbSet<Reservation> Reservations { get; set; } = null!;
         public DbSet<ReservationSettings> ReservationSettings { get; set; } = null!;
         public DbSet<KdsSettings> KdsSettings { get; set; } = null!;
