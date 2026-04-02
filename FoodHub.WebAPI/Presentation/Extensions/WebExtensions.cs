@@ -171,6 +171,21 @@ public static class WebExtensions
             .AddSupportedUICultures(supportedCultures);
         app.UseRequestLocalization(localizationOptions);
 
+        app.Use(
+            async (context, next) =>
+            {
+                context.Response.OnStarting(
+                    () =>
+                    {
+                        context.Response.Headers.Remove("X-Powered-By");
+                        return Task.CompletedTask;
+                    }
+                );
+
+                await next();
+            }
+        );
+
         app.UseForwardedHeaders(); // Xử lý proxy header
         app.UseResponseCompression(); // Nén dữ liệu trả về
 
