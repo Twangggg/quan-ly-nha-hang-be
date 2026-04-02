@@ -60,6 +60,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             var order = await _unitOfWork
                 .Repository<Order>()
                 .Query()
+                .Include(o => o.Promotion)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.OptionGroups)
                         .ThenInclude(og => og.OptionValues)

@@ -204,6 +204,10 @@ namespace FoodHub.Domain.Entities
             SubTotal = OrderItems.Sum(item => item.GetTotalPrice());
 
             DiscountAmount = CalculateDiscount();
+
+            // Diagnostic logging for real-time monitoring
+            System.Console.WriteLine($"[POS_DEBUG] Order: {OrderCode}, Items: {OrderItems.Count(i => !i.IsFreeItem)}, SubTotal: {SubTotal}, Discount: {DiscountAmount}");
+
             var tempAmount = Math.Max(SubTotal - DiscountAmount, 0);
             VatAmount = tempAmount * VatRate;
             TotalAmount = tempAmount + VatAmount;
@@ -596,16 +600,19 @@ namespace FoodHub.Domain.Entities
             }
 
             // Using UTCNow to match Promotion's UTC comparison
+            // Passing checkUsageLimit: false because the promotion is already associated with this order
             var validation = Promotion.Validate(
                 GetPromotionValidationSubTotal(),
-                DateTimeOffset.UtcNow
+                DateTimeOffset.UtcNow,
+                checkUsageLimit: false
             );
+
             if (!validation.IsSuccess)
             {
                 return 0;
             }
 
-            return Promotion.Type switch
+            decimal calculated = Promotion.Type switch
             {
                 PromotionType.Percent => Math.Min(
                     SubTotal * Promotion.Value / 100,
@@ -615,6 +622,9 @@ namespace FoodHub.Domain.Entities
                 PromotionType.FreeItem => 0, // Logic handled at item level if needed
                 _ => 0,
             };
+
+            System.Console.WriteLine($"[POS_DEBUG] CalculateDiscount: {Promotion.Code}, Type: {Promotion.Type}, Value: {Promotion.Value}, SubTotal: {SubTotal}, Calculated: {calculated}");
+            return calculated;
         }
         // Kết thúc vùng logic của voucher
     }

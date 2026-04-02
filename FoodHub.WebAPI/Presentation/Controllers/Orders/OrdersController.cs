@@ -161,7 +161,7 @@ namespace FoodHub.Presentation.Controllers
         [HttpPatch("{id:guid}/items")]
         [HasPermission(Permissions.Orders.Update)]
         [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<UpdateOrderItemResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateOrderItem(
             Guid id,
             [FromBody] UpdateOrderItemCommand command
@@ -239,7 +239,7 @@ namespace FoodHub.Presentation.Controllers
         /// </summary>
         [HttpPatch("{id:guid}/items/{itemId:guid}/cancel")]
         [HasPermission(Permissions.Orders.Cancel)]
-        [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<CancelOrderItemResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CancelOrderItem(
             Guid id,
             Guid itemId,
@@ -271,7 +271,7 @@ namespace FoodHub.Presentation.Controllers
         [HttpPost("{id:guid}/items")]
         [HasPermission(Permissions.Orders.Update)]
         [RateLimit(maxRequests: 100, windowMinutes: 1, blockMinutes: 5)]
-        [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Result<AddOrderItemResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> AddOrderItem(
             Guid id,
             [FromBody] AddOrderItemCommand command

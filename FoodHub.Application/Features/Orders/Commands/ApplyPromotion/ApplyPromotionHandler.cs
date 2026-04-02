@@ -124,10 +124,7 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
 
                 foreach (var freeItem in existingFreeItems)
                 {
-                    // Cascade is configured: removing from the collection automatically
-                    // marks the entity as Deleted. Do NOT call orderItemRepo.Delete()
-                    // again — that would cause an EF tracking conflict.
-                    order.OrderItems.Remove(freeItem);
+                    orderItemRepo.Delete(freeItem);
                 }
 
                 // If existing promotion, decrement its usage (if it's a different one)
@@ -165,9 +162,10 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                         CreatedAt = DateTime.UtcNow,
                     };
 
-                    // Adding to the tracked collection is enough — EF will automatically
-                    // mark the new entity as Added without a separate AddAsync call.
-                    order.OrderItems.Add(freeOrderItem);
+                    // This order already exists in the database, so explicitly register
+                    // the gifted item as Added. Relying on navigation fixup alone can
+                    // leave EF treating it as an update against a non-existent row.
+                    await orderItemRepo.AddAsync(freeOrderItem);
 
                     _logger.LogInformation(
                         "Added free item {ItemName} x{Qty} to order {OrderCode} via FreeItem promotion {Code}",

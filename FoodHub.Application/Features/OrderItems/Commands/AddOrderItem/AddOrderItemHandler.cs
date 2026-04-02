@@ -14,10 +14,11 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Kds;
+using AutoMapper;
 
 namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 {
-    public class AddOrderItemHandler : IRequestHandler<AddOrderItemCommand, Result<Guid>>
+    public class AddOrderItemHandler : IRequestHandler<AddOrderItemCommand, Result<AddOrderItemResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
@@ -26,6 +27,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
         private readonly KdsPriorityCalculator _priorityCalculator;
         private readonly IKdsSettingsProvider _kdsSettingsProvider;
         private readonly IKdsAutoPullService _kdsAutoPullService;
+        private readonly IMapper _mapper;
 
         public AddOrderItemHandler(
             IUnitOfWork unitOfWork,
@@ -34,7 +36,8 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             ISignalRService signalRService,
             KdsPriorityCalculator priorityCalculator,
             IKdsSettingsProvider kdsSettingsProvider,
-            IKdsAutoPullService kdsAutoPullService
+            IKdsAutoPullService kdsAutoPullService,
+            IMapper mapper
         )
         {
             _unitOfWork = unitOfWork;
@@ -44,9 +47,10 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             _priorityCalculator = priorityCalculator;
             _kdsSettingsProvider = kdsSettingsProvider;
             _kdsAutoPullService = kdsAutoPullService;
+            _mapper = mapper;
         }
 
-        public async Task<Result<Guid>> Handle(
+        public async Task<Result<AddOrderItemResponse>> Handle(
             AddOrderItemCommand request,
             CancellationToken cancellationToken
         )
@@ -54,7 +58,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             var userId = _currentUserService.GetUserIdAsGuid();
             if (userId == null)
             {
-                return Result<Guid>.Failure(
+                return Result<AddOrderItemResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
                     ResultErrorType.Unauthorized
                 );
@@ -66,11 +70,12 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 .Include(x => x.OrderItems)
                     .ThenInclude(oi => oi.OptionGroups)
                         .ThenInclude(og => og.OptionValues)
+                .Include(x => x.Promotion)
                 .FirstOrDefaultAsync(x => x.OrderId == request.OrderId, cancellationToken);
 
             if (order == null)
             {
-                return Result<Guid>.Failure(
+                return Result<AddOrderItemResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Order.NotFound),
                     ResultErrorType.NotFound
                 );
@@ -78,7 +83,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 
             if (!order.IsActive())
             {
-                return Result<Guid>.Failure(
+                return Result<AddOrderItemResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Order.InvalidActionWithStatus)
                 );
             }
@@ -93,14 +98,14 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 
             if (menuItem == null)
             {
-                return Result<Guid>.Failure(
+                return Result<AddOrderItemResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.MenuItem.NotFound)
                 );
             }
 
             if (menuItem.IsOutOfStock)
             {
-                return Result<Guid>.Failure(
+                return Result<AddOrderItemResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.MenuItem.OutOfStock)
                 );
             }
@@ -123,7 +128,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             );
             if (!selectionValidation.IsSuccess)
             {
-                return Result<Guid>.Failure(
+                return Result<AddOrderItemResponse>.Failure(
                     selectionValidation.Error!,
                     selectionValidation.ErrorType
                 );
@@ -150,7 +155,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 
             if (!result.IsNew && request.Reason == null)
             {
-                return Result<Guid>.Failure(
+                return Result<AddOrderItemResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Order.ReasonRequired),
                     ResultErrorType.BadRequest
                 );
@@ -167,6 +172,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             );
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+            _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 
             // Notify KDS
@@ -181,7 +187,9 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
                 result.Item.StationSnapshot
             );
 
-            return Result<Guid>.Success(order.OrderId);
+            var apiResponse = _mapper.Map<AddOrderItemResponse>(order);
+            apiResponse.NewOrderItemId = result.Item.OrderItemId;
+            return Result<AddOrderItemResponse>.Success(apiResponse);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace FoodHub.Domain.Entities
         public int UsedCount { get; set; }
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
-        public DomainResult Validate(decimal subTotal, DateTimeOffset currentTime)
+        public DomainResult Validate(decimal subTotal, DateTimeOffset currentTime, bool checkUsageLimit = true)
         {
             if (!IsActive)
                 return DomainResult.Failure(DomainErrors.Promotion.Inactive);
@@ -37,7 +37,7 @@ namespace FoodHub.Domain.Entities
             if (currentDate > EndDate)
                 return DomainResult.Failure(DomainErrors.Promotion.Expired);
 
-            if (UsageLimit.HasValue && UsedCount >= UsageLimit.Value)
+            if (checkUsageLimit && UsageLimit.HasValue && UsedCount >= UsageLimit.Value)
                 return DomainResult.Failure(DomainErrors.Promotion.UsageLimitExceeded);
 
             if (StartTime.HasValue && EndTime.HasValue)

@@ -86,9 +86,7 @@ namespace FoodHub.Application.Features.Orders.Commands.UnapplyPromotion
 
                 foreach (var freeItem in freeItems)
                 {
-                    // Cascade is configured: removing from the collection automatically
-                    // marks the entity as Deleted. Do NOT call orderItemRepo.Delete(freeItem)
-                    order.OrderItems.Remove(freeItem);
+                    orderItemRepo.Delete(freeItem);
                 }
             }
 

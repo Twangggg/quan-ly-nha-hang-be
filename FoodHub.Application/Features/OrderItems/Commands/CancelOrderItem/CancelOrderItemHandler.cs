@@ -10,32 +10,36 @@ using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 using MediatR;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
 {
-    public class CancelOrderItemHandler : IRequestHandler<CancelOrderItemCommand, Result<bool>>
+    public class CancelOrderItemHandler : IRequestHandler<CancelOrderItemCommand, Result<CancelOrderItemResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IMapper _mapper;
         private readonly ILogger<CancelOrderItemHandler> _logger;
 
         public CancelOrderItemHandler(
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            IMapper mapper,
             ILogger<CancelOrderItemHandler> logger
         )
         {
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _mapper = mapper;
             _logger = logger;
         }
 
-        public async Task<Result<bool>> Handle(
+        public async Task<Result<CancelOrderItemResponse>> Handle(
             CancelOrderItemCommand request,
             CancellationToken cancellationToken
         )
@@ -47,7 +51,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                     "Unauthorized cancel attempt for OrderItemId {OrderItemId}",
                     request.OrderItemId
                 );
-                return Result<bool>.Failure(
+                return Result<CancelOrderItemResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Auth.UserNotLoggedIn),
                     ResultErrorType.Unauthorized
                 );
@@ -71,7 +75,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
             if (orderItem == null)
             {
                 _logger.LogWarning("OrderItem {OrderItemId} not found.", request.OrderItemId);
-                return Result<bool>.Failure(
+                return Result<CancelOrderItemResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.OrderItem.NotFound),
                     ResultErrorType.NotFound
                 );
@@ -85,7 +89,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                     request.OrderItemId,
                     domainResult.ErrorCode
                 );
-                return Result<bool>.Failure(
+                return Result<CancelOrderItemResponse>.Failure(
                     _messageService.GetMessage(
                         domainResult.ErrorCode ?? MessageKeys.Order.InvalidActionWithStatus
                     ),
@@ -105,6 +109,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.OptionGroups)
                             .ThenInclude(og => og.OptionValues)
+                    .Include(o => o.Promotion)
                     .FirstOrDefaultAsync(o => o.OrderId == orderItem.OrderId, cancellationToken);
 
                 if (order != null)
@@ -137,7 +142,8 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                     orderItem.OrderId
                 );
 
-                return Result<bool>.Success(true);
+                var response = _mapper.Map<CancelOrderItemResponse>(order);
+                return Result<CancelOrderItemResponse>.Success(response);
             }
             catch (DbUpdateException ex)
             {
@@ -147,7 +153,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                     "Database error while canceling OrderItem {OrderItemId}",
                     request.OrderItemId
                 );
-                return Result<bool>.Failure(
+                return Result<CancelOrderItemResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError),
                     ResultErrorType.Conflict
                 );
