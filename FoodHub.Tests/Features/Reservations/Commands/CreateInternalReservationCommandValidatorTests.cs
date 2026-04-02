@@ -41,6 +41,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
         [Fact]
         public async Task ValidateAsync_Should_Fail_When_ReservationIsTooSoon()
         {
+            var reservationDateTime = GetReservationDateTime();
             var settings = ReservationSettings.CreateDefault();
             settings.Update(
                 settings.OpenTime,
@@ -49,7 +50,7 @@ namespace FoodHub.Tests.Features.Reservations.Commands
                 settings.BreakStart,
                 settings.BreakEnd,
                 settings.OverlapBufferMinutes,
-                2000,
+                (int)Math.Ceiling((reservationDateTime - DateTime.Now).TotalMinutes) + 60,
                 settings.GracePeriodMinutes,
                 15
             );
@@ -73,14 +74,29 @@ namespace FoodHub.Tests.Features.Reservations.Commands
 
         private static CreateInternalReservationCommand CreateValidCommand()
         {
+            var reservationDateTime = GetReservationDateTime();
+
             return new CreateInternalReservationCommand
             {
                 CustomerName = "Nguyen Van A",
                 CustomerPhone = "0901234567",
-                ReservationDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
-                ReservationTime = TimeSpan.FromHours(18),
+                ReservationDate = DateOnly.FromDateTime(reservationDateTime),
+                ReservationTime = reservationDateTime.TimeOfDay,
                 GuestCount = 2,
             };
+        }
+
+        private static DateTime GetReservationDateTime()
+        {
+            var now = DateTime.Now;
+            var reservationDateTime = now.Date.AddDays(1).AddHours(18);
+
+            if (reservationDateTime <= now.AddHours(2))
+            {
+                reservationDateTime = reservationDateTime.AddDays(1);
+            }
+
+            return reservationDateTime;
         }
     }
 }

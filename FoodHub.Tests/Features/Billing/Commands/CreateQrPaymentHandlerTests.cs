@@ -46,7 +46,21 @@ namespace FoodHub.Tests.Features.Billing.Commands
             // Arrange
             _mockUser.Setup(u => u.UserId).Returns(Guid.NewGuid().ToString());
             var orderId = Guid.NewGuid();
-            var order = new DomainOrder { OrderId = orderId, Status = OrderStatus.Serving, TotalAmount = 100000 };
+            var order = new DomainOrder
+            {
+                OrderId = orderId,
+                Status = OrderStatus.Serving,
+                OrderItems =
+                [
+                    new OrderItem
+                    {
+                        OrderId = orderId,
+                        Status = OrderItemStatus.Preparing,
+                        Quantity = 1,
+                        UnitPriceSnapshot = 100000,
+                    },
+                ],
+            };
             
             var orders = new List<DomainOrder> { order }.AsQueryable().BuildMock();
             var repo = new Mock<IGenericRepository<DomainOrder>>();
