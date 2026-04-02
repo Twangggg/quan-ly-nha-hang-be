@@ -8,5 +8,5 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
         Guid OrderItemId,
         string? Reason,
         Domain.Entities.Order order
-    ) : IRequest<Result<bool>>;
+    ) : IRequest<Result<CancelOrderItemResponse>>;
 }

@@ -3,7 +3,7 @@ using MediatR;
 
 namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
 {
-    public class AddOrderItemCommand : IRequest<Result<Guid>>
+    public class AddOrderItemCommand : IRequest<Result<AddOrderItemResponse>>
     {
         public Guid OrderId { get; set; }
         public Guid MenuItemId { get; set; }

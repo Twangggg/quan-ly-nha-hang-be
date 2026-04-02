@@ -124,7 +124,6 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
 
                 foreach (var freeItem in existingFreeItems)
                 {
-                    order.OrderItems.Remove(freeItem);
                     orderItemRepo.Delete(freeItem);
                 }
 
@@ -163,7 +162,9 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                         CreatedAt = DateTime.UtcNow,
                     };
 
-                    order.OrderItems.Add(freeOrderItem);
+                    // This order already exists in the database, so explicitly register
+                    // the gifted item as Added. Relying on navigation fixup alone can
+                    // leave EF treating it as an update against a non-existent row.
                     await orderItemRepo.AddAsync(freeOrderItem);
 
                     _logger.LogInformation(
@@ -175,8 +176,11 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     );
                 }
 
-                orderRepo.Update(order);
-                promotionRepo.Update(promotion);
+                // All entities (order, promotion, old promotion) were loaded via
+                // tracked queries on the same DbContext, so their in-memory mutations
+                // are already detected by EF's change tracker.
+                // Calling _dbSet.Update() here would walk the entire entity graph and
+                // produce tracking-state conflicts — so we intentionally omit it.
 
                 // Add audit log
                 var auditLog = new OrderAuditLog
@@ -185,8 +189,10 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                     OrderId = order.OrderId,
                     EmployeeId = userId,
                     Action = "ApplyPromotion",
-                    NewValue =
-                        $"{{\"PromotionCode\": \"{promotion.Code}\", \"DiscountAmount\": {order.DiscountAmount}}}",
+                    NewValue = System.Text.Json.JsonSerializer.Serialize(new { 
+                        PromotionCode = promotion.Code, 
+                        DiscountAmount = order.DiscountAmount 
+                    }),
                     CreatedAt = DateTime.UtcNow,
                 };
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
@@ -222,12 +228,13 @@ namespace FoodHub.Application.Features.Orders.Commands.ApplyPromotion
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(
                     ex,
-                    "Error applying promotion {Code} to order {OrderId}",
+                    "Error applying promotion {Code} to order {OrderId}. Inner: {Inner}",
                     request.Code,
-                    request.OrderId
+                    request.OrderId,
+                    ex.InnerException?.Message
                 );
                 return Result<ApplyPromotionResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Common.DatabaseUpdateError),
+                    $"Error: {ex.Message} | Inner: {ex.InnerException?.Message}",
                     ResultErrorType.Conflict
                 );
             }

@@ -71,6 +71,7 @@ namespace FoodHub.Presentation.Controllers
 
             if (result.IsSuccess && result.Data != null)
             {
+                ExpireClientCsrfCookie(isSecure: !_env.IsDevelopment() && _configuration.GetValue<bool>("EnableHttpsRedirection", true));
                 SetTokenCookies(result.Data);
             }
 
@@ -106,6 +107,7 @@ namespace FoodHub.Presentation.Controllers
 
             if (result.IsSuccess && result.Data != null)
             {
+                ExpireClientCsrfCookie(isSecure: !_env.IsDevelopment() && _configuration.GetValue<bool>("EnableHttpsRedirection", true));
                 SetTokenCookies(result.Data);
             }
 
@@ -203,6 +205,7 @@ namespace FoodHub.Presentation.Controllers
 
             ExpireAuthCookie("accessToken", isSecure);
             ExpireAuthCookie("refreshToken", isSecure);
+            ExpireClientCsrfCookie(isSecure);
 
             if (string.IsNullOrEmpty(refreshToken))
             {
@@ -266,6 +269,44 @@ namespace FoodHub.Presentation.Controllers
             {
                 Response.Cookies.Delete(name, options);
                 Response.Cookies.Append(name, string.Empty, options);
+            }
+        }
+
+        private void ExpireClientCsrfCookie(bool isSecure)
+        {
+            var variants = new[]
+            {
+                new CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = isSecure,
+                    SameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddDays(-1),
+                    MaxAge = TimeSpan.Zero,
+                },
+                new CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddDays(-1),
+                    MaxAge = TimeSpan.Zero,
+                },
+                new CookieOptions
+                {
+                    HttpOnly = false,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddDays(-1),
+                    MaxAge = TimeSpan.Zero,
+                },
+            };
+
+            foreach (var options in variants)
+            {
+                Response.Cookies.Delete("XSRF-TOKEN", options);
+                Response.Cookies.Append("XSRF-TOKEN", string.Empty, options);
             }
         }
 

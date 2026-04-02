@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using FoodHub.Application.Common.Models;
+using FoodHub.Domain.Enums;
 using MediatR;
 
 namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
@@ -13,6 +14,13 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
         /// Danh sách các dòng thanh toán. Tổng Amount phải bằng TotalAmount của Order.
         /// </summary>
         public List<PaymentLineDto> PaymentLines { get; set; } = new();
+
+        // Backward-compatible fields for older frontend payloads.
+        [JsonPropertyName("paymentMethod")]
+        public PaymentMethod? LegacyPaymentMethod { get; set; }
+
+        [JsonPropertyName("amountReceived")]
+        public decimal? LegacyAmountReceived { get; set; }
     }
 
     public class PaymentLineDto

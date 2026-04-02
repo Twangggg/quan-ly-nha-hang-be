@@ -1,4 +1,5 @@
 using FluentAssertions;
+using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem;
@@ -22,6 +23,7 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<IMessageService> _mockMessageService;
         private readonly Mock<ICurrentUserService> _mockCurrentUserService;
+        private readonly Mock<IMapper> _mockMapper;
         private readonly Mock<ILogger<CancelOrderItemHandler>> _mockLogger;
         private readonly CancelOrderItemHandler _handler;
 
@@ -30,11 +32,16 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
             _mockUow = new Mock<IUnitOfWork>();
             _mockMessageService = new Mock<IMessageService>();
             _mockCurrentUserService = new Mock<ICurrentUserService>();
+            _mockMapper = new Mock<IMapper>();
             _mockLogger = new Mock<ILogger<CancelOrderItemHandler>>();
+            _mockMapper
+                .Setup(x => x.Map<CancelOrderItemResponse>(It.IsAny<object>()))
+                .Returns(new CancelOrderItemResponse());
             _handler = new CancelOrderItemHandler(
                 _mockUow.Object,
                 _mockMessageService.Object,
                 _mockCurrentUserService.Object,
+                _mockMapper.Object,
                 _mockLogger.Object
             );
         }
@@ -53,8 +60,8 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
 
             _mockCurrentUserService.Setup(s => s.UserId).Returns(string.Empty);
             _mockMessageService
-                .Setup(m => m.GetMessage(MessageKeys.Employee.CannotIdentifyUser))
-                .Returns("Cannot identify user");
+                .Setup(m => m.GetMessage(MessageKeys.Auth.UserNotLoggedIn))
+                .Returns("User not logged in");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -87,8 +94,8 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockOrderItemRepo.Object);
 
             _mockMessageService
-                .Setup(m => m.GetMessage(MessageKeys.Order.NotFound))
-                .Returns("Order not found");
+                .Setup(m => m.GetMessage(MessageKeys.OrderItem.NotFound))
+                .Returns("Order item not found");
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);

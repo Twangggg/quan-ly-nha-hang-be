@@ -65,6 +65,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.UpdateOrderItem
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.OptionGroups)
                         .ThenInclude(og => og.OptionValues)
+                .Include(o => o.Promotion)
                 .FirstOrDefaultAsync(o => o.OrderId == request.OrderId, cancellationToken);
 
             if (order == null)

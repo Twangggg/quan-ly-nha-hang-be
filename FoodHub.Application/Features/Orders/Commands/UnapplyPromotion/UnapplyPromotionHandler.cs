@@ -86,7 +86,6 @@ namespace FoodHub.Application.Features.Orders.Commands.UnapplyPromotion
 
                 foreach (var freeItem in freeItems)
                 {
-                    order.OrderItems.Remove(freeItem);
                     orderItemRepo.Delete(freeItem);
                 }
             }
@@ -100,8 +99,9 @@ namespace FoodHub.Application.Features.Orders.Commands.UnapplyPromotion
             order.UpdatedAt = DateTime.UtcNow;
             order.UpdatedBy = userId;
 
-            orderRepo.Update(order);
-            promotionRepo.Update(promotion);
+            // Entities are already tracked. Calling Update() is largely redundant and can cause tracking conflicts
+            // orderRepo.Update(order);
+            // promotionRepo.Update(promotion);
 
             var auditLog = new OrderAuditLog
             {
@@ -109,10 +109,14 @@ namespace FoodHub.Application.Features.Orders.Commands.UnapplyPromotion
                 OrderId = order.OrderId,
                 EmployeeId = userId ?? Guid.Empty,
                 Action = "UnapplyPromotion",
-                OldValue =
-                    $"{{\"PromotionCode\": \"{promotionCode}\", \"DiscountAmount\": {discountAmount}}}",
-                NewValue =
-                    $"{{\"PromotionCode\": null, \"DiscountAmount\": {order.DiscountAmount}}}",
+                OldValue = System.Text.Json.JsonSerializer.Serialize(new { 
+                    PromotionCode = promotionCode, 
+                    DiscountAmount = discountAmount 
+                }),
+                NewValue = System.Text.Json.JsonSerializer.Serialize(new { 
+                    PromotionCode = (string?)null, 
+                    DiscountAmount = order.DiscountAmount 
+                }),
                 CreatedAt = DateTime.UtcNow,
             };
 

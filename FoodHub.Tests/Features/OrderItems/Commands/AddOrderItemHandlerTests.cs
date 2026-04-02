@@ -1,4 +1,5 @@
 using FluentAssertions;
+using AutoMapper;
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Features.KDS.Common;
@@ -26,6 +27,7 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
         private readonly Mock<ISignalRService> _mockSignalRService;
         private readonly Mock<IKdsSettingsProvider> _mockKdsSettingsProvider;
         private readonly Mock<IKdsAutoPullService> _mockKdsAutoPullService;
+        private readonly Mock<IMapper> _mockMapper;
         private readonly AddOrderItemHandler _handler;
 
         public AddOrderItemHandlerTests()
@@ -36,6 +38,7 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
             _mockSignalRService = new Mock<ISignalRService>();
             _mockKdsSettingsProvider = new Mock<IKdsSettingsProvider>();
             _mockKdsAutoPullService = new Mock<IKdsAutoPullService>();
+            _mockMapper = new Mock<IMapper>();
 
             _mockKdsSettingsProvider
                 .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
@@ -45,6 +48,10 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
                 .Setup(x => x.GetAvailableSlotsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new Dictionary<string, int>());
 
+            _mockMapper
+                .Setup(x => x.Map<AddOrderItemResponse>(It.IsAny<object>()))
+                .Returns(new AddOrderItemResponse());
+
             _handler = new AddOrderItemHandler(
                 _mockUow.Object,
                 _mockCurrentUserService.Object,
@@ -52,7 +59,8 @@ namespace FoodHub.Tests.Features.OrderItems.Commands
                 _mockSignalRService.Object,
                 new KdsPriorityCalculator(),
                 _mockKdsSettingsProvider.Object,
-                _mockKdsAutoPullService.Object
+                _mockKdsAutoPullService.Object,
+                _mockMapper.Object
             );
         }
 
