@@ -177,6 +177,7 @@ public static class WebExtensions
                 context.Response.OnStarting(
                     () =>
                     {
+                        context.Response.Headers.Remove("Server");
                         context.Response.Headers.Remove("X-Powered-By");
                         return Task.CompletedTask;
                     }

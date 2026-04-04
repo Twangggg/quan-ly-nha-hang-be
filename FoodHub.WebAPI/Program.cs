@@ -24,6 +24,9 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
+    // Không để Kestrel tự phát lộ version/server header ra response.
+    builder.WebHost.ConfigureKestrel(options => { options.AddServerHeader = false; });
+
     // --- Bước 1: Cấu hình hệ thống cơ bản ---
     builder.AddEnvironmentVariables(); // Nạp biến môi trường từ file .env
     builder.AddCustomSerilog(); // Cấu hình ghi log (Console & File)
