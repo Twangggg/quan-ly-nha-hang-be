@@ -134,6 +134,16 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             );
             var totalPayment = paymentLines.Sum(l => l.Amount);
 
+            _logger.LogInformation(
+                "Checkout payment debug - OrderId: {OrderId}, TotalAmount: {TotalAmount}, AmountPaid: {AmountPaid}, RemainingAmount: {RemainingAmount}, TotalPayment: {TotalPayment}, PaymentLinesCount: {Count}",
+                order.OrderId, order.TotalAmount, order.AmountPaid, remainingAmount, totalPayment, paymentLines.Count);
+
+            foreach (var line in paymentLines)
+            {
+                _logger.LogInformation("PaymentLine - ConfigId: {ConfigId}, Amount: {Amount}", 
+                    line.PaymentMethodConfigId, line.Amount);
+            }
+
             if (totalPayment <= 0)
             {
                 return Result<Guid>.Failure(
