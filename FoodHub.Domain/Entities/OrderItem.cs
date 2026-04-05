@@ -222,13 +222,13 @@ namespace FoodHub.Domain.Entities
         }
 
         public bool CanCancel() =>
-            Status == OrderItemStatus.Preparing || Status == OrderItemStatus.Cooking;
+            Status == OrderItemStatus.Preparing;
 
         public DomainResult Cancel()
         {
-            if (!CanCancel())
+            if (Status != OrderItemStatus.Preparing)
             {
-                return DomainResult.Failure(DomainErrors.OrderItem.InvalidStatusForCancel);
+                return DomainResult.Failure(DomainErrors.OrderItem.CanOnlyCancelPreparing);
             }
 
             Status = OrderItemStatus.Cancelled;

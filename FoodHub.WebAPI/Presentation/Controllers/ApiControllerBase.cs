@@ -63,13 +63,7 @@ namespace FoodHub.Presentation.Controllers
                 : (
                     MessageService.HasKey(result.Error)
                         ? MessageService.GetMessage(result.Error)
-                        : (
-                            HttpContext
-                                .RequestServices.GetRequiredService<IHostEnvironment>()
-                                .IsDevelopment()
-                                ? result.Error
-                                : MessageService.GetMessage(MessageKeys.Common.ValidationFailed)
-                        )
+                        : result.Error // Return the error message directly if it's already formatted
                 );
 
             var response = new ErrorResponse(statusCode, errorMessage);

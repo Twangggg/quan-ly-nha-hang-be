@@ -17,6 +17,7 @@ namespace FoodHub.Domain.Constants
         {
             public const string InvalidQuantity = "OrderItem.InvalidQuantity";
             public const string InvalidStatusForCancel = "OrderItem.InvalidStatusForCancel";
+            public const string CanOnlyCancelPreparing = "OrderItem.CanOnlyCancelPreparing";
 
             // KDS state transitions
             public const string MustBePreparingToStartCooking =

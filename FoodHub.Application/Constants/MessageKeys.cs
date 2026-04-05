@@ -60,6 +60,9 @@ namespace FoodHub.Application.Constants
             public const string SplitBillRequiresItems = "Billing.SplitBillRequiresItems";
             public const string SplitBillFailed = "Billing.SplitBillFailed";
             public const string PaymentAmountRequired = "Billing.PaymentAmountRequired";
+            public const string OrderItemsNotFinished = "Billing.OrderItemsNotFinished";
+            public const string OrderItemsStillPreparing = "Billing.OrderItemsStillPreparing";
+            public const string OrderItemsStillCooking = "Billing.OrderItemsStillCooking";
         }
 
         public static class Email
@@ -196,7 +199,7 @@ namespace FoodHub.Application.Constants
             public const string MustBeCookingToReject = "OrderItem.MustBeCookingToReject";
             public const string RejectionReasonRequired = "OrderItem.RejectionReasonRequired";
             public const string MustBeRejectedToReturn = "OrderItem.MustBeRejectedToReturn";
-            public const string FailedClone = "OrderItem.FailedClone";
+            public const string CanOnlyCancelPreparing = "OrderItem.CanOnlyCancelPreparing";
         }
 
         public static class KDS

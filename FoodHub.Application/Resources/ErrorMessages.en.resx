@@ -360,6 +360,9 @@
   <data name="OrderItem.MustBeRejectedToReturn" xml:space="preserve">
     <value>Item must be rejected to return.</value>
   </data>
+  <data name="OrderItem.CanOnlyCancelPreparing" xml:space="preserve">
+    <value>Only items that have not been sent to kitchen can be cancelled.</value>
+  </data>
   <data name="OrderItem.InvalidStatusForCancel" xml:space="preserve">
     <value>Item cannot be cancelled in its current status.</value>
   </data>
@@ -657,6 +660,12 @@
   </data>
   <data name="Billing.PaymentAmountRequired" xml:space="preserve">
     <value>Payment amount must be greater than 0.</value>
+  </data>
+  <data name="Billing.OrderItemsStillPreparing" xml:space="preserve">
+    <value>{0} item(s) not yet started cooking. Please wait or cancel them before checkout.</value>
+  </data>
+  <data name="Billing.OrderItemsStillCooking" xml:space="preserve">
+    <value>{0} item(s) still cooking. Please wait for them to complete before checkout.</value>
   </data>
   <data name="Common.Required" xml:space="preserve">
     <value>This field is required.</value>

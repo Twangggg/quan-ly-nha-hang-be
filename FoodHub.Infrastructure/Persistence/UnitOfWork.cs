@@ -43,6 +43,11 @@ namespace FoodHub.Infrastructure.Persistence
             return await _context.SaveChangesAsync(ct);
         }
 
+        public void ClearChangeTracker()
+        {
+            _context.ChangeTracker.Clear();
+        }
+
         private Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction? _currentTransaction;
 
         public async Task BeginTransactionAsync()

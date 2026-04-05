@@ -486,6 +486,9 @@
   <data name="OrderItem.MustBeRejectedToReturn" xml:space="preserve">
     <value>Món phải bị từ chối để hoàn trả.</value>
   </data>
+  <data name="OrderItem.CanOnlyCancelPreparing" xml:space="preserve">
+    <value>Chỉ có thể hủy món chưa chuyển sang trạng thái nấu.</value>
+  </data>
   <data name="OrderItem.InvalidStatusForCancel" xml:space="preserve">
     <value>Món không thể huỷ ở trạng thái hiện tại.</value>
   </data>
@@ -863,6 +866,15 @@
   </data>
   <data name="Billing.PaymentAmountRequired" xml:space="preserve">
     <value>Số tiền thanh toán phải lớn hơn 0.</value>
+  </data>
+  <data name="Billing.OrderItemsStillPreparing" xml:space="preserve">
+    <value>Còn {0} món chưa bắt đầu nấu. Vui lòng chờ hoặc hủy món trước khi thanh toán.</value>
+  </data>
+  <data name="Billing.OrderItemsStillCooking" xml:space="preserve">
+    <value>Còn {0} món đang nấu. Vui lòng chờ hoàn tất trước khi thanh toán.</value>
+  </data>
+  <data name="Billing.OrderItemsNotFinished" xml:space="preserve">
+    <value>Còn {0} món chưa hoàn tất. Vui lòng chờ hoặc hủy món trước khi thanh toán.</value>
   </data>
   <data name="Common.Required" xml:space="preserve">
     <value>Trường này là bắt buộc.</value>

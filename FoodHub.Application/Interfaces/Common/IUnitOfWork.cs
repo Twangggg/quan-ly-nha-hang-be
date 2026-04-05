@@ -4,6 +4,7 @@ namespace FoodHub.Application.Interfaces.Common
     {
         IGenericRepository<T> Repository<T>() where T : class;
         Task<int> SaveChangeAsync(CancellationToken ct = default);
+        void ClearChangeTracker();
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
