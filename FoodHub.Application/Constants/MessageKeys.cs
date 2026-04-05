@@ -59,6 +59,7 @@ namespace FoodHub.Application.Constants
             public const string SplitTotalMismatch = "Billing.SplitTotalMismatch";
             public const string SplitBillRequiresItems = "Billing.SplitBillRequiresItems";
             public const string SplitBillFailed = "Billing.SplitBillFailed";
+            public const string PaymentAmountRequired = "Billing.PaymentAmountRequired";
         }
 
         public static class Email

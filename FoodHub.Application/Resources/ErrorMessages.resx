@@ -861,6 +861,9 @@
   <data name="Billing.SplitBillFailed" xml:space="preserve">
     <value>Tách hóa đơn thất bại.</value>
   </data>
+  <data name="Billing.PaymentAmountRequired" xml:space="preserve">
+    <value>Số tiền thanh toán phải lớn hơn 0.</value>
+  </data>
   <data name="Common.Required" xml:space="preserve">
     <value>Trường này là bắt buộc.</value>
   </data>

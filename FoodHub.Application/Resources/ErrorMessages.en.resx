@@ -655,6 +655,9 @@
   <data name="Billing.SplitBillFailed" xml:space="preserve">
     <value>Failed to split the bill.</value>
   </data>
+  <data name="Billing.PaymentAmountRequired" xml:space="preserve">
+    <value>Payment amount must be greater than 0.</value>
+  </data>
   <data name="Common.Required" xml:space="preserve">
     <value>This field is required.</value>
   </data>

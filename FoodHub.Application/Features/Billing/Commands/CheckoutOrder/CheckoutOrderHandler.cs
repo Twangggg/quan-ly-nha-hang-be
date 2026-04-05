@@ -94,7 +94,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             if (totalPayment <= 0)
             {
                 return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Billing.SplitTotalMismatch),
+                    _messageService.GetMessage(MessageKeys.Billing.PaymentAmountRequired),
                     ResultErrorType.BadRequest
                 );
             }
