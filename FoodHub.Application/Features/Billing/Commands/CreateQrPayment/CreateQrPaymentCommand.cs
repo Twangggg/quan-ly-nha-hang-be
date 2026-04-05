@@ -7,5 +7,6 @@ namespace FoodHub.Application.Features.Billing.Commands.CreateQrPayment
     public class CreateQrPaymentCommand : IRequest<Result<PaymentLinkResponse>>
     {
         public Guid OrderId { get; set; }
+        public decimal? Amount { get; set; }
     }
 }

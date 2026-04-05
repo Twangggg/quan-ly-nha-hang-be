@@ -75,8 +75,8 @@ namespace FoodHub.Application.Features.Billing.Commands.CreateQrPayment
                 // Recalculate total to ensure VAT is included
                 order.RecalculateTotalAmount();
 
-                // Tính số tiền còn lại cần thanh toán (sau khi đã trả tiền mặt một phần)
-                var remainingAmount = order.GetRemainingAmount();
+                // Nếu có truyền amount cụ thể thì dùng, không thì tính số tiền còn lại
+                var remainingAmount = request.Amount ?? order.GetRemainingAmount();
 
                 if (remainingAmount <= 0)
                 {
@@ -89,7 +89,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CreateQrPayment
                 }
 
                 _logger.LogInformation(
-                    "Generating QR for remaining amount: {RemainingAmount} (Total: {Total}, Already Paid: {Paid})",
+                    "Generating QR for amount: {Amount} (Total: {Total}, Already Paid: {Paid})",
                     remainingAmount, order.TotalAmount, order.AmountPaid ?? 0);
 
                 // Regenerate a unique TransactionCode to avoid "Đơn thanh toán đã tồn tại" error
@@ -97,7 +97,7 @@ namespace FoodHub.Application.Features.Billing.Commands.CreateQrPayment
                 _unitOfWork.Repository<Order>().Update(order);
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
 
-                // Tạo payment link với số tiền còn lại thay vì toàn bộ
+                // Tạo payment link với số tiền từ request hoặc số tiền còn lại
                 var paymentLink = await _paymentService.CreatePaymentLinkAsync(order, remainingAmount, cancellationToken);
                 _logger.LogInformation("Payment link successfully generated for OrderId: {OrderId}, Amount: {Amount}",
                     request.OrderId, remainingAmount);
