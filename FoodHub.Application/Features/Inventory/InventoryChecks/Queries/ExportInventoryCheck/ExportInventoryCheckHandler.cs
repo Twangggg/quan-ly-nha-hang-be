@@ -1,6 +1,8 @@
 using FoodHub.Application.Common.Exceptions;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +13,12 @@ public class ExportInventoryCheckHandler
     : IRequestHandler<ExportInventoryCheckQuery, Result<ExportInventoryCheckResponse>>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMessageService _messageService;
 
-    public ExportInventoryCheckHandler(IUnitOfWork unitOfWork)
+    public ExportInventoryCheckHandler(IUnitOfWork unitOfWork, IMessageService messageService)
     {
         _unitOfWork = unitOfWork;
+        _messageService = messageService;
     }
 
     public async Task<Result<ExportInventoryCheckResponse>> Handle(
@@ -31,7 +35,9 @@ public class ExportInventoryCheckHandler
 
         if (inventoryCheck == null)
         {
-            throw new NotFoundException($"Phiếu kiểm kê không tồn tại");
+            throw new NotFoundException(
+                _messageService.GetMessage(MessageKeys.InventoryCheck.CheckNotFound)
+            );
         }
 
         var response = new ExportInventoryCheckResponse

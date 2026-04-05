@@ -19,13 +19,23 @@ namespace FoodHub.Tests.Features.SetMenus.Queries
     {
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<ICacheService> _mockCacheService;
+        private readonly Mock<IMessageService> _mockMessageService;
         private readonly GetSetMenuByIdHandler _handler;
 
         public GetSetMenuByIdHandlerTests()
         {
             _mockUow = new Mock<IUnitOfWork>();
             _mockCacheService = new Mock<ICacheService>();
-            _handler = new GetSetMenuByIdHandler(_mockUow.Object, _mockCacheService.Object);
+            _mockMessageService = new Mock<IMessageService>();
+            _mockMessageService
+                .Setup(m => m.GetMessage(It.IsAny<string>(), It.IsAny<object[]>()))
+                .Returns((string key, object[] args) => key);
+            _mockMessageService.Setup(m => m.HasKey(It.IsAny<string>())).Returns(true);
+            _handler = new GetSetMenuByIdHandler(
+                _mockUow.Object,
+                _mockCacheService.Object,
+                _mockMessageService.Object
+            );
         }
 
         [Fact]

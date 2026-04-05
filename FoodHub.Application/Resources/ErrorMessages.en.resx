@@ -637,4 +637,445 @@
   <data name="Reservation.BreakTime" xml:space="preserve">
     <value>The restaurant is on break ({0} - {1}). Please select a different time.</value>
   </data>
+  <data name="Billing.InvalidSignature" xml:space="preserve">
+    <value>Invalid webhook signature.</value>
+  </data>
+  <data name="Billing.OrderOrPaymentNotFound" xml:space="preserve">
+    <value>Order or payment session not found.</value>
+  </data>
+  <data name="Billing.PdfExportError" xml:space="preserve">
+    <value>Failed to export the invoice PDF.</value>
+  </data>
+  <data name="Billing.SplitTotalMismatch" xml:space="preserve">
+    <value>The split total does not match the invoice total.</value>
+  </data>
+  <data name="Billing.SplitBillRequiresItems" xml:space="preserve">
+    <value>Please select at least one item to split the bill.</value>
+  </data>
+  <data name="Billing.SplitBillFailed" xml:space="preserve">
+    <value>Failed to split the bill.</value>
+  </data>
+  <data name="Common.Required" xml:space="preserve">
+    <value>This field is required.</value>
+  </data>
+  <data name="Common.InvalidFormat" xml:space="preserve">
+    <value>Invalid format.</value>
+  </data>
+  <data name="Common.InvalidDate" xml:space="preserve">
+    <value>Invalid date.</value>
+  </data>
+  <data name="Common.InvalidFile" xml:space="preserve">
+    <value>Invalid file.</value>
+  </data>
+  <data name="Common.FileSizeExceeded" xml:space="preserve">
+    <value>File size exceeds the allowed limit.</value>
+  </data>
+  <data name="Common.UploadFailed" xml:space="preserve">
+    <value>File upload failed.</value>
+  </data>
+  <data name="Common.NameRequired" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+  <data name="Common.NameMaxLength" xml:space="preserve">
+    <value>Name cannot exceed 100 characters.</value>
+  </data>
+  <data name="Common.DescriptionMaxLength" xml:space="preserve">
+    <value>Description cannot exceed 500 characters.</value>
+  </data>
+  <data name="Common.PriceGreaterZero" xml:space="preserve">
+    <value>Price must be greater than 0.</value>
+  </data>
+  <data name="Common.CostPriceGreaterEqualZero" xml:space="preserve">
+    <value>Cost price must be greater than or equal to 0.</value>
+  </data>
+  <data name="Common.AtLeastOneRequired" xml:space="preserve">
+    <value>At least one item must be selected.</value>
+  </data>
+  <data name="Common.ImageUrlMaxLength" xml:space="preserve">
+    <value>Image URL cannot exceed 500 characters.</value>
+  </data>
+  <data name="Common.DuplicateItems" xml:space="preserve">
+    <value>There are duplicate items in the list.</value>
+  </data>
+  <data name="Common.PaginationRequired" xml:space="preserve">
+    <value>Pagination information is required.</value>
+  </data>
+  <data name="Common.PageNumberMin" xml:space="preserve">
+    <value>Minimum page number is 1.</value>
+  </data>
+  <data name="Common.PageSizeMin" xml:space="preserve">
+    <value>Minimum page size is 1.</value>
+  </data>
+  <data name="Common.DateRangeInvalid" xml:space="preserve">
+    <value>Invalid date range.</value>
+  </data>
+  <data name="Common.InvalidStatus" xml:space="preserve">
+    <value>Invalid status.</value>
+  </data>
+  <data name="KDS.StationMismatch" xml:space="preserve">
+    <value>Station does not match the item's station.</value>
+  </data>
+  <data name="KDS.ManagerRoleRequired" xml:space="preserve">
+    <value>Only managers can perform this action.</value>
+  </data>
+  <data name="MenuItem.NameMaxLength" xml:space="preserve">
+    <value>Menu item name cannot exceed 150 characters.</value>
+  </data>
+  <data name="MenuItem.CategoryIdRequired" xml:space="preserve">
+    <value>Category is required.</value>
+  </data>
+  <data name="MenuItem.ExpectedTimeMin" xml:space="preserve">
+    <value>Expected time must be greater than 0.</value>
+  </data>
+  <data name="MenuItem.PriceMin" xml:space="preserve">
+    <value>Selling price must be greater than 0.</value>
+  </data>
+  <data name="MenuItem.CostPriceMin" xml:space="preserve">
+    <value>Cost price must be greater than or equal to 0.</value>
+  </data>
+  <data name="MenuItem.IdRequired" xml:space="preserve">
+    <value>Menu item ID is required.</value>
+  </data>
+  <data name="Category.IdRequired" xml:space="preserve">
+    <value>Category ID is required.</value>
+  </data>
+  <data name="OptionGroup.Duplicate" xml:space="preserve">
+    <value>Option group already exists.</value>
+  </data>
+  <data name="OptionGroup.AtLeastOneRequired" xml:space="preserve">
+    <value>At least one option is required.</value>
+  </data>
+  <data name="OptionGroup.QuantityGreaterZero" xml:space="preserve">
+    <value>Quantity must be greater than 0.</value>
+  </data>
+  <data name="Table.NotFound" xml:space="preserve">
+    <value>Table not found.</value>
+  </data>
+  <data name="Table.AlreadyOccupied" xml:space="preserve">
+    <value>Table is currently occupied.</value>
+  </data>
+  <data name="Table.CodeExists" xml:space="preserve">
+    <value>Table code already exists.</value>
+  </data>
+  <data name="Table.UpdateForbidden" xml:space="preserve">
+    <value>You are not allowed to update this table.</value>
+  </data>
+  <data name="Table.UpdateFail" xml:space="preserve">
+    <value>Failed to update table.</value>
+  </data>
+  <data name="Table.SameAsCurrentTable" xml:space="preserve">
+    <value>New table is the same as current table.</value>
+  </data>
+  <data name="Table.IdRequired" xml:space="preserve">
+    <value>Table ID is required.</value>
+  </data>
+  <data name="Table.CapacityGreaterZero" xml:space="preserve">
+    <value>Capacity must be greater than 0.</value>
+  </data>
+  <data name="Table.CapacityMaxLimit" xml:space="preserve">
+    <value>Capacity cannot exceed 50.</value>
+  </data>
+  <data name="Table.AreaIdRequired" xml:space="preserve">
+    <value>Area is required.</value>
+  </data>
+  <data name="Area.CodeMaxLength" xml:space="preserve">
+    <value>Area code cannot exceed 20 characters.</value>
+  </data>
+  <data name="Area.NameMaxLength" xml:space="preserve">
+    <value>Area name cannot exceed 100 characters.</value>
+  </data>
+  <data name="Area.TypeInvalid" xml:space="preserve">
+    <value>Invalid area type.</value>
+  </data>
+  <data name="Area.DescriptionMaxLength" xml:space="preserve">
+    <value>Area description cannot exceed 200 characters.</value>
+  </data>
+  <data name="Area.AlreadyInactive" xml:space="preserve">
+    <value>Area was already inactive.</value>
+  </data>
+  <data name="SalesAnalytics.MonthMustBeBetween1And12" xml:space="preserve">
+    <value>Month must be between 1 and 12.</value>
+  </data>
+  <data name="SalesAnalytics.YearMustBePositive" xml:space="preserve">
+    <value>Year must be a positive number.</value>
+  </data>
+  <data name="SalesAnalytics.TopMustBeGreaterThanZero" xml:space="preserve">
+    <value>Top count must be greater than 0.</value>
+  </data>
+  <data name="SalesAnalytics.TopMustNotExceed100" xml:space="preserve">
+    <value>Top count cannot exceed 100.</value>
+  </data>
+  <data name="SalesAnalytics.MovingAverageDaysMustBePositive" xml:space="preserve">
+    <value>Moving average days must be greater than 0.</value>
+  </data>
+  <data name="SalesAnalytics.MovingAverageDaysMustNotExceed365" xml:space="preserve">
+    <value>Moving average days cannot exceed 365.</value>
+  </data>
+  <data name="SalesAnalytics.EndDateMustBeAfterStartDate" xml:space="preserve">
+    <value>End date must be after start date.</value>
+  </data>
+  <data name="SalesAnalytics.CannotCombineDateWithYearMonth" xml:space="preserve">
+    <value>Cannot combine specific dates with year/month.</value>
+  </data>
+  <data name="SalesAnalytics.YearRequiredWithMonth" xml:space="preserve">
+    <value>Year is required when month is selected.</value>
+  </data>
+  <data name="SalesAnalytics.MonthRequiredWithYear" xml:space="preserve">
+    <value>Month is required when year is selected.</value>
+  </data>
+  <data name="SalesAnalytics.StartDateRequiredWithEndDate" xml:space="preserve">
+    <value>Start date is required when end date is provided.</value>
+  </data>
+  <data name="SalesAnalytics.EndDateRequiredWithStartDate" xml:space="preserve">
+    <value>End date is required when start date is provided.</value>
+  </data>
+  <data name="SalesAnalytics.MaxDateRangeExceeded" xml:space="preserve">
+    <value>Date range cannot exceed 365 days.</value>
+  </data>
+  <data name="Ingredient.Inactive" xml:space="preserve">
+    <value>Cannot create receipt for inactive ingredient.</value>
+  </data>
+  <data name="Ingredient.CostMin" xml:space="preserve">
+    <value>Unit cost must be greater than or equal to 0.</value>
+  </data>
+  <data name="Ingredient.StockMin" xml:space="preserve">
+    <value>Stock quantity must be greater than or equal to 0.</value>
+  </data>
+  <data name="Ingredient.PhysicalStockMin" xml:space="preserve">
+    <value>Physical stock quantity must be greater than or equal to 0.</value>
+  </data>
+  <data name="Ingredient.InvalidOpeningStockQuantity" xml:space="preserve">
+    <value>Opening stock quantity must be greater than or equal to 0.</value>
+  </data>
+  <data name="Ingredient.InvalidOpeningStockCost" xml:space="preserve">
+    <value>Opening stock unit cost must be greater than or equal to 0.</value>
+  </data>
+  <data name="Ingredient.InvalidStockInQuantity" xml:space="preserve">
+    <value>Stock in quantity must be greater than 0.</value>
+  </data>
+  <data name="Ingredient.InvalidStockInCost" xml:space="preserve">
+    <value>Stock in unit cost must be greater than or equal to 0.</value>
+  </data>
+  <data name="Ingredient.InvalidPhysicalStockQuantity" xml:space="preserve">
+    <value>Physical stock quantity must be greater than or equal to 0.</value>
+  </data>
+  <data name="Ingredient.DuplicateCode" xml:space="preserve">
+    <value>Ingredient code already exists.</value>
+  </data>
+  <data name="Ingredient.DuplicateName" xml:space="preserve">
+    <value>Ingredient name already exists.</value>
+  </data>
+  <data name="Ingredient.InsufficientStock" xml:space="preserve">
+    <value>Ingredient {0} does not have enough stock.</value>
+  </data>
+  <data name="PaymentMethodConfig.NotFound" xml:space="preserve">
+    <value>Payment method configuration not found.</value>
+  </data>
+  <data name="PaymentMethodConfig.NameRequired" xml:space="preserve">
+    <value>Payment method name is required.</value>
+  </data>
+  <data name="PaymentMethodConfig.NameMaxLength" xml:space="preserve">
+    <value>Payment method name cannot exceed 100 characters.</value>
+  </data>
+  <data name="PaymentMethodConfig.NameDuplicate" xml:space="preserve">
+    <value>Payment method name already exists.</value>
+  </data>
+  <data name="PaymentMethodConfig.TypeRequired" xml:space="preserve">
+    <value>Payment method type is required.</value>
+  </data>
+  <data name="PaymentMethodConfig.BankInfoRequired" xml:space="preserve">
+    <value>Bank information is required for this payment method.</value>
+  </data>
+  <data name="PaymentMethodConfig.CannotDeactivateDefault" xml:space="preserve">
+    <value>Cannot deactivate default payment method.</value>
+  </data>
+  <data name="PaymentMethodConfig.CannotDeleteDefault" xml:space="preserve">
+    <value>Cannot delete default payment method.</value>
+  </data>
+  <data name="PaymentMethodConfig.CreateSuccess" xml:space="preserve">
+    <value>Payment method configuration created successfully.</value>
+  </data>
+  <data name="PaymentMethodConfig.UpdateSuccess" xml:space="preserve">
+    <value>Payment method configuration updated successfully.</value>
+  </data>
+  <data name="PaymentMethodConfig.Inactive" xml:space="preserve">
+    <value>Payment method is inactive.</value>
+  </data>
+  <data name="StockInReceipt.InvalidQuantity" xml:space="preserve">
+    <value>Stock in quantity must be greater than 0.</value>
+  </data>
+  <data name="StockInReceipt.InvalidUnitCost" xml:space="preserve">
+    <value>Stock in unit cost must be greater than or equal to 0.</value>
+  </data>
+  <data name="StockOutReceipt.ReceiptNotFound" xml:space="preserve">
+    <value>Stock out receipt not found.</value>
+  </data>
+  <data name="StockOutReceipt.ItemsRequired" xml:space="preserve">
+    <value>At least one ingredient is required in the stock out receipt.</value>
+  </data>
+  <data name="StockOutReceipt.IngredientIdRequired" xml:space="preserve">
+    <value>Ingredient is required.</value>
+  </data>
+  <data name="StockOutReceipt.QuantityMin" xml:space="preserve">
+    <value>Stock out quantity must be greater than 0.</value>
+  </data>
+  <data name="StockOutReceipt.UnitPriceMin" xml:space="preserve">
+    <value>Stock out unit price must be greater than or equal to 0.</value>
+  </data>
+  <data name="StockOutReceipt.DuplicateIngredient" xml:space="preserve">
+    <value>Ingredient already exists in the stock out receipt.</value>
+  </data>
+  <data name="StockOutReceipt.ReasonRequired" xml:space="preserve">
+    <value>Stock out reason is required.</value>
+  </data>
+  <data name="StockOutReceipt.ReasonMaxLength" xml:space="preserve">
+    <value>Stock out reason cannot exceed 500 characters.</value>
+  </data>
+  <data name="StockOutReceipt.InvalidQuantity" xml:space="preserve">
+    <value>Stock out quantity must be greater than 0.</value>
+  </data>
+  <data name="StockOutReceipt.InvalidUnitCost" xml:space="preserve">
+    <value>Stock out unit cost must be greater than or equal to 0.</value>
+  </data>
+  <data name="InventoryLot.LotCodeRequired" xml:space="preserve">
+    <value>Lot code is required.</value>
+  </data>
+  <data name="InventoryLot.LotCodeTooLong" xml:space="preserve">
+    <value>Lot code cannot exceed 100 characters.</value>
+  </data>
+  <data name="InventoryLot.NotesTooLong" xml:space="preserve">
+    <value>Notes cannot exceed 500 characters.</value>
+  </data>
+  <data name="InventoryCogs.Completed" xml:space="preserve">
+    <value>COGS calculation completed.</value>
+  </data>
+  <data name="InventoryCogs.RangeExceeded" xml:space="preserve">
+    <value>The date range exceeds the maximum days configured for COGS recalculation. Current limit is {0} days.</value>
+  </data>
+  <data name="InventoryCheck.CheckNotFound" xml:space="preserve">
+    <value>Inventory check not found.</value>
+  </data>
+  <data name="InventoryCheck.InvalidQuantity" xml:space="preserve">
+    <value>Check quantity must be greater than or equal to 0.</value>
+  </data>
+  <data name="AuditLog.NotFound" xml:space="preserve">
+    <value>Audit log not found.</value>
+  </data>
+  <data name="AuditLog.QueryError" xml:space="preserve">
+    <value>Error querying audit log.</value>
+  </data>
+  <data name="AuditLog.Unauthorized" xml:space="preserve">
+    <value>You are not authorized to view audit logs.</value>
+  </data>
+  <data name="Invoice.AlreadyExists" xml:space="preserve">
+    <value>Invoice already exists.</value>
+  </data>
+  <data name="Invoice.CreateFailed" xml:space="preserve">
+    <value>Failed to create invoice.</value>
+  </data>
+  <data name="Invoice.AlreadyCancelled" xml:space="preserve">
+    <value>Invoice was already cancelled.</value>
+  </data>
+  <data name="Invoice.CannotCancelPaid" xml:space="preserve">
+    <value>Cannot cancel a paid invoice.</value>
+  </data>
+  <data name="Invoice.OrderNotCompleted" xml:space="preserve">
+    <value>Cannot create invoice because the order is not completed.</value>
+  </data>
+  <data name="Payment.NotFound" xml:space="preserve">
+    <value>Payment not found.</value>
+  </data>
+  <data name="Payment.InvalidInvoiceStatus" xml:space="preserve">
+    <value>Invoice status is invalid for payment.</value>
+  </data>
+  <data name="Payment.AmountExceedsRemaining" xml:space="preserve">
+    <value>Payment amount exceeds the remaining amount.</value>
+  </data>
+  <data name="Payment.SplitTotalMismatch" xml:space="preserve">
+    <value>Split payment total does not match invoice total.</value>
+  </data>
+  <data name="Shift.OutsideOperatingHours" xml:space="preserve">
+    <value>Shift must be within operating hours.</value>
+  </data>
+  <data name="Shift.DuringBreakTime" xml:space="preserve">
+    <value>Shift is during break time.</value>
+  </data>
+  <data name="ShiftAssignment.StartDateInvalid" xml:space="preserve">
+    <value>Shift assignment start date is invalid.</value>
+  </data>
+  <data name="ShiftAssignment.EndDateInvalid" xml:space="preserve">
+    <value>Shift assignment end date is invalid.</value>
+  </data>
+  <data name="ShiftAssignment.DateInPast" xml:space="preserve">
+    <value>Cannot assign shift for past dates.</value>
+  </data>
+  <data name="Voucher.NotFound" xml:space="preserve">
+    <value>Voucher not found.</value>
+  </data>
+  <data name="Voucher.CodeAlreadyExists" xml:space="preserve">
+    <value>Voucher code already exists.</value>
+  </data>
+  <data name="Voucher.Invalid" xml:space="preserve">
+    <value>Voucher is invalid.</value>
+  </data>
+  <data name="Voucher.NotSuitableForOrder" xml:space="preserve">
+    <value>Voucher is not suitable for this order.</value>
+  </data>
+  <data name="Voucher.NotFreeItemInOrder" xml:space="preserve">
+    <value>Order does not have any free items to apply voucher.</value>
+  </data>
+  <data name="Attendance.PaginationRequired" xml:space="preserve">
+    <value>Pagination information is required.</value>
+  </data>
+  <data name="Attendance.PageNumberMin" xml:space="preserve">
+    <value>Minimum page number is 1.</value>
+  </data>
+  <data name="Attendance.PageSizeMin" xml:space="preserve">
+    <value>Minimum page size is 1.</value>
+  </data>
+  <data name="Attendance.DateRangeInvalid" xml:space="preserve">
+    <value>Invalid date range.</value>
+  </data>
+  <data name="OrderItem.FailedClone" xml:space="preserve">
+    <value>Failed to clone selected item.</value>
+  </data>
+  <data name="Order.StatusNotServing" xml:space="preserve">
+    <value>Order is not in serving status.</value>
+  </data>
+  <data name="Order.StatusNotCompleted" xml:space="preserve">
+    <value>Order is not completed.</value>
+  </data>
+  <data name="Order.NoValidItems" xml:space="preserve">
+    <value>No valid items in the order.</value>
+  </data>
+  <data name="Order.EmptyOrder" xml:space="preserve">
+    <value>Order is empty.</value>
+  </data>
+  <data name="Order.VoucherAlreadyApplied" xml:space="preserve">
+    <value>Voucher has already been applied to this order.</value>
+  </data>
+  <data name="Order.VoucherNotApplied" xml:space="preserve">
+    <value>Voucher has not been applied to this order.</value>
+  </data>
+  <data name="Order.InvalidStatusForCheckout" xml:space="preserve">
+    <value>Order status is invalid for checkout.</value>
+  </data>
+  <data name="InventorySettings.InvalidExpiryWarningDays" xml:space="preserve">
+    <value>Expiry warning days must be greater than or equal to 1.</value>
+  </data>
+  <data name="InventorySettings.InvalidLowStockThreshold" xml:space="preserve">
+    <value>Low stock threshold cannot be negative.</value>
+  </data>
+  <data name="InventorySettings.InvalidMaxCostRecalcDays" xml:space="preserve">
+    <value>Max cost recalc days must be between 1 and 365.</value>
+  </data>
+  <data name="InventorySettings.InvalidOpeningStockImportCooldownHours" xml:space="preserve">
+    <value>Opening stock import cooldown hours cannot be negative.</value>
+  </data>
+  <data name="ReservationSettings.InvalidUpcomingBufferMinutes" xml:space="preserve">
+    <value>Upcoming buffer minutes must be 0 or greater.</value>
+  </data>
+  <data name="ReservationSettings.UpcomingBufferCannotExceedMinLeadTime" xml:space="preserve">
+    <value>Upcoming buffer cannot exceed minimum lead time.</value>
+  </data>
 </root>

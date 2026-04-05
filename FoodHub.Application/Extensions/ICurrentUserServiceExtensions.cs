@@ -4,6 +4,7 @@ using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
+using FoodHub.Application.Constants;
 
 namespace FoodHub.Application.Extensions
 {
@@ -24,7 +25,7 @@ namespace FoodHub.Application.Extensions
             var userId = currentUserService.GetUserIdAsGuid();
             if (userId == null)
             {
-                throw new UnauthorizedAccessException("User is not authenticated or UserId is invalid.");
+                throw new UnauthorizedAccessException(MessageKeys.Common.Unauthorized);
             }
 
             return userId.Value;

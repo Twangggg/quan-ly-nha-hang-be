@@ -849,5 +849,478 @@
   <data name="Billing.OrderOrPaymentNotFound" xml:space="preserve">
     <value>Không tìm thấy đơn hàng hoặc phiên thanh toán.</value>
   </data>
+  <data name="Billing.PdfExportError" xml:space="preserve">
+    <value>Xuất file PDF hóa đơn thất bại.</value>
+  </data>
+  <data name="Billing.SplitTotalMismatch" xml:space="preserve">
+    <value>Tổng tiền tách hóa đơn không khớp với tổng hóa đơn.</value>
+  </data>
+  <data name="Billing.SplitBillRequiresItems" xml:space="preserve">
+    <value>Vui lòng chọn ít nhất một món để tách hóa đơn.</value>
+  </data>
+  <data name="Billing.SplitBillFailed" xml:space="preserve">
+    <value>Tách hóa đơn thất bại.</value>
+  </data>
+  <data name="Common.Required" xml:space="preserve">
+    <value>Trường này là bắt buộc.</value>
+  </data>
+  <data name="Common.InvalidFormat" xml:space="preserve">
+    <value>Định dạng không hợp lệ.</value>
+  </data>
+  <data name="Common.InvalidDate" xml:space="preserve">
+    <value>Ngày không hợp lệ.</value>
+  </data>
+  <data name="Common.InvalidFile" xml:space="preserve">
+    <value>Tệp tin không hợp lệ.</value>
+  </data>
+  <data name="Common.FileSizeExceeded" xml:space="preserve">
+    <value>Kích thước tệp vượt quá giới hạn cho phép.</value>
+  </data>
+  <data name="Common.UploadFailed" xml:space="preserve">
+    <value>Tải tệp lên thất bại.</value>
+  </data>
+  <data name="Common.PageNumberAtLeastOne" xml:space="preserve">
+    <value>Số trang phải lớn hơn hoặc bằng 1.</value>
+  </data>
+  <data name="Common.PageSizeBetween" xml:space="preserve">
+    <value>Kích thước trang phải từ 1 đến 100.</value>
+  </data>
+  <data name="Common.ToDateAfterFromDate" xml:space="preserve">
+    <value>Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.</value>
+  </data>
+  <data name="Common.DateNotInFuture" xml:space="preserve">
+    <value>Ngày không được nằm trong tương lai.</value>
+  </data>
+  <data name="Common.NameRequired" xml:space="preserve">
+    <value>Tên không được để trống.</value>
+  </data>
+  <data name="Common.NameMaxLength" xml:space="preserve">
+    <value>Tên không được vượt quá 100 ký tự.</value>
+  </data>
+  <data name="Common.DescriptionMaxLength" xml:space="preserve">
+    <value>Mô tả không được vượt quá 500 ký tự.</value>
+  </data>
+  <data name="Common.PriceGreaterZero" xml:space="preserve">
+    <value>Giá phải lớn hơn 0.</value>
+  </data>
+  <data name="Common.CostPriceGreaterEqualZero" xml:space="preserve">
+    <value>Giá vốn phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="Common.AtLeastOneRequired" xml:space="preserve">
+    <value>Phải có ít nhất một mục được chọn.</value>
+  </data>
+  <data name="Common.ImageUrlMaxLength" xml:space="preserve">
+    <value>URL hình ảnh không được vượt quá 500 ký tự.</value>
+  </data>
+  <data name="Common.DuplicateItems" xml:space="preserve">
+    <value>Có mục trùng lặp trong danh sách.</value>
+  </data>
+  <data name="Common.PaginationRequired" xml:space="preserve">
+    <value>Thông tin phân trang là bắt buộc.</value>
+  </data>
+  <data name="Common.PageNumberMin" xml:space="preserve">
+    <value>Số trang tối thiểu là 1.</value>
+  </data>
+  <data name="Common.PageSizeMin" xml:space="preserve">
+    <value>Kích thước trang tối thiểu là 1.</value>
+  </data>
+  <data name="Common.DateRangeInvalid" xml:space="preserve">
+    <value>Khoảng ngày không hợp lệ.</value>
+  </data>
+  <data name="Common.InvalidStatus" xml:space="preserve">
+    <value>Trạng thái không hợp lệ.</value>
+  </data>
+  <data name="KDS.StationMismatch" xml:space="preserve">
+    <value>Trạm không khớp với trạm của món ăn.</value>
+  </data>
+  <data name="KDS.ManagerRoleRequired" xml:space="preserve">
+    <value>Chỉ quản lý mới có quyền thực hiện thao tác này.</value>
+  </data>
+  <data name="KDS.StationMaxLength" xml:space="preserve">
+    <value>Tên trạm không được vượt quá 50 ký tự.</value>
+  </data>
+  <data name="KDS.ActionMaxLength" xml:space="preserve">
+    <value>Tên hành động không được vượt quá 50 ký tự.</value>
+  </data>
+  <data name="MenuItem.NameMaxLength" xml:space="preserve">
+    <value>Tên món ăn không được vượt quá 150 ký tự.</value>
+  </data>
+  <data name="MenuItem.CategoryIdRequired" xml:space="preserve">
+    <value>Danh mục là bắt buộc.</value>
+  </data>
+  <data name="MenuItem.InvalidStation" xml:space="preserve">
+    <value>Trạm không hợp lệ.</value>
+  </data>
+  <data name="MenuItem.ExpectedTimeMin" xml:space="preserve">
+    <value>Thời gian chờ phải lớn hơn 0.</value>
+  </data>
+  <data name="MenuItem.PriceMin" xml:space="preserve">
+    <value>Giá bán phải lớn hơn 0.</value>
+  </data>
+  <data name="MenuItem.CostPriceMin" xml:space="preserve">
+    <value>Giá vốn phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="MenuItem.IdRequired" xml:space="preserve">
+    <value>Mã món ăn là bắt buộc.</value>
+  </data>
+  <data name="Category.IdRequired" xml:space="preserve">
+    <value>Mã danh mục là bắt buộc.</value>
+  </data>
+  <data name="OptionGroup.Duplicate" xml:space="preserve">
+    <value>Nhóm tùy chọn đã tồn tại.</value>
+  </data>
+  <data name="OptionGroup.AtLeastOneRequired" xml:space="preserve">
+    <value>Phải có ít nhất một tùy chọn.</value>
+  </data>
+  <data name="OptionGroup.QuantityGreaterZero" xml:space="preserve">
+    <value>Số lượng phải lớn hơn 0.</value>
+  </data>
+  <data name="Table.NotFound" xml:space="preserve">
+    <value>Không tìm thấy bàn.</value>
+  </data>
+  <data name="Table.AlreadyOccupied" xml:space="preserve">
+    <value>Bàn đang có khách sử dụng.</value>
+  </data>
+  <data name="Table.NotAvailable" xml:space="preserve">
+    <value>Bàn không khả dụng để đặt món. Vui lòng chọn bàn khác.</value>
+  </data>
+  <data name="Table.CodeExists" xml:space="preserve">
+    <value>Mã bàn đã tồn tại.</value>
+  </data>
+  <data name="Table.UpdateForbidden" xml:space="preserve">
+    <value>Không có quyền cập nhật bàn này.</value>
+  </data>
+  <data name="Table.UpdateFail" xml:space="preserve">
+    <value>Cập nhật bàn thất bại.</value>
+  </data>
+  <data name="Table.SameAsCurrentTable" xml:space="preserve">
+    <value>Bàn mới giống bàn hiện tại.</value>
+  </data>
+  <data name="Table.IdRequired" xml:space="preserve">
+    <value>Mã bàn là bắt buộc.</value>
+  </data>
+  <data name="Table.CapacityGreaterZero" xml:space="preserve">
+    <value>Sức chứa phải lớn hơn 0.</value>
+  </data>
+  <data name="Table.CapacityMaxLimit" xml:space="preserve">
+    <value>Sức chứa không được vượt quá 50.</value>
+  </data>
+  <data name="Table.AreaIdRequired" xml:space="preserve">
+    <value>Khu vực là bắt buộc.</value>
+  </data>
+  <data name="Area.CodeMaxLength" xml:space="preserve">
+    <value>Mã khu vực không được vượt quá 20 ký tự.</value>
+  </data>
+  <data name="Area.NameMaxLength" xml:space="preserve">
+    <value>Tên khu vực không được vượt quá 100 ký tự.</value>
+  </data>
+  <data name="Area.TypeInvalid" xml:space="preserve">
+    <value>Loại khu vực không hợp lệ.</value>
+  </data>
+  <data name="Area.DescriptionMaxLength" xml:space="preserve">
+    <value>Mô tả khu vực không được vượt quá 200 ký tự.</value>
+  </data>
+  <data name="Area.Inactive" xml:space="preserve">
+    <value>Khu vực đang không hoạt động.</value>
+  </data>
+  <data name="Area.AlreadyInactive" xml:space="preserve">
+    <value>Khu vực đã ngừng hoạt động trước đó.</value>
+  </data>
+  <data name="SalesAnalytics.MonthMustBeBetween1And12" xml:space="preserve">
+    <value>Tháng phải nằm trong khoảng từ 1 đến 12.</value>
+  </data>
+  <data name="SalesAnalytics.YearMustBePositive" xml:space="preserve">
+    <value>Năm phải là số dương.</value>
+  </data>
+  <data name="SalesAnalytics.TopMustBeGreaterThanZero" xml:space="preserve">
+    <value>Số lượng top phải lớn hơn 0.</value>
+  </data>
+  <data name="SalesAnalytics.TopMustNotExceed100" xml:space="preserve">
+    <value>Số lượng top không được vượt quá 100.</value>
+  </data>
+  <data name="SalesAnalytics.MovingAverageDaysMustBePositive" xml:space="preserve">
+    <value>Số ngày tính trung bình phải lớn hơn 0.</value>
+  </data>
+  <data name="SalesAnalytics.MovingAverageDaysMustNotExceed365" xml:space="preserve">
+    <value>Số ngày tính trung bình không được vượt quá 365.</value>
+  </data>
+  <data name="SalesAnalytics.EndDateMustBeAfterStartDate" xml:space="preserve">
+    <value>Ngày kết thúc phải sau ngày bắt đầu.</value>
+  </data>
+  <data name="SalesAnalytics.DateNotInFuture" xml:space="preserve">
+    <value>Ngày không được nằm trong tương lai.</value>
+  </data>
+  <data name="SalesAnalytics.CannotCombineDateWithYearMonth" xml:space="preserve">
+    <value>Không thể kết hợp ngày cụ thể với năm/tháng.</value>
+  </data>
+  <data name="SalesAnalytics.YearRequiredWithMonth" xml:space="preserve">
+    <value>Năm là bắt buộc khi chọn tháng.</value>
+  </data>
+  <data name="SalesAnalytics.MonthRequiredWithYear" xml:space="preserve">
+    <value>Tháng là bắt buộc khi chọn năm.</value>
+  </data>
+  <data name="SalesAnalytics.StartDateRequiredWithEndDate" xml:space="preserve">
+    <value>Ngày bắt đầu là bắt buộc khi có ngày kết thúc.</value>
+  </data>
+  <data name="SalesAnalytics.EndDateRequiredWithStartDate" xml:space="preserve">
+    <value>Ngày kết thúc là bắt buộc khi có ngày bắt đầu.</value>
+  </data>
+  <data name="SalesAnalytics.MaxDateRangeExceeded" xml:space="preserve">
+    <value>Khoảng ngày không được vượt quá 365 ngày.</value>
+  </data>
+  <data name="Ingredient.Inactive" xml:space="preserve">
+    <value>Không thể tạo phiếu nhập cho nguyên liệu đã ngừng hoạt động.</value>
+  </data>
+  <data name="Ingredient.CostMin" xml:space="preserve">
+    <value>Giá nhập phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="Ingredient.StockMin" xml:space="preserve">
+    <value>Số lượng tồn phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="Ingredient.PhysicalStockMin" xml:space="preserve">
+    <value>Số lượng tồn thực tế phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="Ingredient.InvalidOpeningStockQuantity" xml:space="preserve">
+    <value>Số lượng tồn đầu kỳ phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="Ingredient.InvalidOpeningStockCost" xml:space="preserve">
+    <value>Đơn giá nhập phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="Ingredient.InvalidStockInQuantity" xml:space="preserve">
+    <value>Số lượng nhập kho phải lớn hơn 0.</value>
+  </data>
+  <data name="Ingredient.InvalidStockInCost" xml:space="preserve">
+    <value>Đơn giá nhập kho phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="Ingredient.InvalidPhysicalStockQuantity" xml:space="preserve">
+    <value>Số lượng tồn thực tế phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="Ingredient.DuplicateCode" xml:space="preserve">
+    <value>Mã nguyên liệu đã tồn tại.</value>
+  </data>
+  <data name="Ingredient.DuplicateName" xml:space="preserve">
+    <value>Tên nguyên liệu đã tồn tại.</value>
+  </data>
+  <data name="Ingredient.InsufficientStock" xml:space="preserve">
+    <value>Nguyên liệu {0} không đủ số lượng trong kho.</value>
+  </data>
+  <data name="PaymentMethodConfig.NotFound" xml:space="preserve">
+    <value>Không tìm thấy cấu hình phương thức thanh toán.</value>
+  </data>
+  <data name="PaymentMethodConfig.NameRequired" xml:space="preserve">
+    <value>Tên phương thức thanh toán là bắt buộc.</value>
+  </data>
+  <data name="PaymentMethodConfig.NameMaxLength" xml:space="preserve">
+    <value>Tên phương thức thanh toán không được vượt quá 100 ký tự.</value>
+  </data>
+  <data name="PaymentMethodConfig.NameDuplicate" xml:space="preserve">
+    <value>Tên phương thức thanh toán đã tồn tại.</value>
+  </data>
+  <data name="PaymentMethodConfig.TypeRequired" xml:space="preserve">
+    <value>Loại phương thức thanh toán là bắt buộc.</value>
+  </data>
+  <data name="PaymentMethodConfig.BankInfoRequired" xml:space="preserve">
+    <value>Thông tin ngân hàng là bắt buộc cho phương thức thanh toán này.</value>
+  </data>
+  <data name="PaymentMethodConfig.CannotDeactivateDefault" xml:space="preserve">
+    <value>Không thể vô hiệu hóa phương thức thanh toán mặc định.</value>
+  </data>
+  <data name="PaymentMethodConfig.CannotDeleteDefault" xml:space="preserve">
+    <value>Không thể xóa phương thức thanh toán mặc định.</value>
+  </data>
+  <data name="PaymentMethodConfig.CreateSuccess" xml:space="preserve">
+    <value>Tạo cấu hình phương thức thanh toán thành công.</value>
+  </data>
+  <data name="PaymentMethodConfig.UpdateSuccess" xml:space="preserve">
+    <value>Cập nhật cấu hình phương thức thanh toán thành công.</value>
+  </data>
+  <data name="PaymentMethodConfig.Inactive" xml:space="preserve">
+    <value>Phương thức thanh toán đã ngừng hoạt động.</value>
+  </data>
+  <data name="PaymentMethodConfig.DuplicateName" xml:space="preserve">
+    <value>Tên phương thức thanh toán đã tồn tại.</value>
+  </data>
+  <data name="StockInReceipt.InvalidQuantity" xml:space="preserve">
+    <value>Số lượng nhập kho phải lớn hơn 0.</value>
+  </data>
+  <data name="StockInReceipt.InvalidUnitCost" xml:space="preserve">
+    <value>Đơn giá nhập kho phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="StockOutReceipt.ReceiptNotFound" xml:space="preserve">
+    <value>Không tìm thấy phiếu xuất kho.</value>
+  </data>
+  <data name="StockOutReceipt.ItemsRequired" xml:space="preserve">
+    <value>Phải có ít nhất 1 nguyên liệu trong phiếu xuất.</value>
+  </data>
+  <data name="StockOutReceipt.IngredientIdRequired" xml:space="preserve">
+    <value>Nguyên liệu là bắt buộc.</value>
+  </data>
+  <data name="StockOutReceipt.QuantityMin" xml:space="preserve">
+    <value>Số lượng xuất kho phải lớn hơn 0.</value>
+  </data>
+  <data name="StockOutReceipt.UnitPriceMin" xml:space="preserve">
+    <value>Đơn giá xuất kho phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="StockOutReceipt.DuplicateIngredient" xml:space="preserve">
+    <value>Nguyên liệu đã có trong phiếu xuất.</value>
+  </data>
+  <data name="StockOutReceipt.ReasonRequired" xml:space="preserve">
+    <value>Lý do xuất kho là bắt buộc.</value>
+  </data>
+  <data name="StockOutReceipt.ReasonMaxLength" xml:space="preserve">
+    <value>Lý do xuất kho không được vượt quá 500 ký tự.</value>
+  </data>
+  <data name="StockOutReceipt.InvalidQuantity" xml:space="preserve">
+    <value>Số lượng xuất kho phải lớn hơn 0.</value>
+  </data>
+  <data name="StockOutReceipt.InvalidUnitCost" xml:space="preserve">
+    <value>Đơn giá xuất kho phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="InventoryLot.LotCodeRequired" xml:space="preserve">
+    <value>Mã lô là bắt buộc.</value>
+  </data>
+  <data name="InventoryLot.LotCodeTooLong" xml:space="preserve">
+    <value>Mã lô không được vượt quá 100 ký tự.</value>
+  </data>
+  <data name="InventoryLot.NotesTooLong" xml:space="preserve">
+    <value>Ghi chú không được vượt quá 500 ký tự.</value>
+  </data>
+  <data name="InventoryCogs.Completed" xml:space="preserve">
+    <value>Tính giá vốn hoàn tất.</value>
+  </data>
+  <data name="InventoryCogs.RangeExceeded" xml:space="preserve">
+    <value>Khoảng ngày bạn chọn vượt quá số ngày tối đa được cấu hình cho tính lại giá vốn. Giới hạn hiện tại là {0} ngày.</value>
+  </data>
+  <data name="InventoryCheck.CheckNotFound" xml:space="preserve">
+    <value>Không tìm thấy phiếu kiểm kê.</value>
+  </data>
+  <data name="InventoryCheck.InvalidQuantity" xml:space="preserve">
+    <value>Số lượng kiểm kê phải lớn hơn hoặc bằng 0.</value>
+  </data>
+  <data name="AuditLog.NotFound" xml:space="preserve">
+    <value>Không tìm thấy nhật ký kiểm toán.</value>
+  </data>
+  <data name="AuditLog.QueryError" xml:space="preserve">
+    <value>Lỗi khi truy vấn nhật ký kiểm toán.</value>
+  </data>
+  <data name="AuditLog.Unauthorized" xml:space="preserve">
+    <value>Bạn không có quyền xem nhật ký kiểm toán.</value>
+  </data>
+  <data name="Invoice.AlreadyExists" xml:space="preserve">
+    <value>Hóa đơn đã tồn tại.</value>
+  </data>
+  <data name="Invoice.NotFound" xml:space="preserve">
+    <value>Không tìm thấy hóa đơn.</value>
+  </data>
+  <data name="Invoice.CreateFailed" xml:space="preserve">
+    <value>Tạo hóa đơn thất bại.</value>
+  </data>
+  <data name="Invoice.InsufficientAmount" xml:space="preserve">
+    <value>Số tiền thanh toán không đủ.</value>
+  </data>
+  <data name="Invoice.AlreadyCancelled" xml:space="preserve">
+    <value>Hóa đơn đã bị hủy trước đó.</value>
+  </data>
+  <data name="Invoice.CannotCancelPaid" xml:space="preserve">
+    <value>Không thể hủy hóa đơn đã thanh toán.</value>
+  </data>
+  <data name="Invoice.OrderNotCompleted" xml:space="preserve">
+    <value>Không thể tạo hóa đơn vì đơn hàng chưa hoàn tất.</value>
+  </data>
+  <data name="Payment.NotFound" xml:space="preserve">
+    <value>Không tìm thấy thanh toán.</value>
+  </data>
+  <data name="Payment.InvalidInvoiceStatus" xml:space="preserve">
+    <value>Trạng thái hóa đơn không hợp lệ để thanh toán.</value>
+  </data>
+  <data name="Payment.AmountExceedsRemaining" xml:space="preserve">
+    <value>Số tiền thanh toán vượt quá số tiền còn lại.</value>
+  </data>
+  <data name="Payment.SplitTotalMismatch" xml:space="preserve">
+    <value>Tổng tiền tách thanh toán không khớp với tổng hóa đơn.</value>
+  </data>
+  <data name="Shift.OutsideOperatingHours" xml:space="preserve">
+    <value>Ca làm việc phải nằm trong giờ hoạt động.</value>
+  </data>
+  <data name="Shift.DuringBreakTime" xml:space="preserve">
+    <value>Ca làm việc trong thời gian nghỉ giữa ca.</value>
+  </data>
+  <data name="ShiftAssignment.StartDateInvalid" xml:space="preserve">
+    <value>Ngày bắt đầu phân ca không hợp lệ.</value>
+  </data>
+  <data name="ShiftAssignment.EndDateInvalid" xml:space="preserve">
+    <value>Ngày kết thúc phân ca không hợp lệ.</value>
+  </data>
+  <data name="ShiftAssignment.DateInPast" xml:space="preserve">
+    <value>Không thể phân ca cho ngày trong quá khứ.</value>
+  </data>
+  <data name="Voucher.NotFound" xml:space="preserve">
+    <value>Không tìm thấy voucher.</value>
+  </data>
+  <data name="Voucher.CodeAlreadyExists" xml:space="preserve">
+    <value>Mã voucher đã tồn tại.</value>
+  </data>
+  <data name="Voucher.Invalid" xml:space="preserve">
+    <value>Voucher không hợp lệ.</value>
+  </data>
+  <data name="Voucher.NotSuitableForOrder" xml:space="preserve">
+    <value>Voucher không phù hợp với đơn hàng này.</value>
+  </data>
+  <data name="Voucher.NotFreeItemInOrder" xml:space="preserve">
+    <value>Đơn hàng không có món miễn phí nào để áp dụng voucher.</value>
+  </data>
+  <data name="Attendance.PaginationRequired" xml:space="preserve">
+    <value>Thông tin phân trang là bắt buộc.</value>
+  </data>
+  <data name="Attendance.PageNumberMin" xml:space="preserve">
+    <value>Số trang tối thiểu là 1.</value>
+  </data>
+  <data name="Attendance.PageSizeMin" xml:space="preserve">
+    <value>Kích thước trang tối thiểu là 1.</value>
+  </data>
+  <data name="Attendance.DateRangeInvalid" xml:space="preserve">
+    <value>Khoảng ngày không hợp lệ.</value>
+  </data>
+  <data name="OrderItem.FailedClone" xml:space="preserve">
+    <value>Không thể sao chép món đã chọn.</value>
+  </data>
+  <data name="Order.StatusNotServing" xml:space="preserve">
+    <value>Đơn hàng không ở trạng thái phục vụ.</value>
+  </data>
+  <data name="Order.StatusNotCompleted" xml:space="preserve">
+    <value>Đơn hàng chưa hoàn tất.</value>
+  </data>
+  <data name="Order.NoValidItems" xml:space="preserve">
+    <value>Không có món hợp lệ trong đơn hàng.</value>
+  </data>
+  <data name="Order.EmptyOrder" xml:space="preserve">
+    <value>Đơn hàng trống.</value>
+  </data>
+  <data name="Order.VoucherAlreadyApplied" xml:space="preserve">
+    <value>Voucher đã được áp dụng cho đơn hàng này.</value>
+  </data>
+  <data name="Order.VoucherNotApplied" xml:space="preserve">
+    <value>Voucher chưa được áp dụng cho đơn hàng này.</value>
+  </data>
+  <data name="Order.InvalidStatusForCheckout" xml:space="preserve">
+    <value>Trạng thái đơn hàng không hợp lệ để thanh toán.</value>
+  </data>
+  <data name="InventorySettings.InvalidExpiryWarningDays" xml:space="preserve">
+    <value>Số ngày cảnh báo hết hạn phải lớn hơn hoặc bằng 1.</value>
+  </data>
+  <data name="InventorySettings.InvalidLowStockThreshold" xml:space="preserve">
+    <value>Ngưỡng cảnh báo tồn kho không được âm.</value>
+  </data>
+  <data name="InventorySettings.InvalidMaxCostRecalcDays" xml:space="preserve">
+    <value>Số ngày tính lại giá vốn phải nằm trong khoảng 1 đến 365.</value>
+  </data>
+  <data name="InventorySettings.InvalidOpeningStockImportCooldownHours" xml:space="preserve">
+    <value>Thời gian chờ giữa 2 lần nhập số dư không được âm.</value>
+  </data>
+  <data name="ReservationSettings.InvalidUpcomingBufferMinutes" xml:space="preserve">
+    <value>Thời gian đệm chuẩn bị phải từ 0 phút trở lên.</value>
+  </data>
+  <data name="ReservationSettings.UpcomingBufferCannotExceedMinLeadTime" xml:space="preserve">
+    <value>Thời gian đệm chuẩn bị không được vượt quá thời gian đặt trước tối thiểu.</value>
+  </data>
 </root>
-
