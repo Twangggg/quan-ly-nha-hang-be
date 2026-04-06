@@ -39,7 +39,7 @@ namespace FoodHub.Infrastructure.Persistence
                     new Employee
                     {
                         EmployeeId = Guid.NewGuid(),
-                        EmployeeCode = "M001001",
+                        EmployeeCode = "M000001",
                         Username = "admin",
                         PasswordHash = _passwordService.HashPassword("New123!!"),
                         FullName = "Admin Manager",
@@ -52,7 +52,7 @@ namespace FoodHub.Infrastructure.Persistence
                     new Employee
                     {
                         EmployeeId = Guid.NewGuid(),
-                        EmployeeCode = "B002001",
+                        EmployeeCode = "B000001",
                         Username = "chef",
                         PasswordHash = _passwordService.HashPassword("New123!!"),
                         FullName = "Chief Chef",
@@ -65,7 +65,7 @@ namespace FoodHub.Infrastructure.Persistence
                     new Employee
                     {
                         EmployeeId = Guid.NewGuid(),
-                        EmployeeCode = "C004001",
+                        EmployeeCode = "C000001",
                         Username = "cashier",
                         PasswordHash = _passwordService.HashPassword("New123!!"),
                         FullName = "Cashier One",
@@ -205,8 +205,8 @@ namespace FoodHub.Infrastructure.Persistence
                     new MenuItem
                     {
                         MenuItemId = Guid.NewGuid(),
-                        Code = "DRK-007",
-                        ItemNumber = 7,
+                        Code = "DRK-001",
+                        ItemNumber = 1,
                         Name = "Cocktail đặc biệt",
                         ImageUrl = "",
                         Description = "Signature house cocktail",
@@ -220,8 +220,8 @@ namespace FoodHub.Infrastructure.Persistence
                     new MenuItem
                     {
                         MenuItemId = Guid.NewGuid(),
-                        Code = "DES-003",
-                        ItemNumber = 3,
+                        Code = "DES-001",
+                        ItemNumber = 1,
                         Name = "Chè khúc bạch",
                         ImageUrl = "",
                         Description = "Milk jelly with lychee",
@@ -235,8 +235,8 @@ namespace FoodHub.Infrastructure.Persistence
                     new MenuItem
                     {
                         MenuItemId = Guid.Parse("84b3ff00-82f6-4e52-8d2b-c669cc2524bd"),
-                        Code = "COMBO-03",
-                        ItemNumber = 3,
+                        Code = "COMBO-001",
+                        ItemNumber = 1,
                         Name = "Combo Ấm Áp",
                         ImageUrl = "",
                         Description = "Cơm gà xối mỡ + Cocktail đặc biệt + Chè khúc bạch",
@@ -262,7 +262,7 @@ namespace FoodHub.Infrastructure.Persistence
                     var setMenu1 = new SetMenu
                     {
                         SetMenuId = Guid.NewGuid(),
-                        Code = "COMBO-01",
+                        Code = "COMBO-001",
                         ItemNumber = 1,
                         CategoryId = comboCategory.CategoryId,
                         Name = "Combo Ăn Trưa",
@@ -274,7 +274,7 @@ namespace FoodHub.Infrastructure.Persistence
                     var setMenu2 = new SetMenu
                     {
                         SetMenuId = Guid.NewGuid(),
-                        Code = "COMBO-02",
+                        Code = "COMBO-002",
                         ItemNumber = 2,
                         CategoryId = comboCategory.CategoryId,
                         Name = "Combo Gia Đình",
@@ -291,9 +291,9 @@ namespace FoodHub.Infrastructure.Persistence
                         mi.Code == "MAIN-001"
                     );
                     var specialDrink = _context.MenuItems.FirstOrDefault(mi =>
-                        mi.Code == "DRK-007"
+                        mi.Code == "DRK-001"
                     );
-                    var dessert = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DES-003");
+                    var dessert = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DES-001");
 
                     if (chickenRice != null && specialDrink != null)
                     {
@@ -319,9 +319,9 @@ namespace FoodHub.Infrastructure.Persistence
                         _context.SaveChanges();
                     }
 
-                    // Add a third combo referencing the new COMBO-03 menu item
+                    // Add a third combo referencing the new COMBO-001 menu item
                     var comboMenuItem = _context.MenuItems.FirstOrDefault(mi =>
-                        mi.Code == "COMBO-03"
+                        mi.Code == "COMBO-001"
                     );
 
                     if (
@@ -334,7 +334,7 @@ namespace FoodHub.Infrastructure.Persistence
                         var setMenu3 = new SetMenu
                         {
                             SetMenuId = Guid.NewGuid(),
-                            Code = "COMBO-03",
+                            Code = "COMBO-003",
                             ItemNumber = 3,
                             CategoryId = comboCategory.CategoryId,
                             Name = "Combo Ấm Áp",
@@ -622,7 +622,7 @@ namespace FoodHub.Infrastructure.Persistence
                 var admin = _context.Employees.FirstOrDefault(e => e.EmployeeCode == "M001001");
                 var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
                 var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
-                var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
+                var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-001");
                 if (
                     admin == null
                     || chickenRice == null
@@ -784,7 +784,7 @@ namespace FoodHub.Infrastructure.Persistence
                 {
                     var invoice1 = new Invoice
                     {
-                        InvoiceId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                        InvoiceId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                         OrderId = order1.OrderId,
                         InvoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-0001",
                         SubTotal = order1.OrderItems.Sum(oi => oi.Quantity * oi.UnitPriceSnapshot),
@@ -839,7 +839,7 @@ namespace FoodHub.Infrastructure.Persistence
                     CreatedAt = DateTime.UtcNow,
                 };
 
-                var drinkMenuItem = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
+                var drinkMenuItem = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-001");
 
                 if (drinkMenuItem != null)
                 {
@@ -1004,7 +1004,7 @@ namespace FoodHub.Infrastructure.Persistence
                 var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
                 var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
                 var springRoll = _context.MenuItems.FirstOrDefault(mi => mi.Code == "APP-001");
-                var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
+                var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-001");
 
                 if (admin != null && chickenRice != null && paidOrdersCount == 0)
                 {
@@ -1059,8 +1059,8 @@ namespace FoodHub.Infrastructure.Persistence
                 var chickenRice = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-001");
                 var beefNoodle = _context.MenuItems.FirstOrDefault(mi => mi.Code == "MAIN-002");
                 var springRoll = _context.MenuItems.FirstOrDefault(mi => mi.Code == "APP-001");
-                var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-007");
-                var dessert = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DES-003");
+                var specialDrink = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DRK-001");
+                var dessert = _context.MenuItems.FirstOrDefault(mi => mi.Code == "DES-001");
 
                 var servingOrders = _context
                     .Orders.Where(o => o.Status == OrderStatus.Serving)
