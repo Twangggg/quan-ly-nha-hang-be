@@ -142,27 +142,16 @@ namespace FoodHub.Domain.Entities
 
             foreach (var item in OrderItems.Where(item => !item.IsFinished()))
             {
-                if (item.Status == OrderItemStatus.Preparing)
+                var itemResult = item.Cancel();
+                if (!itemResult.IsSuccess)
                 {
-                    var itemResult = item.Cancel();
-                    if (!itemResult.IsSuccess)
-                    {
-                        return DomainResult.Failure(
-                            itemResult.ErrorCode ?? DomainErrors.Order.InvalidStatusForCancel
-                        );
-                    }
-
-                    continue;
+                    return DomainResult.Failure(
+                        itemResult.ErrorCode ?? DomainErrors.Order.InvalidStatusForCancel
+                    );
                 }
-
-                if (item.Status == OrderItemStatus.Cooking)
-                {
-                    item.Status = OrderItemStatus.Cancelled;
-                    item.CancelledAt = DateTime.UtcNow;
-                    item.UpdatedAt = DateTime.UtcNow;
-                    continue;
-                }
+                continue;
             }
+
 
             if (PromotionId.HasValue)
             {
