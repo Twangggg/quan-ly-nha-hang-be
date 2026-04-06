@@ -157,9 +157,10 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Billing
         [HttpPost("orders/{orderId:guid}/payos-qr")]
         [HasPermission(Permissions.Billing.Checkout)]
         [ProducesResponseType(typeof(Result<PaymentLinkResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> CreateQrPayment([FromRoute] Guid orderId)
+        public async Task<IActionResult> CreateQrPayment([FromRoute] Guid orderId, [FromBody] CreateQrPaymentCommand? command)
         {
-            var command = new CreateQrPaymentCommand { OrderId = orderId };
+            command ??= new CreateQrPaymentCommand();
+            command.OrderId = orderId;
             var result = await _mediator.Send(command);
             return HandleResult(result);
         }

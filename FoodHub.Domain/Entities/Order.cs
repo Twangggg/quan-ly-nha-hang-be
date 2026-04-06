@@ -149,7 +149,9 @@ namespace FoodHub.Domain.Entities
                         itemResult.ErrorCode ?? DomainErrors.Order.InvalidStatusForCancel
                     );
                 }
+                continue;
             }
+
 
             if (PromotionId.HasValue)
             {

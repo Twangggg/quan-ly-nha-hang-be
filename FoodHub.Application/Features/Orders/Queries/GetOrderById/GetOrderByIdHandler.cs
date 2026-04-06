@@ -60,6 +60,8 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrderById
                 );
             }
 
+            order.RecalculateTotalAmount();
+
             var response = _mapper.Map<GetOrderByIdResponse>(order);
 
             _logger.LogInformation("Successfully retrieved order {OrderId}", request.OrderId);

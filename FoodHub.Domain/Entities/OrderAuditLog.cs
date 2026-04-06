@@ -90,7 +90,7 @@ namespace FoodHub.Domain.Entities
             );
         }
 
-        private static OrderAuditLog Create(
+        public static OrderAuditLog Create(
             Guid orderId,
             Guid employeeId,
             string action,

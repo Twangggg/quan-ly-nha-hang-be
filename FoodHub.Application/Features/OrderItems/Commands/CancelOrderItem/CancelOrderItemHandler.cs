@@ -21,6 +21,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMessageService _messageService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ISignalRService _signalRService;
         private readonly IMapper _mapper;
         private readonly ILogger<CancelOrderItemHandler> _logger;
 
@@ -28,6 +29,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
             IUnitOfWork unitOfWork,
             IMessageService messageService,
             ICurrentUserService currentUserService,
+            ISignalRService signalRService,
             IMapper mapper,
             ILogger<CancelOrderItemHandler> logger
         )
@@ -35,6 +37,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
             _unitOfWork = unitOfWork;
             _messageService = messageService;
             _currentUserService = currentUserService;
+            _signalRService = signalRService;
             _mapper = mapper;
             _logger = logger;
         }
@@ -101,6 +104,95 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                // Determine if this item is a combo parent and get all order items
+                var allOrderItems = await orderItemRepository
+                    .Query()
+                    .Where(oi => oi.OrderId == orderItem.OrderId)
+                    .ToListAsync(cancellationToken);
+
+                // Log all items with their ComboParentOrderItemId for debugging
+                _logger.LogInformation(
+                    "CancelOrderItem: Order {OrderId} has {ItemCount} items. All items:\n{AllItems}",
+                    orderItem.OrderId,
+                    allOrderItems.Count,
+                    string.Join("\n", allOrderItems.Select(oi => 
+                        $"  - {oi.ItemNameSnapshot}: Status={oi.Status}, ComboParent={oi.ComboParentOrderItemId}"))
+                );
+
+                var isComboParent = allOrderItems.Any(oi => oi.ComboParentOrderItemId == orderItem.OrderItemId);
+                
+                _logger.LogInformation(
+                    "CancelOrderItem: Current item {ItemName} (ID: {ItemId}), IsComboParent={IsComboParent}",
+                    orderItem.ItemNameSnapshot,
+                    orderItem.OrderItemId,
+                    isComboParent
+                );
+
+                var comboChildrenList = new List<OrderItem>();
+
+                // Clear combo parent reference for this item if it's a child
+                if (orderItem.ComboParentOrderItemId.HasValue)
+                {
+                    _logger.LogInformation(
+                        "CancelOrderItem: Item has ComboParentOrderItemId={ParentId}, clearing it",
+                        orderItem.ComboParentOrderItemId);
+                    orderItem.ComboParentOrderItemId = null;
+                    orderItemRepository.Update(orderItem);
+                }
+
+                // If this is a combo parent, cancel all children (regardless of their status)
+                if (isComboParent)
+                {
+                    var comboChildren = allOrderItems
+                        .Where(oi => oi.ComboParentOrderItemId == orderItem.OrderItemId)
+                        .ToList();
+
+                    comboChildrenList.AddRange(comboChildren);
+
+                    _logger.LogInformation(
+                        "CancelOrderItem: Found {Count} combo children. Status breakdown: {StatusBreakdown}",
+                        comboChildren.Count,
+                        string.Join(", ", comboChildren.GroupBy(c => c.Status).Select(g => $"{g.Key}:{g.Count()}"))
+                    );
+
+                    foreach (var child in comboChildren)
+                    {
+                        _logger.LogInformation(
+                            "CancelOrderItem: Processing child {ChildName} (Id: {ChildId}, Status: {Status}, ComboParent: {ParentId})",
+                            child.ItemNameSnapshot,
+                            child.OrderItemId,
+                            child.Status,
+                            child.ComboParentOrderItemId
+                        );
+
+                        // Skip if already cancelled
+                        if (child.Status == OrderItemStatus.Cancelled)
+                        {
+                            _logger.LogInformation("CancelOrderItem: Child {ChildId} already cancelled, skipping", child.OrderItemId);
+                            continue;
+                        }
+
+                        child.Status = OrderItemStatus.Cancelled;
+                        child.CancelledAt = DateTime.UtcNow;
+                        child.UpdatedAt = DateTime.UtcNow;
+                        child.ComboParentOrderItemId = null; // Remove parent reference
+                        orderItemRepository.Update(child);
+
+                        var childAuditLog = new OrderAuditLog
+                        {
+                            LogId = Guid.NewGuid(),
+                            OrderId = child.OrderId,
+                            EmployeeId = auditorId.Value,
+                            Action = AuditLogActions.CancelOrderItem,
+                            CreatedAt = DateTime.UtcNow,
+                            ChangeReason = request.Reason,
+                            NewValue =
+                                $"{{\"orderItemId\": \"{child.OrderItemId}\", \"status\": \"Cancelled\", \"parentId\": \"{orderItem.OrderItemId}\"}}",
+                        };
+                        await _unitOfWork.Repository<OrderAuditLog>().AddAsync(childAuditLog);
+                    }
+                }
+
                 orderItemRepository.Update(orderItem);
 
                 var order = await _unitOfWork
@@ -128,7 +220,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                     CreatedAt = DateTime.UtcNow,
                     ChangeReason = request.Reason,
                     NewValue =
-                        $"{{\"orderItemId\": \"{orderItem.OrderItemId}\", \"status\": \"Cancelled\"}}",
+                        $"{{\"orderItemId\": \"{orderItem.OrderItemId}\", \"status\": \"Cancelled\", \"childrenCancelled\": {comboChildrenList.Count}}}",
                 };
 
                 await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
@@ -141,6 +233,23 @@ namespace FoodHub.Application.Features.OrderItems.Commands.CancelOrderItem
                     request.OrderItemId,
                     orderItem.OrderId
                 );
+
+                // Notify KDS via SignalR for the cancelled parent
+                await _signalRService.NotifyOrderItemStatusChangedAsync(
+                    orderItem.OrderItemId,
+                    OrderItemStatus.Cancelled,
+                    orderItem.StationSnapshot
+                );
+
+                // Notify KDS for all cancelled combo children
+                foreach (var child in comboChildrenList)
+                {
+                    await _signalRService.NotifyOrderItemStatusChangedAsync(
+                        child.OrderItemId,
+                        OrderItemStatus.Cancelled,
+                        child.StationSnapshot
+                    );
+                }
 
                 var response = _mapper.Map<CancelOrderItemResponse>(order);
                 return Result<CancelOrderItemResponse>.Success(response);

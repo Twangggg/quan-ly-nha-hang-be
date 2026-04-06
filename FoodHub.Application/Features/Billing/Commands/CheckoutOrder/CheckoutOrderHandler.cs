@@ -81,6 +81,48 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             // Recalculate from persisted line items so checkout does not depend on a stale TotalAmount.
             order.RecalculateTotalAmount();
 
+            var preparingItems = order.OrderItems
+                .Where(oi => oi.Status == Domain.Enums.OrderItemStatus.Preparing && !oi.IsFinished())
+                .ToList();
+
+            // Log details of preparing items for debugging
+            if (preparingItems.Count > 0)
+            {
+                _logger.LogWarning(
+                    "Checkout blocked: {Count} items still preparing for OrderId: {OrderId}. Items: {ItemNames}",
+                    preparingItems.Count,
+                    request.OrderId,
+                    string.Join(", ", preparingItems.Select(i => $"{i.ItemNameSnapshot} (Status: {i.Status}, ComboParent: {i.ComboParentOrderItemId})"))
+                );
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(
+                        MessageKeys.Billing.OrderItemsStillPreparing,
+                        preparingItems.Count
+                    ),
+                    ResultErrorType.BadRequest
+                );
+            }
+
+            var cookingItems = order.OrderItems
+                .Where(oi => oi.Status == Domain.Enums.OrderItemStatus.Cooking && !oi.IsFinished())
+                .ToList();
+
+            if (cookingItems.Count > 0)
+            {
+                _logger.LogWarning(
+                    "Checkout blocked: {Count} items still cooking for OrderId: {OrderId}",
+                    cookingItems.Count,
+                    request.OrderId
+                );
+                return Result<Guid>.Failure(
+                    _messageService.GetMessage(
+                        MessageKeys.Billing.OrderItemsStillCooking,
+                        cookingItems.Count
+                    ),
+                    ResultErrorType.BadRequest
+                );
+            }
+
             // Tính số tiền còn lại cần thanh toán
             var remainingAmount = order.GetRemainingAmount();
             var paymentLines = await ResolvePaymentLinesAsync(
@@ -91,10 +133,20 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             );
             var totalPayment = paymentLines.Sum(l => l.Amount);
 
+            _logger.LogInformation(
+                "Checkout payment debug - OrderId: {OrderId}, TotalAmount: {TotalAmount}, AmountPaid: {AmountPaid}, RemainingAmount: {RemainingAmount}, TotalPayment: {TotalPayment}, PaymentLinesCount: {Count}",
+                order.OrderId, order.TotalAmount, order.AmountPaid, remainingAmount, totalPayment, paymentLines.Count);
+
+            foreach (var line in paymentLines)
+            {
+                _logger.LogInformation("PaymentLine - ConfigId: {ConfigId}, Amount: {Amount}",
+                    line.PaymentMethodConfigId, line.Amount);
+            }
+
             if (totalPayment <= 0)
             {
                 return Result<Guid>.Failure(
-                    _messageService.GetMessage(MessageKeys.Billing.SplitTotalMismatch),
+                    _messageService.GetMessage(MessageKeys.Billing.PaymentAmountRequired),
                     ResultErrorType.BadRequest
                 );
             }

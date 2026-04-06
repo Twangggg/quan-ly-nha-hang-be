@@ -172,6 +172,7 @@ namespace FoodHub.Application.Features.OrderItems.Commands.AddOrderItem
             );
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+            order.RecalculateTotalAmount();
             _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
             await _unitOfWork.SaveChangeAsync(cancellationToken);
 

@@ -92,6 +92,12 @@ public class ExceptionMiddleware
                     ? messageService.GetMessage(forbiddenException.Message)
                     : messageService.GetMessage(MessageKeys.Common.Forbidden);
                 break;
+            case UnauthorizedAccessException unauthorizedException:
+                statusCode = (int)HttpStatusCode.Unauthorized;
+                message = messageService.HasKey(unauthorizedException.Message)
+                    ? messageService.GetMessage(unauthorizedException.Message)
+                    : messageService.GetMessage(MessageKeys.Common.Unauthorized);
+                break;
             default:
                 if (_env.IsDevelopment())
                 {

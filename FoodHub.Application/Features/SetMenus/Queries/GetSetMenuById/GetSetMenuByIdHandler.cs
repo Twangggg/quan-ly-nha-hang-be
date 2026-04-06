@@ -1,5 +1,6 @@
 using FoodHub.Application.Common.Constants;
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Inventory;
 using FoodHub.Application.Interfaces.Messaging;
@@ -17,11 +18,17 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenuById
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICacheService _cacheService;
+        private readonly IMessageService _messageService;
 
-        public GetSetMenuByIdHandler(IUnitOfWork unitOfWork, ICacheService cacheService)
+        public GetSetMenuByIdHandler(
+            IUnitOfWork unitOfWork,
+            ICacheService cacheService,
+            IMessageService messageService
+        )
         {
             _unitOfWork = unitOfWork;
             _cacheService = cacheService;
+            _messageService = messageService;
         }
 
         public async Task<Result<GetSetMenuByIdResponse>> Handle(GetSetMenuByIdQuery request, CancellationToken cancellationToken)
@@ -44,7 +51,10 @@ namespace FoodHub.Application.Features.SetMenus.Queries.GetSetMenuById
             var setMenu = await setMenuRepository.GetByIdAsync(request.SetMenuId);
             if (setMenu == null)
             {
-                return Result<GetSetMenuByIdResponse>.Failure($"Set Menu with ID '{request.SetMenuId}' not found.", ResultErrorType.NotFound);
+                return Result<GetSetMenuByIdResponse>.Failure(
+                    _messageService.GetMessage(MessageKeys.SetMenu.NotFound),
+                    ResultErrorType.NotFound
+                );
             }
 
             // Get SetMenuItems

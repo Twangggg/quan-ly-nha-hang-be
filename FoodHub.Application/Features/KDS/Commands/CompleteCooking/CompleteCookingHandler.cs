@@ -124,6 +124,22 @@ namespace FoodHub.Application.Features.KDS.Commands.CompleteCooking
 
                 orderItemRepository.Update(orderItem);
 
+                // Auto-set combo parent to Cooking when any child starts cooking
+                await UpdateComboParentToCookingIfNeededAsync(
+                    orderItem,
+                    orderItemRepository,
+                    auditorId.Value,
+                    cancellationToken
+                );
+
+                // Auto-complete combo parent if all children are completed
+                await AutoCompleteComboParentIfNeededAsync(
+                    orderItem,
+                    orderItemRepository,
+                    auditorId.Value,
+                    cancellationToken
+                );
+
                 // Save complete first to free up the slot properly
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
 
@@ -189,6 +205,152 @@ namespace FoodHub.Application.Features.KDS.Commands.CompleteCooking
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
+        }
+
+        private async Task AutoCompleteComboParentIfNeededAsync(
+            OrderItem completedChild,
+            IGenericRepository<OrderItem> orderItemRepository,
+            Guid auditorId,
+            CancellationToken cancellationToken
+        )
+        {
+            if (!completedChild.ComboParentOrderItemId.HasValue)
+            {
+                return;
+            }
+
+            var allOrderItems = await orderItemRepository
+                .Query()
+                .Where(oi => oi.OrderId == completedChild.OrderId)
+                .ToListAsync(cancellationToken);
+
+            var comboParent = allOrderItems.FirstOrDefault(
+                oi => oi.OrderItemId == completedChild.ComboParentOrderItemId.Value
+            );
+
+            if (comboParent == null)
+            {
+                return;
+            }
+
+            var comboChildren = allOrderItems
+                .Where(oi => oi.ComboParentOrderItemId == comboParent.OrderItemId)
+                .ToList();
+
+            var allChildrenCompletedOrCancelled = comboChildren.All(
+                child => child.Status == OrderItemStatus.Completed ||
+                         child.Status == OrderItemStatus.Cancelled
+            );
+
+            if (!allChildrenCompletedOrCancelled)
+            {
+                return;
+            }
+
+            if (comboParent.Status != OrderItemStatus.Preparing &&
+                comboParent.Status != OrderItemStatus.Cooking)
+            {
+                return;
+            }
+
+            var oldStatus = comboParent.Status;
+            comboParent.Status = OrderItemStatus.Completed;
+            comboParent.UpdatedAt = DateTime.UtcNow;
+            orderItemRepository.Update(comboParent);
+
+            var auditLog = Domain.Entities.OrderAuditLog.Create(
+                comboParent.OrderId,
+                auditorId,
+                AuditLogActions.KdsCompleteCooking,
+                null,
+                new { status = OrderItemStatus.Completed.ToString(), note = "Auto-completed when all children finished" }
+            );
+            await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+
+            _logger.LogInformation(
+                "Auto-completed combo parent {ParentId} because all {ChildCount} children are completed/cancelled",
+                comboParent.OrderItemId,
+                comboChildren.Count
+            );
+
+            // Notify KDS about the auto-completed parent
+            _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                comboParent.OrderItemId,
+                OrderItemStatus.Completed,
+                comboParent.StationSnapshot
+            );
+        }
+
+        private async Task UpdateComboParentToCookingIfNeededAsync(
+            OrderItem completedChild,
+            IGenericRepository<OrderItem> orderItemRepository,
+            Guid auditorId,
+            CancellationToken cancellationToken
+        )
+        {
+            if (!completedChild.ComboParentOrderItemId.HasValue)
+            {
+                return;
+            }
+
+            var allOrderItems = await orderItemRepository
+                .Query()
+                .Where(oi => oi.OrderId == completedChild.OrderId)
+                .ToListAsync(cancellationToken);
+
+            var comboParent = allOrderItems.FirstOrDefault(
+                oi => oi.OrderItemId == completedChild.ComboParentOrderItemId.Value
+            );
+
+            if (comboParent == null)
+            {
+                return;
+            }
+
+            if (comboParent.Status != OrderItemStatus.Preparing)
+            {
+                return;
+            }
+
+            var comboChildren = allOrderItems
+                .Where(oi => oi.ComboParentOrderItemId == comboParent.OrderItemId)
+                .ToList();
+
+            var anyChildCookingOrCompleted = comboChildren.Any(
+                child => child.Status == OrderItemStatus.Cooking ||
+                         child.Status == OrderItemStatus.Completed
+            );
+
+            if (!anyChildCookingOrCompleted)
+            {
+                return;
+            }
+
+            var oldStatus = comboParent.Status;
+            comboParent.Status = OrderItemStatus.Cooking;
+            comboParent.UpdatedAt = DateTime.UtcNow;
+            orderItemRepository.Update(comboParent);
+
+            var auditLog = OrderAuditLog.Create(
+                comboParent.OrderId,
+                auditorId,
+                AuditLogActions.KdsStartCooking,
+                new { status = oldStatus.ToString() },
+                new { status = OrderItemStatus.Cooking.ToString(), note = "Auto-set when child started cooking" }
+            );
+            await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+
+            _logger.LogInformation(
+                "Auto-set combo parent {ParentId} to Cooking because child {ChildId} started cooking",
+                comboParent.OrderItemId,
+                completedChild.OrderItemId
+            );
+
+            _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                comboParent.OrderItemId,
+                OrderItemStatus.Cooking,
+                comboParent.StationSnapshot
+            );
         }
     }
 }

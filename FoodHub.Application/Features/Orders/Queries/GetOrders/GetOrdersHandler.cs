@@ -41,7 +41,11 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
         )
         {
             var query = _unitOfWork.Repository<Order>().Query();
-            query = query.Include(o => o.Promotion);
+            query = query
+                .Include(o => o.Promotion)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.OptionGroups)
+                        .ThenInclude(og => og.OptionValues);
 
             var searchableFields = new List<Expression<Func<Order, string?>>> { o => o.OrderCode };
             query = query.ApplyGlobalSearch(request.Pagination.Search, searchableFields);
@@ -62,9 +66,25 @@ namespace FoodHub.Application.Features.Orders.Queries.GetOrders
             };
             query = query.ApplySorting(request.Pagination.OrderBy, sortMapping, o => o.OrderCode);
 
-            var pagedResult = await query
-                .ProjectTo<GetOrdersResponse>(_mapper.ConfigurationProvider)
-                .ToPagedResultAsync(request.Pagination);
+            var totalCount = await query.CountAsync(cancellationToken);
+            
+            var orders = await query
+                .Skip((request.Pagination.PageNumber - 1) * request.Pagination.PageSize)
+                .Take(request.Pagination.PageSize)
+                .ToListAsync(cancellationToken);
+
+            foreach (var order in orders)
+            {
+                order.RecalculateTotalAmount();
+            }
+
+            var mappedOrders = _mapper.Map<List<GetOrdersResponse>>(orders);
+            
+            var pagedResult = new PagedResult<GetOrdersResponse>(
+                mappedOrders,
+                request.Pagination,
+                totalCount
+            );
 
             return Result<PagedResult<GetOrdersResponse>>.Success(pagedResult);
         }
