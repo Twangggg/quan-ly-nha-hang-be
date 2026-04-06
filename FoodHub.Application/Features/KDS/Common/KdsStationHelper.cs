@@ -1,3 +1,4 @@
+using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
 
 namespace FoodHub.Application.Features.KDS.Common
@@ -14,6 +15,17 @@ namespace FoodHub.Application.Features.KDS.Common
             }
 
             return targetStations;
+        }
+
+        public static int GetWipLimitForStation(KdsSettings settings, string stationKey)
+        {
+            if (settings == null)
+            {
+                return KdsSettings.DefaultWipLimit;
+            }
+
+            var resolvedLimit = settings.ResolveWipLimit(stationKey);
+            return resolvedLimit ?? KdsSettings.DefaultWipLimit;
         }
     }
 }

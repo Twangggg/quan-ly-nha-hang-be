@@ -76,13 +76,19 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsItems
                 item => item.CreatedAt
             );
 
+            var stationKey = request.Station?.ToLowerInvariant() ?? "hotkitchen";
+            var wipLimit = KdsStationHelper.GetWipLimitForStation(settings, stationKey);
+
+            var activeItems = sortedItems.Take(wipLimit).ToList();
+
             _logger.LogInformation(
-                "Successfully fetched and prioritized {Count} KDS items for Station: {Station}",
-                sortedItems.Count,
-                request.Station
+                "Successfully fetched and prioritized {Count} KDS items for Station: {Station} (WIP limit: {WipLimit})",
+                activeItems.Count,
+                request.Station,
+                wipLimit
             );
 
-            return Result<List<KdsItemResponse>>.Success(sortedItems);
+            return Result<List<KdsItemResponse>>.Success(activeItems);
         }
     }
 }

@@ -353,6 +353,8 @@ namespace FoodHub.Domain.Entities
             var newDestinationItems = new List<OrderItem>();
             var deletedSourceItems = new List<OrderItem>();
 
+            var processedComboParents = new HashSet<Guid>();
+
             foreach (var splitRequest in splitRequests)
             {
                 var sourceItem = OrderItems.First(item =>
@@ -387,19 +389,22 @@ namespace FoodHub.Domain.Entities
                         mergeTarget.IncreaseQuantity(sourceItem.Quantity, updatedAt);
                         OrderItems.Remove(sourceItem);
                         deletedSourceItems.Add(sourceItem);
-                        continue;
                     }
-
-                    var moveResult = sourceItem.MoveToOrder(destinationOrder.OrderId, updatedAt);
-                    if (!moveResult.IsSuccess)
+                    else
                     {
-                        return DomainResult<SplitOrderPlan>.Failure(
-                            moveResult.ErrorCode ?? DomainErrors.Order.InvalidActionWithStatus
-                        );
+                        var moveResult = sourceItem.MoveToOrder(destinationOrder.OrderId, updatedAt);
+                        if (!moveResult.IsSuccess)
+                        {
+                            return DomainResult<SplitOrderPlan>.Failure(
+                                moveResult.ErrorCode ?? DomainErrors.Order.InvalidActionWithStatus
+                            );
+                        }
+
+                        OrderItems.Remove(sourceItem);
+                        destinationOrder.OrderItems.Add(sourceItem);
                     }
 
-                    OrderItems.Remove(sourceItem);
-                    destinationOrder.OrderItems.Add(sourceItem);
+                    MoveComboChildren(sourceItem.OrderItemId, destinationOrder, updatedAt, deletedSourceItems, newDestinationItems, processedComboParents);
                     continue;
                 }
 
@@ -427,11 +432,14 @@ namespace FoodHub.Domain.Entities
                 if (existingDestinationItem != null)
                 {
                     existingDestinationItem.IncreaseQuantity(clonedItem.Quantity, updatedAt);
-                    continue;
+                }
+                else
+                {
+                    destinationOrder.OrderItems.Add(clonedItem);
+                    newDestinationItems.Add(clonedItem);
                 }
 
-                destinationOrder.OrderItems.Add(clonedItem);
-                newDestinationItems.Add(clonedItem);
+                CloneComboChildren(sourceItem, clonedItem, destinationOrder, updatedAt, newDestinationItems);
             }
 
             RecalculateTotalAmount();
@@ -450,6 +458,74 @@ namespace FoodHub.Domain.Entities
             return DomainResult<SplitOrderPlan>.Success(
                 new SplitOrderPlan(newDestinationItems, deletedSourceItems)
             );
+        }
+
+        private void MoveComboChildren(
+            Guid parentOrderItemId,
+            Order destinationOrder,
+            DateTime updatedAt,
+            List<OrderItem> deletedSourceItems,
+            List<OrderItem> newDestinationItems,
+            HashSet<Guid> processedComboParents
+        )
+        {
+            if (processedComboParents.Contains(parentOrderItemId))
+            {
+                return;
+            }
+            processedComboParents.Add(parentOrderItemId);
+
+            var children = OrderItems.Where(item => item.ComboParentOrderItemId == parentOrderItemId).ToList();
+            foreach (var child in children)
+            {
+                if (!child.CanBeMoved())
+                {
+                    continue;
+                }
+
+                var mergeTarget = destinationOrder.OrderItems.FirstOrDefault(item =>
+                    item.HasSameConfiguration(child) && item.ComboParentOrderItemId == parentOrderItemId
+                );
+
+                if (mergeTarget != null)
+                {
+                    mergeTarget.IncreaseQuantity(child.Quantity, updatedAt);
+                    OrderItems.Remove(child);
+                    deletedSourceItems.Add(child);
+                }
+                else
+                {
+                    var moveResult = child.MoveToOrder(destinationOrder.OrderId, updatedAt);
+                    if (moveResult.IsSuccess)
+                    {
+                        OrderItems.Remove(child);
+                        destinationOrder.OrderItems.Add(child);
+                    }
+                }
+
+                MoveComboChildren(child.OrderItemId, destinationOrder, updatedAt, deletedSourceItems, newDestinationItems, processedComboParents);
+            }
+        }
+
+        private void CloneComboChildren(
+            OrderItem sourceParent,
+            OrderItem clonedParent,
+            Order destinationOrder,
+            DateTime updatedAt,
+            List<OrderItem> newDestinationItems
+        )
+        {
+            var children = OrderItems.Where(item => item.ComboParentOrderItemId == sourceParent.OrderItemId).ToList();
+            foreach (var child in children)
+            {
+                var clonedChild = child.CloneForOrder(destinationOrder.OrderId, child.Quantity, updatedAt);
+                clonedChild.ComboParentOrderItemId = clonedParent.OrderItemId;
+
+                destinationOrder.OrderItems.Add(clonedChild);
+                newDestinationItems.Add(clonedChild);
+
+                CloneComboChildren(child, clonedChild, destinationOrder, updatedAt, newDestinationItems);
+            }
         }
 
         public OrderItem CreateOrderItem(

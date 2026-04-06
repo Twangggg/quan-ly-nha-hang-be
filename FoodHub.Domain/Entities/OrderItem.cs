@@ -176,6 +176,7 @@ namespace FoodHub.Domain.Entities
                 OrderItemId = Guid.NewGuid(),
                 OrderId = destinationOrderId,
                 MenuItemId = MenuItemId,
+                ComboParentOrderItemId = ComboParentOrderItemId,
                 ItemCodeSnapshot = ItemCodeSnapshot,
                 ItemNameSnapshot = ItemNameSnapshot,
                 StationSnapshot = StationSnapshot,
@@ -183,6 +184,7 @@ namespace FoodHub.Domain.Entities
                 Quantity = quantity,
                 UnitPriceSnapshot = UnitPriceSnapshot,
                 ItemNote = ItemNote,
+                IsFreeItem = IsFreeItem,
                 CreatedAt = createdAt,
             };
 
