@@ -209,7 +209,7 @@ namespace FoodHub.Tests.Features.Order.Commands
                 OrderItems = new List<OrderItem>
                 {
                     new OrderItem { Status = OrderItemStatus.Preparing },
-                    new OrderItem { Status = OrderItemStatus.Cooking },
+                    new OrderItem { Status = OrderItemStatus.Preparing },
                 },
             };
 

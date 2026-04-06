@@ -60,7 +60,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
                     new()
                     {
                         OrderId = orderId,
-                        Status = OrderItemStatus.Preparing,
+                        Status = OrderItemStatus.Completed,
                         Quantity = 1,
                         UnitPriceSnapshot = 100m,
                     },
@@ -108,6 +108,86 @@ namespace FoodHub.Tests.Features.Billing.Commands
             order.Status.Should().Be(OrderStatus.Paid);
             order.TableId.Should().BeNull();
             _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnFailure_When_OrderHasUnfinishedItems()
+        {
+            var orderId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var cashMethodId = Guid.NewGuid();
+
+            var cashMethod = new PaymentMethodConfig
+            {
+                PaymentMethodConfigId = cashMethodId,
+                Name = "Tiền mặt",
+                Type = PaymentMethodType.Cash,
+                IsActive = true,
+                IsDefault = true,
+            };
+
+            var command = new CheckoutOrderCommand
+            {
+                OrderId = orderId,
+                PaymentLines = new List<PaymentLineDto>
+                {
+                    new() { PaymentMethodConfigId = cashMethodId, Amount = 110, AmountReceived = 200 }
+                }
+            };
+
+            var order = new FoodHub.Domain.Entities.Order
+            {
+                OrderId = orderId,
+                OrderType = OrderType.DineIn,
+                Status = OrderStatus.Serving,
+                OrderItems = new List<OrderItem>
+                {
+                    new()
+                    {
+                        OrderId = orderId,
+                        Status = OrderItemStatus.Preparing,
+                        Quantity = 1,
+                        UnitPriceSnapshot = 100m,
+                    },
+                },
+            };
+
+            var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
+            var mockPaymentMethodRepo = new Mock<IGenericRepository<PaymentMethodConfig>>();
+            var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            var mockOrderPaymentRepo = new Mock<IGenericRepository<OrderPayment>>();
+
+            mockOrderRepo
+                .Setup(r => r.Query())
+                .Returns(new List<FoodHub.Domain.Entities.Order> { order }.AsQueryable().BuildMock());
+            mockPaymentMethodRepo
+                .Setup(r => r.Query())
+                .Returns(new List<PaymentMethodConfig> { cashMethod }.AsQueryable().BuildMock());
+
+            _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(mockOrderRepo.Object);
+            _mockUow.Setup(u => u.Repository<PaymentMethodConfig>()).Returns(mockPaymentMethodRepo.Object);
+            _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
+            _mockUow.Setup(u => u.Repository<OrderPayment>()).Returns(mockOrderPaymentRepo.Object);
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
+            _mockMessageService
+                .Setup(m => m.GetMessage(MessageKeys.Billing.OrderItemsStillPreparing, It.IsAny<object[]>()))
+                .Returns("Order items still preparing");
+
+            var handler = new CheckoutOrderHandler(
+                _mockUow.Object,
+                _mockLogger.Object,
+                _mockMessageService.Object,
+                _mockCurrentUserService.Object,
+                _mockCacheService.Object,
+                new Mock<ISignalRService>().Object
+            );
+
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorType.Should().Be(ResultErrorType.BadRequest);
+            order.Status.Should().Be(OrderStatus.Serving);
+            _mockUow.Verify(u => u.SaveChangeAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -223,7 +303,7 @@ namespace FoodHub.Tests.Features.Billing.Commands
                     new()
                     {
                         OrderId = orderId,
-                        Status = OrderItemStatus.Preparing,
+                        Status = OrderItemStatus.Completed,
                         Quantity = 1,
                         UnitPriceSnapshot = 100m,
                     },
