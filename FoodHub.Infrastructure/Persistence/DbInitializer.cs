@@ -432,7 +432,7 @@ namespace FoodHub.Infrastructure.Persistence
                 {
                     new
                     {
-                        Code = "THITBO",
+                        Code = "THITBO-1",
                         Name = "Thịt bò",
                         Unit = "kg",
                         LowStockThreshold = 10m,
@@ -443,7 +443,7 @@ namespace FoodHub.Infrastructure.Persistence
                     },
                     new
                     {
-                        Code = "UCGA",
+                        Code = "UCGA-2",
                         Name = "Ức gà",
                         Unit = "kg",
                         LowStockThreshold = 12m,
@@ -454,7 +454,7 @@ namespace FoodHub.Infrastructure.Persistence
                     },
                     new
                     {
-                        Code = "RAUXALACH",
+                        Code = "RAUXALACH-3",
                         Name = "Rau xà lách",
                         Unit = "kg",
                         LowStockThreshold = 5m,
@@ -465,7 +465,7 @@ namespace FoodHub.Infrastructure.Persistence
                     },
                     new
                     {
-                        Code = "SUATUOI",
+                        Code = "SUATUOI-4",
                         Name = "Sữa tươi",
                         Unit = "l",
                         LowStockThreshold = 20m,
