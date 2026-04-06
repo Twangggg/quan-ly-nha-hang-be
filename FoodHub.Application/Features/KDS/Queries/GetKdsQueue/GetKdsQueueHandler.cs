@@ -45,6 +45,21 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
 
             var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
             var targetStations = KdsStationHelper.ExpandRequestedStations(request.Station);
+            var stationKey = request.Station?.ToLowerInvariant() ?? "hotkitchen";
+            var wipLimit = KdsStationHelper.GetWipLimitForStation(settings, stationKey);
+
+            var activeItemsCount = await _unitOfWork
+                .Repository<OrderItem>()
+                .Query()
+                .AsNoTrackingWithIdentityResolution()
+                .Where(oi =>
+                    targetStations.Contains(oi.StationSnapshot)
+                    && (
+                        oi.Status == OrderItemStatus.Preparing
+                        || oi.Status == OrderItemStatus.Cooking
+                    )
+                )
+                .CountAsync(cancellationToken);
 
             var query = await _unitOfWork
                 .Repository<OrderItem>()
@@ -128,9 +143,11 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
             }
 
             _logger.LogInformation(
-                "Successfully fetched scored and paginated {Count} items in Queue for Station: {Station}",
+                "Successfully fetched scored and paginated {Count} items in Queue for Station: {Station} (WIP limit: {WipLimit}, Active: {ActiveCount})",
                 sortedQueue.Count,
-                request.Station
+                request.Station,
+                wipLimit,
+                activeItemsCount
             );
 
             return Result<List<KdsQueueResponse>>.Success(sortedQueue);

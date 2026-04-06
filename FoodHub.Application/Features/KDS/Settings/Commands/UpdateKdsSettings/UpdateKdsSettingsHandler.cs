@@ -6,7 +6,9 @@ using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Domain.Entities;
+using FoodHub.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FoodHub.Application.Features.KDS.Settings.Commands.UpdateKdsSettings
@@ -48,6 +50,11 @@ namespace FoodHub.Application.Features.KDS.Settings.Commands.UpdateKdsSettings
             {
                 var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
 
+                var oldWipLimits = settings.StationWipLimits.ToDictionary(
+                    x => x.Station,
+                    x => x.Limit
+                );
+
                 var domainResult = settings.Update(
                     request.SortMode,
                     request.PriorityWeights.WaitTimePerMinute,
@@ -71,6 +78,8 @@ namespace FoodHub.Application.Features.KDS.Settings.Commands.UpdateKdsSettings
                     );
                 }
 
+                await AdjustWipLimitsAsync(settings, oldWipLimits, cancellationToken);
+
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync();
 
@@ -88,6 +97,58 @@ namespace FoodHub.Application.Features.KDS.Settings.Commands.UpdateKdsSettings
             {
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
+            }
+        }
+
+        private async Task AdjustWipLimitsAsync(
+            KdsSettings settings,
+            Dictionary<Station, int> oldWipLimits,
+            CancellationToken cancellationToken
+        )
+        {
+            var orderItemRepo = _unitOfWork.Repository<OrderItem>();
+
+            foreach (var stationLimit in settings.StationWipLimits)
+            {
+                if (!oldWipLimits.TryGetValue(stationLimit.Station, out var oldLimit))
+                {
+                    continue;
+                }
+
+                if (stationLimit.Limit >= oldLimit)
+                {
+                    continue;
+                }
+
+                var newLimit = stationLimit.Limit;
+                var stationName = stationLimit.Station.ToString();
+
+                var cookingItems = await orderItemRepo
+                    .Query()
+                    .Where(oi =>
+                        oi.StationSnapshot == stationName
+                        && oi.Status == OrderItemStatus.Cooking
+                    )
+                    .OrderBy(oi => oi.UpdatedAt)
+                    .ToListAsync(cancellationToken);
+
+                var itemsToDemote = cookingItems.Skip(newLimit).ToList();
+
+                if (itemsToDemote.Count > 0)
+                {
+                    _logger.LogInformation(
+                        "WIP limit reduced for {Station}. Demoting {Count} items from Cooking to Preparing",
+                        stationName,
+                        itemsToDemote.Count
+                    );
+
+                    foreach (var item in itemsToDemote)
+                    {
+                        item.Status = OrderItemStatus.Preparing;
+                        item.UpdatedAt = DateTime.UtcNow;
+                        orderItemRepo.Update(item);
+                    }
+                }
             }
         }
     }
