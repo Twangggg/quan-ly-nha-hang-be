@@ -93,34 +93,96 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var oldStatus = orderItem.Status;
-                var domainResult = orderItem.Reject(request.Reason);
-                if (!domainResult.IsSuccess)
+                var itemsToReject = new List<OrderItem> { orderItem };
+
+                // If this item is a combo child, reject the entire combo (parent + all children)
+                if (orderItem.ComboParentOrderItemId != null)
                 {
-                    _logger.LogWarning(
-                        "Domain logic failed for Reject: {OrderItemId}. Error: {Error}",
-                        request.OrderItemId,
-                        domainResult.ErrorCode
-                    );
+                    var comboItems = await orderItemRepository
+                        .Query()
+                        .Where(oi =>
+                            oi.ComboParentOrderItemId == orderItem.ComboParentOrderItemId
+                            && (
+                                oi.Status == OrderItemStatus.Preparing
+                                || oi.Status == OrderItemStatus.Cooking
+                            )
+                        )
+                        .ToListAsync(cancellationToken);
+
+                    var parentItem = await orderItemRepository
+                        .Query()
+                        .FirstOrDefaultAsync(oi =>
+                            oi.OrderItemId == orderItem.ComboParentOrderItemId
+                            && (
+                                oi.Status == OrderItemStatus.Preparing
+                                || oi.Status == OrderItemStatus.Cooking
+                            ),
+                            cancellationToken
+                        );
+
+                    if (parentItem != null)
+                    {
+                        itemsToReject.Add(parentItem);
+                    }
+
+                    itemsToReject.AddRange(comboItems);
+                }
+
+                var rejectedItemIds = new List<Guid>();
+
+                foreach (var itemToReject in itemsToReject.DistinctBy(i => i.OrderItemId))
+                {
+                    var oldStatus = itemToReject.Status;
+                    var domainResult = itemToReject.Reject(request.Reason);
+                    if (!domainResult.IsSuccess)
+                    {
+                        _logger.LogWarning(
+                            "Domain logic failed for Reject: {OrderItemId}. Error: {Error}",
+                            itemToReject.OrderItemId,
+                            domainResult.ErrorCode
+                        );
+                        continue;
+                    }
+
+                    var auditLog = new OrderAuditLog
+                    {
+                        LogId = Guid.NewGuid(),
+                        OrderId = itemToReject.OrderId,
+                        EmployeeId = auditorId.Value,
+                        Action = AuditLogActions.KdsReject,
+                        OldValue = $"\"{oldStatus}\"",
+                        NewValue = $"\"{OrderItemStatus.Rejected}\"",
+                        CreatedAt = DateTime.UtcNow,
+                    };
+                    await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+
+                    orderItemRepository.Update(itemToReject);
+                    rejectedItemIds.Add(itemToReject.OrderItemId);
+                }
+
+                if (!rejectedItemIds.Any())
+                {
                     await _unitOfWork.RollbackTransactionAsync();
                     return Result<Guid>.Failure(
                         _messageService.GetMessage(MessageKeys.OrderItem.MustBeCookingToReject)
                     );
                 }
 
-                var auditLog = new OrderAuditLog
-                {
-                    LogId = Guid.NewGuid(),
-                    OrderId = orderItem.OrderId,
-                    EmployeeId = auditorId.Value,
-                    Action = AuditLogActions.KdsReject,
-                    OldValue = $"\"{oldStatus}\"",
-                    NewValue = $"\"{OrderItemStatus.Rejected}\"",
-                    CreatedAt = DateTime.UtcNow,
-                };
-                await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);
+                var order = await _unitOfWork
+                    .Repository<Order>()
+                    .Query()
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.OptionGroups)
+                            .ThenInclude(og => og.OptionValues)
+                    .Include(o => o.Promotion)
+                    .FirstOrDefaultAsync(o => o.OrderId == orderItem.OrderId, cancellationToken);
 
-                orderItemRepository.Update(orderItem);
+                if (order != null)
+                {
+                    order.RecalculateTotalAmount();
+                    order.UpdatedAt = DateTime.UtcNow;
+                    _unitOfWork.Repository<Order>().Update(order);
+                }
 
                 // Save first to free up slot
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -141,21 +203,36 @@ namespace FoodHub.Application.Features.KDS.Commands.RejectOrderItem
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation(
-                    "Successfully rejected OrderItemId: {OrderItemId}",
-                    request.OrderItemId
+                    "Successfully rejected OrderItemIds: [{ItemIds}]",
+                    string.Join(", ", rejectedItemIds)
                 );
 
-                // Notify for rejected item
-                _ = _signalRService.NotifyOrderItemStatusChangedAsync(
-                    orderItem.OrderItemId,
-                    OrderItemStatus.Rejected,
-                    orderItem.StationSnapshot
-                );
+                // Notify for all rejected items (including combo parent/children)
+                var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
+                foreach (var rejectedId in rejectedItemIds)
+                {
+                    var rejectedOrderItem = itemsToReject.First(i => i.OrderItemId == rejectedId);
+
+                    _ = _signalRService.NotifyOrderItemStatusChangedAsync(
+                        rejectedOrderItem.OrderItemId,
+                        OrderItemStatus.Rejected,
+                        rejectedOrderItem.StationSnapshot
+                    );
+
+                    var response = KdsMappingHelper.MapToResponse(
+                        rejectedOrderItem,
+                        _priorityCalculator,
+                        settings
+                    );
+                    _ = _signalRService.NotifyKdsItemUpdatedAsync(
+                        rejectedOrderItem.StationSnapshot,
+                        response
+                    );
+                }
 
                 // Notify for Pulled Items
                 if (pulledItems.Any())
                 {
-                    var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
                     foreach (var pulledItem in pulledItems)
                     {
                         var response = KdsMappingHelper.MapToResponse(

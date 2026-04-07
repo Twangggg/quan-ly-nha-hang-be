@@ -1,11 +1,13 @@
 using FoodHub.Application.Common.Models;
 using FoodHub.Application.Constants;
 using FoodHub.Application.Extensions;
+using FoodHub.Application.Features.KDS.Common;
 using FoodHub.Application.Interfaces.Common;
+using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Inventory;
+using FoodHub.Application.Interfaces.Kds;
 using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
-using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
 using FoodHub.Domain.Entities;
 using FoodHub.Domain.Enums;
@@ -21,6 +23,8 @@ namespace FoodHub.Application.Features.KDS.Commands.ReturnOrderItem
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageService _messageService;
         private readonly ISignalRService _signalRService;
+        private readonly KdsPriorityCalculator _priorityCalculator;
+        private readonly IKdsSettingsProvider _kdsSettingsProvider;
         private readonly ILogger<ReturnOrderItemHandler> _logger;
 
         public ReturnOrderItemHandler(
@@ -28,6 +32,8 @@ namespace FoodHub.Application.Features.KDS.Commands.ReturnOrderItem
             ICurrentUserService currentUserService,
             IMessageService messageService,
             ISignalRService signalRService,
+            KdsPriorityCalculator priorityCalculator,
+            IKdsSettingsProvider kdsSettingsProvider,
             ILogger<ReturnOrderItemHandler> logger
         )
         {
@@ -35,6 +41,8 @@ namespace FoodHub.Application.Features.KDS.Commands.ReturnOrderItem
             _currentUserService = currentUserService;
             _messageService = messageService;
             _signalRService = signalRService;
+            _priorityCalculator = priorityCalculator;
+            _kdsSettingsProvider = kdsSettingsProvider;
             _logger = logger;
         }
 
@@ -124,6 +132,10 @@ namespace FoodHub.Application.Features.KDS.Commands.ReturnOrderItem
                     OrderItemStatus.Preparing,
                     orderItem.StationSnapshot
                 );
+
+                var settings = await _kdsSettingsProvider.GetOrCreateAsync(cancellationToken);
+                var response = KdsMappingHelper.MapToResponse(orderItem, _priorityCalculator, settings);
+                _ = _signalRService.NotifyKdsItemUpdatedAsync(orderItem.StationSnapshot, response);
 
                 return Result<Guid>.Success(orderItem.OrderItemId);
             }

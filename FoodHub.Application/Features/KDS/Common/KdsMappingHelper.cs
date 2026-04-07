@@ -19,7 +19,10 @@ namespace FoodHub.Application.Features.KDS.Common
             // but for a single notification it's usually acceptable or we fetch them.
             var totalOrderItems = oi.Order?.OrderItems?.Count ?? 0;
             var finishedOrderItems =
-                oi.Order?.OrderItems?.Count(x => x.Status == OrderItemStatus.Completed) ?? 0;
+                oi.Order?.OrderItems?.Count(x =>
+                    x.Status == OrderItemStatus.Completed
+                    || x.Status == OrderItemStatus.Rejected
+                    || x.Status == OrderItemStatus.Cancelled) ?? 0;
 
             var expectedTimeSeconds = (oi.MenuItem?.ExpectedTime ?? 0) * 60;
 
