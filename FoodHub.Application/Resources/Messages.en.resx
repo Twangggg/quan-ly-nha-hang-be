@@ -195,6 +195,9 @@
   <data name="StockInReceipt.AlreadyReversed" xml:space="preserve">
     <value>This stock-in receipt has already been reversed.</value>
   </data>
+  <data name="StockInReceipt.LotAlreadyUsed" xml:space="preserve">
+    <value>The receipt cannot be reversed because the lot has already been used.</value>
+  </data>
   <data name="StockOutReceipt.ExpiredLot" xml:space="preserve">
     <value>Cannot issue stock because one or more lots are expired.</value>
   </data>

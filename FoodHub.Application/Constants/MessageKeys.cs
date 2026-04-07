@@ -470,6 +470,7 @@ namespace FoodHub.Application.Constants
             public const string ReverseInsufficientStock =
                 "StockInReceipt.ReverseInsufficientStock";
             public const string AlreadyReversed = "StockInReceipt.AlreadyReversed";
+            public const string LotAlreadyUsed = "StockInReceipt.LotAlreadyUsed";
         }
 
         public static class StockOutReceipt

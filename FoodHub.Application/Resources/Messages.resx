@@ -227,6 +227,9 @@
   <data name="StockInReceipt.AlreadyReversed" xml:space="preserve">
     <value>Phieu nhap kho nay da duoc dao truoc do.</value>
   </data>
+  <data name="StockInReceipt.LotAlreadyUsed" xml:space="preserve">
+    <value>Khong the dao phieu vi lo hang da duoc su dung.</value>
+  </data>
   <data name="StockOutReceipt.ExpiredLot" xml:space="preserve">
     <value>Khong the xuat kho vi co lo da het han.</value>
   </data>
