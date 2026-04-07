@@ -256,6 +256,11 @@ namespace FoodHub.Domain.Entities
                 && Status != InventoryLotStatus.Disposed;
         }
 
+        public bool HasBeenUsed()
+        {
+            return OriginalQuantity != RemainingQuantity || Status == InventoryLotStatus.Depleted;
+        }
+
         public void RefreshStatus(DateTime currentDate, int expiryWarningDays = 7)
         {
             if (DeletedAt.HasValue)

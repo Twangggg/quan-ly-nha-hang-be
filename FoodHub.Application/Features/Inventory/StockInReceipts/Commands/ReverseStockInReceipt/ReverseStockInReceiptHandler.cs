@@ -164,6 +164,15 @@ namespace FoodHub.Application.Features.Inventory.StockInReceipts.Commands.Revers
 
                     if (lotsByItemId.TryGetValue(item.StockInReceiptItemId, out var lot))
                     {
+                        if (lot.HasBeenUsed())
+                        {
+                            throw new BusinessException(
+                                _messageService.GetMessage(
+                                    MessageKeys.StockInReceipt.LotAlreadyUsed
+                                )
+                            );
+                        }
+
                         if (!lot.CanReverseSourceStockIn())
                         {
                             throw new BusinessException(

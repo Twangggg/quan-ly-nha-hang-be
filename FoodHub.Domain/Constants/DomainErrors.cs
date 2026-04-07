@@ -187,6 +187,7 @@ namespace FoodHub.Domain.Constants
             public const string AlreadyDisposed = "InventoryLot.AlreadyDisposed";
             public const string InvalidAdjustment = "InventoryLot.InvalidAdjustment";
             public const string ReasonRequired = "InventoryLot.ReasonRequired";
+            public const string AlreadyUsed = "InventoryLot.AlreadyUsed";
         }
 
         public static class InventoryCheck
