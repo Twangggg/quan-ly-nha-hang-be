@@ -123,8 +123,13 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
                 }
 
                 _logger.LogInformation("Creating invoice items for OrderId: {OrderId}", request.OrderId);
-                // Create invoice items based on order items
-                var invoiceItems = order.OrderItems.Select(oi => new InvoiceItem
+                // Create invoice items based on non-voided order items only
+                var invoiceItems = order.OrderItems
+                    .Where(oi =>
+                        oi.Status != OrderItemStatus.Cancelled
+                        && oi.Status != OrderItemStatus.Rejected
+                    )
+                    .Select(oi => new InvoiceItem
                 {
                     InvoiceItemId = Guid.NewGuid(),
                     InvoiceId = invoiceId,
@@ -135,7 +140,8 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
                     Note = oi.ItemNote ?? string.Empty,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = auditorId
-                }).ToList();
+                })
+                .ToList();
 
                 _logger.LogInformation("Creating invoice entity for OrderId: {OrderId}", request.OrderId);
                 var invoice = new Invoice
@@ -200,5 +206,4 @@ namespace FoodHub.Application.Features.Invoices.Commands.CreateInvoice
         }
     }
 }
-
 
