@@ -94,13 +94,25 @@ namespace FoodHub.Tests.Features.KDS.Commands
                 CreatedAt = DateTime.UtcNow,
             };
 
+            var order = new FoodHub.Domain.Entities.Order
+            {
+                OrderId = currentItem.OrderId,
+                OrderCode = "ORD-TEST-001",
+                Status = OrderStatus.Serving,
+                OrderItems = new List<OrderItem> { currentItem },
+            };
+
             var items = new List<OrderItem> { currentItem, nextItem };
             var mockRepo = new Mock<IGenericRepository<OrderItem>>();
             mockRepo.Setup(r => r.Query()).Returns(items.AsQueryable().BuildMock());
 
+            var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
+            mockOrderRepo.Setup(r => r.Query()).Returns(new List<FoodHub.Domain.Entities.Order> { order }.AsQueryable().BuildMock());
+
             var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
 
             _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockRepo.Object);
+            _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(mockOrderRepo.Object);
             _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId);
 
