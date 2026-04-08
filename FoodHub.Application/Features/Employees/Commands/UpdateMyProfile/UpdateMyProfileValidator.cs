@@ -20,9 +20,9 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
                 .EmailAddress().WithMessage(messageService.GetMessage(MessageKeys.Profile.EmailInvalid));
 
             RuleFor(x => x.Phone)
-                .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneRequired))
                 .Matches(@"^(0|84|\+84)(3|5|7|8|9)([0-9]{8})$")
-                .WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneInvalid));
+                .WithMessage(messageService.GetMessage(MessageKeys.Profile.PhoneInvalid))
+                .When(x => !string.IsNullOrWhiteSpace(x.Phone));
 
             RuleFor(x => x.Address)
                 .NotEmpty().WithMessage(messageService.GetMessage(MessageKeys.Profile.AddressRequired))

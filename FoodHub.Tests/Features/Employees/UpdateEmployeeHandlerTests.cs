@@ -124,6 +124,65 @@ namespace FoodHub.Tests.Features.Employees
         }
 
         [Fact]
+        public async Task Handle_Should_KeepExistingPhone_When_RequestPhoneIsNull()
+        {
+            // Arrange
+            var auditorId = Guid.NewGuid();
+            var employeeId = Guid.NewGuid();
+            var command = new UpdateEmployeeCommand(
+                EmployeeId: employeeId,
+                Username: "updateduser",
+                FullName: "Updated Name",
+                Phone: null,
+                Address: "Updated Address",
+                Status: "Active",
+                DateOfBirth: "1990-01-01"
+            );
+
+            _mockCurrentUser.Setup(c => c.UserId).Returns(auditorId.ToString());
+
+            var employee = new Employee
+            {
+                EmployeeId = employeeId,
+                FullName = "Old Name",
+                Username = "olduser",
+                Phone = "0987654321",
+                Address = "Old Address",
+                Status = EmployeeStatus.Active,
+            };
+
+            var repo = new Mock<IGenericRepository<Employee>>();
+            repo.Setup(r => r.GetByIdAsync(employeeId)).ReturnsAsync(employee);
+            _mockUow.Setup(u => u.Repository<Employee>()).Returns(repo.Object);
+
+            var auditRepo = new Mock<IGenericRepository<AuditLog>>();
+            _mockUow.Setup(u => u.Repository<AuditLog>()).Returns(auditRepo.Object);
+
+            _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            _mockCache
+                .Setup(c => c.RemoveByPatternAsync("employee:list", It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            _mockCache
+                .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var response = new UpdateEmployeeResponse
+            {
+                EmployeeId = employeeId,
+                FullName = "Updated Name",
+            };
+            _mockMapper.Setup(m => m.Map<UpdateEmployeeResponse>(employee)).Returns(response);
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            employee.Phone.Should().Be("0987654321");
+        }
+
+        [Fact]
         public async Task Handle_Should_ReturnNotFound_When_EmployeeNotFound()
         {
             // Arrange
