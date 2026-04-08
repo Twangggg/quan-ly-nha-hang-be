@@ -92,14 +92,12 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
             employee.UpdateDetails(
                 string.IsNullOrWhiteSpace(request.FullName) ? employee.FullName : request.FullName,
                 request.Username ?? employee.Username,
-                request.Phone ?? employee.Phone,
+                string.IsNullOrWhiteSpace(request.Phone) ? employee.Phone : request.Phone.Trim(),
                 request.Address ?? employee.Address,
                 dateOfBirth,
                 nextStatus,
                 auditorId
             );
-
-            employeeRepository.Update(employee);
 
             employeeRepository.Update(employee);
 

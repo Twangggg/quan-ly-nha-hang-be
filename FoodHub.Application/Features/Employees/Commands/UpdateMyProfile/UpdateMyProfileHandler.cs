@@ -79,19 +79,24 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateMyProfile
 
             var fullName = request.FullName?.Trim() ?? string.Empty;
             var email = request.Email?.Trim().ToLower() ?? string.Empty;
-            var phone = request.Phone?.Trim() ?? string.Empty;
+            var phone = string.IsNullOrWhiteSpace(request.Phone)
+                ? employee.Phone
+                : request.Phone.Trim();
             var address = request.Address?.Trim() ?? string.Empty;
-            // Check duplicate phone number
-            var phoneExists = await repo.Query()
-                .AnyAsync(
-                    e => e.EmployeeId != request.EmployeeId && e.Phone == phone,
-                    cancellationToken
-                );
-            if (phoneExists)
+            // Check duplicate phone number only when the client supplies a new phone value.
+            if (!string.IsNullOrWhiteSpace(request.Phone))
             {
-                return Result<UpdateProfileResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Profile.PhoneExists)
-                );
+                var phoneExists = await repo.Query()
+                    .AnyAsync(
+                        e => e.EmployeeId != request.EmployeeId && e.Phone == phone,
+                        cancellationToken
+                    );
+                if (phoneExists)
+                {
+                    return Result<UpdateProfileResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Profile.PhoneExists)
+                    );
+                }
             }
 
             // Check duplicate email
