@@ -413,6 +413,12 @@ namespace FoodHub.Application.Constants
             public const string CostMin = "Ingredient.CostMin";
             public const string StockMin = "Ingredient.StockMin";
             public const string PhysicalStockMin = "Ingredient.PhysicalStockMin";
+            public const string InventoryGroupNotFound = "Ingredient.InventoryGroupNotFound";
+        }
+
+        public static class InventoryGroup
+        {
+            public const string NotFound = "InventoryGroup.NotFound";
         }
 
         public static class InventorySettings

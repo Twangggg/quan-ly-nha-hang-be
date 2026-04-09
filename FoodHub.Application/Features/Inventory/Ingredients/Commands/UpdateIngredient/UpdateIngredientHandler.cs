@@ -125,7 +125,8 @@ namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngr
                         ingredient.CurrentStock,
                         ingredient.CostPrice,
                         auditorId,
-                        request.InventoryGroupId ?? ingredient.InventoryGroupId,
+                        // Allow the client to clear the group by sending null.
+                        request.InventoryGroupId,
                         request.UseDefaultLowStockThreshold
                     );
 

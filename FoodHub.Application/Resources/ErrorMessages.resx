@@ -612,6 +612,9 @@
   <data name="Ingredient.ThresholdMin" xml:space="preserve">
     <value>Ngưỡng cảnh báo tồn kho phải lớn hơn hoặc bằng 0.</value>
   </data>
+  <data name="InventoryGroup.NotFound" xml:space="preserve">
+    <value>Không tìm thấy nhóm nguyên vật liệu.</value>
+  </data>
   <data name="Reservation.NotFound" xml:space="preserve">
     <value>Không tìm thấy thông tin đặt chỗ.</value>
   </data>
