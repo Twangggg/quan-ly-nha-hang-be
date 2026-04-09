@@ -453,6 +453,8 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
                 }
             }
 
+            SyncComboParentStatuses(groupedItems.Select(x => x.Item), comboComponents);
+
             // Save Changes
             try
             {
@@ -515,6 +517,36 @@ namespace FoodHub.Application.Features.Orders.Commands.SubmitOrderToKitchen
             }
 
             return Result<Guid>.Success(order.OrderId);
+        }
+
+        private static void SyncComboParentStatuses(
+            IEnumerable<OrderItem> comboParents,
+            IEnumerable<OrderItem> comboComponents
+        )
+        {
+            var childrenByParentId = comboComponents
+                .Where(item => item.ComboParentOrderItemId.HasValue)
+                .GroupBy(item => item.ComboParentOrderItemId!.Value)
+                .ToDictionary(group => group.Key, group => group.ToList());
+
+            foreach (var parent in comboParents.Where(parent =>
+                         parent.MenuItemId == null && parent.StationSnapshot == "None"))
+            {
+                if (!childrenByParentId.TryGetValue(parent.OrderItemId, out var children))
+                {
+                    continue;
+                }
+
+                if (
+                    children.Any(child =>
+                        child.Status == OrderItemStatus.Cooking
+                        || child.Status == OrderItemStatus.Completed
+                    )
+                )
+                {
+                    parent.StartCooking();
+                }
+            }
         }
 
         /// <summary>

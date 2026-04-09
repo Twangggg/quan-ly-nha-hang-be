@@ -850,6 +850,12 @@
   <data name="Ingredient.Inactive" xml:space="preserve">
     <value>Cannot create receipt for inactive ingredient.</value>
   </data>
+  <data name="Ingredient.OutOfStockForRecipe" xml:space="preserve">
+    <value>Ingredient {0} is out of stock and cannot be added to the recipe.</value>
+  </data>
+  <data name="Ingredient.InactiveForRecipe" xml:space="preserve">
+    <value>Ingredient {0} is inactive and cannot be added to the recipe.</value>
+  </data>
   <data name="Ingredient.CostMin" xml:space="preserve">
     <value>Unit cost must be greater than or equal to 0.</value>
   </data>

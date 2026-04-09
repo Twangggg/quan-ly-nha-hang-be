@@ -111,6 +111,101 @@ namespace FoodHub.Tests.Features.Billing.Commands
         }
 
         [Fact]
+        public async Task Handle_Should_ReturnSuccess_When_ComboParent_Is_Still_Preparing_But_All_Children_Finished()
+        {
+            var orderId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var cashMethodId = Guid.NewGuid();
+            var comboParentId = Guid.NewGuid();
+
+            var cashMethod = new PaymentMethodConfig
+            {
+                PaymentMethodConfigId = cashMethodId,
+                Name = "Tiền mặt",
+                Type = PaymentMethodType.Cash,
+                IsActive = true,
+                IsDefault = true,
+            };
+
+            var command = new CheckoutOrderCommand
+            {
+                OrderId = orderId,
+                PaymentLines = new List<PaymentLineDto>
+                {
+                    new() { PaymentMethodConfigId = cashMethodId, Amount = 110, AmountReceived = 110 }
+                }
+            };
+
+            var order = new FoodHub.Domain.Entities.Order
+            {
+                OrderId = orderId,
+                OrderType = OrderType.Takeaway,
+                Status = OrderStatus.Serving,
+                OrderItems = new List<OrderItem>
+                {
+                    new()
+                    {
+                        OrderItemId = comboParentId,
+                        OrderId = orderId,
+                        Status = OrderItemStatus.Preparing,
+                        Quantity = 1,
+                        UnitPriceSnapshot = 100m,
+                    },
+                    new()
+                    {
+                        OrderId = orderId,
+                        ComboParentOrderItemId = comboParentId,
+                        Status = OrderItemStatus.Completed,
+                        Quantity = 1,
+                        UnitPriceSnapshot = 0m,
+                    },
+                    new()
+                    {
+                        OrderId = orderId,
+                        ComboParentOrderItemId = comboParentId,
+                        Status = OrderItemStatus.Completed,
+                        Quantity = 1,
+                        UnitPriceSnapshot = 0m,
+                    },
+                },
+            };
+
+            var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
+            var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            var mockPaymentMethodRepo = new Mock<IGenericRepository<PaymentMethodConfig>>();
+            var mockOrderPaymentRepo = new Mock<IGenericRepository<OrderPayment>>();
+
+            mockOrderRepo
+                .Setup(r => r.Query())
+                .Returns(new List<FoodHub.Domain.Entities.Order> { order }.AsQueryable().BuildMock());
+            mockPaymentMethodRepo
+                .Setup(r => r.Query())
+                .Returns(new List<PaymentMethodConfig> { cashMethod }.AsQueryable().BuildMock());
+
+            _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(mockOrderRepo.Object);
+            _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
+            _mockUow.Setup(u => u.Repository<PaymentMethodConfig>()).Returns(mockPaymentMethodRepo.Object);
+            _mockUow.Setup(u => u.Repository<OrderPayment>()).Returns(mockOrderPaymentRepo.Object);
+            _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
+
+            var handler = new CheckoutOrderHandler(
+                _mockUow.Object,
+                _mockLogger.Object,
+                _mockMessageService.Object,
+                _mockCurrentUserService.Object,
+                _mockCacheService.Object,
+                new Mock<ISignalRService>().Object
+            );
+
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            order.Status.Should().Be(OrderStatus.Paid);
+            order.AmountPaid.Should().Be(110);
+        }
+
+        [Fact]
         public async Task Handle_Should_ReturnFailure_When_OrderHasUnfinishedItems()
         {
             var orderId = Guid.NewGuid();

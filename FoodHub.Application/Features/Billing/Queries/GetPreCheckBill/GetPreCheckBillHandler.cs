@@ -71,13 +71,15 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                             Quantity = oi.Quantity,
                             UnitPrice = oi.UnitPriceSnapshot,
                             OptionValues = oi
-                                .OptionGroups.SelectMany(og => og.OptionValues)
-                                .Select(ov => new PreCheckBillOptionValueSnapshot
-                                {
-                                    Label = ov.LabelSnapshot,
-                                    Quantity = ov.Quantity,
-                                    ExtraPrice = ov.ExtraPriceSnapshot,
-                                })
+                                .OptionGroups.SelectMany(og =>
+                                    og.OptionValues.Select(ov => new PreCheckBillOptionValueSnapshot
+                                    {
+                                        GroupName = og.GroupNameSnapshot,
+                                        Label = ov.LabelSnapshot,
+                                        Quantity = ov.Quantity,
+                                        ExtraPrice = ov.ExtraPriceSnapshot,
+                                    })
+                                )
                                 .ToList(),
                         })
                         .ToList(),
@@ -123,6 +125,15 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                         Quantity = oi.Quantity,
                         UnitPrice = oi.UnitPrice,
                         OptionsSummary = optionsSummary,
+                        OptionItems = oi.OptionValues
+                            .Select(ov => new PreCheckBillOptionItemDto
+                            {
+                                Label = BuildOptionLabel(ov.GroupName, ov.Label, ov.Quantity),
+                                Quantity = ov.Quantity,
+                                UnitPrice = ov.ExtraPrice,
+                                LineTotal = ov.ExtraPrice * ov.Quantity,
+                            })
+                            .ToList(),
                         LineTotal = lineTotal,
                     };
                 })
@@ -171,11 +182,17 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
                 return null;
 
             var parts = optionValues.Select(ov =>
-                ov.Quantity > 1 ? $"{ov.Label} x{ov.Quantity}" : ov.Label
+                BuildOptionLabel(ov.GroupName, ov.Label, ov.Quantity)
             );
 
             var summary = string.Join(", ", parts);
             return string.IsNullOrEmpty(summary) ? null : summary;
+        }
+
+        private static string BuildOptionLabel(string groupName, string label, int quantity)
+        {
+            var valueLabel = quantity > 1 ? $"{label} x{quantity}" : label;
+            return string.IsNullOrWhiteSpace(groupName) ? valueLabel : $"{groupName}: {valueLabel}";
         }
 
         private sealed class PreCheckBillOrderSnapshot
@@ -203,6 +220,7 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
 
         private sealed class PreCheckBillOptionValueSnapshot
         {
+            public string GroupName { get; init; } = string.Empty;
             public string Label { get; init; } = string.Empty;
             public int Quantity { get; init; }
             public decimal ExtraPrice { get; init; }

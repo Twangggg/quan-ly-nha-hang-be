@@ -81,6 +81,10 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.CancelShiftAssi
 
                 await _unitOfWork.CommitTransactionAsync();
                 await _cacheService.RemoveByPatternAsync(CacheKey.ShiftAssignmentList, cancellationToken);
+                await _cacheService.RemoveAsync(
+                    string.Format(CacheKey.ShiftAssignmentById, assignment.ShiftAssignmentId),
+                    cancellationToken
+                );
 
                 return Result<bool>.Success(true);
             }

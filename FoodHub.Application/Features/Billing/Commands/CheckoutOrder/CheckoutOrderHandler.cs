@@ -81,8 +81,9 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
             // Recalculate from persisted line items so checkout does not depend on a stale TotalAmount.
             order.RecalculateTotalAmount();
 
-            var preparingItems = order.OrderItems
-                .Where(oi => oi.Status == Domain.Enums.OrderItemStatus.Preparing && !oi.IsFinished())
+            var pendingKitchenItems = order.GetPendingKitchenItems();
+            var preparingItems = pendingKitchenItems
+                .Where(oi => oi.Status == Domain.Enums.OrderItemStatus.Preparing)
                 .ToList();
 
             // Log details of preparing items for debugging
@@ -103,8 +104,8 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 );
             }
 
-            var cookingItems = order.OrderItems
-                .Where(oi => oi.Status == Domain.Enums.OrderItemStatus.Cooking && !oi.IsFinished())
+            var cookingItems = pendingKitchenItems
+                .Where(oi => oi.Status == Domain.Enums.OrderItemStatus.Cooking)
                 .ToList();
 
             if (cookingItems.Count > 0)

@@ -400,6 +400,8 @@ namespace FoodHub.Application.Constants
             public const string UsedInRecipe = "Ingredient.UsedInRecipe";
             public const string NotFoundWithCode = "Ingredient.NotFoundWithCode";
             public const string AlreadyHasStock = "Ingredient.AlreadyHasStock";
+            public const string OutOfStockForRecipe = "Ingredient.OutOfStockForRecipe";
+            public const string InactiveForRecipe = "Ingredient.InactiveForRecipe";
 
             // Validator keys
             public const string IdRequired = "Ingredient.IdRequired";

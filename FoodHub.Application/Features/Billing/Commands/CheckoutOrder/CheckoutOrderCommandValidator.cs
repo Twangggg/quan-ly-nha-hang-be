@@ -27,7 +27,12 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
 
                     line.RuleFor(l => l.Amount)
                         .GreaterThan(0)
-                        .WithMessage(messageService.GetMessage(MessageKeys.Order.InvalidQuantity));
+                        .WithMessage(messageService.GetMessage(MessageKeys.Billing.PaymentAmountRequired));
+
+                    line.RuleFor(l => l.AmountReceived)
+                        .GreaterThan(0)
+                        .When(l => l.AmountReceived.HasValue)
+                        .WithMessage(messageService.GetMessage(MessageKeys.Billing.PaymentAmountRequired));
                 });
             });
 
@@ -36,6 +41,11 @@ namespace FoodHub.Application.Features.Billing.Commands.CheckoutOrder
                 RuleFor(v => v.LegacyPaymentMethod!.Value)
                     .Must(method => method != PaymentMethod.QRCode)
                     .WithMessage(messageService.GetMessage(MessageKeys.Order.InvalidAction));
+
+                RuleFor(v => v.LegacyAmountReceived)
+                    .GreaterThan(0)
+                    .When(v => v.LegacyAmountReceived.HasValue)
+                    .WithMessage(messageService.GetMessage(MessageKeys.Billing.PaymentAmountRequired));
             });
         }
     }

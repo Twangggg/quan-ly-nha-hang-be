@@ -78,11 +78,44 @@ namespace FoodHub.Application.Features.Inventory.Recipes.Commands.UpsertRecipe
 
             // Fetch all required ingredients to ensure they are tracked for Identity Resolution (Fix-up)
             // and cost calculation in the loop/domain method.
-            await _unitOfWork
+            var ingredientMap = await _unitOfWork
                 .Repository<Ingredient>()
                 .Query()
                 .Where(x => ingredientIds.Contains(x.IngredientId))
-                .ToListAsync(cancellationToken);
+                .ToDictionaryAsync(x => x.IngredientId, cancellationToken);
+
+            foreach (var item in request.Items)
+            {
+                if (!ingredientMap.TryGetValue(item.IngredientId, out var ingredient))
+                {
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(MessageKeys.Ingredient.NotFound),
+                        ResultErrorType.NotFound
+                    );
+                }
+
+                if (!ingredient.IsActive)
+                {
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(
+                            MessageKeys.Ingredient.InactiveForRecipe,
+                            ingredient.Name
+                        ),
+                        ResultErrorType.Conflict
+                    );
+                }
+
+                if (ingredient.CurrentStock <= 0)
+                {
+                    return Result<Guid>.Failure(
+                        _messageService.GetMessage(
+                            MessageKeys.Ingredient.OutOfStockForRecipe,
+                            ingredient.Name
+                        ),
+                        ResultErrorType.Conflict
+                    );
+                }
+            }
 
             if (ingredientIds.Count != ingredientIds.Distinct().Count())
             {

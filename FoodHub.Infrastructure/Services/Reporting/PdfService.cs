@@ -103,7 +103,7 @@ namespace FoodHub.Infrastructure.Services.Reporting
                                 table.Cell().PaddingVertical(3).Column(c =>
                                 {
                                     c.Item().Text(item.ItemName);
-                                    if (!string.IsNullOrEmpty(item.OptionsSummary))
+                                    if (item.OptionItems.Count == 0 && !string.IsNullOrEmpty(item.OptionsSummary))
                                     {
                                         c.Item().Text(item.OptionsSummary).FontSize(8).Italic();
                                     }
@@ -111,6 +111,29 @@ namespace FoodHub.Infrastructure.Services.Reporting
                                 table.Cell().PaddingVertical(3).AlignCenter().Text(item.Quantity.ToString());
                                 table.Cell().PaddingVertical(3).AlignRight().Text(item.UnitPrice.ToString("N0"));
                                 table.Cell().PaddingVertical(3).AlignRight().Text(item.LineTotal.ToString("N0"));
+
+                                foreach (var option in item.OptionItems)
+                                {
+                                    table.Cell().PaddingVertical(2).PaddingLeft(8).Text($"+ {option.Label}").FontSize(8).FontColor(Colors.Grey.Darken2);
+                                    table.Cell()
+                                        .PaddingVertical(2)
+                                        .AlignCenter()
+                                        .Text(option.Quantity.ToString())
+                                        .FontSize(8)
+                                        .FontColor(Colors.Grey.Darken2);
+                                    table.Cell()
+                                        .PaddingVertical(2)
+                                        .AlignRight()
+                                        .Text(option.UnitPrice.ToString("N0"))
+                                        .FontSize(8)
+                                        .FontColor(Colors.Grey.Darken2);
+                                    table.Cell()
+                                        .PaddingVertical(2)
+                                        .AlignRight()
+                                        .Text(option.LineTotal.ToString("N0"))
+                                        .FontSize(8)
+                                        .FontColor(Colors.Grey.Darken2);
+                                }
 
                                 if (i < data.Items.Count - 1)
                                 {

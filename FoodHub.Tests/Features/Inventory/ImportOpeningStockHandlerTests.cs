@@ -194,10 +194,12 @@ namespace FoodHub.Tests.Features.Inventory
         }
 
         [Fact]
-        public async Task Handle_Should_ThrowBusinessException_When_OpeningStockAlreadyLocked()
+        public async Task Handle_Should_Allow_Reimport_When_Cooldown_Elapsed()
         {
             var ingredient = Ingredient.Create("ING001", "Salt", "Kg", 0, 0, 0, null);
             var settings = InventorySettings.CreateDefault();
+            settings.MarkOpeningStockImported(DateTime.UtcNow.AddHours(-2));
+            settings.Update(7, 0, true, InventoryCostMethod.WeightedAverage, 31, 1);
             settings.CompleteOpeningStock();
 
             _ingredientRepo
@@ -211,24 +213,26 @@ namespace FoodHub.Tests.Features.Inventory
                 .ReturnsAsync("RCPT-LOCKED");
             _stockInReceiptRepo.Setup(x => x.AddAsync(It.IsAny<StockInReceipt>()))
                 .Returns(Task.CompletedTask);
-            _mockMessage
-                .Setup(x => x.GetMessage("OpeningStock.AlreadyLocked"))
-                .Returns("already locked");
+            _mockUow.Setup(x => x.BeginTransactionAsync()).Returns(Task.CompletedTask);
+            _mockUow.Setup(x => x.CommitTransactionAsync()).Returns(Task.CompletedTask);
+            _mockUow.Setup(x => x.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+            _mockCacheService
+                .Setup(x => x.RemoveAsync(CacheKey.InventorySettings, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
-            var action = async () =>
-                await _handler.Handle(
-                    new ImportOpeningStockCommand(
-                        new List<OpeningStockItemDto>
-                        {
-                            new() { IngredientId = ingredient.IngredientId, Quantity = 5, CostPrice = 2 },
-                        },
-                        true
-                    ),
-                    CancellationToken.None
-                );
+            var result = await _handler.Handle(
+                new ImportOpeningStockCommand(
+                    new List<OpeningStockItemDto>
+                    {
+                        new() { IngredientId = ingredient.IngredientId, Quantity = 5, CostPrice = 2 },
+                    },
+                    true
+                ),
+                CancellationToken.None
+            );
 
-            await action.Should().ThrowAsync<BusinessException>().WithMessage("already locked");
-            _mockUow.Verify(x => x.BeginTransactionAsync(), Times.Never);
+            result.IsSuccess.Should().BeTrue();
+            _mockUow.Verify(x => x.BeginTransactionAsync(), Times.Once);
         }
     }
 }
