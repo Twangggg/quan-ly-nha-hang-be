@@ -73,20 +73,6 @@ namespace FoodHub.Application.Features.Inventory.OpeningStock.Commands.ImportOpe
 
             if (
                 settings is not null
-                && (
-                    settings.OpeningStockStatus == Domain.Enums.OpeningStockStatus.Completed
-                    || settings.LockedAt.HasValue
-                )
-            )
-            {
-                _logger.LogWarning("ImportOpeningStock rejected because opening stock is locked");
-                throw new BusinessException(
-                    _messageService.GetMessage(MessageKeys.OpeningStock.AlreadyLocked)
-                );
-            }
-
-            if (
-                settings is not null
                 && !settings.IsOpeningStockImportAllowedAt(DateTime.UtcNow)
             )
             {
