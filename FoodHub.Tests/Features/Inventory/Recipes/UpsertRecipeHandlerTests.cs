@@ -37,6 +37,9 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
             _messageServiceMock
                 .Setup(x => x.GetMessage(It.IsAny<string>()))
                 .Returns((string s) => s);
+            _messageServiceMock
+                .Setup(x => x.GetMessage(It.IsAny<string>(), It.IsAny<object[]>()))
+                .Returns((string s, object[] _) => s);
 
             _handler = new UpsertRecipeHandler(
                 _unitOfWorkMock.Object,
@@ -72,20 +75,7 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
         {
             // Arrange
             var menuItemId = Guid.NewGuid();
-            var ingredientId = Guid.NewGuid();
             var userId = Guid.NewGuid();
-
-            var items = new List<UpsertRecipeItemDto>
-            {
-                new UpsertRecipeItemDto
-                {
-                    IngredientId = ingredientId,
-                    QuantityPerServing = 2,
-                    BaseUnit = "kg",
-                },
-            };
-
-            var command = new UpsertRecipeCommand(menuItemId, items, "Test Instructions", 10);
 
             var menuItem = new FoodHub.Domain.Entities.MenuItem
             {
@@ -106,6 +96,18 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
                 null,
                 userId
             );
+
+            var items = new List<UpsertRecipeItemDto>
+            {
+                new UpsertRecipeItemDto
+                {
+                    IngredientId = ingredient.IngredientId,
+                    QuantityPerServing = 2,
+                    BaseUnit = "kg",
+                },
+            };
+
+            var command = new UpsertRecipeCommand(menuItemId, items, "Test Instructions", 10);
 
             _currentUserServiceMock.Setup(x => x.UserId).Returns(userId.ToString());
 
@@ -349,6 +351,54 @@ namespace FoodHub.Tests.Features.Inventory.Recipes
             Assert.Equal(0, menuItem.CostPrice);
             mockRecipeRepo.Verify(x => x.Delete(It.IsAny<MenuItemIngredient>()), Times.Once);
             _unitOfWorkMock.Verify(x => x.CommitTransactionAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task Handle_OutOfStockIngredient_ShouldReturnFailure()
+        {
+            var menuItemId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+
+            var menuItem = new MenuItem
+            {
+                MenuItemId = menuItemId,
+                Name = "Test Product",
+                Code = "TEST01",
+                ImageUrl = "test.png",
+                Price = 100,
+                CostPrice = 0,
+            };
+
+            var ingredient = Ingredient.Create(
+                "ING01",
+                "Sold Out Ingredient",
+                "kg",
+                5,
+                0,
+                10,
+                null,
+                userId
+            );
+
+            var command = BuildCommand(menuItemId, (ingredient.IngredientId, 1, "kg"));
+
+            var mockMenuItemRepo = new Mock<IGenericRepository<MenuItem>>();
+            _unitOfWorkMock.Setup(x => x.Repository<MenuItem>()).Returns(mockMenuItemRepo.Object);
+            mockMenuItemRepo
+                .Setup(x => x.Query())
+                .Returns(new List<MenuItem> { menuItem }.AsQueryable().BuildMock());
+
+            var mockIngredientRepo = new Mock<IGenericRepository<Ingredient>>();
+            _unitOfWorkMock.Setup(x => x.Repository<Ingredient>()).Returns(mockIngredientRepo.Object);
+            mockIngredientRepo
+                .Setup(x => x.Query())
+                .Returns(new List<Ingredient> { ingredient }.AsQueryable().BuildMock());
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            Assert.False(result.IsSuccess);
+            Assert.Equal(MessageKeys.Ingredient.OutOfStockForRecipe, result.Error);
+            _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(), Times.Never);
         }
     }
 }
