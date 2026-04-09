@@ -155,6 +155,148 @@ namespace FoodHub.Tests.Features.Order.Commands
         }
 
         [Fact]
+        public async Task Handle_Should_Set_ComboParent_To_Cooking_When_Children_StartCooking()
+        {
+            var userId = Guid.NewGuid();
+            var comboMenuId = Guid.NewGuid();
+            var child1Id = Guid.NewGuid();
+            var child2Id = Guid.NewGuid();
+            var child3Id = Guid.NewGuid();
+            FoodHub.Domain.Entities.Order? capturedOrder = null;
+
+            var command = new SubmitOrderToKitchenCommand
+            {
+                OrderType = OrderType.Takeaway,
+                TableId = null,
+                Note = null,
+                Items = new List<OrderItemDto>
+                {
+                    new OrderItemDto
+                    {
+                        MenuItemId = comboMenuId,
+                        Quantity = 1,
+                        Note = null,
+                        SelectedOptions = null,
+                        ComboItems = new List<OrderItemComboDto>
+                        {
+                            new() { MenuItemId = child1Id, Quantity = 1 },
+                            new() { MenuItemId = child2Id, Quantity = 1 },
+                            new() { MenuItemId = child3Id, Quantity = 1 },
+                        },
+                    },
+                },
+            };
+
+            _mockCurrentUserService.Setup(s => s.UserId).Returns(userId.ToString());
+
+            var comboMenu = new SetMenu
+            {
+                SetMenuId = comboMenuId,
+                Name = "Combo Ấm Áp",
+                Code = "COMBO-003",
+                Price = 180000,
+                SetMenuItems = new List<SetMenuItem>
+                {
+                    new()
+                    {
+                        MenuItemId = child1Id,
+                        Quantity = 1,
+                        MenuItem = new MenuItem
+                        {
+                            MenuItemId = child1Id,
+                            Code = "DRK-001",
+                            Name = "Cocktail đặc biệt",
+                            Price = 0,
+                            Station = Station.Bar,
+                            ImageUrl = "",
+                        },
+                    },
+                    new()
+                    {
+                        MenuItemId = child2Id,
+                        Quantity = 1,
+                        MenuItem = new MenuItem
+                        {
+                            MenuItemId = child2Id,
+                            Code = "DES-001",
+                            Name = "Chè khúc bạch",
+                            Price = 0,
+                            Station = Station.Bar,
+                            ImageUrl = "",
+                        },
+                    },
+                    new()
+                    {
+                        MenuItemId = child3Id,
+                        Quantity = 1,
+                        MenuItem = new MenuItem
+                        {
+                            MenuItemId = child3Id,
+                            Code = "MAIN-001",
+                            Name = "Cơm gà xối mỡ",
+                            Price = 0,
+                            Station = Station.HotKitchen,
+                            ImageUrl = "",
+                        },
+                    },
+                },
+            };
+
+            var menuItems = comboMenu.SetMenuItems.Select(x => x.MenuItem).ToList();
+
+            var mockOrderRepo = new Mock<IGenericRepository<FoodHub.Domain.Entities.Order>>();
+            var mockMenuRepo = new Mock<IGenericRepository<MenuItem>>();
+            var mockSetMenuRepo = new Mock<IGenericRepository<SetMenu>>();
+            var mockAuditRepo = new Mock<IGenericRepository<OrderAuditLog>>();
+            var mockOrderItemRepo = new Mock<IGenericRepository<OrderItem>>();
+
+            mockOrderRepo
+                .Setup(r => r.Query())
+                .Returns(new List<FoodHub.Domain.Entities.Order>().AsQueryable().BuildMock());
+            mockOrderRepo
+                .Setup(r => r.AddAsync(It.IsAny<FoodHub.Domain.Entities.Order>()))
+                .Callback<FoodHub.Domain.Entities.Order>(order => capturedOrder = order)
+                .Returns(Task.CompletedTask);
+            mockMenuRepo
+                .Setup(r => r.Query())
+                .Returns(menuItems.AsQueryable().BuildMock());
+            mockSetMenuRepo
+                .Setup(r => r.Query())
+                .Returns(new List<SetMenu> { comboMenu }.AsQueryable().BuildMock());
+
+            _mockKdsAutoPullService
+                .Setup(x => x.GetAvailableSlotsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Dictionary<string, int>
+                {
+                    ["Bar"] = 1,
+                    ["HotKitchen"] = 1,
+                });
+
+            _mockUow.Setup(u => u.Repository<FoodHub.Domain.Entities.Order>()).Returns(mockOrderRepo.Object);
+            _mockUow.Setup(u => u.Repository<MenuItem>()).Returns(mockMenuRepo.Object);
+            _mockUow.Setup(u => u.Repository<SetMenu>()).Returns(mockSetMenuRepo.Object);
+            _mockUow.Setup(u => u.Repository<OrderAuditLog>()).Returns(mockAuditRepo.Object);
+            _mockUow.Setup(u => u.Repository<OrderItem>()).Returns(mockOrderItemRepo.Object);
+            _mockUow.Setup(u => u.SaveChangeAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            capturedOrder.Should().NotBeNull();
+            capturedOrder!.OrderItems.Should().Contain(item =>
+                item.MenuItemId == null
+                && item.ItemNameSnapshot == "Combo Ấm Áp (Combo)"
+                && item.Status == OrderItemStatus.Cooking
+            );
+            capturedOrder.OrderItems.Should().Contain(item =>
+                item.ComboParentOrderItemId == capturedOrder.OrderItems.First(parent =>
+                    parent.MenuItemId == null && parent.ItemNameSnapshot == "Combo Ấm Áp (Combo)"
+                ).OrderItemId
+                && item.Status == OrderItemStatus.Cooking
+            );
+        }
+
+        [Fact]
         public async Task Handle_Should_ReturnSuccess_When_OrderSubmitted_ForDineIn_WithValidTable()
         {
             // Arrange

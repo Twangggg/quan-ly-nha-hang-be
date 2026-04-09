@@ -1,4 +1,6 @@
 using System.Linq.Expressions;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -42,7 +44,7 @@ namespace FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignme
             CancellationToken cancellationToken)
         {
             var queryJson = JsonSerializer.Serialize(request.Pagination);
-            var cacheKey = $"{CacheKey.ShiftAssignmentList}:{queryJson.GetHashCode()}";
+            var cacheKey = BuildCacheKey(queryJson);
 
             var cached = await _cacheService.GetAsync<PagedResult<GetShiftAssignmentsResponse>>(cacheKey, cancellationToken);
             if (cached != null) return Result<PagedResult<GetShiftAssignmentsResponse>>.Success(cached);
@@ -85,6 +87,12 @@ namespace FoodHub.Application.Features.ShiftAssignments.Queries.GetShiftAssignme
 
             await _cacheService.SetAsync(cacheKey, pagedResult, CacheTTL.ShiftAssignments, cancellationToken);
             return Result<PagedResult<GetShiftAssignmentsResponse>>.Success(pagedResult);
+        }
+
+        private static string BuildCacheKey(string queryJson)
+        {
+            var hash = SHA256.HashData(Encoding.UTF8.GetBytes(queryJson));
+            return $"{CacheKey.ShiftAssignmentList}:{Convert.ToHexString(hash)}";
         }
     }
 }

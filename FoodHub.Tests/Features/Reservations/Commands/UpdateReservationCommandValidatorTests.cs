@@ -1,41 +1,24 @@
 using FluentAssertions;
 using FoodHub.Application.Constants;
-using FoodHub.Application.Features.Reservations.Commands.CreateReservation;
+using FoodHub.Application.Features.Reservations.Commands.UpdateReservation;
 using FoodHub.Application.Interfaces.Common;
 using FoodHub.Application.Interfaces.Reservations;
 using FoodHub.Domain.Entities;
 using Moq;
 
-namespace FoodHub.Tests.Features.Reservation.Commands
+namespace FoodHub.Tests.Features.Reservations.Commands
 {
-    public class CreateReservationCommandValidatorTests
+    public class UpdateReservationCommandValidatorTests
     {
         private readonly Mock<IMessageService> _messageService = new();
         private readonly Mock<IReservationSettingsProvider> _settingsProvider = new();
 
-        public CreateReservationCommandValidatorTests()
+        public UpdateReservationCommandValidatorTests()
         {
             _messageService.Setup(x => x.GetMessage(It.IsAny<string>()))
                 .Returns<string>(key => key);
             _messageService.Setup(x => x.GetMessage(It.IsAny<string>(), It.IsAny<object[]>()))
                 .Returns<string, object[]>((key, args) => $"{key}:{string.Join(',', args)}");
-        }
-
-        [Fact]
-        public async Task ValidateAsync_Should_Pass_When_ReservationRespectsLeadTime()
-        {
-            _settingsProvider
-                .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ReservationSettings.CreateDefault());
-
-            var validator = new CreateReservationCommandValidator(
-                _messageService.Object,
-                _settingsProvider.Object
-            );
-
-            var result = await validator.ValidateAsync(CreateValidCommand());
-
-            result.IsValid.Should().BeTrue();
         }
 
         [Fact]
@@ -59,7 +42,7 @@ namespace FoodHub.Tests.Features.Reservation.Commands
                 .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(settings);
 
-            var validator = new CreateReservationCommandValidator(
+            var validator = new UpdateReservationCommandValidator(
                 _messageService.Object,
                 _settingsProvider.Object
             );
@@ -67,46 +50,23 @@ namespace FoodHub.Tests.Features.Reservation.Commands
             var result = await validator.ValidateAsync(CreateValidCommand());
 
             result.IsValid.Should().BeFalse();
-            result.Errors.Should().ContainSingle(e => e.ErrorMessage.Contains(MessageKeys.Reservation.TimeTooSoon));
-        }
-
-        [Fact]
-        public async Task ValidateAsync_Should_Fail_When_Phone_Is_Invalid()
-        {
-            _settingsProvider
-                .Setup(x => x.GetOrCreateAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ReservationSettings.CreateDefault());
-
-            var validator = new CreateReservationCommandValidator(
-                _messageService.Object,
-                _settingsProvider.Object
-            );
-
-            var command = CreateValidCommand();
-            command.CustomerPhone = "12345";
-
-            var result = await validator.ValidateAsync(command);
-
-            result.IsValid.Should().BeFalse();
-            result.Errors.Should().Contain(e =>
-                e.ErrorMessage == MessageKeys.Profile.PhoneInvalid
+            result.Errors.Should().ContainSingle(e =>
+                e.ErrorMessage.Contains(MessageKeys.Reservation.TimeTooSoon)
             );
         }
 
-        private static CreateReservationCommand CreateValidCommand()
+        private static UpdateReservationCommand CreateValidCommand()
         {
             var reservationDateTime = GetReservationDateTime();
-            var targetDate = DateOnly.FromDateTime(reservationDateTime);
-            var targetTime = reservationDateTime.TimeOfDay;
 
-            return new CreateReservationCommand
+            return new UpdateReservationCommand
             {
+                ReservationId = Guid.NewGuid(),
                 CustomerName = "Nguyen Van A",
                 CustomerPhone = "0901234567",
-                ReservationDate = targetDate,
-                ReservationTime = targetTime,
+                ReservationDate = DateOnly.FromDateTime(reservationDateTime),
+                ReservationTime = reservationDateTime.TimeOfDay,
                 GuestCount = 2,
-                Note = "Test",
                 AreaId = Guid.NewGuid(),
             };
         }

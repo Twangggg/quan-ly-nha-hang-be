@@ -45,6 +45,34 @@ namespace FoodHub.Domain.Entities
         public bool IsActive() => Status == OrderStatus.Serving;
 
         /// <summary>
+        /// Gets items that still block checkout or order completion.
+        /// Combo parent placeholders are ignored once all of their children are finished.
+        /// </summary>
+        public IReadOnlyList<OrderItem> GetCountableKitchenItems()
+        {
+            var items = OrderItems?.ToList() ?? [];
+            return items.Where(item => !IsComboParentPlaceholder(item, items)).ToList();
+        }
+
+        /// <summary>
+        /// Gets kitchen-visible items that are still pending.
+        /// </summary>
+        public IReadOnlyList<OrderItem> GetPendingKitchenItems()
+        {
+            var items = GetCountableKitchenItems();
+            return items.Where(item => item.Status is OrderItemStatus.Preparing or OrderItemStatus.Cooking).ToList();
+        }
+
+        private static bool IsComboParentPlaceholder(
+            OrderItem item,
+            IReadOnlyCollection<OrderItem> allItems
+        )
+        {
+            return item.MenuItemId == null
+                && allItems.Any(child => child.ComboParentOrderItemId == item.OrderItemId);
+        }
+
+        /// <summary>
         /// Ghi nhận thanh toán một phần (tiền mặt). Cộng dồn vào AmountPaid nhưng KHÔNG đổi trạng thái.
         /// Order vẫn ở trạng thái Serving để chờ thanh toán phần còn lại.
         /// </summary>
@@ -178,7 +206,7 @@ namespace FoodHub.Domain.Entities
             => Math.Max(TotalAmount - (AmountPaid ?? 0), 0);
 
         public bool CanComplete() =>
-            Status == OrderStatus.Serving && OrderItems.All(oi => oi.IsFinished());
+            Status == OrderStatus.Serving && !GetPendingKitchenItems().Any();
 
         public DomainResult Complete()
         {
@@ -187,7 +215,7 @@ namespace FoodHub.Domain.Entities
                 return DomainResult.Failure(DomainErrors.Order.OrderNotReadyForCompletion);
             }
 
-            if (OrderItems.Any(oi => !oi.IsFinished()))
+            if (GetPendingKitchenItems().Any())
             {
                 return DomainResult.Failure(DomainErrors.Order.ItemsNotFinished);
             }

@@ -83,9 +83,9 @@ namespace FoodHub.Application.Features.KDS.Queries.GetKdsQueue
                 {
                     var orderType = oi.Order?.OrderType ?? OrderType.DineIn;
                     var isOrderPriority = oi.Order?.IsPriority ?? false;
-                    var totalOrderItems = oi.Order?.OrderItems?.Count ?? 0;
+                    var totalOrderItems = oi.Order?.GetCountableKitchenItems().Count ?? 0;
                     var finishedOrderItems =
-                        oi.Order?.OrderItems?.Count(x => x.Status == OrderItemStatus.Completed) ?? 0;
+                        oi.Order?.GetCountableKitchenItems().Count(x => x.Status == OrderItemStatus.Completed) ?? 0;
                     var expectedTimeSeconds = (oi.MenuItem?.ExpectedTime ?? 0) * 60;
 
                     return new KdsQueueResponse

@@ -46,6 +46,19 @@ namespace FoodHub.Application.Features.Employees.Commands.UpdateEmployee
             RuleFor(x => x.DateOfBirth)
                 .Must(dob => string.IsNullOrEmpty(dob) || DateOnly.TryParse(dob, out _))
                 .WithMessage(messageService.GetMessage(MessageKeys.Common.InvalidFormat));
+
+            RuleFor(x => x.DateOfBirth)
+                .Must(dob =>
+                {
+                    if (string.IsNullOrWhiteSpace(dob))
+                    {
+                        return true;
+                    }
+
+                    return DateOnly.TryParse(dob, out var parsedDob)
+                        && parsedDob < DateOnly.FromDateTime(DateTime.UtcNow);
+                })
+                .WithMessage(messageService.GetMessage(MessageKeys.Profile.DateOfBirthMustBePast));
         }
     }
 }

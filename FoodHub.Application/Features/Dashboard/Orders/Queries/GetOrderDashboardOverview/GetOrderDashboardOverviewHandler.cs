@@ -67,16 +67,16 @@ namespace FoodHub.Application.Features.Dashboard.Orders.Queries.GetOrderDashboar
                     !occupiedTableIds.Contains(x.TableId) && x.Status == TableStatus.Available
                 ),
                 PendingKitchenItems = activeOrders.Sum(x =>
-                    x.OrderItems.Count(item => item.Status == OrderItemStatus.Preparing)
+                    x.GetPendingKitchenItems().Count(item => item.Status == OrderItemStatus.Preparing)
                 ),
                 CookingItems = activeOrders.Sum(x =>
-                    x.OrderItems.Count(item => item.Status == OrderItemStatus.Cooking)
+                    x.GetPendingKitchenItems().Count(item => item.Status == OrderItemStatus.Cooking)
                 ),
                 CompletedItems = activeOrders.Sum(x =>
-                    x.OrderItems.Count(item => item.Status == OrderItemStatus.Completed)
+                    x.GetCountableKitchenItems().Count(item => item.Status == OrderItemStatus.Completed)
                 ),
                 WaitingCheckoutOrders = activeOrders.Count(x =>
-                    x.OrderItems.Any() && x.OrderItems.All(item => item.IsFinished())
+                    x.OrderItems.Any() && !x.GetPendingKitchenItems().Any()
                 ),
                 TodayPaidOrders = orders.Count(x =>
                     x.PaidAt.HasValue && x.PaidAt.Value.Date == utcToday
@@ -107,8 +107,8 @@ namespace FoodHub.Application.Features.Dashboard.Orders.Queries.GetOrderDashboar
                         TableLabel = BuildTableLabel(x),
                         TotalAmount = x.TotalAmount,
                         IsPriority = x.IsPriority,
-                        ItemCount = x.OrderItems.Sum(item => item.Quantity),
-                        FinishedItemCount = x.OrderItems.Count(item => item.IsFinished()),
+                        ItemCount = x.GetCountableKitchenItems().Sum(item => item.Quantity),
+                        FinishedItemCount = x.GetCountableKitchenItems().Count(item => item.IsFinished()),
                         CreatedAt = x.CreatedAt,
                     })
                     .ToList(),

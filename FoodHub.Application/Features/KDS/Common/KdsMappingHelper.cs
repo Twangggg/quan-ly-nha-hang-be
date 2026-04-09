@@ -17,9 +17,9 @@ namespace FoodHub.Application.Features.KDS.Common
 
             // Note: These might be slightly inaccurate if not all items are loaded,
             // but for a single notification it's usually acceptable or we fetch them.
-            var totalOrderItems = oi.Order?.OrderItems?.Count ?? 0;
+            var totalOrderItems = oi.Order?.GetCountableKitchenItems().Count ?? 0;
             var finishedOrderItems =
-                oi.Order?.OrderItems?.Count(x =>
+                oi.Order?.GetCountableKitchenItems().Count(x =>
                     x.Status == OrderItemStatus.Completed
                     || x.Status == OrderItemStatus.Rejected
                     || x.Status == OrderItemStatus.Cancelled) ?? 0;

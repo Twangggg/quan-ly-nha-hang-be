@@ -92,6 +92,10 @@ namespace FoodHub.Application.Features.ShiftAssignments.Commands.UpdateShiftAssi
                 await _unitOfWork.SaveChangeAsync(cancellationToken);
 
                 await _cacheService.RemoveByPatternAsync(CacheKey.ShiftAssignmentList, cancellationToken);
+                await _cacheService.RemoveAsync(
+                    string.Format(CacheKey.ShiftAssignmentById, assignment.ShiftAssignmentId),
+                    cancellationToken
+                );
 
                 assignment.Shift = shift;
                 return Result<AssignShiftResponse>.Success(_mapper.Map<AssignShiftResponse>(assignment));

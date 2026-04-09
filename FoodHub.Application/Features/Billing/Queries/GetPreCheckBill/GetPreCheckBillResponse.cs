@@ -112,7 +112,38 @@ namespace FoodHub.Application.Features.Billing.Queries.GetPreCheckBill
         public string? OptionsSummary { get; set; }
 
         /// <summary>
+        /// Danh sách tuỳ chọn chi tiết để in giống hoá đơn.
+        /// </summary>
+        public List<PreCheckBillOptionItemDto> OptionItems { get; set; } = new();
+
+        /// <summary>
         /// Thành tiền của dòng món.
+        /// </summary>
+        public decimal LineTotal { get; set; }
+    }
+
+    /// <summary>
+    /// Một dòng tuỳ chọn trên phiếu tạm tính.
+    /// </summary>
+    public class PreCheckBillOptionItemDto
+    {
+        /// <summary>
+        /// Nhãn hiển thị của tuỳ chọn.
+        /// </summary>
+        public string Label { get; set; } = null!;
+
+        /// <summary>
+        /// Số lượng tuỳ chọn.
+        /// </summary>
+        public int Quantity { get; set; }
+
+        /// <summary>
+        /// Phụ thu trên một đơn vị tuỳ chọn.
+        /// </summary>
+        public decimal UnitPrice { get; set; }
+
+        /// <summary>
+        /// Thành tiền của dòng tuỳ chọn.
         /// </summary>
         public decimal LineTotal { get; set; }
     }

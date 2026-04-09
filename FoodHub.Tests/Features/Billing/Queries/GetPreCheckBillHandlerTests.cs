@@ -58,7 +58,8 @@ namespace FoodHub.Tests.Features.Billing.Queries
             OrderItemStatus status = OrderItemStatus.Preparing,
             string name = "Phở Bò",
             int quantity = 1,
-            decimal unitPrice = 50000
+            decimal unitPrice = 50000,
+            List<OrderItemOptionGroup>? optionGroups = null
         )
         {
             return new OrderItem
@@ -70,7 +71,7 @@ namespace FoodHub.Tests.Features.Billing.Queries
                 Status = status,
                 Quantity = quantity,
                 UnitPriceSnapshot = unitPrice,
-                OptionGroups = new List<OrderItemOptionGroup>(),
+                OptionGroups = optionGroups ?? new List<OrderItemOptionGroup>(),
             };
         }
 
@@ -216,6 +217,59 @@ namespace FoodHub.Tests.Features.Billing.Queries
             result.Data.SubTotal.Should().Be(50000);
             result.Data.Vat.Should().Be(5000); // 10% VAT
             result.Data.TotalAmount.Should().Be(55000);
+        }
+
+        [Fact]
+        public async Task Handle_Should_ReturnOptionItems_ForEachOrderItemOption()
+        {
+            // Arrange
+            var orderId = Guid.NewGuid();
+            var order = CreateServingOrder(orderId);
+            order.OrderItems.Add(
+                CreateOrderItem(
+                    name: "Mì Ý",
+                    quantity: 1,
+                    unitPrice: 75000,
+                    optionGroups: new List<OrderItemOptionGroup>
+                    {
+                        new()
+                        {
+                            OrderItemOptionGroupId = Guid.NewGuid(),
+                            GroupNameSnapshot = "Topping",
+                            GroupTypeSnapshot = "SingleSelect",
+                            IsRequiredSnapshot = false,
+                            OptionValues = new List<OrderItemOptionValue>
+                            {
+                                new()
+                                {
+                                    OrderItemOptionValueId = Guid.NewGuid(),
+                                    LabelSnapshot = "Phô mai",
+                                    ExtraPriceSnapshot = 10000,
+                                    Quantity = 2,
+                                },
+                            },
+                        },
+                    }
+                )
+            );
+
+            SetupOrderRepo(new List<FoodHub.Domain.Entities.Order> { order });
+
+            var handler = CreateHandler();
+            var query = new GetPreCheckBillQuery { OrderId = orderId };
+
+            // Act
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Data!.Items.Should().HaveCount(1);
+            result.Data.Items[0].OptionItems.Should().HaveCount(1);
+            result.Data.Items[0].OptionItems[0].Label.Should().Be("Topping: Phô mai x2");
+            result.Data.Items[0].OptionItems[0].UnitPrice.Should().Be(10000);
+            result.Data.Items[0].OptionItems[0].LineTotal.Should().Be(20000);
+            result.Data.SubTotal.Should().Be(95000);
+            result.Data.TotalAmount.Should().Be(104500);
         }
     }
 }

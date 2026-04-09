@@ -96,7 +96,7 @@ namespace FoodHub.Application.Features.Orders.Commands.CompleteOrder
                 Action = AuditLogActions.CompleteOrder,
                 CreatedAt = DateTime.UtcNow,
                 NewValue =
-                    $"{{\"finalAmount\": {order.TotalAmount}, \"itemsCount\": {order.OrderItems.Count}}}",
+                    $"{{\"finalAmount\": {order.TotalAmount}, \"itemsCount\": {order.GetCountableKitchenItems().Count}}}",
             };
 
             await _unitOfWork.Repository<OrderAuditLog>().AddAsync(auditLog);

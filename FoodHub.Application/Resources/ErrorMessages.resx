@@ -225,6 +225,27 @@
   <data name="Profile.EmailExists" xml:space="preserve">
     <value>Email đã được sử dụng.</value>
   </data>
+  <data name="Profile.EmployeeIdRequired" xml:space="preserve">
+    <value>Mã nhân viên không được để trống.</value>
+  </data>
+  <data name="Profile.FullNameRequired" xml:space="preserve">
+    <value>Họ và tên không được để trống.</value>
+  </data>
+  <data name="Profile.FullNameMaxLength" xml:space="preserve">
+    <value>Họ và tên không được vượt quá 100 ký tự.</value>
+  </data>
+  <data name="Profile.EmailRequired" xml:space="preserve">
+    <value>Email không được để trống.</value>
+  </data>
+  <data name="Profile.EmailInvalid" xml:space="preserve">
+    <value>Email không đúng định dạng.</value>
+  </data>
+  <data name="Profile.PhoneRequired" xml:space="preserve">
+    <value>Số điện thoại không được để trống.</value>
+  </data>
+  <data name="Profile.PhoneInvalid" xml:space="preserve">
+    <value>Số điện thoại không hợp lệ.</value>
+  </data>
   <data name="Profile.AddressRequired" xml:space="preserve">
     <value>Địa chỉ không được để trống.</value>
   </data>
