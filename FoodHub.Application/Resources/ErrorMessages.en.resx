@@ -471,6 +471,9 @@
   <data name="Ingredient.ThresholdMin" xml:space="preserve">
     <value>Low stock threshold must be greater than or equal to 0.</value>
   </data>
+  <data name="InventoryGroup.NotFound" xml:space="preserve">
+    <value>Inventory group not found.</value>
+  </data>
   <data name="Reservation.NotFound" xml:space="preserve">
     <value>Reservation not found.</value>
   </data>

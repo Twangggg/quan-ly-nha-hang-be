@@ -6,24 +6,28 @@ using FoodHub.Application.Interfaces.Messaging;
 using FoodHub.Application.Interfaces.Reporting;
 using FoodHub.Application.Interfaces.External;
 using FoodHub.Application.Interfaces.Security;
+using FoodHub.Domain.Entities;
 
 namespace FoodHub.Application.Features.Inventory.Ingredients.Commands.UpdateIngredient
 {
     public class UpdateIngredientValidator : AbstractValidator<UpdateIngredientCommand>
     {
-        public UpdateIngredientValidator(IMessageService messageService)
+        public UpdateIngredientValidator(
+            IUnitOfWork unitOfWork,
+            IMessageService messageService)
         {
             RuleFor(x => x.IngredientId)
                 .NotEmpty()
                 .WithMessage(messageService.GetMessage(MessageKeys.Ingredient.IdRequired));
 
-            RuleFor(x => x)
-                .Must(
-                    command =>
-                        command.InventoryGroupId == null
-                        || command.InventoryGroupId == command.IngredientId
-                )
-                .WithMessage(messageService.GetMessage(MessageKeys.Common.IdMismatch));
+            RuleFor(x => x.InventoryGroupId)
+                .MustAsync(
+                    async (groupId, _) =>
+                        groupId == null
+                        || await unitOfWork.Repository<InventoryGroup>().AnyAsync(
+                            x => x.InventoryGroupId == groupId))
+                .WithMessage(messageService.GetMessage(MessageKeys.InventoryGroup.NotFound))
+                .When(x => x.InventoryGroupId.HasValue);
 
             RuleFor(x => x.Code)
                 .NotEmpty()
