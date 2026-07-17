@@ -28,7 +28,7 @@ namespace FoodHub.Domain.Entities
 
         public static bool IsManagerRole(EmployeeRole role)
         {
-            return role == EmployeeRole.Manager;
+            return role == EmployeeRole.Manager || role == EmployeeRole.Admin;
         }
 
         public static bool IsDifferentRole(EmployeeRole currentRole, EmployeeRole newRole)
@@ -109,9 +109,9 @@ namespace FoodHub.Domain.Entities
                 throw new InvalidOperationException("New role must be different.");
             }
 
-            if (newRole == EmployeeRole.Manager)
+            if (newRole == EmployeeRole.Manager || newRole == EmployeeRole.Admin)
             {
-                throw new InvalidOperationException("Promoting to manager is not allowed.");
+                throw new InvalidOperationException("Promoting to manager or admin is not allowed.");
             }
 
             var timestamp = DateTime.UtcNow.Ticks;

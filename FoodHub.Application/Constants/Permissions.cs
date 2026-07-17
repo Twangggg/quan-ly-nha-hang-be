@@ -161,6 +161,11 @@ namespace FoodHub.Application.Constants
             public const string CheckIn = "Permissions.Attendances.CheckIn";
             public const string CheckOut = "Permissions.Attendances.CheckOut";
         }
+
+        public static class Settings
+        {
+            public const string Manage = "Permissions.Settings.Manage";
+        }
     }
 }
 

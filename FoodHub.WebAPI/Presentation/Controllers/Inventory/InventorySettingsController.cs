@@ -30,7 +30,7 @@ namespace FoodHub.Presentation.Controllers
         /// </summary>
         /// <response code="200">Trả về cấu hình kho.</response>
         [HttpGet("/api/v{version:apiVersion}/inventory/settings")]
-        [HasPermission(Permissions.Inventory.View)]
+        [HasPermission(Permissions.Settings.Manage)]
         [ProducesResponseType(
             typeof(Result<GetInventorySettingsResponse>),
             StatusCodes.Status200OK
@@ -47,7 +47,7 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="command">Giá trị cấu hình cần cập nhật.</param>
         /// <response code="200">Cập nhật thành công, trả về cấu hình mới.</response>
         [HttpPut("/api/v{version:apiVersion}/inventory/settings")]
-        [HasPermission(Permissions.Inventory.Update)]
+        [HasPermission(Permissions.Settings.Manage)]
         [ProducesResponseType(
             typeof(Result<UpdateInventorySettingsResponse>),
             StatusCodes.Status200OK

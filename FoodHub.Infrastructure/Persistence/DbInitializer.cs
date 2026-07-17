@@ -32,10 +32,23 @@ namespace FoodHub.Infrastructure.Persistence
             RepairKnownSchemaDrift();
 
             // Seed Data
-            if (!_context.Employees.Any())
+            if (!_context.Employees.Any(e => e.Role == EmployeeRole.Admin))
             {
                 var employees = new Employee[]
                 {
+                    new Employee
+                    {
+                        EmployeeId = Guid.NewGuid(),
+                        EmployeeCode = "A000001",
+                        Username = "superadmin",
+                        PasswordHash = _passwordService.HashPassword("New123!!"),
+                        FullName = "System Admin",
+                        Email = "superadmin@foodhub.com",
+                        Phone = "0909000000",
+                        Role = EmployeeRole.Admin,
+                        Status = EmployeeStatus.Active,
+                        CreatedAt = DateTime.UtcNow,
+                    },
                     new Employee
                     {
                         EmployeeId = Guid.NewGuid(),

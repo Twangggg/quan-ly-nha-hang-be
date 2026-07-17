@@ -15,16 +15,83 @@ namespace FoodHub.Infrastructure.Security
         {
             return role switch
             {
-                EmployeeRole.Manager => GetAllPermissions(),
+                EmployeeRole.Admin => GetAllPermissions(),
+                EmployeeRole.Manager => GetManagerPermissions(),
                 EmployeeRole.Cashier => GetCashierPermissions(),
                 EmployeeRole.ChefBar => GetChefBarPermissions(),
                 _ => Enumerable.Empty<string>(),
             };
         }
 
+        private IEnumerable<string> GetManagerPermissions()
+        {
+            return new List<string>
+            {
+                Permissions.Tables.View,
+                Permissions.Tables.Create,
+                Permissions.Tables.Update,
+                Permissions.Tables.UpdateStatus,
+                Permissions.Tables.Delete,
+                Permissions.Areas.View,
+                Permissions.Areas.Create,
+                Permissions.Areas.Update,
+                Permissions.Areas.Delete,
+                Permissions.Orders.View,
+                Permissions.Orders.Create,
+                Permissions.Orders.Update,
+                Permissions.Orders.Cancel,
+                Permissions.Orders.Complete,
+                Permissions.Orders.SubmitToKitchen,
+                Permissions.Orders.ChangeTable,
+                Permissions.Orders.Merge,
+                Permissions.Orders.Split,
+                Permissions.Kds.View,
+                Permissions.Kds.Manage,
+                Permissions.Kds.Reject,
+                Permissions.Kds.Return,
+                Permissions.Billing.Checkout,
+                Permissions.Billing.ViewHistory,
+                Permissions.Billing.PreCheckBill,
+                Permissions.Billing.SplitBill,
+                Permissions.Invoices.View,
+                Permissions.Invoices.Create,
+                Permissions.Invoices.ViewPdf,
+                Permissions.PaymentMethods.View,
+                Permissions.Vouchers.View,
+                Permissions.Vouchers.Create,
+                Permissions.Vouchers.Update,
+                Permissions.Vouchers.Delete,
+                Permissions.Vouchers.UpdateStatus,
+                Permissions.Vouchers.Apply,
+                Permissions.Vouchers.Unapply,
+                Permissions.Shifts.View,
+                Permissions.Shifts.Create,
+                Permissions.Shifts.Update,
+                Permissions.Shifts.Deactivate,
+                Permissions.ShiftAssignments.View,
+                Permissions.ShiftAssignments.Create,
+                Permissions.ShiftAssignments.Update,
+                Permissions.ShiftAssignments.Delete,
+                Permissions.ShiftAssignments.ViewMyShifts,
+                Permissions.Attendances.View,
+                Permissions.Attendances.CheckIn,
+                Permissions.Attendances.CheckOut,
+                Permissions.Images.Manage,
+                Permissions.Reservations.View,
+                Permissions.Reservations.Create,
+                Permissions.Reservations.Update,
+                Permissions.Reservations.Cancel,
+                Permissions.Reservations.CheckIn,
+                Permissions.MenuItems.View,
+                Permissions.Categories.View,
+                Permissions.SetMenus.View,
+                Permissions.Employees.View
+            };
+        }
+
         private IEnumerable<string> GetAllPermissions()
         {
-            // Manager has all permissions
+            // Admin has all permissions
             return typeof(Permissions)
                 .GetNestedTypes()
                 .SelectMany(t =>

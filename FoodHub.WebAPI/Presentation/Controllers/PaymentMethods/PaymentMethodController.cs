@@ -64,7 +64,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.PaymentMethods
         /// <response code="200">Tạo thành công.</response>
         /// <response code="400">Lỗi validation hoặc tên trùng.</response>
         [HttpPost]
-        [HasPermission(Permissions.PaymentMethods.Create)]
+        [HasPermission(Permissions.Settings.Manage)]
         [ProducesResponseType(typeof(Result<CreatePaymentMethodResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] CreatePaymentMethodCommand command)
@@ -83,7 +83,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.PaymentMethods
         /// <response code="404">Không tìm thấy.</response>
         /// <response code="400">Không thể tắt phương thức mặc định.</response>
         [HttpPatch("{id:guid}/toggle-status")]
-        [HasPermission(Permissions.PaymentMethods.ToggleStatus)]
+        [HasPermission(Permissions.Settings.Manage)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

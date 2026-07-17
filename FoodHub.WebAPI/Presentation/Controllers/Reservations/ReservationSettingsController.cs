@@ -24,7 +24,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         }
 
         [HttpGet("/api/v{version:apiVersion}/reservations/settings")]
-        [HasPermission(Permissions.Reservations.View)]
+        [HasPermission(Permissions.Settings.Manage)]
         [ProducesResponseType(typeof(Result<GetReservationSettingsResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetReservationSettings()
         {
@@ -33,7 +33,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.Reservations
         }
 
         [HttpPut("/api/v{version:apiVersion}/reservations/settings")]
-        [HasPermission(Permissions.Reservations.Update)]
+        [HasPermission(Permissions.Settings.Manage)]
         [ProducesResponseType(
             typeof(Result<UpdateReservationSettingsResponse>),
             StatusCodes.Status200OK

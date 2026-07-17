@@ -1,4 +1,5 @@
 using FoodHub.Application.Common.Models;
+using FoodHub.Application.Constants;
 using FoodHub.Application.Features.Branding.Settings.Commands.UpdateBrandingSettings;
 using FoodHub.Application.Features.Branding.Settings.Queries.GetBrandingSettings;
 using FoodHub.Application.Interfaces.Common;
@@ -19,6 +20,7 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpGet("/api/v{version:apiVersion}/branding/settings")]
+        [HasPermission(Permissions.Settings.Manage)]
         [ProducesResponseType(typeof(Result<GetBrandingSettingsResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBrandingSettings()
         {
@@ -27,6 +29,7 @@ namespace FoodHub.Presentation.Controllers
         }
 
         [HttpPut("/api/v{version:apiVersion}/branding/settings")]
+        [HasPermission(Permissions.Settings.Manage)]
         [ProducesResponseType(typeof(Result<UpdateBrandingSettingsResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateBrandingSettings([FromBody] UpdateBrandingSettingsCommand command)
         {
