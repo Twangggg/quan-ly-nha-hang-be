@@ -27,6 +27,10 @@ namespace FoodHub.Infrastructure.Persistence.Configurations
             builder.Property(x => x.KdsTitle).HasColumnName("kds_title").HasMaxLength(200).IsRequired();
             builder.Property(x => x.AppTitle).HasColumnName("app_title").HasMaxLength(200).IsRequired();
             builder.Property(x => x.LogoUrl).HasColumnName("logo_url").HasMaxLength(1000).IsRequired();
+            builder.Property(x => x.OperatingDays).HasColumnName("operating_days").HasMaxLength(100).IsRequired();
+            builder.Property(x => x.OperatingHours).HasColumnName("operating_hours").HasMaxLength(100).IsRequired();
+            builder.Property(x => x.Description).HasColumnName("description").HasMaxLength(2000).IsRequired();
+            builder.Property(x => x.Email).HasColumnName("email").HasMaxLength(100).IsRequired();
 
             builder.Property(x => x.CreatedAt).HasColumnName("created_at");
             builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");

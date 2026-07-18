@@ -44,7 +44,11 @@ namespace FoodHub.Application.Features.Branding.Settings.Commands.UpdateBranding
                 request.BillFooter,
                 request.KdsTitle,
                 request.AppTitle,
-                request.LogoUrl
+                request.LogoUrl,
+                request.OperatingDays,
+                request.OperatingHours,
+                request.Description,
+                request.Email
             );
 
             await _unitOfWork.SaveChangeAsync(cancellationToken);
@@ -64,6 +68,10 @@ namespace FoodHub.Application.Features.Branding.Settings.Commands.UpdateBranding
                 KdsTitle = settings.KdsTitle,
                 AppTitle = settings.AppTitle,
                 LogoUrl = settings.LogoUrl,
+                OperatingDays = settings.OperatingDays,
+                OperatingHours = settings.OperatingHours,
+                Description = settings.Description,
+                Email = settings.Email,
             });
         }
     }

@@ -54,6 +54,10 @@ namespace FoodHub.Tests.Features.Branding.Commands
                 "Cam on",
                 "KDS",
                 "FoodHub",
+                string.Empty,
+                "Thứ 2 - Chủ Nhật",
+                "08:00 - 22:00",
+                string.Empty,
                 string.Empty
             );
         }

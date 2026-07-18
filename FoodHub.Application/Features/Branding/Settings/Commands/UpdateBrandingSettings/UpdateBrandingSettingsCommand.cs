@@ -16,6 +16,10 @@ namespace FoodHub.Application.Features.Branding.Settings.Commands.UpdateBranding
         string BillFooter,
         string KdsTitle,
         string AppTitle,
-        string LogoUrl
+        string LogoUrl,
+        string OperatingDays,
+        string OperatingHours,
+        string Description,
+        string Email
     ) : IRequest<Result<UpdateBrandingSettingsResponse>>;
 }

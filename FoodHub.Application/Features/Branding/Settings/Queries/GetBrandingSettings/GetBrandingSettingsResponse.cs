@@ -15,5 +15,9 @@ namespace FoodHub.Application.Features.Branding.Settings.Queries.GetBrandingSett
         public string KdsTitle { get; set; } = string.Empty;
         public string AppTitle { get; set; } = string.Empty;
         public string LogoUrl { get; set; } = string.Empty;
+        public string OperatingDays { get; set; } = string.Empty;
+        public string OperatingHours { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
     }
 }

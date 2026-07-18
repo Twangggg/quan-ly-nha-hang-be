@@ -31,6 +31,58 @@ namespace FoodHub.Infrastructure.Persistence
 
             RepairKnownSchemaDrift();
 
+            // Seed Branding Settings
+            var brandingSettings = _context.BrandingSettings.FirstOrDefault(x => x.SettingsKey == BrandingSettings.DefaultSettingsKey);
+            if (brandingSettings == null)
+            {
+                brandingSettings = BrandingSettings.CreateDefault();
+                brandingSettings.Update(
+                    restaurantName: "FoodHub Restaurant",
+                    branchName: "FoodHub",
+                    address: "123 Đường B, Quận 1, TP. HCM",
+                    phone: "0909123456",
+                    currency: "VND",
+                    dateFormat: "dd/MM/yyyy",
+                    timezone: "Asia/Ho_Chi_Minh",
+                    language: "vi",
+                    billTitle: "HÓA ĐƠN THANH TOÁN",
+                    billFooter: "CẢM ƠN QUÝ KHÁCH - HẸN GẶP LẠI",
+                    kdsTitle: "KDS Dashboard",
+                    appTitle: "FoodHub | Premium Restaurant Management",
+                    logoUrl: "",
+                    operatingDays: "Thứ 2 - Chủ Nhật",
+                    operatingHours: "08:00 - 22:00",
+                    description: "Chào mừng bạn đến với FoodHub - Nơi hội tụ tinh hoa ẩm thực. Với không gian sang trọng và menu đa dạng từ các món truyền thống đến hiện đại, chúng tôi cam kết mang đến cho bạn trải nghiệm tuyệt vời nhất.",
+                    email: "contact@foodhub.com"
+                );
+                _context.BrandingSettings.Add(brandingSettings);
+                _context.SaveChanges();
+            }
+            else if (string.IsNullOrEmpty(brandingSettings.Description))
+            {
+                // Update existing if fields are empty
+                brandingSettings.Update(
+                    restaurantName: brandingSettings.RestaurantName,
+                    branchName: brandingSettings.BranchName,
+                    address: string.IsNullOrEmpty(brandingSettings.Address) ? "123 Đường B, Quận 1, TP. HCM" : brandingSettings.Address,
+                    phone: string.IsNullOrEmpty(brandingSettings.Phone) ? "0909123456" : brandingSettings.Phone,
+                    currency: brandingSettings.Currency,
+                    dateFormat: brandingSettings.DateFormat,
+                    timezone: brandingSettings.Timezone,
+                    language: brandingSettings.Language,
+                    billTitle: brandingSettings.BillTitle,
+                    billFooter: brandingSettings.BillFooter,
+                    kdsTitle: brandingSettings.KdsTitle,
+                    appTitle: brandingSettings.AppTitle,
+                    logoUrl: brandingSettings.LogoUrl,
+                    operatingDays: "Thứ 2 - Chủ Nhật",
+                    operatingHours: "08:00 - 22:00",
+                    description: "Chào mừng bạn đến với FoodHub - Nơi hội tụ tinh hoa ẩm thực. Với không gian sang trọng và menu đa dạng từ các món truyền thống đến hiện đại, chúng tôi cam kết mang đến cho bạn trải nghiệm tuyệt vời nhất.",
+                    email: string.IsNullOrEmpty(brandingSettings.Email) ? "contact@foodhub.com" : brandingSettings.Email
+                );
+                _context.SaveChanges();
+            }
+
             // Seed Data
             if (!_context.Employees.Any())
             {

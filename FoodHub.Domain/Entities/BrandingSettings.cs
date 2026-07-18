@@ -33,6 +33,10 @@ namespace FoodHub.Domain.Entities
         public string KdsTitle { get; private set; } = DefaultKdsTitle;
         public string AppTitle { get; private set; } = DefaultAppTitle;
         public string LogoUrl { get; private set; } = string.Empty;
+        public string OperatingDays { get; private set; } = "Thứ 2 - Chủ Nhật";
+        public string OperatingHours { get; private set; } = "08:00 - 22:00";
+        public string Description { get; private set; } = string.Empty;
+        public string Email { get; private set; } = string.Empty;
 
         public static BrandingSettings CreateDefault(Guid? createdBy = null)
         {
@@ -53,6 +57,10 @@ namespace FoodHub.Domain.Entities
                 KdsTitle = DefaultKdsTitle,
                 AppTitle = DefaultAppTitle,
                 LogoUrl = string.Empty,
+                OperatingDays = "Thứ 2 - Chủ Nhật",
+                OperatingHours = "08:00 - 22:00",
+                Description = string.Empty,
+                Email = string.Empty,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = createdBy,
                 UpdatedBy = createdBy,
@@ -73,6 +81,10 @@ namespace FoodHub.Domain.Entities
             string kdsTitle,
             string appTitle,
             string logoUrl,
+            string? operatingDays = null,
+            string? operatingHours = null,
+            string? description = null,
+            string? email = null,
             Guid? updatedBy = null
         )
         {
@@ -89,6 +101,10 @@ namespace FoodHub.Domain.Entities
             KdsTitle = string.IsNullOrWhiteSpace(kdsTitle) ? DefaultKdsTitle : kdsTitle.Trim();
             AppTitle = string.IsNullOrWhiteSpace(appTitle) ? DefaultAppTitle : appTitle.Trim();
             LogoUrl = logoUrl?.Trim() ?? string.Empty;
+            OperatingDays = operatingDays?.Trim() ?? "Thứ 2 - Chủ Nhật";
+            OperatingHours = operatingHours?.Trim() ?? "08:00 - 22:00";
+            Description = description?.Trim() ?? string.Empty;
+            Email = email?.Trim() ?? string.Empty;
             UpdatedAt = DateTime.UtcNow;
             UpdatedBy = updatedBy;
         }

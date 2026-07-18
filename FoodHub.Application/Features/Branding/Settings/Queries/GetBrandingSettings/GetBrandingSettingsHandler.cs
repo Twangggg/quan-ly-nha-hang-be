@@ -48,6 +48,10 @@ namespace FoodHub.Application.Features.Branding.Settings.Queries.GetBrandingSett
                 KdsTitle = settings.KdsTitle,
                 AppTitle = settings.AppTitle,
                 LogoUrl = settings.LogoUrl,
+                OperatingDays = settings.OperatingDays,
+                OperatingHours = settings.OperatingHours,
+                Description = settings.Description,
+                Email = settings.Email,
             };
         }
     }
