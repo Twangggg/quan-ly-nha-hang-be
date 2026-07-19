@@ -15,7 +15,8 @@ namespace FoodHub.Infrastructure.Security
         {
             return role switch
             {
-                EmployeeRole.Manager => GetAllPermissions(),
+                EmployeeRole.Admin => GetAllPermissions(),
+                EmployeeRole.Manager => GetManagerPermissions(),
                 EmployeeRole.Cashier => GetCashierPermissions(),
                 EmployeeRole.ChefBar => GetChefBarPermissions(),
                 _ => Enumerable.Empty<string>(),
@@ -24,7 +25,7 @@ namespace FoodHub.Infrastructure.Security
 
         private IEnumerable<string> GetAllPermissions()
         {
-            // Manager has all permissions
+            // Admin has all permissions
             return typeof(Permissions)
                 .GetNestedTypes()
                 .SelectMany(t =>
@@ -37,6 +38,119 @@ namespace FoodHub.Infrastructure.Security
                 .Where(f => f.IsLiteral && !f.IsInitOnly)
                 .Select(f => f.GetValue(null)?.ToString() ?? string.Empty)
                 .Where(s => !string.IsNullOrEmpty(s));
+        }
+
+        private IEnumerable<string> GetManagerPermissions()
+        {
+            // Manager permissions (without Admin-specific permissions)
+            return new List<string>
+            {
+                // Orders
+                Permissions.Orders.View,
+                Permissions.Orders.Create,
+                Permissions.Orders.Update,
+                Permissions.Orders.Cancel,
+                Permissions.Orders.Complete,
+                Permissions.Orders.SubmitToKitchen,
+                Permissions.Orders.ChangeTable,
+                Permissions.Orders.Merge,
+                Permissions.Orders.Split,
+                // Menu Items
+                Permissions.MenuItems.View,
+                Permissions.MenuItems.Create,
+                Permissions.MenuItems.Update,
+                Permissions.MenuItems.Delete,
+                Permissions.MenuItems.UpdateStock,
+                Permissions.MenuItems.UpdateOptions,
+                // Categories
+                Permissions.Categories.View,
+                Permissions.Categories.Create,
+                Permissions.Categories.Update,
+                Permissions.Categories.Delete,
+                // Set Menus
+                Permissions.SetMenus.View,
+                Permissions.SetMenus.Create,
+                Permissions.SetMenus.Update,
+                Permissions.SetMenus.Delete,
+                Permissions.SetMenus.UpdateStock,
+                // Tables
+                Permissions.Tables.View,
+                Permissions.Tables.Create,
+                Permissions.Tables.Update,
+                Permissions.Tables.UpdateStatus,
+                Permissions.Tables.Delete,
+                // Areas
+                Permissions.Areas.View,
+                Permissions.Areas.Create,
+                Permissions.Areas.Update,
+                Permissions.Areas.Delete,
+                // Reservations
+                Permissions.Reservations.View,
+                Permissions.Reservations.Create,
+                Permissions.Reservations.Update,
+                Permissions.Reservations.Cancel,
+                Permissions.Reservations.CheckIn,
+                // Billing
+                Permissions.Billing.Checkout,
+                Permissions.Billing.ViewHistory,
+                Permissions.Billing.PreCheckBill,
+                Permissions.Billing.SplitBill,
+                // Payment Methods
+                Permissions.PaymentMethods.View,
+                Permissions.PaymentMethods.Create,
+                Permissions.PaymentMethods.Update,
+                Permissions.PaymentMethods.ToggleStatus,
+                // KDS
+                Permissions.Kds.View,
+                Permissions.Kds.Manage,
+                Permissions.Kds.Reject,
+                Permissions.Kds.Return,
+                // Inventory
+                Permissions.Inventory.View,
+                Permissions.Inventory.Create,
+                Permissions.Inventory.Update,
+                Permissions.Inventory.Deactivate,
+                Permissions.Inventory.Import,
+                // Invoices
+                Permissions.Invoices.View,
+                Permissions.Invoices.Create,
+                Permissions.Invoices.ViewPdf,
+                // Vouchers
+                Permissions.Vouchers.View,
+                Permissions.Vouchers.Create,
+                Permissions.Vouchers.Update,
+                Permissions.Vouchers.Delete,
+                Permissions.Vouchers.UpdateStatus,
+                Permissions.Vouchers.Apply,
+                Permissions.Vouchers.Unapply,
+                // Shifts
+                Permissions.Shifts.View,
+                Permissions.Shifts.Create,
+                Permissions.Shifts.Update,
+                Permissions.Shifts.Deactivate,
+                // Shift Assignments
+                Permissions.ShiftAssignments.View,
+                Permissions.ShiftAssignments.Create,
+                Permissions.ShiftAssignments.Update,
+                Permissions.ShiftAssignments.Delete,
+                Permissions.ShiftAssignments.ViewMyShifts,
+                // Images
+                Permissions.Images.Manage,
+                // Employees (view only, CRUD is Admin)
+                Permissions.Employees.View,
+                // Sales Analytics
+                Permissions.SalesAnalytics.View,
+                // Attendances
+                Permissions.Attendances.View,
+                Permissions.Attendances.CheckIn,
+                Permissions.Attendances.CheckOut,
+                // NOTE: Manager does NOT have these Admin permissions:
+                // - Permissions.Employees.Create/Update/Delete (managed by Admin)
+                // - Permissions.Admin.ConfigureBranding
+                // - Permissions.Admin.ConfigureKds
+                // - Permissions.Admin.ViewReports
+                // - Permissions.Admin.ViewSystemLog
+            };
         }
 
         private IEnumerable<string> GetCashierPermissions()

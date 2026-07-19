@@ -87,7 +87,7 @@ namespace FoodHub.Presentation.Controllers
         /// <response code="201">Tạo thành công.</response>
         /// <response code="400">Dữ liệu không hợp lệ hoặc Email/Mã nhân viên đã tồn tại.</response>
         [HttpPost]
-        [HasPermission(Permissions.Employees.Create)]
+        [HasPermission(Permissions.Admin.ManageAccounts)]
         [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<GetEmployeesResponse>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -113,7 +113,7 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="command">Thông tin mới.</param>
         /// <response code="200">Cập nhật thành công.</response>
         [HttpPut("{id}")]
-        [HasPermission(Permissions.Employees.Update)]
+        [HasPermission(Permissions.Admin.ManageAccounts)]
         [RateLimit(maxRequests: 30, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -142,7 +142,7 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="id">Mã nhân viên cần xóa.</param>
         /// <response code="200">Xóa thành công.</response>
         [HttpDelete("{id}")]
-        [HasPermission(Permissions.Employees.Delete)]
+        [HasPermission(Permissions.Admin.ManageAccounts)]
         [RateLimit(maxRequests: 10, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteEmployeeAsync(Guid id)
@@ -159,7 +159,7 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="pagination">Tham số phân trang.</param>
         /// <response code="200">Trả về danh sách logs.</response>
         [HttpGet("{id}/audit-logs")]
-        [HasPermission(Permissions.Employees.ViewAuditLogs)]
+        [HasPermission(Permissions.Admin.ViewSystemLog)]
         [RateLimit(maxRequests: 50, windowMinutes: 1, blockMinutes: 5)]
         [ProducesResponseType(
             typeof(Result<PagedResult<GetAuditLogsResponse>>),
@@ -188,7 +188,7 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="command">Thông tin chuyển đổi vai trò.</param>
         /// <response code="200">Thay đổi thành công.</response>
         [HttpPost("change-role")]
-        [HasPermission(Permissions.Employees.ChangeRole)]
+        [HasPermission(Permissions.Admin.ManageAccounts)]
         [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ChangeRole([FromBody] ChangeRoleCommand command)
@@ -204,7 +204,7 @@ namespace FoodHub.Presentation.Controllers
         /// <param name="command">Thông tin reset mật khẩu.</param>
         /// <response code="200">Reset thành công.</response>
         [HttpPost("reset-password")]
-        [HasPermission(Permissions.Employees.Update)]
+        [HasPermission(Permissions.Admin.ManageAccounts)]
         [RateLimit(maxRequests: 20, windowMinutes: 1, blockMinutes: 10)]
         [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
         public async Task<IActionResult> ResetEmployeePassword(

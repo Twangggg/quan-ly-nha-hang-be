@@ -31,7 +31,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.AuditLogs
         /// <response code="200">Trả về danh sách Audit Logs theo yêu cầu.</response>
         /// <response code="403">Không có quyền truy cập.</response>
         [HttpGet]
-        [HasPermission(Permissions.Employees.ViewAuditLogs)]
+        [HasPermission(Permissions.Admin.ViewSystemLog)]
         [ProducesResponseType(typeof(Result<PagedResult<GetAuditLogsResponse>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetAuditLogs([FromQuery] GetAuditLogsQuery query)

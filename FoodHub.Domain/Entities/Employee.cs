@@ -31,6 +31,16 @@ namespace FoodHub.Domain.Entities
             return role == EmployeeRole.Manager;
         }
 
+        public static bool IsAdminRole(EmployeeRole role)
+        {
+            return role == EmployeeRole.Admin;
+        }
+
+        public bool IsAdmin()
+        {
+            return Role == EmployeeRole.Admin;
+        }
+
         public static bool IsDifferentRole(EmployeeRole currentRole, EmployeeRole newRole)
         {
             return currentRole != newRole;
@@ -109,9 +119,9 @@ namespace FoodHub.Domain.Entities
                 throw new InvalidOperationException("New role must be different.");
             }
 
-            if (newRole == EmployeeRole.Manager)
+            if (newRole == EmployeeRole.Admin)
             {
-                throw new InvalidOperationException("Promoting to manager is not allowed.");
+                throw new InvalidOperationException("Promoting to admin is not allowed.");
             }
 
             var timestamp = DateTime.UtcNow.Ticks;

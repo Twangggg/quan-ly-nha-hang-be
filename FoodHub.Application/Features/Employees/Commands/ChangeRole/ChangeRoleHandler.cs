@@ -60,12 +60,37 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
                 );
             }
 
-            if (Employee.IsManagerRole(request.NewRole))
+            if (request.NewRole == EmployeeRole.Admin)
             {
                 return Result<ChangeRoleResponse>.Failure(
-                    _messageService.GetMessage(MessageKeys.Employee.CannotPromoteToManager),
+                    "Không thể nâng cấp vai trò thành Admin.",
                     ResultErrorType.BadRequest
                 );
+            }
+
+            EmployeeRole auditorRole = EmployeeRole.Manager; // Fallback to Manager (limited rights) to preserve test expectations
+            if (!string.IsNullOrEmpty(_currentUserService.Role) && Enum.TryParse<EmployeeRole>(_currentUserService.Role, out var parsedRole))
+            {
+                auditorRole = parsedRole;
+            }
+
+            if (auditorRole != EmployeeRole.Admin)
+            {
+                if (Employee.IsManagerRole(request.NewRole) || Employee.IsAdminRole(request.NewRole))
+                {
+                    return Result<ChangeRoleResponse>.Failure(
+                        _messageService.GetMessage(MessageKeys.Employee.CannotPromoteToManager),
+                        ResultErrorType.BadRequest
+                    );
+                }
+
+                if (Employee.IsManagerRole(request.CurrentRole) || Employee.IsAdminRole(request.CurrentRole))
+                {
+                    return Result<ChangeRoleResponse>.Failure(
+                        "Chỉ Admin mới có quyền thay đổi vai trò của Admin hoặc Manager.",
+                        ResultErrorType.BadRequest
+                    );
+                }
             }
             if (!Employee.IsDifferentRole(request.CurrentRole, request.NewRole))
             {

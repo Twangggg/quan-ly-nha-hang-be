@@ -21,7 +21,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.KDS
         }
 
         [HttpGet("/api/v{version:apiVersion}/kds/settings")]
-        [HasPermission(Permissions.Kds.Manage)]
+        [HasPermission(Permissions.Kds.View)]
         [ProducesResponseType(typeof(Result<GetKdsSettingsResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetKdsSettings()
         {
@@ -30,7 +30,7 @@ namespace FoodHub.WebAPI.Presentation.Controllers.KDS
         }
 
         [HttpPut("/api/v{version:apiVersion}/kds/settings")]
-        [HasPermission(Permissions.Kds.Manage)]
+        [HasPermission(Permissions.Admin.ConfigureKds)]
         [ProducesResponseType(typeof(Result<UpdateKdsSettingsResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateKdsSettings([FromBody] UpdateKdsSettingsCommand command)
         {
