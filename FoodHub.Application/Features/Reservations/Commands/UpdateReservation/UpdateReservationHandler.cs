@@ -60,11 +60,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.UpdateReservation
                     .Include(t => t.Area)
                     .Where(t => t.Status != TableStatus.OutOfService && t.Capacity >= request.GuestCount);
 
-                if (request.GuestCount > 8)
-                {
-                    query = query.Where(t => t.Area.Type == AreaType.VIP);
-                }
-
                 if (request.AreaId.HasValue)
                 {
                     query = query.Where(t => t.AreaId == request.AreaId.Value);
@@ -96,10 +91,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.UpdateReservation
 
                 if (availableTable == null)
                 {
-                    if (request.GuestCount > 8)
-                    {
-                        return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Reservation.VipRequired));
-                    }
                     return Result<Guid>.Failure(_messageService.GetMessage(MessageKeys.Reservation.NoTableAvailable));
                 }
 
