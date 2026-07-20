@@ -91,6 +91,19 @@ namespace FoodHub.Infrastructure.Persistence
                     new Employee
                     {
                         EmployeeId = Guid.NewGuid(),
+                        EmployeeCode = "A000001",
+                        Username = "superadmin",
+                        PasswordHash = _passwordService.HashPassword("New123!!"),
+                        FullName = "Super Admin",
+                        Email = "superadmin@foodhub.com",
+                        Phone = "0909000000",
+                        Role = EmployeeRole.Admin,
+                        Status = EmployeeStatus.Active,
+                        CreatedAt = DateTime.UtcNow,
+                    },
+                    new Employee
+                    {
+                        EmployeeId = Guid.NewGuid(),
                         EmployeeCode = "M000001",
                         Username = "admin",
                         PasswordHash = _passwordService.HashPassword("New123!!"),

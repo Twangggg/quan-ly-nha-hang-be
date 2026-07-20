@@ -53,7 +53,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ResetEmployeePassword
 
             var manager = await _unitOfWork.Repository<Employee>().GetByIdAsync(managerGuid);
 
-            if (manager == null || manager.Role != EmployeeRole.Manager)
+            if (manager == null || (manager.Role != EmployeeRole.Manager && manager.Role != EmployeeRole.Admin))
             {
                 return Result<ResetEmployeePasswordResponse>.Failure(
                     _messageService.GetMessage(MessageKeys.ResetPassword.OnlyManagerCanReset)

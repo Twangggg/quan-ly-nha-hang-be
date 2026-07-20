@@ -2,6 +2,15 @@ namespace FoodHub.Application.Constants
 {
     public static class Permissions
     {
+        public static class Admin
+        {
+            public const string ManageAccounts = "Permissions.Admin.ManageAccounts";
+            public const string ConfigureBranding = "Permissions.Admin.ConfigureBranding";
+            public const string ConfigureKds = "Permissions.Admin.ConfigureKds";
+            public const string ViewReports = "Permissions.Admin.ViewReports";
+            public const string ViewSystemLog = "Permissions.Admin.ViewSystemLog";
+        }
+
         public static class Orders
         {
             public const string View = "Permissions.Orders.View";

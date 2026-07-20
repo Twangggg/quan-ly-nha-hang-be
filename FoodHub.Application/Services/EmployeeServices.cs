@@ -24,6 +24,7 @@ namespace FoodHub.Application.Services
         {
             char prefix = role switch
             {
+                EmployeeRole.Admin => 'A',
                 EmployeeRole.Manager => 'M',
                 EmployeeRole.Cashier => 'C',
                 EmployeeRole.ChefBar => 'B',

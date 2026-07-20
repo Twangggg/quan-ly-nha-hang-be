@@ -64,11 +64,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                         t.Status != TableStatus.OutOfService && t.Capacity >= request.GuestCount
                     );
 
-                if (request.GuestCount > 8)
-                {
-                    query = query.Where(t => t.Area.Type == AreaType.VIP);
-                }
-
                 if (request.AreaId.HasValue)
                 {
                     query = query.Where(t => t.AreaId == request.AreaId.Value);
@@ -105,12 +100,6 @@ namespace FoodHub.Application.Features.Reservations.Commands.CreateInternalReser
                 if (availableTable == null)
                 {
                     await _unitOfWork.RollbackTransactionAsync();
-                    if (request.GuestCount > 8)
-                    {
-                        throw new BusinessException(
-                            _messageService.GetMessage(MessageKeys.Reservation.VipRequired)
-                        );
-                    }
                     throw new BusinessException(
                         _messageService.GetMessage(MessageKeys.Reservation.NoTableAvailable)
                     );

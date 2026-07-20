@@ -9,7 +9,7 @@ namespace FoodHub.Application.Features.Employees.Commands.ChangeRole
         {
             RuleFor(x => x.EmployeeCode)
                .NotEmpty()
-               .Matches(@"^[WCBM]\d{6}$")
+               .Matches(@"^[WCBMA]\d{6}$")
                .WithMessage(messageService.GetMessage(MessageKeys.Employee.CodeInvalidFormat));
             RuleFor(x => x.CurrentRole).IsInEnum();
             RuleFor(x => x.NewRole).IsInEnum();
