@@ -1186,6 +1186,64 @@ namespace FoodHub.Infrastructure.Persistence
                 }
             }
 
+            // Seed BrandingSettings
+            var brandingSettings = _context.BrandingSettings.FirstOrDefault();
+            if (brandingSettings == null || brandingSettings.RestaurantName == BrandingSettings.DefaultRestaurantName)
+            {
+                if (brandingSettings == null)
+                {
+                    brandingSettings = BrandingSettings.CreateDefault();
+                    _context.BrandingSettings.Add(brandingSettings);
+                }
+
+                brandingSettings.Update(
+                    restaurantName: "Foodhub",
+                    branchName: "Chi nhánh 1",
+                    address: "Số 600, đường Nguyễn Văn Cừ (nối dài), Phường An Bình, Thành phố Cần Thơ",
+                    phone: "0901234567",
+                    currency: "VND",
+                    dateFormat: "dd/MM/yyyy",
+                    timezone: "Asia/Ho_Chi_Minh",
+                    language: "vi",
+                    billTitle: "FOODHUB - HÓA ĐƠN",
+                    billFooter: "CẢM ƠN QUÝ KHÁCH & HẸN GẶP LẠI",
+                    kdsTitle: "Foodhub KDS",
+                    appTitle: "Foodhub POS",
+                    logoUrl: "https://i.imgur.com/3q1yO9g.png",
+                    legalBusinessName: "CÔNG TY TNHH FOODHUB",
+                    brandName: "Foodhub",
+                    taxCode: "0312345678",
+                    businessRegistrationNumber: "0312345678",
+                    branchCode: "FH-1",
+                    restaurantCode: "FH-001",
+                    hotline: "1900 1234",
+                    email: "foodhub@gmail.com",
+                    website: "https://foodhub.vn",
+                    facebook: "https://facebook.com/foodhub",
+                    zaloOa: "https://zalo.me/foodhub",
+                    instagram: "https://instagram.com/foodhub",
+                    country: "Việt Nam",
+                    provinceCity: "Cần Thơ",
+                    district: "Quận Ninh Kiều",
+                    ward: "Phường An Bình",
+                    streetAddress: "Số 600, đường Nguyễn Văn Cừ (nối dài)",
+                    postalCode: "920000",
+                    googleMapUrl: "https://maps.google.com/?q=600+Nguyen+Van+Cu+Ninh+Kieu+Can+Tho",
+                    coverImageUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=2000&auto=format&fit=crop",
+                    qrPaymentImageUrl: "",
+                    faviconUrl: "",
+                    vatPercentage: 8,
+                    timeFormat: "HH:mm",
+                    openingTime: "08:00",
+                    closingTime: "22:00",
+                    workingDays: "Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday",
+                    enableOrdering: true,
+                    enableDelivery: false,
+                    enableTakeAway: true,
+                    enableReservation: true
+                );
+            }
+
             _context.SaveChanges();
         }
 

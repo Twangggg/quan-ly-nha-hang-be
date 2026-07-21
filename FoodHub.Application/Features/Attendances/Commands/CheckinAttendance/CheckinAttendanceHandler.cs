@@ -72,7 +72,7 @@ namespace FoodHub.Application.Features.Attendances.Commands.CheckinAttendance
                 .Where(csa => csa.EmployeeId == auditorId && csa.AssignedDate == today)
                 .ToListAsync(cancellationToken);
 
-            ShiftAssignment currentShiftAssignment = null;
+            ShiftAssignment? currentShiftAssignment = null;
             TimeStatus timeStatus = TimeStatus.OnTime;
 
             // Dùng foreach để gán biến out an toàn, tránh side-effect của biến out trong lambda Expression (FirstOrDefault)

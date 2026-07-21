@@ -44,7 +44,7 @@ public class ParseInventoryBalanceExcelHandler
             using var stream = request.File.OpenReadStream();
             rawItems = await _excelService.ParseExcelFileAsync(stream, cancellationToken);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return Result<List<ParsedInventoryBalanceResponse>>.Failure(
                 _messageService.GetMessage(MessageKeys.Common.ExcelRequired)
