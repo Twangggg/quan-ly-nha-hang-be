@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <PackageReference Include="AuroraScienceHub.Framework.EntityFramework.NpgSql" Version="9.0.7" />
-    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="CloudinaryDotNet" Version="1.28.0" />
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.2.9" />
